@@ -149,10 +149,13 @@ class GapsCircuitBuilder(CircuitBuilder):
         specified by fingerprint or nickname, and fingerprint is highly
         recommended. Falsey values (like None) will be replaced with relays
         chosen uniformally at random '''
+        # TODO: There's a small chance that relays chosen randomly will match
+        # relays already in the path.
         if not valid_circuit_length(path):
             raise PathLengthException
-        path = [r if r else random.choice(self.relays).fingerprint
-                for r in path]
+        num_missing = len(['foo' for r in path if not r])
+        insert_relays = random.sample(self.relays, num_missing)
+        path = [r if r else insert_relays.pop().fingerprint for r in path]
         return self._build_circuit_impl(path)
 
 

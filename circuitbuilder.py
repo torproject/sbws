@@ -1,5 +1,5 @@
 from stem.control import Controller
-from stem import (CircuitExtensionFailed, InvalidRequest)
+from stem import (SocketError, CircuitExtensionFailed, InvalidRequest)
 from stem import Flag
 import random
 
@@ -22,16 +22,44 @@ def valid_circuit_length(path):
 
 class CircuitBuilder:
     def __init__(self, close_circuits_on_exit=True):
-        self.controller = self._init_controller()
+        self.controller = CircuitBuilder._init_controller()
         self.relays = self._init_relays()
         self.built_circuits = set()
         self.close_circuits_on_exit = close_circuits_on_exit
 
+    @staticmethod
+    def _init_controller_helper(port=None, socket=None):
+        assert port is None or socket is None
+        assert port is None or isinstance(port, int)
+        assert socket is None or isinstance(socket, str)
+        try:
+            if port:
+                c = Controller.from_port(port=port)
+            else:
+                c = Controller.from_socket_file(path=socket)
+        except SocketError:
+            return None
+        else:
+            # TODO: Allow for auth via more than just CookieAuthentication
+            c.authenticate()
+            return c
+
+    @staticmethod
     def _init_controller(self):
-        #c = Controller.from_port(port=9051)
-        c = Controller.from_socket_file('/var/run/tor/control')
-        c.authenticate()
-        return c
+        c = CircuitBuilder._init_controller_helper(port=9051)
+        if c:
+            print('Connected to Tor on port 9051')
+            return c
+        c = CircuitBuilder._init_controller_helper(
+            socket='/var/run/tor/control')
+        if c:
+            print('Connected to Tor on socket /var/run/tor/control')
+            return c
+        c = CircuitBuilder._init_controller_helper(port=9151)
+        if c:
+            print('Connected to Tor on port 9151')
+            return c
+        return None
 
     def _init_relays(self):
         assert self._is_controller_okay()

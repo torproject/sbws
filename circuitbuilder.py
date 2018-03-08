@@ -45,7 +45,7 @@ class CircuitBuilder:
             return c
 
     @staticmethod
-    def _init_controller(self):
+    def _init_controller():
         c = CircuitBuilder._init_controller_helper(port=9051)
         if c:
             print('Connected to Tor on port 9051')

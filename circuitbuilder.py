@@ -73,7 +73,7 @@ class CircuitBuilder:
 
     def build_circuit(self, *a, **kw):
         ''' Implementations of this method should build the circuit and return
-        its (str) ID. '''
+        its (str) ID. If it cannot be built, it should return None. '''
         raise NotImplementedError()
 
     def close_circuit(self, circ_id):
@@ -99,8 +99,8 @@ class CircuitBuilder:
 
     def fp_or_nick_to_relay(self, fp_nick):
         ''' Takes a string that could be either a relay's fingerprint or
-        nickname. Return the relay's networkstatus (a stem thing) if found.
-        Otherwise return None '''
+        nickname. Return the relay's descriptor if found.  Otherwise return
+        None '''
         assert isinstance(fp_nick, str)
         assert self._is_controller_okay()
         return self.controller.get_network_status(fp_nick, default=None)

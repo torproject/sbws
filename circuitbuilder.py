@@ -97,6 +97,14 @@ class CircuitBuilder:
         self.built_circuits.add(circ_id)
         return circ_id
 
+    def fp_or_nick_to_relay(self, fp_nick):
+        ''' Takes a string that could be either a relay's fingerprint or
+        nickname. Return the relay's networkstatus (a stem thing) if found.
+        Otherwise return None '''
+        assert isinstance(fp_nick, str)
+        assert self._is_controller_okay()
+        return self.controller.get_network_status(fp_nick, default=None)
+
     def __del__(self):
         if not self._is_controller_okay():
             return
@@ -132,14 +140,14 @@ class GuardedCircuitBuilder(CircuitBuilder):
         ''' <guards> is a list of relays. A relay can be specified either by
         fingerprint or nickname. Fingerprint is highly recommended. '''
         super().__init__(*a, **kw)
-        self.guards = guards
+        self.guards = [self.fp_or_nick_to_relay(g) for g in guards]
 
     def build_circuit(self, length=3):
         ''' builds circuit of <length> and returns its (str) ID. The length
         includes the guard in the first hop position '''
         if not valid_circuit_length(length):
             raise PathLengthException()
-        fps = [random.choice(self.guards)] + \
+        fps = [random.choice(self.guards).fingerprint] + \
             [r.fingerprint for r in random.sample(self.relays, length-1)]
         return self._build_circuit_impl(fps)
 
@@ -172,6 +180,11 @@ class GapsCircuitBuilder(CircuitBuilder):
     def __init__(self, *a, **kw):
         super().__init__(*a, **kw)
 
+    def _normalize_path(self, path):
+        ''' Change fingerprints/nicks to relay networkstatuses (a stem thing)
+        and change Falsey values to None '''
+        return [self.fp_or_nick_to_relay(fp) if fp else None for fp in path]
+
     def build_circuit(self, path):
         ''' <path> is a list of relays and Falsey values. Relays can be
         specified by fingerprint or nickname, and fingerprint is highly
@@ -181,9 +194,11 @@ class GapsCircuitBuilder(CircuitBuilder):
         # relays already in the path.
         if not valid_circuit_length(path):
             raise PathLengthException()
+        path = self._normalize_path(path)
         num_missing = len(['foo' for r in path if not r])
         insert_relays = random.sample(self.relays, num_missing)
-        path = [r if r else insert_relays.pop().fingerprint for r in path]
+        path = [r.fingerprint if r else insert_relays.pop().fingerprint
+                for r in path]
         return self._build_circuit_impl(path)
 
 

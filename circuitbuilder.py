@@ -141,6 +141,11 @@ class GuardedCircuitBuilder(CircuitBuilder):
         fingerprint or nickname. Fingerprint is highly recommended. '''
         super().__init__(*a, **kw)
         self.guards = [self.fp_or_nick_to_relay(g) for g in guards]
+        if len(self.guards) > len([g for g in self.guards if g]):
+            self.guards = [g for g in self.guards if g]
+            print('Warning: couldn\'t find descriptors for all guards. Only '
+                  'using:', ', '.join([g.nickname for g in self.guards]))
+            assert len(self.guards) > 0
 
     def build_circuit(self, length=3):
         ''' builds circuit of <length> and returns its (str) ID. The length
@@ -181,9 +186,18 @@ class GapsCircuitBuilder(CircuitBuilder):
         super().__init__(*a, **kw)
 
     def _normalize_path(self, path):
-        ''' Change fingerprints/nicks to relay networkstatuses (a stem thing)
-        and change Falsey values to None '''
-        return [self.fp_or_nick_to_relay(fp) if fp else None for fp in path]
+        ''' Change fingerprints/nicks to relay descriptor and change Falsey
+        values to None. Return the new path, or None if error '''
+        new_path = []
+        for fp in path:
+            if not fp:
+                new_path.append(None)
+                continue
+            relay = self.fp_or_nick_to_relay(fp)
+            if not relay:
+                return None
+            new_path.append(relay)
+        return new_path
 
     def build_circuit(self, path):
         ''' <path> is a list of relays and Falsey values. Relays can be
@@ -195,6 +209,8 @@ class GapsCircuitBuilder(CircuitBuilder):
         if not valid_circuit_length(path):
             raise PathLengthException()
         path = self._normalize_path(path)
+        if path is None:
+            return None
         num_missing = len(['foo' for r in path if not r])
         insert_relays = random.sample(self.relays, num_missing)
         path = [r.fingerprint if r else insert_relays.pop().fingerprint

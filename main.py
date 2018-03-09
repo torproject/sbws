@@ -22,6 +22,15 @@ def make_socket():
     return s
 
 
+def socket_connect(s, addr, port):
+    try:
+        s.connect((addr, port))
+    except socks.GeneralProxyError as e:
+        print(e)
+        return False
+    return True
+
+
 def test_circuitbuilder():
     cb = CB()
     circ = cb.build_circuit(4)
@@ -31,13 +40,10 @@ def test_circuitbuilder():
         cb.controller, circ)
     stem_utils.add_event_listener(cb.controller, listener, EventType.STREAM)
     s = make_socket()
-    try:
-        s.connect(('127.0.0.1', 4444))
-    except socks.GeneralProxyError as e:
-        print(e)
+    connected = socket_connect(s, '127.0.0.1', 4444)
+    stem_utils.remove_event_listener(cb.controller, listener)
+    if not connected:
         return
-    finally:
-        stem_utils.remove_event_listener(cb.controller, listener)
     send_data(s)
     s.close()
 

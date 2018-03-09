@@ -15,6 +15,7 @@ class PeriodicEvent:
         self.run_at_end = _run_at_end
         self.last_run = time.time()
         self.thread = Thread(target=self.enter)
+        self.thread.daemon = True
         self.thread.start()
 
     def runit(self):

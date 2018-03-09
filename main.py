@@ -6,8 +6,8 @@ import time
 
 
 def test_circuitbuilder():
-    #cb = CB()
-    #circ = cb.build_circuit(2)
+    cb = CB()
+    circ = cb.build_circuit(2)
     #circ = cb.build_circuit(['ButtersStotch', None, 'marsbarsarethars'])
     #time.sleep(1)
     #circ = cb.build_circuit(2)
@@ -19,7 +19,7 @@ def test_circuitbuilder():
     #circ = cb.build_circuit(2)
     #circ = cb.build_circuit(['ButtersStotch', None, 'marsbarsarethars'])
     #time.sleep(1)
-    pass
+    time.sleep(3)
 
 
 def test_relaylist():
@@ -31,7 +31,8 @@ def test_relaylist():
 
 
 def main():
-    test_relaylist()
+    test_circuitbuilder()
+    #test_relaylist()
 
 
 if __name__ == '__main__':

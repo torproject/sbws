@@ -2,6 +2,7 @@ from stem.control import Controller
 from stem import (SocketError, CircuitExtensionFailed, InvalidRequest)
 from stem import Flag
 import random
+import util.stem as stem_utils
 
 
 class PathLengthException(Exception):
@@ -22,54 +23,15 @@ def valid_circuit_length(path):
 
 class CircuitBuilder:
     def __init__(self, close_circuits_on_exit=True):
-        self.controller = CircuitBuilder._init_controller()
+        self.controller = stem_utils.init_controller()
         self.relays = self._init_relays()
         self.built_circuits = set()
         self.close_circuits_on_exit = close_circuits_on_exit
 
-    @staticmethod
-    def _init_controller_helper(port=None, socket=None):
-        assert port is None or socket is None
-        assert port is None or isinstance(port, int)
-        assert socket is None or isinstance(socket, str)
-        try:
-            if port:
-                c = Controller.from_port(port=port)
-            else:
-                c = Controller.from_socket_file(path=socket)
-        except SocketError:
-            return None
-        else:
-            # TODO: Allow for auth via more than just CookieAuthentication
-            c.authenticate()
-            return c
-
-    @staticmethod
-    def _init_controller():
-        c = CircuitBuilder._init_controller_helper(port=9051)
-        if c:
-            print('Connected to Tor on port 9051')
-            return c
-        c = CircuitBuilder._init_controller_helper(
-            socket='/var/run/tor/control')
-        if c:
-            print('Connected to Tor on socket /var/run/tor/control')
-            return c
-        c = CircuitBuilder._init_controller_helper(port=9151)
-        if c:
-            print('Connected to Tor on port 9151')
-            return c
-        return None
-
     def _init_relays(self):
-        assert self._is_controller_okay()
         c = self.controller
+        assert stem_utils.is_controller_okay(c)
         return [ns for ns in c.get_network_statuses()]
-
-    def _is_controller_okay(self):
-        assert self.controller
-        c = self.controller
-        return c.is_alive() and c.is_authenticated()
 
     def build_circuit(self, *a, **kw):
         ''' Implementations of this method should build the circuit and return
@@ -78,8 +40,8 @@ class CircuitBuilder:
 
     def close_circuit(self, circ_id):
         # TODO: might want to just check instead of assert.
-        assert self._is_controller_okay()
         c = self.controller
+        assert stem_utils.is_controller_okay(c)
         if c.get_circuit(circ_id, default=None):
             c.close_circuit(circ_id)
             self.built_circuits.discard(circ_id)
@@ -87,8 +49,8 @@ class CircuitBuilder:
     def _build_circuit_impl(self, path):
         if not valid_circuit_length(path):
             raise PathLengthException()
-        assert self._is_controller_okay()
         c = self.controller
+        assert stem_utils.is_controller_okay(c)
         try:
             circ_id = c.new_circuit(path, await_build=True)
         except (InvalidRequest, CircuitExtensionFailed) as e:
@@ -102,15 +64,16 @@ class CircuitBuilder:
         nickname. Return the relay's descriptor if found.  Otherwise return
         None '''
         assert isinstance(fp_nick, str)
-        assert self._is_controller_okay()
-        return self.controller.get_network_status(fp_nick, default=None)
+        c = self.controller
+        assert stem_utils.is_controller_okay(c)
+        return c.get_network_status(fp_nick, default=None)
 
     def __del__(self):
-        if not self._is_controller_okay():
+        c = self.controller
+        if not stem_utils.is_controller_okay(c):
             return
         if not self.close_circuits_on_exit:
             return
-        c = self.controller
         for circ_id in self.built_circuits:
             if c.get_circuit(circ_id, default=None):
                 c.close_circuit(circ_id)

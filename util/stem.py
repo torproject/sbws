@@ -22,6 +22,7 @@ def init_controller():
                 continue
         else:
             raise RuntimeError('Unknown controller type {}'.format(cont_type))
+        print('Connected to Tor via', cont_location)
         return c
 
 

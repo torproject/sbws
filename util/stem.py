@@ -1,7 +1,13 @@
 from stem.control import Controller
-from stem import SocketError
+from stem import (SocketError, InvalidRequest, UnsatisfiableRequest)
 
-__all__ = ['init_controller', 'is_controller_okay']
+__all__ = [
+    'add_event_listener',
+    'remove_event_listener',
+    'attach_stream_to_circuit_listener',
+    'init_controller',
+    'is_controller_okay',
+]
 
 DEFAULT_ATTEMPTS = [
     ('socket', '/var/run/tor/control'),
@@ -10,7 +16,33 @@ DEFAULT_ATTEMPTS = [
 ]
 
 
-def init_controller():
+def attach_stream_to_circuit_listener(controller, circ_id):
+    assert is_controller_okay(controller)
+    def closure_stream_event_listener(st):
+        if st.status == 'NEW' and st.purpose == 'USER':
+            print('Attaching stream {} to circ {}'.format(st.id, circ_id))
+            try:
+                controller.attach_stream(st.id, circ_id)
+            except (UnsatisfiableRequest, InvalidRequest) as e:
+                print('Couldn\'t attach stream to circ {}: {}'.format(circ_id, e))
+        else:
+            pass
+    return closure_stream_event_listener
+
+
+def add_event_listener(controller, func, event):
+    assert is_controller_okay(controller)
+    controller.add_event_listener(func, event)
+
+
+def remove_event_listener(controller, func):
+    if not is_controller_okay(controller):
+        print('Warning: controller not okay so not trying to remove event')
+        return
+    controller.remove_event_listener(func)
+
+
+def init_controller(set_custom_stream_settings=True):
     for cont_type, cont_location in DEFAULT_ATTEMPTS:
         if cont_type == 'socket':
             c = _init_controller_socket(cont_location)
@@ -23,6 +55,9 @@ def init_controller():
         else:
             raise RuntimeError('Unknown controller type {}'.format(cont_type))
         print('Connected to Tor via', cont_location)
+        if set_custom_stream_settings:
+            c.set_conf('__DisablePredictedCircuits', '1')
+            c.set_conf('__LeaveStreamsUnattached', '1')
         return c
 
 

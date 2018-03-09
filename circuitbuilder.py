@@ -51,13 +51,15 @@ class CircuitBuilder:
             raise PathLengthException()
         c = self.controller
         assert stem_utils.is_controller_okay(c)
-        try:
-            circ_id = c.new_circuit(path, await_build=True)
-        except (InvalidRequest, CircuitExtensionFailed) as e:
-            print(e)
-            return None
-        self.built_circuits.add(circ_id)
-        return circ_id
+        for _ in range(0, 3):
+            try:
+                circ_id = c.new_circuit(path, await_build=True)
+            except (InvalidRequest, CircuitExtensionFailed) as e:
+                print(e)
+                continue
+            self.built_circuits.add(circ_id)
+            return circ_id
+        return None
 
     def fp_or_nick_to_relay(self, fp_nick):
         ''' Takes a string that could be either a relay's fingerprint or

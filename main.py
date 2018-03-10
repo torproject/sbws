@@ -1,18 +1,11 @@
 #!/usr/bin/env python3
+from circuitbuilder import GapsCircuitBuilder as CB
 from relaylist import RelayList
+import util.stem as stem_utils
+import random
 import time
 import socks  # PySocks
 from stem.control import EventType
-#from circuitbuilder import GapsCircuitBuilder as CB
-from circuitbuilder import ExitCircuitBuilder as CB
-import util.stem as stem_utils
-
-
-def send_data(s):
-    data = b'asdf' * 1000
-    for _ in range(0,5):
-        s.send(data)
-        time.sleep(0.5)
 
 
 def make_socket():
@@ -33,32 +26,50 @@ def socket_connect(s, addr, port):
 
 def test_circuitbuilder():
     cb = CB()
-    circ = cb.build_circuit(4)
+    circ = cb.build_circuit(2)
     if not circ:
         return
-    listener = stem_utils.attach_stream_to_circuit_listener(
-        cb.controller, circ)
+
+
+def measure_relay(cb, rl, relay):
+    circ = cb.build_circuit([None, relay.fingerprint, None])
+    if not circ:
+        return
+    listener = stem_utils.attach_stream_to_circuit_listener(cb.controller, circ)
     stem_utils.add_event_listener(cb.controller, listener, EventType.STREAM)
     s = make_socket()
     connected = socket_connect(s, '127.0.0.1', 4444)
     stem_utils.remove_event_listener(cb.controller, listener)
     if not connected:
         return
-    send_data(s)
+    start_time = time.time()
+    total_fetched = 0
+    just_fetched = len(s.recv(4096000))
+    while just_fetched > 0:
+        total_fetched += just_fetched
+        just_fetched = len(s.recv(4096000))
+    end_time = time.time()
     s.close()
+    cb.close_circuit(circ)
+    return end_time - start_time
 
-
-def test_relaylist():
+def test_speedtest():
+    cb = CB()
     rl = RelayList()
-    for _ in range(0, 5):
-        print(len(rl.exits), len(rl.guards), len(rl.hsdirs), len(rl.relays))
-        print(len(rl.unmeasured), len(rl.measured))
-        time.sleep(1)
+    results = []
+    for target in rl.relays:
+        transfer_time = measure_relay(cb, rl, target)
+        if transfer_time is None:
+            print('Unable to get transfer time for', target.nickname)
+            continue
+        results.append((target, transfer_time))
+    for res in results:
+        print(res[0].nickname, res[1])
 
 
 def main():
-    test_circuitbuilder()
-    #test_relaylist()
+    #test_circuitbuilder()
+    test_speedtest()
 
 
 if __name__ == '__main__':

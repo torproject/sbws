@@ -1,6 +1,7 @@
 import util.stem as stem_utils
 from stem import Flag
 import time
+import random
 
 
 class RelayList:
@@ -40,6 +41,10 @@ class RelayList:
     def measured(self):
         relays = self.relays
         return [r for r in relays if not r.is_unmeasured]
+
+    def random_relay(self):
+        relays = self.relays
+        return random.choice(relays)
 
     def _relays_with_flag(self, flag):
         relays = self.relays

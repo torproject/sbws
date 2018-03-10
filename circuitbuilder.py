@@ -164,22 +164,46 @@ class GapsCircuitBuilder(CircuitBuilder):
             new_path.append(relay)
         return new_path
 
+    def _random_sample_relays(self, number, blacklist):
+        ''' Get <number> random relays from self.relays that are not in the
+        blacklist. Return None if it cannot be done because too many are
+        blacklisted. Otherwise return a list of relays. '''
+        all_fps = [r.fingerprint for r in self.relays]
+        black_fps = [r.fingerprint for r in blacklist]
+        if len(black_fps) + number > len(all_fps):
+            return None
+        chosen_fps = []
+        while len(chosen_fps) < number:
+            choice = random.choice(all_fps)
+            if choice in black_fps:
+                continue
+            chosen_fps.append(choice)
+            black_fps.append(choice)
+        return [self.fp_or_nick_to_relay(fp) for fp in chosen_fps]
+
     def build_circuit(self, path):
         ''' <path> is a list of relays and Falsey values. Relays can be
         specified by fingerprint or nickname, and fingerprint is highly
         recommended. Falsey values (like None) will be replaced with relays
-        chosen uniformally at random '''
-        # TODO: There's a small chance that relays chosen randomly will match
-        # relays already in the path.
+        chosen uniformally at random. A relay will not be in a circuit twice.
+        '''
         if not valid_circuit_length(path):
             raise PathLengthException()
         path = self._normalize_path(path)
         if path is None:
             return None
         num_missing = len(['foo' for r in path if not r])
-        insert_relays = random.sample(self.relays, num_missing)
+        insert_relays = self._random_sample_relays(
+            num_missing, [r for r in path if r is not None])
+        if insert_relays is None:
+            print('Problem building a circuit to satisfy',
+                [r.nickname if r else None for r in path], 'with available '
+                'relays in the network')
+            return None
+        assert len(insert_relays) == num_missing
         path = [r.fingerprint if r else insert_relays.pop().fingerprint
                 for r in path]
+        #print('building', '->'.join([r[0:8] for r in path]))
         return self._build_circuit_impl(path)
 
 

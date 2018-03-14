@@ -16,9 +16,9 @@ class ResultDump:
         self.thread.start()
 
     def enter(self):
-        while not self.end_event.is_set():
+        while not (self.end_event.is_set() and self.queue.empty()):
             try:
                 event = self.queue.get(timeout=1)
             except Empty:
                 continue
-            print(event)
+            print('RESULT', event)

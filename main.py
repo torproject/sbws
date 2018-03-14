@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 from circuitbuilder import GapsCircuitBuilder as CB
 from relaylist import RelayList
+from resultdump import ResultDump
 import util.stem as stem_utils
 import random
 import time
 import socks  # PySocks
 from stem.control import EventType
+from threading import Event
+
+end_event = Event()
 
 
 def make_socket():
@@ -57,15 +61,16 @@ def measure_relay(cb, rl, relay):
 def test_speedtest():
     cb = CB()
     rl = RelayList()
+    rd = ResultDump('./dd', end_event)
     results = []
     for target in [rl.random_relay()]:
         transfer_time = measure_relay(cb, rl, target)
         if transfer_time is None:
             print('Unable to get transfer time for', target.nickname)
             continue
-        results.append((target, transfer_time))
-    for res in results:
-        print(res[0].nickname, res[1])
+        res = (target.fingerprint, transfer_time)
+        rd.queue.put(res)
+    end_event.set()
 
 
 def main():
@@ -77,6 +82,7 @@ if __name__ == '__main__':
     try:
         main()
     except KeyboardInterrupt:
+        end_event.set()
         pass
 
 # pylama:ignore=E265

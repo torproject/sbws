@@ -6,8 +6,10 @@ import util.stem as stem_utils
 import random
 import time
 import socks  # PySocks
+import socket
 from stem.control import EventType
 from threading import Event
+from multiprocessing.dummy import Pool
 
 end_event = Event()
 
@@ -15,7 +17,7 @@ end_event = Event()
 def make_socket():
     s = socks.socksocket()
     s.set_proxy(socks.PROXY_TYPE_SOCKS5, '127.0.0.1', 9050)
-    s.settimeout(3)
+    s.settimeout(10)
     return s
 
 
@@ -49,27 +51,57 @@ def measure_relay(cb, rl, relay):
         return
     start_time = time.time()
     total_fetched = 0
-    just_fetched = len(s.recv(4096000))
+    try:
+        just_fetched = len(s.recv(4096))
+    except socket.timeout as e:
+        print(e)
+        try: s.close()
+        except: pass
+        return
     while just_fetched > 0:
         total_fetched += just_fetched
-        just_fetched = len(s.recv(4096000))
+        try:
+            just_fetched = len(s.recv(4096))
+        except socket.timeout as e:
+            print(e)
+            try: s.close()
+            except: pass
+            return
     end_time = time.time()
     s.close()
     cb.close_circuit(circ)
     return end_time - start_time
 
+def result_putter(result_dump, target):
+    def closure(transfer_time):
+        return result_dump.queue.put((target.nickname, transfer_time))
+    return closure
+
 def test_speedtest():
     cb = CB()
     rl = RelayList()
     rd = ResultDump('./dd', end_event)
-    results = []
-    for target in [rl.random_relay()]:
-        transfer_time = measure_relay(cb, rl, target)
-        if transfer_time is None:
-            print('Unable to get transfer time for', target.nickname)
-            continue
-        res = (target.fingerprint, transfer_time)
-        rd.queue.put(res)
+    max_pending_results = 3
+    pool = Pool(max_pending_results)
+    pending_results = []
+    for target in [rl.random_relay() for _ in range(0, 7)]:
+        async_result = pool.apply_async(
+                measure_relay, [cb, rl, target], {}, result_putter(rd, target))
+        pending_results.append(async_result)
+        while len(pending_results) >= max_pending_results:
+            time.sleep(5)
+            pending_results = [r for r in pending_results if not r.ready()]
+        #transfer_time = measure_relay(cb, rl, target)
+        #if transfer_time is None:
+        #    print('Unable to get transfer time for', target.nickname)
+        #    continue
+        #res = (target.fingerprint, transfer_time)
+        #rd.queue.put(res)
+    print('Waiting for all results')
+    for r in pending_results:
+        #print('get', r.get())
+        r.wait()
+    print('Got all results')
     end_event.set()
 
 

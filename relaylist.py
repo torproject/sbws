@@ -21,6 +21,15 @@ class RelayList:
         return self._relays
 
     @property
+    def fast(self):
+        return self._relays_with_flag(Flag.FAST)
+
+    @property
+    def slow(self):
+        ''' Returns relays without the Fast flag '''
+        return self._relays_without_flag(Flag.FAST)
+
+    @property
     def exits(self):
         return self._relays_with_flag(Flag.EXIT)
 
@@ -49,6 +58,10 @@ class RelayList:
     def _relays_with_flag(self, flag):
         relays = self.relays
         return [r for r in relays if flag in r.flags]
+
+    def _relays_without_flag(self, flag):
+        relays = self.relays
+        return [r for r in relays if flag not in r.flags]
 
     def _init_relays(self):
         c = self._controller

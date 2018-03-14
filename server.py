@@ -7,7 +7,10 @@ send_amount = None
 
 def new_thread(sock):
     def closure():
-        sock.send(b'a' * send_amount)
+        try:
+            sock.send(b'a' * send_amount)
+        except BrokenPipeError:
+            pass
         try:
             sock.shutdown(socket.SHUT_RDWR)
             sock.close()

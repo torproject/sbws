@@ -1,0 +1,11 @@
+# Client needs these things
+SocksPort 9050
+ControlPort 9051
+CookieAuthentication 1
+# Client might need these things
+UseEntryGuards 0
+# "Exit" helper relay needs these things
+ExitRelay 1
+ExitPolicyRejectPrivate 0
+ExitPolicy accept 144.217.254.208:4444
+ExitPolicy reject *:*

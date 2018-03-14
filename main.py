@@ -10,7 +10,7 @@ from stem.control import EventType
 
 def make_socket():
     s = socks.socksocket()
-    s.set_proxy(socks.PROXY_TYPE_SOCKS5, '127.0.0.1', 9009)
+    s.set_proxy(socks.PROXY_TYPE_SOCKS5, '127.0.0.1', 9050)
     s.settimeout(3)
     return s
 
@@ -32,13 +32,14 @@ def test_circuitbuilder():
 
 
 def measure_relay(cb, rl, relay):
-    circ = cb.build_circuit([None, relay.fingerprint, None])
+    circ = cb.build_circuit([None, relay.fingerprint, 'KISTrulez'])
     if not circ:
         return
     listener = stem_utils.attach_stream_to_circuit_listener(cb.controller, circ)
     stem_utils.add_event_listener(cb.controller, listener, EventType.STREAM)
     s = make_socket()
-    connected = socket_connect(s, '127.0.0.1', 4444)
+    #connected = socket_connect(s, '169.254.0.15', 4444)
+    connected = socket_connect(s, '144.217.254.208', 4444)
     stem_utils.remove_event_listener(cb.controller, listener)
     if not connected:
         return
@@ -57,7 +58,7 @@ def test_speedtest():
     cb = CB()
     rl = RelayList()
     results = []
-    for target in rl.relays:
+    for target in [rl.random_relay()]:
         transfer_time = measure_relay(cb, rl, target)
         if transfer_time is None:
             print('Unable to get transfer time for', target.nickname)

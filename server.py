@@ -9,12 +9,15 @@ def new_thread(sock):
     def closure():
         try:
             sock.send(b'a' * send_amount)
-        except BrokenPipeError:
+        except BrokenPipeError as e:
+            print('fd', sock.fileno(), ':', e)
             pass
         try:
+            print('Closing fd', sock.fileno())
             sock.shutdown(socket.SHUT_RDWR)
             sock.close()
-        except:
+        except Exception as e:
+            print('fd', sock.fileno(), ':', e)
             pass
     thread = Thread(target=closure)
     return thread
@@ -36,7 +39,12 @@ def main():
     except KeyboardInterrupt:
         pass
     finally:
-        server.close()
+        try:
+            sock.shutdown(socket.SHUT_RDWR)
+            server.close()
+        except Exception as e:
+            print(e)
+            pass
 
 
 def usage():

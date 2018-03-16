@@ -9,15 +9,17 @@ import socks  # PySocks
 import socket
 from stem.control import EventType
 from threading import Event
+from threading import RLock
 from multiprocessing.dummy import Pool
 
 end_event = Event()
+stream_building_lock = RLock()
 
 
 def make_socket():
     s = socks.socksocket()
-    s.set_proxy(socks.PROXY_TYPE_SOCKS5, '127.0.0.1', 9050)
-    s.settimeout(10)
+    s.set_proxy(socks.PROXY_TYPE_SOCKS5, '127.0.0.1', 9009)
+    s.settimeout(3)
     return s
 
 
@@ -38,15 +40,17 @@ def test_circuitbuilder():
 
 
 def measure_relay(cb, rl, relay):
-    circ = cb.build_circuit([None, relay.fingerprint, 'KISTrulez'])
+    circ = cb.build_circuit([relay.fingerprint, None])
     if not circ:
         return
     listener = stem_utils.attach_stream_to_circuit_listener(cb.controller, circ)
-    stem_utils.add_event_listener(cb.controller, listener, EventType.STREAM)
-    s = make_socket()
-    #connected = socket_connect(s, '169.254.0.15', 4444)
-    connected = socket_connect(s, '144.217.254.208', 4444)
-    stem_utils.remove_event_listener(cb.controller, listener)
+    with stream_building_lock:
+        stem_utils.add_event_listener(cb.controller, listener, EventType.STREAM)
+        s = make_socket()
+        #connected = socket_connect(s, '169.254.0.15', 4444)
+        #connected = socket_connect(s, '144.217.254.208', 4444)
+        connected = socket_connect(s, '127.0.0.1', 4444)
+        stem_utils.remove_event_listener(cb.controller, listener)
     if not connected:
         return
     start_time = time.time()
@@ -81,10 +85,11 @@ def test_speedtest():
     cb = CB()
     rl = RelayList()
     rd = ResultDump('./dd', end_event)
-    max_pending_results = 3
+    max_pending_results = 16
     pool = Pool(max_pending_results)
     pending_results = []
-    for target in [rl.random_relay() for _ in range(0, 7)]:
+    #for target in [rl.random_relay() for _ in range(0, 1)]:
+    for target in rl.relays:
         async_result = pool.apply_async(
                 measure_relay, [cb, rl, target], {}, result_putter(rd, target))
         pending_results.append(async_result)

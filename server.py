@@ -28,31 +28,49 @@ def read_line(s):
 
 
 def close_socket(s):
+    print('Closing fd', s.fileno())
+    s.shutdown(socket.SHUT_RDWR)
+    s.close()
+    #try:
+    #    print('Closing fd', s.fileno())
+    #    s.shutdown(socket.SHUT_RDWR)
+    #    s.close()
+    #except Exception:
+    #    pass
+
+
+def get_send_amount(sock):
+    l = read_line(sock)
     try:
-        print('Closing fd', s.fileno())
-        s.shutdown(socket.SHUT_RDWR)
-        s.close()
-    except Exception:
-        pass
+        send_amount = int(l)
+    except (TypeError, ValueError):
+        return None
+    return send_amount
+
+
+def write_to_client(sock, amount):
+    ''' Returns True if successful; else False '''
+    print('Sending client no.', sock.fileno(), amount, 'bytes')
+    while amount > 0:
+        amount_this_time = min(MAX_SEND_PER_WRITE, amount)
+        amount -= amount_this_time
+        try:
+            sock.send(b'a' * amount_this_time)
+        except (ConnectionResetError, BrokenPipeError) as e:
+            print('fd', sock.fileno(), ':', e)
+            return False
+    return True
 
 
 def new_thread(sock):
     def closure():
-        l = read_line(sock)
-        try:
-            send_amount = int(l)
-        except ValueError:
-            print('Malformed send_amount should be int:', l)
-            close_socket(sock)
-            return
-        while send_amount > 0:
-            amount_this_time = min(MAX_SEND_PER_WRITE, send_amount)
-            send_amount -= amount_this_time
-            try:
-                sock.send(b'a' * amount_this_time)
-            except (ConnectionResetError, BrokenPipeError) as e:
-                print('fd', sock.fileno(), ':', e)
-                break
+        while True:
+            send_amount = get_send_amount(sock)
+            if send_amount is None:
+                print('Couldn\'t get an amount to send')
+                close_socket(sock)
+                return
+            write_to_client(sock, send_amount)
         close_socket(sock)
     thread = Thread(target=closure)
     return thread

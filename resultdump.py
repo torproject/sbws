@@ -29,4 +29,4 @@ class ResultDump:
             ttime = result['time']
             trate = tamount / ttime
             trate = trate * 8 / 1024 / 1024
-            print(nick, '{} Mbps'.format(int(trate)))
+            print(nick, '{} Mbps over {:.3}s'.format(int(trate), ttime))

@@ -16,6 +16,7 @@ from multiprocessing.dummy import Pool
 end_event = Event()
 stream_building_lock = RLock()
 MAX_RECV_PER_READ = 1*1024*1024
+MIN_TIME_REQUIRED = 5
 
 
 def make_socket():
@@ -55,6 +56,33 @@ def make_result(ttime, tamount):
     return {'time': ttime, 'amount': tamount}
 
 
+def tell_server_amount(sock, expected_amount):
+    ''' Returns True on success; else False '''
+    assert expected_amount > 0
+    amount = '{}\n'.format(expected_amount)
+    try:
+        sock.send(bytes(amount, 'utf-8'))
+    except socket.timeout as e:
+        print(e)
+        return False
+    return True
+
+
+def timed_recv_from_server(sock, yet_to_read):
+    ''' Return the time in seconds it took to read <expected_amount> bytes from
+    the server. Return None if error '''
+    assert yet_to_read > 0
+    start_time = time.time()
+    while yet_to_read > 0:
+        limit = min(MAX_RECV_PER_READ, yet_to_read)
+        read_this_time = len(sock.recv(limit))
+        if read_this_time == 0:
+            return
+        yet_to_read -= read_this_time
+    end_time = time.time()
+    return end_time - start_time
+
+
 def measure_relay(cb, rl, relay):
     circ = cb.build_circuit([relay.fingerprint, None])
     if not circ:
@@ -68,29 +96,27 @@ def measure_relay(cb, rl, relay):
         connected = socket_connect(s, '127.0.0.1', 4444)
         stem_utils.remove_event_listener(cb.controller, listener)
     if not connected:
+        cb.close_circuit(circ)
         return
-    expected_amount = random.randint(10*1024*1024, 100*1024*1024)
-    #expected_amount = random.randint(1*1024*1024, 2*1024*1024)
-    amount = '{}\n'.format(expected_amount)
-    try:
-        s.send(bytes(amount, 'utf-8'))
-    except socket.timeout as e:
-        print(e)
-        close_socket(s)
-        return
-    start_time = time.time()
-    yet_to_read = expected_amount
-    while yet_to_read > 0:
-        limit = min(MAX_RECV_PER_READ, yet_to_read)
-        read_this_time = len(s.recv(limit))
-        if read_this_time == 0:
+    result_time = None
+    expected_amount = 16*1024
+    while result_time is None or result_time < MIN_TIME_REQUIRED:
+        if not tell_server_amount(s, expected_amount):
             close_socket(s)
+            cb.close_circuit(circ)
             return
-        yet_to_read -= read_this_time
-    end_time = time.time()
-    close_socket(s)
+        result_time = timed_recv_from_server(s, expected_amount)
+        if result_time is None:
+            close_socket(s)
+            cb.close_circuit(circ)
+            return
+        if result_time > 1:
+            expected_amount = int(
+                expected_amount * MIN_TIME_REQUIRED / result_time * 1.1)
+        else:
+            expected_amount = int(expected_amount * 10)
     cb.close_circuit(circ)
-    return make_result(end_time - start_time, expected_amount)
+    return make_result(result_time, expected_amount)
 
 def result_putter(result_dump, target):
     def closure(measurement_result):
@@ -123,7 +149,6 @@ def test_speedtest():
         #print('get', r.get())
         r.wait()
     print('Got all results')
-    end_event.set()
 
 
 def main():
@@ -134,8 +159,9 @@ def main():
 if __name__ == '__main__':
     try:
         main()
-    except KeyboardInterrupt:
+    except KeyboardInterrupt as e:
+        raise e
+    finally:
         end_event.set()
-        pass
 
 # pylama:ignore=E265

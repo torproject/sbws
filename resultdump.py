@@ -21,4 +21,12 @@ class ResultDump:
                 event = self.queue.get(timeout=1)
             except Empty:
                 continue
-            print('RESULT', event)
+            nick, result = event
+            if result is None:
+                print(nick, 'failed')
+                continue
+            tamount = result['amount']
+            ttime = result['time']
+            trate = tamount / ttime
+            trate = trate * 8 / 1024 / 1024
+            print(nick, '{} Mbps'.format(int(trate)))

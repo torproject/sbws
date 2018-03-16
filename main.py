@@ -7,6 +7,7 @@ import random
 import time
 import socks  # PySocks
 import socket
+import random
 from stem.control import EventType
 from threading import Event
 from threading import RLock
@@ -14,6 +15,7 @@ from multiprocessing.dummy import Pool
 
 end_event = Event()
 stream_building_lock = RLock()
+MAX_RECV_PER_READ = 1*1024*1024
 
 
 def make_socket():
@@ -21,6 +23,16 @@ def make_socket():
     s.set_proxy(socks.PROXY_TYPE_SOCKS5, '127.0.0.1', 9009)
     s.settimeout(3)
     return s
+
+
+def close_socket(s):
+    s.shutdown(socket.SHUT_RDWR)
+    s.close()
+    #try:
+    #    s.shutdown(socket.SHUT_RDWR)
+    #    s.close()
+    #except Exception:
+    #    pass
 
 
 def socket_connect(s, addr, port):
@@ -39,6 +51,10 @@ def test_circuitbuilder():
         return
 
 
+def make_result(ttime, tamount):
+    return {'time': ttime, 'amount': tamount}
+
+
 def measure_relay(cb, rl, relay):
     circ = cb.build_circuit([relay.fingerprint, None])
     if not circ:
@@ -53,32 +69,32 @@ def measure_relay(cb, rl, relay):
         stem_utils.remove_event_listener(cb.controller, listener)
     if not connected:
         return
-    start_time = time.time()
-    total_fetched = 0
+    expected_amount = random.randint(10*1024*1024, 100*1024*1024)
+    #expected_amount = random.randint(1*1024*1024, 2*1024*1024)
+    amount = '{}\n'.format(expected_amount)
     try:
-        just_fetched = len(s.recv(4096))
+        s.send(bytes(amount, 'utf-8'))
     except socket.timeout as e:
         print(e)
-        try: s.close()
-        except: pass
+        close_socket(s)
         return
-    while just_fetched > 0:
-        total_fetched += just_fetched
-        try:
-            just_fetched = len(s.recv(4096))
-        except socket.timeout as e:
-            print(e)
-            try: s.close()
-            except: pass
+    start_time = time.time()
+    yet_to_read = expected_amount
+    while yet_to_read > 0:
+        limit = min(MAX_RECV_PER_READ, yet_to_read)
+        read_this_time = len(s.recv(limit))
+        if read_this_time == 0:
+            close_socket(s)
             return
+        yet_to_read -= read_this_time
     end_time = time.time()
-    s.close()
+    close_socket(s)
     cb.close_circuit(circ)
-    return end_time - start_time
+    return make_result(end_time - start_time, expected_amount)
 
 def result_putter(result_dump, target):
-    def closure(transfer_time):
-        return result_dump.queue.put((target.nickname, transfer_time))
+    def closure(measurement_result):
+        return result_dump.queue.put((target.nickname, measurement_result))
     return closure
 
 def test_speedtest():
@@ -88,8 +104,8 @@ def test_speedtest():
     max_pending_results = 16
     pool = Pool(max_pending_results)
     pending_results = []
-    #for target in [rl.random_relay() for _ in range(0, 1)]:
-    for target in rl.relays:
+    for target in [rl.random_relay() for _ in range(0, 1)]:
+    #for target in rl.relays:
         async_result = pool.apply_async(
                 measure_relay, [cb, rl, target], {}, result_putter(rd, target))
         pending_results.append(async_result)

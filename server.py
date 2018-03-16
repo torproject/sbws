@@ -2,46 +2,83 @@
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 import sys
 import socket
+import time
 from threading import Thread
 
-def new_thread(sock, send_amount):
+MAX_SEND_PER_WRITE = 100*1024*1024
+MAX_SEND_PER_WRITE = 4096
+
+
+def read_line(s):
+    ''' read until b'\n' is seen on the socket <s>. Return everything up until
+    the newline as a str. If nothing can be read, return None. Note how that is
+    different than if a newline is the first character; in that case, an empty
+    str is returned '''
+    chars = None
+    while True:
+        c = s.recv(1)
+        if not c:
+            return chars
+        if chars is None:
+            chars = ''
+        if c == b'\n':
+            break
+        chars += c.decode('utf-8')
+    return chars
+
+
+def close_socket(s):
+    try:
+        print('Closing fd', s.fileno())
+        s.shutdown(socket.SHUT_RDWR)
+        s.close()
+    except Exception:
+        pass
+
+
+def new_thread(sock):
     def closure():
+        l = read_line(sock)
         try:
-            sock.send(b'a' * send_amount)
-        except BrokenPipeError as e:
-            print('fd', sock.fileno(), ':', e)
-            pass
-        try:
-            print('Closing fd', sock.fileno())
-            sock.shutdown(socket.SHUT_RDWR)
-            sock.close()
-        except Exception as e:
-            print('fd', sock.fileno(), ':', e)
-            pass
+            send_amount = int(l)
+        except ValueError:
+            print('Malformed send_amount should be int:', l)
+            close_socket(sock)
+            return
+        while send_amount > 0:
+            amount_this_time = min(MAX_SEND_PER_WRITE, send_amount)
+            send_amount -= amount_this_time
+            try:
+                sock.send(b'a' * amount_this_time)
+            except (ConnectionResetError, BrokenPipeError) as e:
+                print('fd', sock.fileno(), ':', e)
+                break
+        close_socket(sock)
     thread = Thread(target=closure)
     return thread
 
 def main(args):
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     h = (args.bind_ip, args.bind_port)
+    print('binding to', h)
+    while True:
+        try: server.bind(h)
+        except OSError as e:
+            print(e)
+            time.sleep(5)
+        else: break
     print('listening on', h)
-    server.bind(h)
     server.listen(5)
     try:
         while True:
             sock, addr = server.accept()
             print('accepting connection from', addr)
-            t = new_thread(sock, args.send_amount)
+            t = new_thread(sock)
             t.run()
     except KeyboardInterrupt:
         pass
     finally:
-        try:
-            sock.shutdown(socket.SHUT_RDWR)
-            server.close()
-        except Exception as e:
-            print(e)
-            pass
+        close_socket(server)
 
 
 if __name__ == '__main__':
@@ -49,8 +86,6 @@ if __name__ == '__main__':
             formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument('bind_ip', type=str, default='127.0.0.1')
     parser.add_argument('bind_port', type=int, default=4444)
-    parser.add_argument('send_amount', type=int,
-                        default=10*1024*1024)  # 10 MiB
     args = parser.parse_args()
     main(args)
 

@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
+from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 import sys
 import socket
 from threading import Thread
 
-send_amount = None
-
-def new_thread(sock):
+def new_thread(sock, send_amount):
     def closure():
         try:
             sock.send(b'a' * send_amount)
@@ -22,11 +21,9 @@ def new_thread(sock):
     thread = Thread(target=closure)
     return thread
 
-def main():
-    global send_amount
+def main(args):
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    h = (sys.argv[1], int(sys.argv[2]))
-    send_amount = int(sys.argv[3])
+    h = (args.bind_ip, args.bind_port)
     print('listening on', h)
     server.bind(h)
     server.listen(5)
@@ -34,7 +31,7 @@ def main():
         while True:
             sock, addr = server.accept()
             print('accepting connection from', addr)
-            t = new_thread(sock)
+            t = new_thread(sock, args.send_amount)
             t.run()
     except KeyboardInterrupt:
         pass
@@ -47,13 +44,13 @@ def main():
             pass
 
 
-def usage():
-    print(sys.argv[0], 'bind-ip bind-port send-amount')
-
-
 if __name__ == '__main__':
-    if len(sys.argv) < 4:
-        usage()
-        exit(1)
-    main()
+    parser = ArgumentParser(
+            formatter_class=ArgumentDefaultsHelpFormatter)
+    parser.add_argument('bind_ip', type=str, default='127.0.0.1')
+    parser.add_argument('bind_port', type=int, default=4444)
+    parser.add_argument('send_amount', type=int,
+                        default=10*1024*1024)  # 10 MiB
+    args = parser.parse_args()
+    main(args)
 

@@ -16,7 +16,11 @@ def read_line(s):
     str is returned '''
     chars = None
     while True:
-        c = s.recv(1)
+        try:
+            c = s.recv(1)
+        except ConnectionResetError as e:
+            print(e)
+            return None
         if not c:
             return chars
         if chars is None:
@@ -28,15 +32,12 @@ def read_line(s):
 
 
 def close_socket(s):
-    print('Closing fd', s.fileno())
-    s.shutdown(socket.SHUT_RDWR)
-    s.close()
-    #try:
-    #    print('Closing fd', s.fileno())
-    #    s.shutdown(socket.SHUT_RDWR)
-    #    s.close()
-    #except Exception:
-    #    pass
+    try:
+        print('Closing fd', s.fileno())
+        s.shutdown(socket.SHUT_RDWR)
+        s.close()
+    except OSError:
+        pass
 
 
 def get_send_amount(sock):
@@ -67,7 +68,7 @@ def new_thread(sock):
         while True:
             send_amount = get_send_amount(sock)
             if send_amount is None:
-                print('Couldn\'t get an amount to send')
+                print('Couldn\'t get an amount to send to', sock.fileno())
                 close_socket(sock)
                 return
             write_to_client(sock, send_amount)
@@ -90,7 +91,7 @@ def main(args):
     try:
         while True:
             sock, addr = server.accept()
-            print('accepting connection from', addr)
+            print('accepting connection from', addr, 'as', sock.fileno())
             t = new_thread(sock)
             t.run()
     except KeyboardInterrupt:

@@ -25,8 +25,11 @@ class ResultDump:
             if result is None:
                 print(nick, 'failed')
                 continue
+            elif not isinstance(result, dict):
+                print(nick, 'failure', result, type(result))
+                continue
             tamount = result['amount']
             ttime = result['time']
             trate = tamount / ttime
             trate = trate * 8 / 1024 / 1024
-            print(nick, '{} Mbps over {:.3}s'.format(int(trate), ttime))
+            print(nick, '{:.2f} Mbps over {:.1f}s'.format(trate, ttime))

@@ -22,23 +22,22 @@ MIN_TIME_REQUIRED = 5
 def make_socket():
     s = socks.socksocket()
     s.set_proxy(socks.PROXY_TYPE_SOCKS5, '127.0.0.1', 9009)
-    s.settimeout(3)
+    s.settimeout(10)
     return s
 
 
 def close_socket(s):
-    s.shutdown(socket.SHUT_RDWR)
-    s.close()
-    #try:
-    #    s.shutdown(socket.SHUT_RDWR)
-    #    s.close()
-    #except Exception:
-    #    pass
+    try:
+        s.shutdown(socket.SHUT_RDWR)
+        s.close()
+    except Exception:
+        pass
 
 
 def socket_connect(s, addr, port):
     try:
         s.connect((addr, port))
+        print('connected to', addr, port, 'via', s.fileno())
     except socks.GeneralProxyError as e:
         print(e)
         return False
@@ -75,7 +74,11 @@ def timed_recv_from_server(sock, yet_to_read):
     start_time = time.time()
     while yet_to_read > 0:
         limit = min(MAX_RECV_PER_READ, yet_to_read)
-        read_this_time = len(sock.recv(limit))
+        try:
+            read_this_time = len(sock.recv(limit))
+        except socket.timeout as e:
+            print(e)
+            return
         if read_this_time == 0:
             return
         yet_to_read -= read_this_time
@@ -127,13 +130,14 @@ def test_speedtest():
     cb = CB()
     rl = RelayList()
     rd = ResultDump('./dd', end_event)
-    max_pending_results = 16
+    max_pending_results = 2
     pool = Pool(max_pending_results)
     pending_results = []
-    for target in [rl.random_relay() for _ in range(0, 1)]:
-    #for target in rl.relays:
+    #for target in [rl.random_relay() for _ in range(0, 1)]:
+    for target in rl.relays:
+        callback = result_putter(rd, target)
         async_result = pool.apply_async(
-                measure_relay, [cb, rl, target], {}, result_putter(rd, target))
+                measure_relay, [cb, rl, target], {}, callback, callback)
         pending_results.append(async_result)
         while len(pending_results) >= max_pending_results:
             time.sleep(5)

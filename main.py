@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 import time
 import socks  # PySocks
 import socket
@@ -17,9 +18,9 @@ MAX_RECV_PER_READ = 1*1024*1024
 MIN_TIME_REQUIRED = 5
 
 
-def make_socket():
+def make_socket(socks_host, socks_port):
     s = socks.socksocket()
-    s.set_proxy(socks.PROXY_TYPE_SOCKS5, '127.0.0.1', 9009)
+    s.set_proxy(socks.PROXY_TYPE_SOCKS5, socks_host, socks_port)
     s.settimeout(10)
     return s
 
@@ -84,7 +85,7 @@ def timed_recv_from_server(sock, yet_to_read):
     return end_time - start_time
 
 
-def measure_relay(cb, rl, relay):
+def measure_relay(args, cb, rl, relay):
     circ = cb.build_circuit([relay.fingerprint, None])
     if not circ:
         return
@@ -93,10 +94,10 @@ def measure_relay(cb, rl, relay):
     with stream_building_lock:
         stem_utils.add_event_listener(
             cb.controller, listener, EventType.STREAM)
-        s = make_socket()
+        s = make_socket(args.socks_host, args.socks_port)
         #connected = socket_connect(s, '169.254.0.15', 4444)
         #connected = socket_connect(s, '144.217.254.208', 4444)
-        connected = socket_connect(s, '127.0.0.1', 4444)
+        connected = socket_connect(s, args.server_host, args.server_port)
         stem_utils.remove_event_listener(cb.controller, listener)
     if not connected:
         cb.close_circuit(circ)
@@ -127,10 +128,10 @@ def result_putter(result_dump, target):
     return closure
 
 
-def test_speedtest():
+def test_speedtest(args):
     cb = CB()
     rl = RelayList()
-    rd = ResultDump('./dd', end_event)
+    rd = ResultDump(args.result_directory, end_event)
     max_pending_results = 2
     pool = Pool(max_pending_results)
     pending_results = []
@@ -156,14 +157,27 @@ def test_speedtest():
     print('Got all results')
 
 
-def main():
+def main(args):
     #test_circuitbuilder()
-    test_speedtest()
+    test_speedtest(args)
 
 
 if __name__ == '__main__':
+    parser = ArgumentParser(
+            formatter_class=ArgumentDefaultsHelpFormatter)
+    parser.add_argument('--socks-host', default='127.0.0.1', type=str,
+                        help='Host for a local Tor SocksPort')
+    parser.add_argument('--socks-port', default=9050, type=int,
+                        help='Port for a local Tor SocksPort')
+    parser.add_argument('--server-host', default='127.0.0.1', type=str,
+                        help='Host for a measurement server')
+    parser.add_argument('--server-port', default=4444, type=int,
+                        help='Port for a measurement server')
+    parser.add_argument('--result-directory', default='dd', type=str,
+                        help='Where to store raw result output')
+    args = parser.parse_args()
     try:
-        main()
+        main(args)
     except KeyboardInterrupt as e:
         raise e
     finally:

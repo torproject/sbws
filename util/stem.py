@@ -10,6 +10,7 @@ __all__ = [
 ]
 
 DEFAULT_ATTEMPTS = [
+    ('socket', '/home/matt/src/chutney/net/nodes/009c/control'),
     ('socket', '/home/ubuntu/src/chutney/net/nodes/009c/control'),
     ('socket', '/var/run/tor/control'),
     ('port', 9051),

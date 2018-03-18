@@ -122,10 +122,16 @@ def measure_relay(args, cb, rl, relay):
     cb.close_circuit(circ)
     return make_result(result_time, expected_amount)
 
+
 def result_putter(result_dump, target):
     def closure(measurement_result):
         return result_dump.queue.put((target.nickname, measurement_result))
     return closure
+
+
+def result_putter_error(target):
+    def closure(err):
+        print('Error measuring', target.nickname, ':', err)
 
 
 def test_speedtest(args):
@@ -138,8 +144,10 @@ def test_speedtest(args):
     #for target in [rl.random_relay() for _ in range(0, 1)]:
     for target in rl.relays:
         callback = result_putter(rd, target)
+        callback_err = result_putter_error(target)
         async_result = pool.apply_async(
-                measure_relay, [cb, rl, target], {}, callback, callback)
+            measure_relay, [args, cb, rl, target], {},
+            callback, callback_err)
         pending_results.append(async_result)
         while len(pending_results) >= max_pending_results:
             time.sleep(5)

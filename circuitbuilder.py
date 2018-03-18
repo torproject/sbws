@@ -1,5 +1,4 @@
-from stem.control import Controller
-from stem import (SocketError, CircuitExtensionFailed, InvalidRequest)
+from stem import (CircuitExtensionFailed, InvalidRequest)
 from stem import Flag
 import random
 import util.stem as stem_utils
@@ -197,8 +196,8 @@ class GapsCircuitBuilder(CircuitBuilder):
             num_missing, [r for r in path if r is not None])
         if insert_relays is None:
             print('Problem building a circuit to satisfy',
-                [r.nickname if r else None for r in path], 'with available '
-                'relays in the network')
+                  [r.nickname if r else None for r in path], 'with available '
+                  'relays in the network')
             return None
         assert len(insert_relays) == num_missing
         path = [r.fingerprint if r else insert_relays.pop().fingerprint

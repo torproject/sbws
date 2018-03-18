@@ -1,5 +1,6 @@
 import os
 import time
+import json
 from threading import Thread
 from threading import Event
 from queue import Queue
@@ -59,7 +60,7 @@ class Result:
             'circ': self.circ,
             'server_host': self.server_host
         }
-        return str(d)
+        return json.dumps(d)
 
 
 class ResultDump:

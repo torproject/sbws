@@ -3,11 +3,9 @@ from circuitbuilder import GapsCircuitBuilder as CB
 from relaylist import RelayList
 from resultdump import ResultDump
 import util.stem as stem_utils
-import random
 import time
 import socks  # PySocks
 import socket
-import random
 from stem.control import EventType
 from threading import Event
 from threading import RLock
@@ -90,9 +88,11 @@ def measure_relay(cb, rl, relay):
     circ = cb.build_circuit([relay.fingerprint, None])
     if not circ:
         return
-    listener = stem_utils.attach_stream_to_circuit_listener(cb.controller, circ)
+    listener = stem_utils.attach_stream_to_circuit_listener(
+        cb.controller, circ)
     with stream_building_lock:
-        stem_utils.add_event_listener(cb.controller, listener, EventType.STREAM)
+        stem_utils.add_event_listener(
+            cb.controller, listener, EventType.STREAM)
         s = make_socket()
         #connected = socket_connect(s, '169.254.0.15', 4444)
         #connected = socket_connect(s, '144.217.254.208', 4444)
@@ -125,6 +125,7 @@ def result_putter(result_dump, target):
     def closure(measurement_result):
         return result_dump.queue.put((target.nickname, measurement_result))
     return closure
+
 
 def test_speedtest():
     cb = CB()

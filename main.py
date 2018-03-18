@@ -1,8 +1,4 @@
 #!/usr/bin/env python3
-from circuitbuilder import GapsCircuitBuilder as CB
-from relaylist import RelayList
-from resultdump import ResultDump
-import util.stem as stem_utils
 import time
 import socks  # PySocks
 import socket
@@ -10,6 +6,10 @@ from stem.control import EventType
 from threading import Event
 from threading import RLock
 from multiprocessing.dummy import Pool
+import util.stem as stem_utils
+from circuitbuilder import GapsCircuitBuilder as CB
+from relaylist import RelayList
+from resultdump import ResultDump
 
 end_event = Event()
 stream_building_lock = RLock()

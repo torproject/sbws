@@ -37,6 +37,14 @@ class CircuitBuilder:
         its (str) ID. If it cannot be built, it should return None. '''
         raise NotImplementedError()
 
+    def get_circuit_path(self, circ_id):
+        c = self.controller
+        assert stem_utils.is_controller_okay(c)
+        circ = c.get_circuit(circ_id, default=None)
+        if circ is None:
+            return None
+        return [relay[0] for relay in circ.path]
+
     def close_circuit(self, circ_id):
         # TODO: might want to just check instead of assert.
         c = self.controller

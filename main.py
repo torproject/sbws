@@ -11,6 +11,7 @@ import util.stem as stem_utils
 from circuitbuilder import GapsCircuitBuilder as CB
 from relaylist import RelayList
 from resultdump import ResultDump
+from resultdump import Result
 
 end_event = Event()
 stream_building_lock = RLock()
@@ -50,10 +51,6 @@ def test_circuitbuilder():
         return
 
 
-def make_result(ttime, tamount):
-    return {'time': ttime, 'amount': tamount}
-
-
 def tell_server_amount(sock, expected_amount):
     ''' Returns True on success; else False '''
     assert expected_amount > 0
@@ -86,11 +83,11 @@ def timed_recv_from_server(sock, yet_to_read):
 
 
 def measure_relay(args, cb, rl, relay):
-    circ = cb.build_circuit([relay.fingerprint, None])
-    if not circ:
+    circ_id = cb.build_circuit([relay.fingerprint, None])
+    if not circ_id:
         return
     listener = stem_utils.attach_stream_to_circuit_listener(
-        cb.controller, circ)
+        cb.controller, circ_id)
     with stream_building_lock:
         stem_utils.add_event_listener(
             cb.controller, listener, EventType.STREAM)
@@ -100,32 +97,33 @@ def measure_relay(args, cb, rl, relay):
         connected = socket_connect(s, args.server_host, args.server_port)
         stem_utils.remove_event_listener(cb.controller, listener)
     if not connected:
-        cb.close_circuit(circ)
+        cb.close_circuit(circ_id)
         return
     result_time = None
     expected_amount = 16*1024
     while result_time is None or result_time < MIN_TIME_REQUIRED:
         if not tell_server_amount(s, expected_amount):
             close_socket(s)
-            cb.close_circuit(circ)
+            cb.close_circuit(circ_id)
             return
         result_time = timed_recv_from_server(s, expected_amount)
         if result_time is None:
             close_socket(s)
-            cb.close_circuit(circ)
+            cb.close_circuit(circ_id)
             return
         if result_time > 1:
             expected_amount = int(
                 expected_amount * MIN_TIME_REQUIRED / result_time * 1.1)
         else:
             expected_amount = int(expected_amount * 10)
-    cb.close_circuit(circ)
-    return make_result(result_time, expected_amount)
+    circ = cb.get_circuit_path(circ_id)
+    cb.close_circuit(circ_id)
+    return Result(relay, circ, args.server_host, result_time, expected_amount)
 
 
-def result_putter(result_dump, target):
+def result_putter(result_dump):
     def closure(measurement_result):
-        return result_dump.queue.put((target.nickname, measurement_result))
+        return result_dump.queue.put(measurement_result)
     return closure
 
 
@@ -143,7 +141,7 @@ def test_speedtest(args):
     pending_results = []
     #for target in [rl.random_relay() for _ in range(0, 1)]:
     for target in rl.relays:
-        callback = result_putter(rd, target)
+        callback = result_putter(rd)
         callback_err = result_putter_error(target)
         async_result = pool.apply_async(
             measure_relay, [args, cb, rl, target], {},

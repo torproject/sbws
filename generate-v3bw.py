@@ -21,10 +21,11 @@ def read_result_file(fname, starting_dict=None):
 def result_data_to_v3bw_line(data, fingerprint):
     assert fingerprint in data
     results = data[fingerprint]
+    nick = results[0]['nickname']
     speeds = [r['amount'] / r['duration'] for r in results]
     speed = median(speeds)
-    frmt = 'node_id={fp} bw={sp}'
-    return frmt.format(fp=fingerprint, sp=round(speed))
+    frmt = 'node_id={fp} bw={sp} nick={n}'
+    return frmt.format(fp=fingerprint, sp=round(speed), n=nick)
 
 
 def main(args):

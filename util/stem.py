@@ -12,13 +12,14 @@ __all__ = [
 
 def attach_stream_to_circuit_listener(controller, circ_id):
     assert is_controller_okay(controller)
+
     def closure_stream_event_listener(st):
         if st.status == 'NEW' and st.purpose == 'USER':
             print('Attaching stream {} to circ {}'.format(st.id, circ_id))
             try:
                 controller.attach_stream(st.id, circ_id)
             except (UnsatisfiableRequest, InvalidRequest) as e:
-                print('Couldn\'t attach stream to circ {}: {}'.format(circ_id, e))
+                print('Couldn\'t attach stream to circ {}:'.format(circ_id), e)
         else:
             pass
     return closure_stream_event_listener

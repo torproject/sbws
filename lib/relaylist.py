@@ -47,14 +47,14 @@ class RelayList:
     def unmeasured(self):
         ''' SEEMS BROKEN in stem 1.6.0 as it always returns no relays '''
         relays = self.relays
-        #return [r for r in relays if r.measured is None]
+        # return [r for r in relays if r.measured is None]
         return [r for r in relays if r.is_unmeasured]
 
     @property
     def measured(self):
         ''' SEEMS BROKEN in stem 1.6.0 as it always returns all relays '''
         relays = self.relays
-        #return [r for r in relays if r.measured is not None]
+        # return [r for r in relays if r.measured is not None]
         return [r for r in relays if not r.is_unmeasured]
 
     def random_relay(self):

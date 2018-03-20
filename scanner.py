@@ -136,7 +136,7 @@ def test_speedtest(args):
     cb = CB()
     rl = RelayList()
     rd = ResultDump(args.result_directory, end_event)
-    max_pending_results = 1
+    max_pending_results = 4
     pool = Pool(max_pending_results)
     pending_results = []
     #for target in [rl.random_relay() for _ in range(0, 1)]:

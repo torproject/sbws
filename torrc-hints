@@ -4,6 +4,8 @@ ControlPort 9051
 CookieAuthentication 1
 # Client might need these things
 UseEntryGuards 0
+LearnCircuitBuildTimeout 0
+CircuitBuildTimeout 10  # seconds
 # "Exit" helper relay needs these things
 ExitRelay 1
 ExitPolicyRejectPrivate 0

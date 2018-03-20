@@ -19,6 +19,12 @@ MAX_RECV_PER_READ = 1*1024*1024
 MIN_TIME_REQUIRED = 5
 
 
+def fail_hard(*s):
+    if s:
+        print(*s)
+    exit(1)
+
+
 def make_socket(socks_host, socks_port):
     s = socks.socksocket()
     s.set_proxy(socks.PROXY_TYPE_SOCKS5, socks_host, socks_port)
@@ -136,7 +142,7 @@ def test_speedtest(args):
     cb = CB()
     rl = RelayList()
     rd = ResultDump(args.result_directory, end_event)
-    max_pending_results = 4
+    max_pending_results = args.threads
     pool = Pool(max_pending_results)
     pending_results = []
     #for target in [rl.random_relay() for _ in range(0, 1)]:
@@ -181,7 +187,11 @@ if __name__ == '__main__':
                         help='Port for a measurement server')
     parser.add_argument('--result-directory', default='dd', type=str,
                         help='Where to store raw result output')
+    parser.add_argument('--threads', default=1, type=int,
+                        help='Number of measurements to make in parallel')
     args = parser.parse_args()
+    if args.threads < 1:
+        fail_hard('--threads must be larger than 1')
     try:
         main(args)
     except KeyboardInterrupt as e:

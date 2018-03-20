@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
-import sys
 import socket
 import time
 from threading import Thread
@@ -41,9 +40,9 @@ def close_socket(s):
 
 
 def get_send_amount(sock):
-    l = read_line(sock)
+    line = read_line(sock)
     try:
-        send_amount = int(l)
+        send_amount = int(line)
     except (TypeError, ValueError):
         return None
     return send_amount
@@ -81,11 +80,13 @@ def main(args):
     h = (args.bind_ip, args.bind_port)
     print('binding to', h)
     while True:
-        try: server.bind(h)
+        try:
+            server.bind(h)
         except OSError as e:
             print(e)
             time.sleep(5)
-        else: break
+        else:
+            break
     print('listening on', h)
     server.listen(5)
     try:

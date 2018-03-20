@@ -18,14 +18,24 @@ def read_result_file(fname, starting_dict=None):
     return data
 
 
+class V3BWLine:
+    def __init__(self, fp, bw, nick):
+        self.fp = fp
+        self.bw = bw
+        self.nick = nick
+
+    def __str__(self):
+        frmt = 'node_id={fp} bw={sp} nick={n}'
+        return frmt.format(fp=self.fp, sp=round(self.bw), n=self.nick)
+
+
 def result_data_to_v3bw_line(data, fingerprint):
     assert fingerprint in data
     results = data[fingerprint]
     nick = results[0]['nickname']
     speeds = [r['amount'] / r['duration'] for r in results]
     speed = median(speeds)
-    frmt = 'node_id={fp} bw={sp} nick={n}'
-    return frmt.format(fp=fingerprint, sp=round(speed), n=nick)
+    return V3BWLine(fingerprint, speed, nick)
 
 
 def main(args):
@@ -36,10 +46,12 @@ def main(args):
     data = {}
     for fname in data_fnames:
         data = read_result_file(fname, data)
+    data_lines = [result_data_to_v3bw_line(data, fp) for fp in data]
+    data_lines = sorted(data_lines, key=lambda d: d.bw, reverse=True)
     with open(args.output, 'wt') as fd:
         fd.write('{}\n'.format(int(time.time())))
-        for fp in data:
-            fd.write('{}\n'.format(result_data_to_v3bw_line(data, fp)))
+        for line in data_lines:
+            fd.write('{}\n'.format(str(line)))
 
 
 if __name__ == '__main__':

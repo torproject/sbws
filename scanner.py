@@ -8,10 +8,10 @@ from threading import Event
 from threading import RLock
 from multiprocessing.dummy import Pool
 import util.stem as stem_utils
-from circuitbuilder import GapsCircuitBuilder as CB
-from relaylist import RelayList
-from resultdump import ResultDump
-from resultdump import Result
+from lib.circuitbuilder import GapsCircuitBuilder as CB
+from lib.resultdump import ResultDump
+from lib.resultdump import Result
+from lib.relaylist import RelayList
 
 end_event = Event()
 stream_building_lock = RLock()

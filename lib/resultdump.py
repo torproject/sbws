@@ -89,14 +89,13 @@ class ResultDump:
             except Empty:
                 continue
             result = event
-            fp = result.fingerprint
-            nick = result.nickname
             if result is None:
-                print(nick, 'failed')
                 continue
             elif not isinstance(result, Result):
-                print(nick, 'failure', result, type(result))
+                print('failure', result, type(result))
                 continue
+            fp = result.fingerprint
+            nick = result.nickname
             self.write_result(result)
             amount = result.amount
             duration = result.duration

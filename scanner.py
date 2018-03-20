@@ -90,7 +90,7 @@ def timed_recv_from_server(sock, yet_to_read):
 
 
 def measure_relay(args, cb, rl, relay):
-    circ_id = cb.build_circuit([relay.fingerprint, None])
+    circ_id = cb.build_circuit([relay.fingerprint, args.helper_relay])
     if not circ_id:
         return
     listener = stem_utils.attach_stream_to_circuit_listener(
@@ -196,6 +196,9 @@ if __name__ == '__main__':
                         help='Where to store raw result output')
     parser.add_argument('--threads', default=1, type=int,
                         help='Number of measurements to make in parallel')
+    parser.add_argument('--helper-relay', type=str, required=True,
+                        help='Relay to which to build circuits and is running '
+                        'the server.py')
     args = parser.parse_args()
     if args.threads < 1:
         fail_hard('--threads must be larger than 1')

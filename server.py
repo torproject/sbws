@@ -94,7 +94,7 @@ def main(args):
             sock, addr = server.accept()
             print('accepting connection from', addr, 'as', sock.fileno())
             t = new_thread(sock)
-            t.run()
+            t.start()
     except KeyboardInterrupt:
         pass
     finally:

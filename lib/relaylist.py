@@ -7,11 +7,13 @@ import random
 class RelayList:
     REFRESH_INTERVAL = 300  # seconds
 
-    def __init__(self):
+    def __init__(self, args):
         # self.refresh_event = PeriodicEvent(
         #     self.refresh, _run_interval=self.REFRESH_INTERVAL,
         #     _run_at_end=False)
-        self._controller = stem_utils.init_controller()
+        self._controller = stem_utils.init_controller(
+            port=args.control[1] if args.control[0] == 'port' else None,
+            path=args.control[1] if args.control[0] == 'socket' else None)
         self._refresh()
 
     @property

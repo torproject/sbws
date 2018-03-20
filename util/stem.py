@@ -9,14 +9,6 @@ __all__ = [
     'is_controller_okay',
 ]
 
-DEFAULT_ATTEMPTS = [
-    ('socket', '/home/matt/src/chutney/net/nodes/009c/control'),
-    ('socket', '/home/ubuntu/src/chutney/net/nodes/009c/control'),
-    ('socket', '/var/run/tor/control'),
-    ('port', 9051),
-    ('port', 9151),
-]
-
 
 def attach_stream_to_circuit_listener(controller, circ_id):
     assert is_controller_okay(controller)
@@ -44,23 +36,28 @@ def remove_event_listener(controller, func):
     controller.remove_event_listener(func)
 
 
-def init_controller(set_custom_stream_settings=True):
-    for cont_type, cont_location in DEFAULT_ATTEMPTS:
-        if cont_type == 'socket':
-            c = _init_controller_socket(cont_location)
-            if not c:
-                continue
-        elif cont_type == 'port':
-            c = _init_controller_port(cont_location)
-            if not c:
-                continue
-        else:
-            raise RuntimeError('Unknown controller type {}'.format(cont_type))
-        print('Connected to Tor via', cont_location)
-        if set_custom_stream_settings:
-            c.set_conf('__DisablePredictedCircuits', '1')
-            c.set_conf('__LeaveStreamsUnattached', '1')
-        return c
+def init_controller(port=None, path=None, set_custom_stream_settings=True):
+    # make sure only one is set
+    assert port is not None or path is not None
+    assert not (port is not None and path is not None)
+    # and for the one that is set, make sure it is likely valid
+    assert port is None or isinstance(port, int)
+    assert path is None or isinstance(path, str)
+    c = None
+    if port:
+        c = _init_controller_port(port)
+        if not c:
+            return None
+    else:
+        c = _init_controller_socket(path)
+        if not c:
+            return None
+    assert c is not None
+    print('Connected to Tor via', port if port else path)
+    if set_custom_stream_settings:
+        c.set_conf('__DisablePredictedCircuits', '1')
+        c.set_conf('__LeaveStreamsUnattached', '1')
+    return c
 
 
 def is_controller_okay(c):

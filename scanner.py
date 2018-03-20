@@ -139,8 +139,8 @@ def result_putter_error(target):
 
 
 def test_speedtest(args):
-    cb = CB()
-    rl = RelayList()
+    cb = CB(args)
+    rl = RelayList(args)
     rd = ResultDump(args.result_directory, end_event)
     max_pending_results = args.threads
     pool = Pool(max_pending_results)
@@ -177,6 +177,10 @@ def main(args):
 if __name__ == '__main__':
     parser = ArgumentParser(
             formatter_class=ArgumentDefaultsHelpFormatter)
+    parser.add_argument('--control', nargs=2, metavar=('TYPE', 'LOCATION'),
+                        default=['port', '9051'],
+                        help='How to control Tor. Examples: "port 9051" or '
+                        '"socket /var/lib/tor/control"')
     parser.add_argument('--socks-host', default='127.0.0.1', type=str,
                         help='Host for a local Tor SocksPort')
     parser.add_argument('--socks-port', default=9050, type=int,
@@ -192,6 +196,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if args.threads < 1:
         fail_hard('--threads must be larger than 1')
+    if args.control[0] not in ['port', 'socket']:
+        fail_hard('Must specify either control port or socket. '
+                  'Not "{}"'.format(args.control[0]))
+    if args.control[0] == 'port':
+        args.control[1] = int(args.control[1])
     try:
         main(args)
     except KeyboardInterrupt as e:

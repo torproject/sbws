@@ -21,8 +21,10 @@ def valid_circuit_length(path):
 
 
 class CircuitBuilder:
-    def __init__(self, close_circuits_on_exit=True):
-        self.controller = stem_utils.init_controller()
+    def __init__(self, args, close_circuits_on_exit=True):
+        self.controller = stem_utils.init_controller(
+            port=args.control[1] if args.control[0] == 'port' else None,
+            path=args.control[1] if args.control[0] == 'socket' else None)
         self.relays = self._init_relays()
         self.built_circuits = set()
         self.close_circuits_on_exit = close_circuits_on_exit
@@ -94,7 +96,7 @@ class RandomCircuitBuilder(CircuitBuilder):
     selected for any position. There's no promise that the last hop will be
     an exit. '''
     def __init__(self, *a, **kw):
-        super().__init__()
+        super().__init__(*a, **kw)
 
     def build_circuit(self, length=3):
         ''' builds circuit of <length> and returns its (str) ID '''

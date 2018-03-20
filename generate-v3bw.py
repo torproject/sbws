@@ -38,6 +38,14 @@ def result_data_to_v3bw_line(data, fingerprint):
     return V3BWLine(fingerprint, speed, nick)
 
 
+def scale_lines(v3bw_lines, scale_max):
+    total = sum([l.bw for l in v3bw_lines])
+    ratio = scale_max / total
+    for line in v3bw_lines:
+        line.bw = round(line.bw * ratio)
+    return v3bw_lines
+
+
 def main(args):
     assert os.path.isdir(args.result_directory)
     data_fnames = sorted(os.listdir(args.result_directory), reverse=True)
@@ -48,6 +56,7 @@ def main(args):
         data = read_result_file(fname, data)
     data_lines = [result_data_to_v3bw_line(data, fp) for fp in data]
     data_lines = sorted(data_lines, key=lambda d: d.bw, reverse=True)
+    data_lines = scale_lines(data_lines, args.scale_max)
     with open(args.output, 'wt') as fd:
         fd.write('{}\n'.format(int(time.time())))
         for line in data_lines:
@@ -61,5 +70,8 @@ if __name__ == '__main__':
                         help='Where result data from scanner.py is stored')
     parser.add_argument('--output', default='/dev/stdout', type=str,
                         help='Where to write v3bw file')
+    parser.add_argument('--scale-max', default=50000000, type=int,
+                        help='When scaling bw weights, scale them up/down '
+                        'as if this is the sum of all measurements')
     args = parser.parse_args()
     main(args)

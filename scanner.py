@@ -3,6 +3,7 @@ from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 import time
 import socks  # PySocks
 import socket
+import random
 from stem.control import EventType
 from threading import Event
 from threading import RLock
@@ -146,7 +147,9 @@ def test_speedtest(args):
     pool = Pool(max_pending_results)
     pending_results = []
     #for target in [rl.random_relay() for _ in range(0, 1)]:
-    for target in rl.relays:
+    relays = rl.relays
+    random.shuffle(relays)
+    for target in relays:
         callback = result_putter(rd)
         callback_err = result_putter_error(target)
         async_result = pool.apply_async(

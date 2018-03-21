@@ -62,13 +62,6 @@ def socket_connect(s, addr, port):
     return True
 
 
-def test_circuitbuilder():
-    cb = CB()
-    circ = cb.build_circuit(2)
-    if not circ:
-        return
-
-
 def tell_server_amount(sock, expected_amount):
     ''' Returns True on success; else False '''
     assert expected_amount > 0
@@ -122,8 +115,6 @@ def measure_relay(args, cb, rl, relay):
         s = make_socket(args.socks_host, args.socks_port)
         # This call blocks until we are connected (or give up). We get attched
         # to the right circuit in the background.
-        #connected = socket_connect(s, '169.254.0.15', 4444)
-        #connected = socket_connect(s, '144.217.254.208', 4444)
         connected = socket_connect(s, args.server_host, args.server_port)
         stem_utils.remove_event_listener(cb.controller, listener)
     if not connected:
@@ -184,7 +175,6 @@ def test_speedtest(args):
     max_pending_results = args.threads
     pool = Pool(max_pending_results)
     pending_results = []
-    #for target in [rl.random_relay() for _ in range(0, 1)]:
     relays = rl.relays
     random.shuffle(relays)
     for target in relays:
@@ -197,21 +187,13 @@ def test_speedtest(args):
         while len(pending_results) >= max_pending_results:
             time.sleep(5)
             pending_results = [r for r in pending_results if not r.ready()]
-        #transfer_time = measure_relay(cb, rl, target)
-        #if transfer_time is None:
-        #    print('Unable to get transfer time for', target.nickname)
-        #    continue
-        #res = (target.fingerprint, transfer_time)
-        #rd.queue.put(res)
     print('Waiting for all results')
     for r in pending_results:
-        #print('get', r.get())
         r.wait()
     print('Got all results')
 
 
 def main(args):
-    #test_circuitbuilder()
     test_speedtest(args)
 
 
@@ -237,6 +219,7 @@ if __name__ == '__main__':
     parser.add_argument('--helper-relay', type=str, required=True,
                         help='Relay to which to build circuits and is running '
                         'the server.py')
+
     args = parser.parse_args()
     if args.threads < 1:
         fail_hard('--threads must be larger than 1')
@@ -244,6 +227,7 @@ if __name__ == '__main__':
         fail_hard('Must specify either control port or socket. '
                   'Not "{}"'.format(args.control[0]))
     if args.control[0] == 'port':
+
         args.control[1] = int(args.control[1])
     try:
         main(args)

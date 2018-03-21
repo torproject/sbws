@@ -23,9 +23,8 @@ def valid_circuit_length(path):
 class CircuitBuilder:
     ''' The CircuitBuilder interface.
 
-    Subclasses must implement their own build_circuit() function
-    Subclasses probably shouldn't implement their own get_circuit_path() or
-        fp_or_nick_to_relay().
+    Subclasses must implement their own build_circuit() function.
+    Subclasses probably shouldn't implement their own get_circuit_path().
     Subclasses may keep additional state if they'd find it helpful.
 
     The primary way to use a CircuitBuilder of any type is to simply create it
@@ -85,15 +84,6 @@ class CircuitBuilder:
             return circ_id
         return None
 
-    def fp_or_nick_to_relay(self, fp_nick):
-        ''' Takes a string that could be either a relay's fingerprint or
-        nickname. Return the relay's descriptor if found.  Otherwise return
-        None '''
-        assert isinstance(fp_nick, str)
-        c = self.controller
-        assert stem_utils.is_controller_okay(c)
-        return c.get_network_status(fp_nick, default=None)
-
     def __del__(self):
         c = self.controller
         if not stem_utils.is_controller_okay(c):
@@ -129,7 +119,8 @@ class GuardedCircuitBuilder(CircuitBuilder):
         ''' <guards> is a list of relays. A relay can be specified either by
         fingerprint or nickname. Fingerprint is highly recommended. '''
         super().__init__(*a, **kw)
-        self.guards = [self.fp_or_nick_to_relay(g) for g in guards]
+        self.guards = [stem_utils.fp_or_nick_to_relay(self.controller, g)
+                       for g in guards]
         if len(self.guards) > len([g for g in self.guards if g]):
             self.guards = [g for g in self.guards if g]
             print('Warning: couldn\'t find descriptors for all guards. Only '
@@ -182,7 +173,7 @@ class GapsCircuitBuilder(CircuitBuilder):
             if not fp:
                 new_path.append(None)
                 continue
-            relay = self.fp_or_nick_to_relay(fp)
+            relay = stem_utils.fp_or_nick_to_relay(self.controller, fp)
             if not relay:
                 return None
             new_path.append(relay)
@@ -203,7 +194,8 @@ class GapsCircuitBuilder(CircuitBuilder):
                 continue
             chosen_fps.append(choice)
             black_fps.append(choice)
-        return [self.fp_or_nick_to_relay(fp) for fp in chosen_fps]
+        return [stem_utils.fp_or_nick_to_relay(self.controller, fp)
+                for fp in chosen_fps]
 
     def build_circuit(self, path):
         ''' <path> is a list of relays and Falsey values. Relays can be

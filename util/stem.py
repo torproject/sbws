@@ -7,7 +7,19 @@ __all__ = [
     'attach_stream_to_circuit_listener',
     'init_controller',
     'is_controller_okay',
+    'fp_or_nick_to_relay',
 ]
+
+
+def fp_or_nick_to_relay(controller, fp_nick):
+    ''' Takes a string that could be either a relay's fingerprint or nickname.
+    Return the relay's descriptor if found. Otherwise return None.
+
+    Note that if a nickname is given and multiple relays have that nickname,
+    only one of them will be returned. '''
+    assert isinstance(fp_nick, str)
+    assert is_controller_okay(controller)
+    return controller.get_network_status(fp_nick, default=None)
 
 
 def attach_stream_to_circuit_listener(controller, circ_id):

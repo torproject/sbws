@@ -168,9 +168,11 @@ def measure_relay(args, cb, rl, relay):
             expected_amount = int(
                 expected_amount * DOWNLOAD_TIMES['target'] / result_time)
         elif result_time < DOWNLOAD_TIMES['target']:
-            results.append({'duration': result_time, 'amount': expected_amount})
+            results.append(
+                {'duration': result_time, 'amount': expected_amount})
         elif result_time < DOWNLOAD_TIMES['max']:
-            results.append({'duration': result_time, 'amount': expected_amount})
+            results.append(
+                {'duration': result_time, 'amount': expected_amount})
         else:
             expected_amount = int(
                 expected_amount * DOWNLOAD_TIMES['target'] / result_time)

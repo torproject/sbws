@@ -19,9 +19,8 @@ stream_building_lock = RLock()
 
 # maximum we want to read per read() call
 MAX_RECV_PER_READ = 1*1024*1024
-# minimum amount of time a transfer needs to take in order for us to consider
-# it a measurement
-MIN_TIME_REQUIRED = 5
+DOWNLOAD_TIMES = {'toofast': 1, 'min': 5, 'target': 6, 'max': 10}
+DESIRED_RESULTS = 5
 
 
 def fail_hard(*s):
@@ -148,9 +147,9 @@ def measure_relay(args, cb, rl, relay):
         return
     # SECOND: measure throughput on this sircuit. Start with what should be a
     # small amount
-    result_time = None
+    results = []
     expected_amount = 16*1024
-    while result_time is None or result_time < MIN_TIME_REQUIRED:
+    while len(results) < DESIRED_RESULTS:
         # Tell the server to send us the current expected_amount.
         if not tell_server_amount(s, expected_amount):
             close_socket(s)
@@ -163,20 +162,21 @@ def measure_relay(args, cb, rl, relay):
             close_socket(s)
             cb.close_circuit(circ_id)
             return
-        # If it took long enough, make an educated guess about how many bytes
-        # it should take to have MIN_TIME_REQUIRED seconds to elapse while
-        # doing so
-        if result_time > 1:
-            expected_amount = int(
-                expected_amount * MIN_TIME_REQUIRED / result_time * 1.1)
-        # If it didn't take very long at all, then greatly increase the amount
-        # to send
-        else:
+        if result_time < DOWNLOAD_TIMES['toofast']:
             expected_amount = int(expected_amount * 10)
+        elif result_time < DOWNLOAD_TIMES['min']:
+            expected_amount = int(
+                expected_amount * DOWNLOAD_TIMES['target'] / result_time)
+        elif result_time < DOWNLOAD_TIMES['target']:
+            results.append({'duration': result_time, 'amount': expected_amount})
+        elif result_time < DOWNLOAD_TIMES['max']:
+            results.append({'duration': result_time, 'amount': expected_amount})
+        else:
+            expected_amount = int(
+                expected_amount * DOWNLOAD_TIMES['target'] / result_time)
     circ = cb.get_circuit_path(circ_id)
     cb.close_circuit(circ_id)
-    return Result(relay, circ, args.server_host, rtts, result_time,
-                  expected_amount)
+    return Result(relay, circ, args.server_host, rtts, results)
 
 
 def result_putter(result_dump):

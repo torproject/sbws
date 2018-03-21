@@ -11,12 +11,11 @@ from datetime import date
 class Result:
     ''' A simple struct to pack a measurement result into so that other code
     can be confident it is handling a well-formed result. '''
-    def __init__(self, relay, circ, server_host, rtts, duration, amount):
+    def __init__(self, relay, circ, server_host, rtts, download_results):
         self._relay = relay
         self._circ = circ
-        self._duration = duration
-        self._amount = amount
         self._server_host = server_host
+        self._downloads = download_results
         self._rtts = rtts
         self._time = time.time()
 
@@ -45,12 +44,8 @@ class Result:
         return self._time
 
     @property
-    def duration(self):
-        return self._duration
-
-    @property
-    def amount(self):
-        return self._amount
+    def downloads(self):
+        return self._downloads
 
     @property
     def server_host(self):
@@ -61,8 +56,7 @@ class Result:
             'fingerprint': self.fingerprint,
             'nickname': self.nickname,
             'time': self.time,
-            'duration': self.duration,
-            'amount': self.amount,
+            'downloads': self.downloads,
             'address': self.address,
             'circ': self.circ,
             'rtts': self.rtts,
@@ -107,8 +101,5 @@ class ResultDump:
             fp = result.fingerprint
             nick = result.nickname
             self.write_result(result)
-            amount = result.amount
-            duration = result.duration
-            rate = amount / duration
-            rate = rate * 8 / 1024 / 1024
-            print(fp, nick, rate, duration)
+            dls = result.downloads
+            print(fp, nick, dls)

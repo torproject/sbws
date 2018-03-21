@@ -24,19 +24,21 @@ class V3BWLine:
         self.bw = bw
         self.nick = nick
         # convert to ms
-        self.rtts = [int(round(r * 1000)) for r in rtts]
+        rtts = [round(r * 1000) for r in rtts]
+        self.rtt = round(median(rtts))
 
     def __str__(self):
-        frmt = 'node_id={fp} bw={sp} nick={n} min_rtt={rtt}'
+        frmt = 'node_id={fp} bw={sp} nick={n} rtt={rtt}'
         return frmt.format(fp=self.fp, sp=round(self.bw), n=self.nick,
-                           rtt=min(self.rtts))
+                           rtt=self.rtt)
 
 
 def result_data_to_v3bw_line(data, fingerprint):
     assert fingerprint in data
     results = data[fingerprint]
     nick = results[0]['nickname']
-    speeds = [r['amount'] / r['duration'] for r in results]
+    speeds = [dl['amount'] / dl['duration']
+              for r in results for dl in r['downloads']]
     speed = median(speeds)
     rtts = [rtt for r in results for rtt in r['rtts']]
     return V3BWLine(fingerprint, speed, nick, rtts)

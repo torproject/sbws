@@ -19,14 +19,17 @@ def read_result_file(fname, starting_dict=None):
 
 
 class V3BWLine:
-    def __init__(self, fp, bw, nick):
+    def __init__(self, fp, bw, nick, rtts):
         self.fp = fp
         self.bw = bw
         self.nick = nick
+        # convert to ms
+        self.rtts = [int(round(r * 1000)) for r in rtts]
 
     def __str__(self):
-        frmt = 'node_id={fp} bw={sp} nick={n}'
-        return frmt.format(fp=self.fp, sp=round(self.bw), n=self.nick)
+        frmt = 'node_id={fp} bw={sp} nick={n} min_rtt={rtt}'
+        return frmt.format(fp=self.fp, sp=round(self.bw), n=self.nick,
+                           rtt=min(self.rtts))
 
 
 def result_data_to_v3bw_line(data, fingerprint):
@@ -35,7 +38,8 @@ def result_data_to_v3bw_line(data, fingerprint):
     nick = results[0]['nickname']
     speeds = [r['amount'] / r['duration'] for r in results]
     speed = median(speeds)
-    return V3BWLine(fingerprint, speed, nick)
+    rtts = [rtt for r in results for rtt in r['rtts']]
+    return V3BWLine(fingerprint, speed, nick, rtts)
 
 
 def scale_lines(v3bw_lines, scale_max):

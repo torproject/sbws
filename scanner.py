@@ -56,7 +56,7 @@ def socket_connect(s, addr, port):
     try:
         s.connect((addr, port))
         print('connected to', addr, port, 'via', s.fileno())
-    except socks.GeneralProxyError as e:
+    except (socks.GeneralProxyError, socks.ProxyConnectionError) as e:
         print(e)
         return False
     return True

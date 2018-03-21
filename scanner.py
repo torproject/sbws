@@ -196,8 +196,11 @@ def result_putter_error(target):
 
 
 def test_speedtest(args):
-    cb = CB(args)
-    rl = RelayList(args)
+    controller = stem_utils.init_controller(
+        port=args.control[1] if args.control[0] == 'port' else None,
+        path=args.control[1] if args.control[0] == 'socket' else None)
+    cb = CB(args, controller=controller)
+    rl = RelayList(args, controller=controller)
     rd = ResultDump(args.result_directory, end_event)
     max_pending_results = args.threads
     pool = Pool(max_pending_results)

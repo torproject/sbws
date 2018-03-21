@@ -1,7 +1,7 @@
 from stem import (CircuitExtensionFailed, InvalidRequest)
-from stem import Flag
 import random
 import util.stem as stem_utils
+from lib.relaylist import RelayList
 
 
 class PathLengthException(Exception):
@@ -35,18 +35,20 @@ class CircuitBuilder:
     them, but CircuitBuilder will keep track of existing circuits and close
     them when it is deleted.
     '''
-    def __init__(self, args, close_circuits_on_exit=True):
-        self.controller = stem_utils.init_controller(
-            port=args.control[1] if args.control[0] == 'port' else None,
-            path=args.control[1] if args.control[0] == 'socket' else None)
-        self.relays = self._init_relays()
+    def __init__(self, args, controller=None, close_circuits_on_exit=True):
+        if controller is None:
+            self.controller = stem_utils.init_controller(
+                port=args.control[1] if args.control[0] == 'port' else None,
+                path=args.control[1] if args.control[0] == 'socket' else None)
+        else:
+            self.controller = controller
+        self.relay_list = RelayList(args, controller=self.controller)
         self.built_circuits = set()
         self.close_circuits_on_exit = close_circuits_on_exit
 
-    def _init_relays(self):
-        c = self.controller
-        assert stem_utils.is_controller_okay(c)
-        return [ns for ns in c.get_network_statuses()]
+    @property
+    def relays(self):
+        return self.relay_list.relays
 
     def build_circuit(self, *a, **kw):
         ''' Implementations of this method should build the circuit and return
@@ -143,11 +145,10 @@ class ExitCircuitBuilder(CircuitBuilder):
     to a specific IP/port. '''
     def __init__(self, *a, **kw):
         super().__init__(*a, **kw)
-        self.exits = self._init_exits()
 
-    def _init_exits(self):
-        relays = self.relays
-        return [r for r in relays if Flag.EXIT in r.flags]
+    @property
+    def exits(self):
+        return self.relay_list.exits
 
     def build_circuit(self, length=3):
         ''' builds circuit of <length> and returns its (str) ID. '''

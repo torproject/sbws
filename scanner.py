@@ -96,6 +96,23 @@ def timed_recv_from_server(sock, yet_to_read):
     return end_time - start_time
 
 
+def measure_rtt_to_server(sock):
+    ''' Make multiple end-to-end RTT measurements '''
+    rtts = []
+    for _ in range(0, 10):
+        start_time = time.time()
+        if not tell_server_amount(sock, 1):
+            print('unable to ping server on', sock.fileno())
+            return
+        amount_read = len(sock.recv(1))
+        end_time = time.time()
+        if amount_read == 0:
+            print('unable to pong server on', sock.fileno())
+            return
+        rtts.append(end_time - start_time)
+    return rtts
+
+
 def measure_relay(args, cb, rl, relay):
     ''' Runs in a worker thread. Measures the given relay. If all measurements
     are successful, returns a Result that should get handed off to the
@@ -118,11 +135,18 @@ def measure_relay(args, cb, rl, relay):
         connected = socket_connect(s, args.server_host, args.server_port)
         stem_utils.remove_event_listener(cb.controller, listener)
     if not connected:
+        print('Unable to connect to', args.server_host, args.server_port)
         cb.close_circuit(circ_id)
         return
+    # FIRST: measure the end-to-end RTT many times
+    rtts = measure_rtt_to_server(s)
+    if rtts is None:
+        close_socket(s)
+        cb.close_circuit(circ_id)
+        return
+    # SECOND: measure throughput on this sircuit. Start with what should be a
+    # small amount
     result_time = None
-    # Time to measure throughput on this circuit. Start with what should be a
-    # small amount.
     expected_amount = 16*1024
     while result_time is None or result_time < MIN_TIME_REQUIRED:
         # Tell the server to send us the current expected_amount.
@@ -149,7 +173,8 @@ def measure_relay(args, cb, rl, relay):
             expected_amount = int(expected_amount * 10)
     circ = cb.get_circuit_path(circ_id)
     cb.close_circuit(circ_id)
-    return Result(relay, circ, args.server_host, result_time, expected_amount)
+    return Result(relay, circ, args.server_host, rtts, result_time,
+                  expected_amount)
 
 
 def result_putter(result_dump):

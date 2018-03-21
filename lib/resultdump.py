@@ -11,12 +11,13 @@ from datetime import date
 class Result:
     ''' A simple struct to pack a measurement result into so that other code
     can be confident it is handling a well-formed result. '''
-    def __init__(self, relay, circ, server_host, duration, amount):
+    def __init__(self, relay, circ, server_host, rtts, duration, amount):
         self._relay = relay
         self._circ = circ
         self._duration = duration
         self._amount = amount
         self._server_host = server_host
+        self._rtts = rtts
         self._time = time.time()
 
     @property
@@ -34,6 +35,10 @@ class Result:
     @property
     def circ(self):
         return self._circ
+
+    @property
+    def rtts(self):
+        return self._rtts
 
     @property
     def time(self):
@@ -60,6 +65,7 @@ class Result:
             'amount': self.amount,
             'address': self.address,
             'circ': self.circ,
+            'rtts': self.rtts,
             'server_host': self.server_host
         }
         return json.dumps(d)

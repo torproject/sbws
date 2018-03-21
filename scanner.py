@@ -166,6 +166,7 @@ def result_putter_error(target):
     '''
     def closure(err):
         print('Error measuring', target.nickname, ':', err)
+    return closure
 
 
 def test_speedtest(args):

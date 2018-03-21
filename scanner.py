@@ -97,17 +97,19 @@ def timed_recv_from_server(sock, yet_to_read):
 
 
 def measure_rtt_to_server(sock):
-    ''' Make multiple end-to-end RTT measurements '''
+    ''' Make multiple end-to-end RTT measurements. If something goes wrong and
+    not all of them can be made, return None. Otherwise return a list of the
+    RTTs (in seconds). '''
     rtts = []
     for _ in range(0, 10):
         start_time = time.time()
         if not tell_server_amount(sock, 1):
-            print('unable to ping server on', sock.fileno())
+            print('Unable to ping server on', sock.fileno())
             return
         amount_read = len(sock.recv(1))
         end_time = time.time()
         if amount_read == 0:
-            print('unable to pong server on', sock.fileno())
+            print('No pong from server on', sock.fileno())
             return
         rtts.append(end_time - start_time)
     return rtts

@@ -165,7 +165,8 @@ def result_putter_error(target):
     measurement -- and return that function so it can be used by someone else
     '''
     def closure(err):
-        print('Error measuring', target.nickname, ':', err)
+        print('Unhandled exception caught while measuring {}: {} {}'.format(
+            target.nickname, type(err), err))
     return closure
 
 

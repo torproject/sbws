@@ -16,17 +16,25 @@ from lib.relaylist import RelayList
 
 end_event = Event()
 stream_building_lock = RLock()
+
+# maximum we want to read per read() call
 MAX_RECV_PER_READ = 1*1024*1024
+# minimum amount of time a transfer needs to take in order for us to consider
+# it a measurement
 MIN_TIME_REQUIRED = 5
 
 
 def fail_hard(*s):
+    ''' Optionally log something to stdout ... and then exit as fast as
+    possible '''
     if s:
         print(*s)
     exit(1)
 
 
 def make_socket(socks_host, socks_port):
+    ''' Make a socket that uses the provided socks5 proxy. Note at this point
+    the socket hasn't connect()ed anywhere '''
     s = socks.socksocket()
     s.set_proxy(socks.PROXY_TYPE_SOCKS5, socks_host, socks_port)
     s.settimeout(10)
@@ -34,6 +42,7 @@ def make_socket(socks_host, socks_port):
 
 
 def close_socket(s):
+    ''' Close the socket, and ignore errors '''
     try:
         s.shutdown(socket.SHUT_RDWR)
         s.close()
@@ -42,6 +51,8 @@ def close_socket(s):
 
 
 def socket_connect(s, addr, port):
+    ''' connect() to addr:port on the given socket. Unknown compatibility with
+    IPv6. Works with IPv4 and hostnames '''
     try:
         s.connect((addr, port))
         print('connected to', addr, port, 'via', s.fileno())
@@ -61,6 +72,9 @@ def test_circuitbuilder():
 def tell_server_amount(sock, expected_amount):
     ''' Returns True on success; else False '''
     assert expected_amount > 0
+    # Expectd_amount should come in as an int, but we send it to the server as
+    # a string (ignore the difference between bytes and str in python. You know
+    # what I mean).
     amount = '{}\n'.format(expected_amount)
     try:
         sock.send(bytes(amount, 'utf-8'))
@@ -71,7 +85,7 @@ def tell_server_amount(sock, expected_amount):
 
 
 def timed_recv_from_server(sock, yet_to_read):
-    ''' Return the time in seconds it took to read <expected_amount> bytes from
+    ''' Return the time in seconds it took to read <yet_to_read> bytes from
     the server. Return None if error '''
     assert yet_to_read > 0
     start_time = time.time()
@@ -90,15 +104,24 @@ def timed_recv_from_server(sock, yet_to_read):
 
 
 def measure_relay(args, cb, rl, relay):
+    ''' Runs in a worker thread. Measures the given relay. If all measurements
+    are successful, returns a Result that should get handed off to the
+    ResultDump. Otherwise returns None '''
     circ_id = cb.build_circuit([relay.fingerprint, args.helper_relay])
     if not circ_id:
         return
+    # A function that attaches all streams that gets created on
+    # connect() to the given circuit
     listener = stem_utils.attach_stream_to_circuit_listener(
         cb.controller, circ_id)
     with stream_building_lock:
+        # Tell stem about our listener so it can attach the stream to the
+        # circuit when we connect()
         stem_utils.add_event_listener(
             cb.controller, listener, EventType.STREAM)
         s = make_socket(args.socks_host, args.socks_port)
+        # This call blocks until we are connected (or give up). We get attched
+        # to the right circuit in the background.
         #connected = socket_connect(s, '169.254.0.15', 4444)
         #connected = socket_connect(s, '144.217.254.208', 4444)
         connected = socket_connect(s, args.server_host, args.server_port)
@@ -107,20 +130,30 @@ def measure_relay(args, cb, rl, relay):
         cb.close_circuit(circ_id)
         return
     result_time = None
+    # Time to measure throughput on this circuit. Start with what should be a
+    # small amount.
     expected_amount = 16*1024
     while result_time is None or result_time < MIN_TIME_REQUIRED:
+        # Tell the server to send us the current expected_amount.
         if not tell_server_amount(s, expected_amount):
             close_socket(s)
             cb.close_circuit(circ_id)
             return
+        # Then read that many bytes from the server and get the time it took to
+        # do so
         result_time = timed_recv_from_server(s, expected_amount)
         if result_time is None:
             close_socket(s)
             cb.close_circuit(circ_id)
             return
+        # If it took long enough, make an educated guess about how many bytes
+        # it should take to have MIN_TIME_REQUIRED seconds to elapse while
+        # doing so
         if result_time > 1:
             expected_amount = int(
                 expected_amount * MIN_TIME_REQUIRED / result_time * 1.1)
+        # If it didn't take very long at all, then greatly increase the amount
+        # to send
         else:
             expected_amount = int(expected_amount * 10)
     circ = cb.get_circuit_path(circ_id)
@@ -129,12 +162,17 @@ def measure_relay(args, cb, rl, relay):
 
 
 def result_putter(result_dump):
+    ''' Create a function that takes a single argument -- the measurement
+    result -- and return that function so it can be used by someone else '''
     def closure(measurement_result):
         return result_dump.queue.put(measurement_result)
     return closure
 
 
 def result_putter_error(target):
+    ''' Create a function that takes a single argument -- an error from a
+    measurement -- and return that function so it can be used by someone else
+    '''
     def closure(err):
         print('Error measuring', target.nickname, ':', err)
 

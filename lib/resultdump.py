@@ -9,6 +9,8 @@ from datetime import date
 
 
 class Result:
+    ''' A simple struct to pack a measurement result into so that other code
+    can be confident it is handling a well-formed result. '''
     def __init__(self, relay, circ, server_host, duration, amount):
         self._relay = relay
         self._circ = circ
@@ -64,6 +66,8 @@ class Result:
 
 
 class ResultDump:
+    ''' Runs the enter() method in a new thread and collects new Results on its
+    queue. Writes them to daily result files in the data directory '''
     def __init__(self, datadir, end_event):
         assert os.path.isdir(datadir)
         assert isinstance(end_event, Event)

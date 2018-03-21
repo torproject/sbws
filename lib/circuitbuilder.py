@@ -21,6 +21,21 @@ def valid_circuit_length(path):
 
 
 class CircuitBuilder:
+    ''' The CircuitBuilder interface.
+
+    Subclasses must implement their own build_circuit() function
+    Subclasses probably shouldn't implement their own get_circuit_path() or
+        fp_or_nick_to_relay().
+    Subclasses may keep additional state if they'd find it helpful.
+
+    The primary way to use a CircuitBuilder of any type is to simply create it
+    and then call cb.build_circuit(...) with any options that your
+    CircuitBuilder type needs.
+
+    It might be good practice to close circuits as you find you no longer need
+    them, but CircuitBuilder will keep track of existing circuits and close
+    them when it is deleted.
+    '''
     def __init__(self, args, close_circuits_on_exit=True):
         self.controller = stem_utils.init_controller(
             port=args.control[1] if args.control[0] == 'port' else None,

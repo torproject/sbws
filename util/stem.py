@@ -11,6 +11,8 @@ __all__ = [
 
 
 def attach_stream_to_circuit_listener(controller, circ_id):
+    ''' Returns a function that should be given to add_event_listener(). It
+    looks for newly created streams and attaches them to the given circ_id '''
     assert is_controller_okay(controller)
 
     def closure_stream_event_listener(st):

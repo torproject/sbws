@@ -2,6 +2,15 @@
 
 It doesn't get simplier than this, folks.
 
+Run server.py on the same machine as a relay with an exit policy that allows
+exiting to itself on a single port. (Notice: it won't get the exit flag)
+
+Run scanner.py on a well-connected machine on the Internet.
+
+The scanner builds two hop circuits consisting of the relay being measured and
+the helper relay running server.py. Over these circuits it measures RTT and
+download performance.
+
 ----------
 
 Some quick notes to get you started

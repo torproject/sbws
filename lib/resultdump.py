@@ -68,9 +68,10 @@ class Result:
 class ResultDump:
     ''' Runs the enter() method in a new thread and collects new Results on its
     queue. Writes them to daily result files in the data directory '''
-    def __init__(self, datadir, end_event):
+    def __init__(self, log, datadir, end_event):
         assert os.path.isdir(datadir)
         assert isinstance(end_event, Event)
+        self.log = log
         self.datadir = datadir
         self.end_event = end_event
         self.thread = Thread(target=self.enter)
@@ -96,10 +97,10 @@ class ResultDump:
             if result is None:
                 continue
             elif not isinstance(result, Result):
-                print('failure', result, type(result))
+                self.log.warn('failure', result, type(result))
                 continue
             fp = result.fingerprint
             nick = result.nickname
             self.write_result(result)
             dls = result.downloads
-            print(fp, nick, dls)
+            self.log.debug(fp, nick, dls)

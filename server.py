@@ -3,6 +3,9 @@ from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 import socket
 import time
 from threading import Thread
+from lib.pastlylogger import PastlyLogger
+
+log = PastlyLogger(debug='/dev/stdout', overwrite=['debug'], log_threads=True)
 
 MAX_SEND_PER_WRITE = 100*1024*1024
 MAX_SEND_PER_WRITE = 4096
@@ -18,7 +21,7 @@ def read_line(s):
         try:
             c = s.recv(1)
         except ConnectionResetError as e:
-            print(e)
+            log.info(e)
             return None
         if not c:
             return chars
@@ -32,7 +35,7 @@ def read_line(s):
 
 def close_socket(s):
     try:
-        print('Closing fd', s.fileno())
+        log.info('Closing fd', s.fileno())
         s.shutdown(socket.SHUT_RDWR)
         s.close()
     except OSError:
@@ -50,14 +53,14 @@ def get_send_amount(sock):
 
 def write_to_client(sock, amount):
     ''' Returns True if successful; else False '''
-    print('Sending client no.', sock.fileno(), amount, 'bytes')
+    log.info('Sending client no.', sock.fileno(), amount, 'bytes')
     while amount > 0:
         amount_this_time = min(MAX_SEND_PER_WRITE, amount)
         amount -= amount_this_time
         try:
             sock.send(b'a' * amount_this_time)
         except (ConnectionResetError, BrokenPipeError) as e:
-            print('fd', sock.fileno(), ':', e)
+            log.info('fd', sock.fileno(), ':', e)
             return False
     return True
 
@@ -67,7 +70,7 @@ def new_thread(sock):
         while True:
             send_amount = get_send_amount(sock)
             if send_amount is None:
-                print('Couldn\'t get an amount to send to', sock.fileno())
+                log.info('Couldn\'t get an amount to send to', sock.fileno())
                 close_socket(sock)
                 return
             write_to_client(sock, send_amount)
@@ -75,24 +78,25 @@ def new_thread(sock):
     thread = Thread(target=closure)
     return thread
 
+
 def main(args):
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     h = (args.bind_ip, args.bind_port)
-    print('binding to', h)
+    log.notice('binding to', h)
     while True:
         try:
             server.bind(h)
         except OSError as e:
-            print(e)
+            log.warn(e)
             time.sleep(5)
         else:
             break
-    print('listening on', h)
+    log.notice('listening on', h)
     server.listen(5)
     try:
         while True:
             sock, addr = server.accept()
-            print('accepting connection from', addr, 'as', sock.fileno())
+            log.info('accepting connection from', addr, 'as', sock.fileno())
             t = new_thread(sock)
             t.start()
     except KeyboardInterrupt:
@@ -108,4 +112,3 @@ if __name__ == '__main__':
     parser.add_argument('bind_port', type=int, default=4444)
     args = parser.parse_args()
     main(args)
-

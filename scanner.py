@@ -13,9 +13,11 @@ from lib.circuitbuilder import GapsCircuitBuilder as CB
 from lib.resultdump import ResultDump
 from lib.resultdump import Result
 from lib.relaylist import RelayList
+from lib.pastlylogger import PastlyLogger
 
 end_event = Event()
 stream_building_lock = RLock()
+log = PastlyLogger(debug='/dev/stdout', overwrite=['debug'], log_threads=True)
 
 # maximum we want to read per read() call
 MAX_RECV_PER_READ = 1*1024*1024
@@ -27,7 +29,7 @@ def fail_hard(*s):
     ''' Optionally log something to stdout ... and then exit as fast as
     possible '''
     if s:
-        print(*s)
+        log.error(*s)
     exit(1)
 
 
@@ -54,9 +56,9 @@ def socket_connect(s, addr, port):
     IPv6. Works with IPv4 and hostnames '''
     try:
         s.connect((addr, port))
-        print('connected to', addr, port, 'via', s.fileno())
+        log.debug('Connected to', addr, port, 'via', s.fileno())
     except (socks.GeneralProxyError, socks.ProxyConnectionError) as e:
-        print(e)
+        log.warn(e)
         return False
     return True
 
@@ -71,7 +73,7 @@ def tell_server_amount(sock, expected_amount):
     try:
         sock.send(bytes(amount, 'utf-8'))
     except socket.timeout as e:
-        print(e)
+        log.info(e)
         return False
     return True
 
@@ -86,7 +88,7 @@ def timed_recv_from_server(sock, yet_to_read):
         try:
             read_this_time = len(sock.recv(limit))
         except socket.timeout as e:
-            print(e)
+            log.info(e)
             return
         if read_this_time == 0:
             return
@@ -103,12 +105,12 @@ def measure_rtt_to_server(sock):
     for _ in range(0, 10):
         start_time = time.time()
         if not tell_server_amount(sock, 1):
-            print('Unable to ping server on', sock.fileno())
+            log.info('Unable to ping server on', sock.fileno())
             return
         amount_read = len(sock.recv(1))
         end_time = time.time()
         if amount_read == 0:
-            print('No pong from server on', sock.fileno())
+            log.info('No pong from server on', sock.fileno())
             return
         rtts.append(end_time - start_time)
     return rtts
@@ -124,7 +126,7 @@ def measure_relay(args, cb, rl, relay):
     # A function that attaches all streams that gets created on
     # connect() to the given circuit
     listener = stem_utils.attach_stream_to_circuit_listener(
-        cb.controller, circ_id)
+        cb.controller, circ_id, log_fn=log.debug)
     with stream_building_lock:
         # Tell stem about our listener so it can attach the stream to the
         # circuit when we connect()
@@ -134,9 +136,10 @@ def measure_relay(args, cb, rl, relay):
         # This call blocks until we are connected (or give up). We get attched
         # to the right circuit in the background.
         connected = socket_connect(s, args.server_host, args.server_port)
-        stem_utils.remove_event_listener(cb.controller, listener)
+        stem_utils.remove_event_listener(cb.controller, listener,
+                                         log_fn=log.info)
     if not connected:
-        print('Unable to connect to', args.server_host, args.server_port)
+        log.info('Unable to connect to', args.server_host, args.server_port)
         cb.close_circuit(circ_id)
         return
     # FIRST: measure the end-to-end RTT many times
@@ -194,7 +197,7 @@ def result_putter_error(target):
     measurement -- and return that function so it can be used by someone else
     '''
     def closure(err):
-        print('Unhandled exception caught while measuring {}: {} {}'.format(
+        log.warn('Unhandled exception caught while measuring {}: {} {}'.format(
             target.nickname, type(err), err))
     return closure
 
@@ -202,10 +205,11 @@ def result_putter_error(target):
 def test_speedtest(args):
     controller = stem_utils.init_controller(
         port=args.control[1] if args.control[0] == 'port' else None,
-        path=args.control[1] if args.control[0] == 'socket' else None)
-    cb = CB(args, controller=controller)
-    rl = RelayList(args, controller=controller)
-    rd = ResultDump(args.result_directory, end_event)
+        path=args.control[1] if args.control[0] == 'socket' else None,
+        log_fn=log.debug)
+    cb = CB(args, log, controller=controller)
+    rl = RelayList(args, log, controller=controller)
+    rd = ResultDump(log, args.result_directory, end_event)
     max_pending_results = args.threads
     pool = Pool(max_pending_results)
     pending_results = []
@@ -221,10 +225,10 @@ def test_speedtest(args):
         while len(pending_results) >= max_pending_results:
             time.sleep(5)
             pending_results = [r for r in pending_results if not r.ready()]
-    print('Waiting for all results')
+    log.notice('Waiting for all results')
     for r in pending_results:
         r.wait()
-    print('Got all results')
+    log.notice('Got all results')
 
 
 def main(args):

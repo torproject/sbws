@@ -22,18 +22,19 @@ def fp_or_nick_to_relay(controller, fp_nick):
     return controller.get_network_status(fp_nick, default=None)
 
 
-def attach_stream_to_circuit_listener(controller, circ_id):
+def attach_stream_to_circuit_listener(controller, circ_id, log_fn=print):
     ''' Returns a function that should be given to add_event_listener(). It
     looks for newly created streams and attaches them to the given circ_id '''
     assert is_controller_okay(controller)
 
     def closure_stream_event_listener(st):
         if st.status == 'NEW' and st.purpose == 'USER':
-            print('Attaching stream {} to circ {}'.format(st.id, circ_id))
+            log_fn('Attaching stream {} to circ {}'.format(st.id, circ_id))
             try:
                 controller.attach_stream(st.id, circ_id)
             except (UnsatisfiableRequest, InvalidRequest) as e:
-                print('Couldn\'t attach stream to circ {}:'.format(circ_id), e)
+                log_fn('Couldn\'t attach stream to circ {}:'.format(circ_id),
+                       e)
         else:
             pass
     return closure_stream_event_listener
@@ -44,14 +45,15 @@ def add_event_listener(controller, func, event):
     controller.add_event_listener(func, event)
 
 
-def remove_event_listener(controller, func):
+def remove_event_listener(controller, func, log_fn=print):
     if not is_controller_okay(controller):
-        print('Warning: controller not okay so not trying to remove event')
+        log_fn('Warning: controller not okay so not trying to remove event')
         return
     controller.remove_event_listener(func)
 
 
-def init_controller(port=None, path=None, set_custom_stream_settings=True):
+def init_controller(port=None, path=None, set_custom_stream_settings=True,
+                    log_fn=print):
     # make sure only one is set
     assert port is not None or path is not None
     assert not (port is not None and path is not None)
@@ -68,7 +70,7 @@ def init_controller(port=None, path=None, set_custom_stream_settings=True):
         if not c:
             return None
     assert c is not None
-    print('Connected to Tor via', port if port else path)
+    log_fn('Connected to Tor via', port if port else path)
     if set_custom_stream_settings:
         c.set_conf('__DisablePredictedCircuits', '1')
         c.set_conf('__LeaveStreamsUnattached', '1')

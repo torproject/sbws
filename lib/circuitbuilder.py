@@ -35,14 +35,16 @@ class CircuitBuilder:
     them, but CircuitBuilder will keep track of existing circuits and close
     them when it is deleted.
     '''
-    def __init__(self, args, controller=None, close_circuits_on_exit=True):
+    def __init__(self, args, log, controller=None,
+                 close_circuits_on_exit=True):
         if controller is None:
             self.controller = stem_utils.init_controller(
                 port=args.control[1] if args.control[0] == 'port' else None,
                 path=args.control[1] if args.control[0] == 'socket' else None)
         else:
             self.controller = controller
-        self.relay_list = RelayList(args, controller=self.controller)
+        self.log = log
+        self.relay_list = RelayList(args, log, controller=self.controller)
         self.built_circuits = set()
         self.close_circuits_on_exit = close_circuits_on_exit
 
@@ -80,7 +82,7 @@ class CircuitBuilder:
             try:
                 circ_id = c.new_circuit(path, await_build=True)
             except (InvalidRequest, CircuitExtensionFailed) as e:
-                print(e)
+                self.log.info(e)
                 continue
             self.built_circuits.add(circ_id)
             return circ_id
@@ -125,8 +127,9 @@ class GuardedCircuitBuilder(CircuitBuilder):
                        for g in guards]
         if len(self.guards) > len([g for g in self.guards if g]):
             self.guards = [g for g in self.guards if g]
-            print('Warning: couldn\'t find descriptors for all guards. Only '
-                  'using:', ', '.join([g.nickname for g in self.guards]))
+            self.log.warn('Warning: couldn\'t find descriptors for all '
+                          'guards. Only using:',
+                          ', '.join([g.nickname for g in self.guards]))
             assert len(self.guards) > 0
 
     def build_circuit(self, length=3):
@@ -213,14 +216,14 @@ class GapsCircuitBuilder(CircuitBuilder):
         insert_relays = self._random_sample_relays(
             num_missing, [r for r in path if r is not None])
         if insert_relays is None:
-            print('Problem building a circuit to satisfy',
+            self.log.warn('Problem building a circuit to satisfy',
                   [r.nickname if r else None for r in path], 'with available '
                   'relays in the network')
             return None
         assert len(insert_relays) == num_missing
         path = [r.fingerprint if r else insert_relays.pop().fingerprint
                 for r in path]
-        #print('building', '->'.join([r[0:8] for r in path]))
+        #self.log.info('building', '->'.join([r[0:8] for r in path]))
         return self._build_circuit_impl(path)
 
 

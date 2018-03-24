@@ -71,9 +71,10 @@ def is_good_clientside_password_file(pw_file):
             if line[0] == '#':
                 continue
             if len(line) != PW_LEN + 1:
-                return False, 'Password must be on first line and {} chars '\
-                    'long'.format(PW_LEN)
+                return False, 'First non-comment line of {} must be {} '\
+                    'chars long to be a valid password'.format(pw_file, PW_LEN)
             return True, ''
+    return False, 'There were no non-comment lines in {}'.format(pw_file)
 
 
 def is_good_serverside_password_file(pw_file):
@@ -88,9 +89,10 @@ def is_good_serverside_password_file(pw_file):
                 continue
             has_a_line = True
             if len(line) != PW_LEN + 1:
-                return False, 'Line #{} is not {} chars long'.format(i, PW_LEN)
+                return False, '{}:{} is not {} chars long'.format(pw_file,
+                                                                  i, PW_LEN)
     if not has_a_line:
-        return False, 'File must have at least one line'
+        return False, '{} must have at least one line'.format(pw_file)
     return True, ''
 
 

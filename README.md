@@ -11,6 +11,16 @@ The scanner builds two hop circuits consisting of the relay being measured and
 the helper relay running server.py. Over these circuits it measures RTT and
 download performance.
 
+# Installing
+
+Clone the repo
+
+    virtualenv -p python3 venv
+    source venv/bin/activate
+    pip install .
+    sbws client -h
+    sbws server -h
+
 # Authenticating to server.py
 
 Generate a password and store in passwords.txt. It must be 64 characters (or

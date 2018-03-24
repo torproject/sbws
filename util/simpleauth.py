@@ -90,7 +90,7 @@ def is_good_serverside_password_file(pw_file):
             has_a_line = True
             if len(line) != PW_LEN + 1:
                 return False, '{}:{} is not {} chars long'.format(pw_file,
-                                                                  i, PW_LEN)
+                                                                  i+1, PW_LEN)
     if not has_a_line:
         return False, '{} must have at least one line'.format(pw_file)
     return True, ''

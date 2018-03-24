@@ -1,7 +1,7 @@
 from stem import (CircuitExtensionFailed, InvalidRequest)
 import random
-import util.stem as stem_utils
-from lib.relaylist import RelayList
+import sbws.util.stem as stem_utils
+from .relaylist import RelayList
 
 
 class PathLengthException(Exception):

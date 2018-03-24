@@ -1,16 +1,26 @@
-#!/usr/bin/env python3
-from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
+from ..lib.pastlylogger import PastlyLogger
+from ..util.simpleauth import authenticate_client
+from ..util.simpleauth import is_good_serverside_password_file
+from argparse import ArgumentDefaultsHelpFormatter
+from threading import Thread
 import socket
 import time
-from threading import Thread
-from lib.pastlylogger import PastlyLogger
-from util.simpleauth import authenticate_client
-from util.simpleauth import is_good_serverside_password_file
 
-log = PastlyLogger(debug='/dev/stdout', overwrite=['debug'], log_threads=True)
+
+log = None
 
 MAX_SEND_PER_WRITE = 100*1024*1024
 MAX_SEND_PER_WRITE = 4096
+
+
+def gen_parser(sub):
+    p = sub.add_parser('server',
+                       formatter_class=ArgumentDefaultsHelpFormatter)
+    p.add_argument('bind_ip', type=str, default='127.0.0.1')
+    p.add_argument('bind_port', type=int, default=4444)
+    p.add_argument('--password-file', type=str, default='passwords.txt',
+                   help='All lines in this file will be considered '
+                   'valid passwords scanners may use to authenticate.')
 
 
 def fail_hard(*s):
@@ -95,6 +105,13 @@ def new_thread(args, sock):
 
 
 def main(args):
+    global log
+    log = PastlyLogger(debug='/dev/stdout', overwrite=['debug'],
+                       log_threads=True)
+    valid, error_reason = is_good_serverside_password_file(args.password_file)
+    if not valid:
+        fail_hard(error_reason)
+
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     h = (args.bind_ip, args.bind_port)
     log.notice('binding to', h)
@@ -118,20 +135,3 @@ def main(args):
         pass
     finally:
         close_socket(server)
-
-
-if __name__ == '__main__':
-    parser = ArgumentParser(
-            formatter_class=ArgumentDefaultsHelpFormatter)
-    parser.add_argument('bind_ip', type=str, default='127.0.0.1')
-    parser.add_argument('bind_port', type=int, default=4444)
-    parser.add_argument('--password-file', type=str, default='passwords.txt',
-                        help='All lines in this file will be considered '
-                        'valid passwords scanners may use to authenticate.')
-    args = parser.parse_args()
-
-    valid, error_reason = is_good_serverside_password_file(args.password_file)
-    if not valid:
-        fail_hard(error_reason)
-
-    main(args)

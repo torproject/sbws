@@ -1,27 +1,26 @@
-#!/usr/bin/env python3
-from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
-import time
-import socks  # PySocks
-import socket
-import random
+from ..lib.pastlylogger import PastlyLogger
+from ..lib.circuitbuilder import GapsCircuitBuilder as CB
+from ..lib.resultdump import ResultDump
+from ..lib.resultdump import Result
+from ..lib.relaylist import RelayList
+from ..util.simpleauth import is_good_clientside_password_file
+from ..util.simpleauth import authenticate_to_server
+import sbws.util.stem as stem_utils
 from stem.control import EventType
+from argparse import ArgumentDefaultsHelpFormatter
+from multiprocessing.dummy import Pool
 from threading import Event
 from threading import RLock
-from multiprocessing.dummy import Pool
-import util.stem as stem_utils
-from util.simpleauth import is_good_clientside_password_file
-from util.simpleauth import authenticate_to_server
-from lib.circuitbuilder import GapsCircuitBuilder as CB
-from lib.resultdump import ResultDump
-from lib.resultdump import Result
-from lib.relaylist import RelayList
-from lib.pastlylogger import PastlyLogger
+import random
+import socks
+import socket
+import time
 
+
+log = None
 end_event = Event()
 stream_building_lock = RLock()
-log = PastlyLogger(debug='/dev/stdout', overwrite=['debug'], log_threads=True)
 
-# maximum we want to read per read() call
 MAX_RECV_PER_READ = 1*1024*1024
 DOWNLOAD_TIMES = {'toofast': 1, 'min': 5, 'target': 6, 'max': 10}
 DESIRED_RESULTS = 5
@@ -227,7 +226,7 @@ def test_speedtest(args):
     pending_results = []
     relays = rl.relays
     random.shuffle(relays)
-    for target in relays:
+    for target in relays[0:2]:
         callback = result_putter(rd)
         callback_err = result_putter_error(target)
         async_result = pool.apply_async(
@@ -243,37 +242,38 @@ def test_speedtest(args):
     log.notice('Got all results')
 
 
+def gen_parser(sub):
+    p = sub.add_parser('client',
+                       formatter_class=ArgumentDefaultsHelpFormatter)
+    p.add_argument('--control', nargs=2, metavar=('TYPE', 'LOCATION'),
+                   default=['port', '9051'],
+                   help='How to control Tor. Examples: "port 9051" or '
+                   '"socket /var/lib/tor/control"')
+    p.add_argument('--socks-host', default='127.0.0.1', type=str,
+                   help='Host for a local Tor SocksPort')
+    p.add_argument('--socks-port', default=9050, type=int,
+                   help='Port for a local Tor SocksPort')
+    p.add_argument('--server-host', default='127.0.0.1', type=str,
+                   help='Host for a measurement server')
+    p.add_argument('--server-port', default=4444, type=int,
+                   help='Port for a measurement server')
+    p.add_argument('--result-directory', default='dd', type=str,
+                   help='Where to store raw result output')
+    p.add_argument('--threads', default=1, type=int,
+                   help='Number of measurements to make in parallel')
+    p.add_argument('--helper-relay', type=str, required=True,
+                   help='Relay to which to build circuits and is running '
+                   'the server.py')
+    p.add_argument('--password-file', type=str, default='passwords.txt',
+                   help='Read the first line and use it as the password '
+                   'when authenticating to the server.')
+
+
 def main(args):
-    test_speedtest(args)
+    global log
+    log = PastlyLogger(debug='/dev/stdout', overwrite=['debug'],
+                       log_threads=True)
 
-
-if __name__ == '__main__':
-    parser = ArgumentParser(
-            formatter_class=ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--control', nargs=2, metavar=('TYPE', 'LOCATION'),
-                        default=['port', '9051'],
-                        help='How to control Tor. Examples: "port 9051" or '
-                        '"socket /var/lib/tor/control"')
-    parser.add_argument('--socks-host', default='127.0.0.1', type=str,
-                        help='Host for a local Tor SocksPort')
-    parser.add_argument('--socks-port', default=9050, type=int,
-                        help='Port for a local Tor SocksPort')
-    parser.add_argument('--server-host', default='127.0.0.1', type=str,
-                        help='Host for a measurement server')
-    parser.add_argument('--server-port', default=4444, type=int,
-                        help='Port for a measurement server')
-    parser.add_argument('--result-directory', default='dd', type=str,
-                        help='Where to store raw result output')
-    parser.add_argument('--threads', default=1, type=int,
-                        help='Number of measurements to make in parallel')
-    parser.add_argument('--helper-relay', type=str, required=True,
-                        help='Relay to which to build circuits and is running '
-                        'the server.py')
-    parser.add_argument('--password-file', type=str, default='passwords.txt',
-                        help='Read the first line and use it as the password '
-                        'when authenticating to the server.')
-
-    args = parser.parse_args()
     if args.threads < 1:
         fail_hard('--threads must be larger than 1')
 
@@ -289,10 +289,8 @@ if __name__ == '__main__':
         fail_hard(error_reason)
 
     try:
-        main(args)
+        test_speedtest(args)
     except KeyboardInterrupt as e:
         raise e
     finally:
         end_event.set()
-
-# pylama:ignore=E265

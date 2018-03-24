@@ -74,7 +74,7 @@ def tell_server_amount(sock, expected_amount):
     amount = '{}\n'.format(expected_amount)
     try:
         sock.send(bytes(amount, 'utf-8'))
-    except socket.timeout as e:
+    except (socket.timeout, ConnectionResetError, BrokenPipeError) as e:
         log.info(e)
         return False
     return True
@@ -89,7 +89,7 @@ def timed_recv_from_server(sock, yet_to_read):
         limit = min(MAX_RECV_PER_READ, yet_to_read)
         try:
             read_this_time = len(sock.recv(limit))
-        except socket.timeout as e:
+        except (socket.timeout, ConnectionResetError, BrokenPipeError) as e:
             log.info(e)
             return
         if read_this_time == 0:
@@ -109,7 +109,11 @@ def measure_rtt_to_server(sock):
         if not tell_server_amount(sock, 1):
             log.info('Unable to ping server on', sock.fileno())
             return
-        amount_read = len(sock.recv(1))
+        try:
+            amount_read = len(sock.recv(1))
+        except (socket.timeout, ConnectionResetError, BrokenPipeError) as e:
+            log.info(e)
+            return
         end_time = time.time()
         if amount_read == 0:
             log.info('No pong from server on', sock.fileno())

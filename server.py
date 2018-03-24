@@ -30,7 +30,7 @@ def read_line(s):
     while True:
         try:
             c = s.recv(1)
-        except ConnectionResetError as e:
+        except (ConnectionResetError, BrokenPipeError, socket.timeout) as e:
             log.info(e)
             return None
         if not c:
@@ -69,7 +69,7 @@ def write_to_client(sock, amount):
         amount -= amount_this_time
         try:
             sock.send(b'a' * amount_this_time)
-        except (ConnectionResetError, BrokenPipeError) as e:
+        except (socket.timeout, ConnectionResetError, BrokenPipeError) as e:
             log.info('fd', sock.fileno(), ':', e)
             return False
     return True

@@ -12,19 +12,34 @@ def authenticate_client(sock, pw_file, log_fn=print):
     '''
     assert sock.fileno() > 0
     assert is_good_serverside_password_file(pw_file)
-    magic = sock.recv(len(MAGIC_BYTES))
+    try:
+        magic = sock.recv(len(MAGIC_BYTES))
+    except socket.timeout as e:
+        log_fn(e)
+        return False
     if magic != MAGIC_BYTES:
         log_fn('Magic string doesn\'t match')
         return False
+
     try:
         pw = str(sock.recv(PW_LEN), 'utf-8')
     except UnicodeDecodeError:
         log_fn('Non-unicode password string received')
         return False
+    except socket.timeout as e:
+        log_fn(e)
+        return False
+
     if not _is_valid_password(pw, pw_file):
         log_fn('Invalid password')
         return False
-    sock.send(SUCCESS_BYTES)
+
+    try:
+        sock.send(SUCCESS_BYTES)
+    except (ConnectionResetError, BrokenPipeError) as e:
+        log_fn(e)
+        return False
+    return True
 
 
 def authenticate_to_server(sock, pw_file, log_fn=print):
@@ -36,7 +51,7 @@ def authenticate_to_server(sock, pw_file, log_fn=print):
         sock.send(MAGIC_BYTES)
         sock.send(bytes(pw, 'utf-8'))
         msg = sock.recv(len(SUCCESS_BYTES))
-    except socket.timeout as e:
+    except (socket.timeout, ConnectionResetError, BrokenPipeError) as e:
         log_fn(e)
         return False
     if msg != SUCCESS_BYTES:

@@ -4,11 +4,21 @@ import socket
 import time
 from threading import Thread
 from lib.pastlylogger import PastlyLogger
+from util.simpleauth import authenticate_client
+from util.simpleauth import is_good_serverside_password_file
 
 log = PastlyLogger(debug='/dev/stdout', overwrite=['debug'], log_threads=True)
 
 MAX_SEND_PER_WRITE = 100*1024*1024
 MAX_SEND_PER_WRITE = 4096
+
+
+def fail_hard(*s):
+    ''' Optionally log something to stdout ... and then exit as fast as
+    possible '''
+    if s:
+        log.error(*s)
+    exit(1)
 
 
 def read_line(s):
@@ -65,8 +75,12 @@ def write_to_client(sock, amount):
     return True
 
 
-def new_thread(sock):
+def new_thread(args, sock):
     def closure():
+        if not authenticate_client(sock, args.password_file, log.info):
+            log.info('Client did not provide valid auth')
+            close_socket(sock)
+            return
         while True:
             send_amount = get_send_amount(sock)
             if send_amount is None:
@@ -97,7 +111,7 @@ def main(args):
         while True:
             sock, addr = server.accept()
             log.info('accepting connection from', addr, 'as', sock.fileno())
-            t = new_thread(sock)
+            t = new_thread(args, sock)
             t.start()
     except KeyboardInterrupt:
         pass
@@ -110,5 +124,13 @@ if __name__ == '__main__':
             formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument('bind_ip', type=str, default='127.0.0.1')
     parser.add_argument('bind_port', type=int, default=4444)
+    parser.add_argument('--password-file', type=str, default='passwords.txt',
+                        help='All lines in this file will be considered '
+                        'valid passwords scanners may use to authenticate.')
     args = parser.parse_args()
+
+    valid, error_reason = is_good_serverside_password_file(args.password_file)
+    if not valid:
+        fail_hard(error_reason)
+
     main(args)

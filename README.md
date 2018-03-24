@@ -11,6 +11,17 @@ The scanner builds two hop circuits consisting of the relay being measured and
 the helper relay running server.py. Over these circuits it measures RTT and
 download performance.
 
+# Authenticating to server.py
+
+Generate a password and store in passwords.txt. It must be 64 characters (or
+bytes?) long and valid unicode. Just use regular ASCII 1-byte chars, as in this
+example please. Multiple passwords may be specified, one per line.
+
+    (</dev/urandom tr -dc 'a-zA-Z0-9' | head -c 64; echo '') | tee -a passwords.txt
+
+The scanner will pick the first password and use it always. The server will
+accept any password in the file.
+
 ----------
 
 Some quick notes to get you started

@@ -9,6 +9,8 @@ from threading import Event
 from threading import RLock
 from multiprocessing.dummy import Pool
 import util.stem as stem_utils
+from util.simpleauth import is_good_clientside_password_file
+from util.simpleauth import authenticate_to_server
 from lib.circuitbuilder import GapsCircuitBuilder as CB
 from lib.resultdump import ResultDump
 from lib.resultdump import Result
@@ -142,6 +144,11 @@ def measure_relay(args, cb, rl, relay):
         log.info('Unable to connect to', args.server_host, args.server_port)
         cb.close_circuit(circ_id)
         return
+    if not authenticate_to_server(s, args.password_file, log.info):
+        log.info('Unable to authenticate to the server')
+        close_socket(s)
+        cb.close_circuit(circ_id)
+        return
     # FIRST: measure the end-to-end RTT many times
     rtts = measure_rtt_to_server(s)
     if rtts is None:
@@ -257,16 +264,25 @@ if __name__ == '__main__':
     parser.add_argument('--helper-relay', type=str, required=True,
                         help='Relay to which to build circuits and is running '
                         'the server.py')
+    parser.add_argument('--password-file', type=str, default='passwords.txt',
+                        help='Read the first line and use it as the password '
+                        'when authenticating to the server.')
 
     args = parser.parse_args()
     if args.threads < 1:
         fail_hard('--threads must be larger than 1')
+
     if args.control[0] not in ['port', 'socket']:
         fail_hard('Must specify either control port or socket. '
                   'Not "{}"'.format(args.control[0]))
     if args.control[0] == 'port':
 
         args.control[1] = int(args.control[1])
+
+    valid, error_reason = is_good_clientside_password_file(args.password_file)
+    if not valid:
+        fail_hard(error_reason)
+
     try:
         main(args)
     except KeyboardInterrupt as e:

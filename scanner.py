@@ -153,6 +153,7 @@ def measure_relay(args, cb, rl, relay):
         close_socket(s)
         cb.close_circuit(circ_id)
         return
+    log.debug('Authed to server successfully')
     # FIRST: measure the end-to-end RTT many times
     rtts = measure_rtt_to_server(s)
     if rtts is None:

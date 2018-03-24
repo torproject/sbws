@@ -81,6 +81,7 @@ def new_thread(args, sock):
             log.info('Client did not provide valid auth')
             close_socket(sock)
             return
+        log.debug('Client authed successfully')
         while True:
             send_amount = get_send_amount(sock)
             if send_amount is None:

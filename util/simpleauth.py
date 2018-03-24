@@ -68,6 +68,8 @@ def is_good_clientside_password_file(pw_file):
         return False, '{} does not exist'.format(pw_file)
     with open(pw_file, 'rt') as fd:
         for line in fd:
+            if line[0] == '#':
+                continue
             if len(line) != PW_LEN + 1:
                 return False, 'Password must be on first line and {} chars '\
                     'long'.format(PW_LEN)
@@ -82,6 +84,8 @@ def is_good_serverside_password_file(pw_file):
     has_a_line = False
     with open(pw_file, 'rt') as fd:
         for i, line in enumerate(fd):
+            if line[0] == '#':
+                continue
             has_a_line = True
             if len(line) != PW_LEN + 1:
                 return False, 'Line #{} is not {} chars long'.format(i, PW_LEN)
@@ -94,6 +98,8 @@ def _is_valid_password(pw, pw_file):
     assert is_good_serverside_password_file(pw_file)
     with open(pw_file, 'rt') as fd:
         for line in fd:
+            if line[0] == '#':
+                continue
             line = line[0:-1]
             if pw == line:
                 return True
@@ -104,4 +110,6 @@ def _get_client_password(pw_file):
     assert is_good_clientside_password_file(pw_file)
     with open(pw_file, 'rt') as fd:
         for line in fd:
+            if line[0] == '#':
+                continue
             return line[0:-1]

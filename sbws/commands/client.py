@@ -5,6 +5,7 @@ from ..lib.resultdump import Result
 from ..lib.relaylist import RelayList
 from ..util.simpleauth import is_good_clientside_password_file
 from ..util.simpleauth import authenticate_to_server
+from sbws.globals import is_initted
 import sbws.util.stem as stem_utils
 from stem.control import EventType
 from argparse import ArgumentDefaultsHelpFormatter
@@ -15,6 +16,7 @@ import random
 import socks
 import socket
 import time
+import os
 
 
 log = None
@@ -273,6 +275,8 @@ def main(args):
     global log
     log = PastlyLogger(debug='/dev/stdout', overwrite=['debug'],
                        log_threads=True)
+    if not is_initted(os.getcwd()):
+        fail_hard('Directory isn\'t initted')
 
     if args.threads < 1:
         fail_hard('--threads must be larger than 1')

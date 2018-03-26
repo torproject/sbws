@@ -18,6 +18,7 @@ Clone the repo
     virtualenv -p python3 venv
     source venv/bin/activate
     pip install .
+    sbws init
     sbws client -h
     sbws server -h
 

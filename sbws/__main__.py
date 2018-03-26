@@ -1,4 +1,5 @@
 import sbws.commands.client
+import sbws.commands.init
 import sbws.commands.server
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
@@ -10,6 +11,7 @@ def create_parser():
     p = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
     sub = p.add_subparsers(dest='command')
     sbws.commands.client.gen_parser(sub)
+    sbws.commands.init.gen_parser(sub)
     sbws.commands.server.gen_parser(sub)
     return p
 
@@ -21,6 +23,8 @@ def main():
     def_kwargs = {}
     known_commands = {
         'client': {'f': sbws.commands.client.main,
+                   'a': def_args, 'kw': def_kwargs},
+        'init': {'f': sbws.commands.init.main,
                    'a': def_args, 'kw': def_kwargs},
         'server': {'f': sbws.commands.server.main,
                    'a': def_args, 'kw': def_kwargs},

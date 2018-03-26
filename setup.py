@@ -19,6 +19,10 @@ def get_package_data():
     #     for f in fs:
     #         other_files.append(os.path.join(r, f))
     # return other_files
+    return ['passwords.txt.example']
+
+
+def get_data_files():
     return []
 
 
@@ -49,9 +53,10 @@ setup(
         'Development Status :: 3 - Alpha',
     ],
     packages=find_packages(),
-    # package_data={
-    #     'foo': get_package_data(),
-    # },
+    package_data={
+        'sbws': get_package_data(),
+    },
+    data_files=get_data_files(),
     keywords='',
     python_requires='>=3.5',
     # test_suite='test',

@@ -1,10 +1,12 @@
 from ..lib.pastlylogger import PastlyLogger
 from ..util.simpleauth import authenticate_client
 from ..util.simpleauth import is_good_serverside_password_file
+from sbws.globals import is_initted
 from argparse import ArgumentDefaultsHelpFormatter
 from threading import Thread
 import socket
 import time
+import os
 
 
 log = None
@@ -108,6 +110,9 @@ def main(args):
     global log
     log = PastlyLogger(debug='/dev/stdout', overwrite=['debug'],
                        log_threads=True)
+    if not is_initted(os.getcwd()):
+        fail_hard('Directory isn\'t initted')
+
     valid, error_reason = is_good_serverside_password_file(args.password_file)
     if not valid:
         fail_hard(error_reason)

@@ -5,7 +5,7 @@ from ..lib.resultdump import Result
 from ..lib.relaylist import RelayList
 from ..util.simpleauth import is_good_clientside_password_file
 from ..util.simpleauth import authenticate_to_server
-from sbws.globals import is_initted
+from sbws.globals import (fail_hard, is_initted)
 import sbws.util.stem as stem_utils
 from stem.control import EventType
 from argparse import ArgumentDefaultsHelpFormatter
@@ -26,14 +26,6 @@ stream_building_lock = RLock()
 MAX_RECV_PER_READ = 1*1024*1024
 DOWNLOAD_TIMES = {'toofast': 1, 'min': 5, 'target': 6, 'max': 10}
 DESIRED_RESULTS = 5
-
-
-def fail_hard(*s):
-    ''' Optionally log something to stdout ... and then exit as fast as
-    possible '''
-    if s:
-        log.error(*s)
-    exit(1)
 
 
 def make_socket(socks_host, socks_port):

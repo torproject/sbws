@@ -1,7 +1,7 @@
 from ..lib.pastlylogger import PastlyLogger
 from ..util.simpleauth import authenticate_client
 from ..util.simpleauth import is_good_serverside_password_file
-from sbws.globals import is_initted
+from sbws.globals import (fail_hard, is_initted)
 from argparse import ArgumentDefaultsHelpFormatter
 from threading import Thread
 import socket
@@ -23,14 +23,6 @@ def gen_parser(sub):
     p.add_argument('--password-file', type=str, default='passwords.txt',
                    help='All lines in this file will be considered '
                    'valid passwords scanners may use to authenticate.')
-
-
-def fail_hard(*s):
-    ''' Optionally log something to stdout ... and then exit as fast as
-    possible '''
-    if s:
-        log.error(*s)
-    exit(1)
 
 
 def read_line(s):

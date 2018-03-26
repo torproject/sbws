@@ -17,3 +17,12 @@ def is_initted(d):
         if not os.path.exists(fname):
             return False
     return True
+
+
+def fail_hard(*s):
+    ''' Optionally log something to stdout ... and then exit as fast as
+    possible '''
+    if s:
+        # log.error(*s)
+        print(*s)
+    exit(1)

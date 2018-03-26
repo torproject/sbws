@@ -1,4 +1,5 @@
 import sbws.commands.client
+import sbws.commands.generate
 import sbws.commands.init
 import sbws.commands.server
 from sbws.globals import make_logger
@@ -18,6 +19,7 @@ def create_parser():
         help='Decrease log level verbosity from the configured value')
     sub = p.add_subparsers(dest='command')
     sbws.commands.client.gen_parser(sub)
+    sbws.commands.generate.gen_parser(sub)
     sbws.commands.init.gen_parser(sub)
     sbws.commands.server.gen_parser(sub)
     return p
@@ -31,6 +33,8 @@ def main():
     def_kwargs = {}
     known_commands = {
         'client': {'f': sbws.commands.client.main,
+                   'a': def_args, 'kw': def_kwargs},
+        'generate': {'f': sbws.commands.generate.main,
                    'a': def_args, 'kw': def_kwargs},
         'init': {'f': sbws.commands.init.main,
                  'a': def_args, 'kw': def_kwargs},

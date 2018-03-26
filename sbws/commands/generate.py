@@ -1,9 +1,9 @@
-#!/usr/bin/env python3
-from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
+from sbws.globals import (fail_hard, is_initted)
+from argparse import ArgumentDefaultsHelpFormatter
+from statistics import median
 import os
 import json
 import time
-from statistics import median
 
 
 def read_result_file(fname, starting_dict=None):
@@ -52,8 +52,26 @@ def scale_lines(v3bw_lines, scale_max):
     return v3bw_lines
 
 
-def main(args):
-    assert os.path.isdir(args.result_directory)
+def gen_parser(sub):
+    p = sub.add_parser('generate',
+                       formatter_class=ArgumentDefaultsHelpFormatter)
+    p.add_argument('--result-directory', default='dd', type=str,
+                   help='Where result data from scanner.py is stored')
+    p.add_argument('--output', default='/dev/stdout', type=str,
+                   help='Where to write v3bw file')
+    p.add_argument('--scale-max', default=50000000, type=int,
+                   help='When scaling bw weights, scale them up/down '
+                   'as if this is the sum of all measurements')
+
+
+def main(args, log_):
+    global log
+    log = log_
+    if not is_initted(os.getcwd()):
+        fail_hard('Directory isn\'t initted')
+    if not os.path.isdir(args.result_directory):
+        fail_hard(args.result_directory, 'does not exist')
+
     data_fnames = sorted(os.listdir(args.result_directory), reverse=True)
     data_fnames = data_fnames[0:14]
     data_fnames = [os.path.join(args.result_directory, f) for f in data_fnames]
@@ -67,17 +85,3 @@ def main(args):
         fd.write('{}\n'.format(int(time.time())))
         for line in data_lines:
             fd.write('{}\n'.format(str(line)))
-
-
-if __name__ == '__main__':
-    parser = ArgumentParser(
-            formatter_class=ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--result-directory', default='dd', type=str,
-                        help='Where result data from scanner.py is stored')
-    parser.add_argument('--output', default='/dev/stdout', type=str,
-                        help='Where to write v3bw file')
-    parser.add_argument('--scale-max', default=50000000, type=int,
-                        help='When scaling bw weights, scale them up/down '
-                        'as if this is the sum of all measurements')
-    args = parser.parse_args()
-    main(args)

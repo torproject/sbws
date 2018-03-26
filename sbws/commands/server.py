@@ -1,4 +1,3 @@
-from ..lib.pastlylogger import PastlyLogger
 from ..util.simpleauth import authenticate_client
 from ..util.simpleauth import is_good_serverside_password_file
 from sbws.globals import (fail_hard, is_initted)
@@ -8,8 +7,6 @@ import socket
 import time
 import os
 
-
-log = None
 
 MAX_SEND_PER_WRITE = 100*1024*1024
 MAX_SEND_PER_WRITE = 4096
@@ -98,10 +95,9 @@ def new_thread(args, sock):
     return thread
 
 
-def main(args):
+def main(args, log_):
     global log
-    log = PastlyLogger(debug='/dev/stdout', overwrite=['debug'],
-                       log_threads=True)
+    log = log_
     if not is_initted(os.getcwd()):
         fail_hard('Directory isn\'t initted')
 

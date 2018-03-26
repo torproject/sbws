@@ -1,20 +1,16 @@
 from sbws.globals import (G_INIT_FILE_MAP, is_initted, fail_hard)
-from ..lib.pastlylogger import PastlyLogger
 from argparse import ArgumentDefaultsHelpFormatter
 import os
 import shutil
-
-log = None
 
 
 def gen_parser(sub):
     p = sub.add_parser('init', formatter_class=ArgumentDefaultsHelpFormatter)
 
 
-def main(args):
+def main(args, log_):
     global log
-    log = PastlyLogger(debug='/dev/stdout', overwrite=['debug'],
-                       log_threads=True)
+    log = log_
     if is_initted(os.getcwd()):
         fail_hard('Directory already seems to be initted')
 

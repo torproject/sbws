@@ -1,4 +1,3 @@
-from ..lib.pastlylogger import PastlyLogger
 from ..lib.circuitbuilder import GapsCircuitBuilder as CB
 from ..lib.resultdump import ResultDump
 from ..lib.resultdump import Result
@@ -19,7 +18,6 @@ import time
 import os
 
 
-log = None
 end_event = Event()
 stream_building_lock = RLock()
 
@@ -263,10 +261,9 @@ def gen_parser(sub):
                    'when authenticating to the server.')
 
 
-def main(args):
+def main(args, log_):
     global log
-    log = PastlyLogger(debug='/dev/stdout', overwrite=['debug'],
-                       log_threads=True)
+    log = log_
     if not is_initted(os.getcwd()):
         fail_hard('Directory isn\'t initted')
 

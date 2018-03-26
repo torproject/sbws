@@ -56,7 +56,7 @@ def gen_parser(sub):
     p = sub.add_parser('generate',
                        formatter_class=ArgumentDefaultsHelpFormatter)
     p.add_argument('--result-directory', default='dd', type=str,
-                   help='Where result data from scanner.py is stored')
+                   help='Where result data from the sbws client is stored')
     p.add_argument('--output', default='/dev/stdout', type=str,
                    help='Where to write v3bw file')
     p.add_argument('--scale-max', default=50000000, type=int,

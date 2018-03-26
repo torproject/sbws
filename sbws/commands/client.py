@@ -255,7 +255,7 @@ def gen_parser(sub):
                    help='Number of measurements to make in parallel')
     p.add_argument('--helper-relay', type=str, required=True,
                    help='Relay to which to build circuits and is running '
-                   'the server.py')
+                   'the sbws server')
     p.add_argument('--password-file', type=str, default='passwords.txt',
                    help='Read the first line and use it as the password '
                    'when authenticating to the server.')

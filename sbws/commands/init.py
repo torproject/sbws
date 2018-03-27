@@ -19,6 +19,9 @@ def main(args, log_):
 
     for src, dst, ftype in G_INIT_FILE_MAP:
         log.info(dst, '({})'.format(ftype))
+        if os.path.exists(dst):
+            log.warn(dst, 'already exists, not overwriting')
+            continue
         if ftype == 'file':
             try:
                 shutil.copy(src, dst)

@@ -1,3 +1,5 @@
+"""Measure the relays."""
+
 from ..lib.circuitbuilder import GapsCircuitBuilder as CB
 from ..lib.resultdump import ResultDump
 from ..lib.resultdump import Result
@@ -21,6 +23,8 @@ import os
 end_event = Event()
 stream_building_lock = RLock()
 
+# NOTE: move constants to a different file so it's easy to adjust?
+# there these values come from?, avg tor speed?
 MAX_RECV_PER_READ = 1*1024*1024
 DOWNLOAD_TIMES = {'toofast': 1, 'min': 5, 'target': 6, 'max': 10}
 DESIRED_RESULTS = 5
@@ -116,7 +120,23 @@ def measure_rtt_to_server(sock):
 def measure_relay(args, cb, rl, relay):
     ''' Runs in a worker thread. Measures the given relay. If all measurements
     are successful, returns a Result that should get handed off to the
-    ResultDump. Otherwise returns None '''
+    ResultDump. Otherwise returns None.
+
+    In more detail:
+    1. build a two hops circuit from the relay we are measuring to the helper
+       relay
+    2. attach all the streams created on connect to the circuit
+    3. create a new thread
+    3. measure the end-to-end RTT many times
+    4. measure throughput on the built circuit, repeating 5 times:
+       4.1. tell the files server the desired amount of bytes to get
+       4.2. get the bytes and the time it took
+       4.3. calculate the expected amount of bytes according to xx <- FIXME
+            If it was too fast, download more data
+            If it was too slow, download less data
+       4.4. write down the results
+
+    '''
     circ_id = cb.build_circuit([relay.fingerprint, args.helper_relay])
     if not circ_id:
         log.debug('Could not build circuit involving', relay.nickname)
@@ -133,6 +153,7 @@ def measure_relay(args, cb, rl, relay):
         s = make_socket(args.socks_host, args.socks_port)
         # This call blocks until we are connected (or give up). We get attched
         # to the right circuit in the background.
+        # NOTE: socket_connect has a timeout?
         connected = socket_connect(s, args.server_host, args.server_port)
         stem_utils.remove_event_listener(cb.controller, listener,
                                          log_fn=log.info)
@@ -155,6 +176,7 @@ def measure_relay(args, cb, rl, relay):
     # SECOND: measure throughput on this sircuit. Start with what should be a
     # small amount
     results = []
+    # NOTE: why 16*1024?, move it to a constant?
     expected_amount = 16*1024
     while len(results) < DESIRED_RESULTS:
         # Tell the server to send us the current expected_amount.
@@ -169,11 +191,13 @@ def measure_relay(args, cb, rl, relay):
             close_socket(s)
             cb.close_circuit(circ_id)
             return
+        # Adjust amount of bytes to download in the next download
         if result_time < DOWNLOAD_TIMES['toofast']:
             expected_amount = int(expected_amount * 10)
         elif result_time < DOWNLOAD_TIMES['min']:
             expected_amount = int(
                 expected_amount * DOWNLOAD_TIMES['target'] / result_time)
+        # NOTE: only writing down results for target and max cases?
         elif result_time < DOWNLOAD_TIMES['target']:
             results.append(
                 {'duration': result_time, 'amount': expected_amount})

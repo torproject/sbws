@@ -1,4 +1,4 @@
-"""Measure the relays."""
+''' Measure the relays. '''
 
 from ..lib.circuitbuilder import GapsCircuitBuilder as CB
 from ..lib.resultdump import ResultDump
@@ -23,11 +23,13 @@ import os
 end_event = Event()
 stream_building_lock = RLock()
 
+# TODO: Store these in a config file. See github#14
 # NOTE: move constants to a different file so it's easy to adjust?
 # there these values come from?, avg tor speed?
 MAX_RECV_PER_READ = 1*1024*1024
 DOWNLOAD_TIMES = {'toofast': 1, 'min': 5, 'target': 6, 'max': 10}
 DESIRED_RESULTS = 5
+INITIAL_READ_REQUEST = 16*1024
 
 
 def make_socket(socks_host, socks_port):
@@ -54,7 +56,8 @@ def socket_connect(s, addr, port):
     try:
         s.connect((addr, port))
         log.debug('Connected to', addr, port, 'via', s.fileno())
-    except (socks.GeneralProxyError, socks.ProxyConnectionError) as e:
+    except (socket.timeout, socks.GeneralProxyError,
+            socks.ProxyConnectionError) as e:
         log.warn(e)
         return False
     return True
@@ -63,7 +66,7 @@ def socket_connect(s, addr, port):
 def tell_server_amount(sock, expected_amount):
     ''' Returns True on success; else False '''
     assert expected_amount > 0
-    # Expectd_amount should come in as an int, but we send it to the server as
+    # expectd_amount should come in as an int, but we send it to the server as
     # a string (ignore the difference between bytes and str in python. You know
     # what I mean).
     amount = '{}\n'.format(expected_amount)
@@ -125,15 +128,23 @@ def measure_relay(args, cb, rl, relay):
     In more detail:
     1. build a two hops circuit from the relay we are measuring to the helper
        relay
-    2. attach all the streams created on connect to the circuit
-    3. create a new thread
+    2. listen for stream creations, connect to the server, and (in the
+       background during connect) attach the resulting steam to the circuit
+       we built
     3. measure the end-to-end RTT many times
-    4. measure throughput on the built circuit, repeating 5 times:
+    4. measure throughput on the built circuit, repeat the following until we
+       have reached DESIRED_RESULTS
        4.1. tell the files server the desired amount of bytes to get
        4.2. get the bytes and the time it took
-       4.3. calculate the expected amount of bytes according to xx <- FIXME
-            If it was too fast, download more data
-            If it was too slow, download less data
+       4.3. calculate the expected amount of bytes according to:
+        - If it hardly took any time at all, greatly increase the amount of
+          bytes to read
+        - If it went a little too fast, adjust the amount of bytes to read
+          so that they'll probably take the target amount of time to download
+        - If it took a reaonsable amount of time to download, then record the
+          result and read the same amount of bytes next time
+        - If it took too long, adjust the amount of bytes to read so that
+          they'll probably take the target amount of time to download
        4.4. write down the results
 
     '''
@@ -153,7 +164,6 @@ def measure_relay(args, cb, rl, relay):
         s = make_socket(args.socks_host, args.socks_port)
         # This call blocks until we are connected (or give up). We get attched
         # to the right circuit in the background.
-        # NOTE: socket_connect has a timeout?
         connected = socket_connect(s, args.server_host, args.server_port)
         stem_utils.remove_event_listener(cb.controller, listener,
                                          log_fn=log.info)
@@ -173,11 +183,10 @@ def measure_relay(args, cb, rl, relay):
         close_socket(s)
         cb.close_circuit(circ_id)
         return
-    # SECOND: measure throughput on this sircuit. Start with what should be a
+    # SECOND: measure throughput on this circuit. Start with what should be a
     # small amount
     results = []
-    # NOTE: why 16*1024?, move it to a constant?
-    expected_amount = 16*1024
+    expected_amount = INITIAL_READ_REQUEST
     while len(results) < DESIRED_RESULTS:
         # Tell the server to send us the current expected_amount.
         if not tell_server_amount(s, expected_amount):
@@ -193,18 +202,21 @@ def measure_relay(args, cb, rl, relay):
             return
         # Adjust amount of bytes to download in the next download
         if result_time < DOWNLOAD_TIMES['toofast']:
+            # Way too fast, greatly increase the amount we ask for
             expected_amount = int(expected_amount * 10)
         elif result_time < DOWNLOAD_TIMES['min']:
+            # A little too fast, increase the amount we ask for such that it
+            # will probably take the target amount of time to download
             expected_amount = int(
                 expected_amount * DOWNLOAD_TIMES['target'] / result_time)
-        # NOTE: only writing down results for target and max cases?
-        elif result_time < DOWNLOAD_TIMES['target']:
-            results.append(
-                {'duration': result_time, 'amount': expected_amount})
         elif result_time < DOWNLOAD_TIMES['max']:
+            # result_time is between min and max, record the result and don't
+            # change the expected_amount
             results.append(
                 {'duration': result_time, 'amount': expected_amount})
         else:
+            # result_time is too large, decrease the amount we ask for such
+            # that it will probably take the target amount of time to download
             expected_amount = int(
                 expected_amount * DOWNLOAD_TIMES['target'] / result_time)
     circ = cb.get_circuit_path(circ_id)

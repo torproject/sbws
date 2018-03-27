@@ -78,6 +78,7 @@ class CircuitBuilder:
             raise PathLengthException()
         c = self.controller
         assert stem_utils.is_controller_okay(c)
+        self.log.debug('Building', [p[0:8] for p in path])
         for _ in range(0, 3):
             try:
                 circ_id = c.new_circuit(path, await_build=True)
@@ -179,6 +180,7 @@ class GapsCircuitBuilder(CircuitBuilder):
                 continue
             relay = stem_utils.fp_or_nick_to_relay(self.controller, fp)
             if not relay:
+                self.log.debug('Failed to get descriptor for relay', fp)
                 return None
             new_path.append(relay)
         return new_path
@@ -216,9 +218,10 @@ class GapsCircuitBuilder(CircuitBuilder):
         insert_relays = self._random_sample_relays(
             num_missing, [r for r in path if r is not None])
         if insert_relays is None:
-            self.log.warn('Problem building a circuit to satisfy',
-                  [r.nickname if r else None for r in path], 'with available '
-                  'relays in the network')
+            self.log.warn(
+                'Problem building a circuit to satisfy',
+                [r.nickname if r else None for r in path], 'with available '
+                'relays in the network')
             return None
         assert len(insert_relays) == num_missing
         path = [r.fingerprint if r else insert_relays.pop().fingerprint

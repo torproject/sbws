@@ -4,6 +4,7 @@ import json
 from glob import glob
 from threading import Thread
 from threading import Event
+from threading import RLock
 from queue import Queue
 from queue import Empty
 from datetime import date
@@ -94,16 +95,21 @@ class ResultDump:
         self.fresh_days = args.data_period
         self.datadir = args.result_directory
         self.end_event = end_event
+        self.data = None
+        self.data_lock = RLock()
         self.thread = Thread(target=self.enter)
         self.queue = Queue()
         self.thread.start()
 
     def store_result(self, result):
+        ''' Call from ResultDump thread '''
         assert isinstance(result, Result)
-        self.data.append(result)
-        self.data = self._trim_stale_data(self.data)
+        with self.data_lock:
+            self.data.append(result)
+            self.data = self._trim_stale_data(self.data)
 
     def write_result(self, result):
+        ''' Call from ResultDump thread '''
         assert isinstance(result, Result)
         dt = date.fromtimestamp(result.time)
         ext = '.txt'
@@ -113,6 +119,7 @@ class ResultDump:
             fd.write('{}\n'.format(str(result)))
 
     def _load_data_file(self, fname):
+        ''' Call from ResultDump thread '''
         assert os.path.isfile(fname)
         d = []
         with open(fname, 'rt') as fd:
@@ -122,6 +129,7 @@ class ResultDump:
         return d
 
     def _trim_stale_data(self, in_data):
+        ''' Call from ResultDump thread '''
         data = []
         oldest_allowed = time.time() - (self.fresh_days*24*60*60)
         for result in in_data:
@@ -130,7 +138,8 @@ class ResultDump:
         self.log.debug('Keeping {}/{} data'.format(len(data), len(in_data)))
         return data
 
-    def load_fresh_data(self):
+    def _load_fresh_data(self):
+        ''' Call from ResultDump thread '''
         data = []
         today = date.fromtimestamp(time.time())
         # Load a day extra. It's okay: we'll trim it afterward. This should
@@ -147,7 +156,9 @@ class ResultDump:
         return data
 
     def enter(self):
-        self.data = self.load_fresh_data()
+        ''' Main loop for the ResultDump thread '''
+        with self.data_lock:
+            self.data = self._load_fresh_data()
         while not (self.end_event.is_set() and self.queue.empty()):
             try:
                 event = self.queue.get(timeout=1)

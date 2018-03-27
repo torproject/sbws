@@ -9,6 +9,7 @@ from queue import Queue
 from queue import Empty
 from datetime import date
 from datetime import timedelta
+from stem.descriptor.router_status_entry import RouterStatusEntryV3
 
 
 class Result:
@@ -175,3 +176,8 @@ class ResultDump:
             self.store_result(result)
             self.write_result(result)
             self.log.debug(fp, nick, 'finished measurement')
+
+    def results_for_relay(self, relay):
+        assert isinstance(relay, RouterStatusEntryV3)
+        with self.data_lock:
+            return [r for r in self.data if r.fingerprint == relay.fingerprint]

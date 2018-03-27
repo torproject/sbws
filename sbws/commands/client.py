@@ -2,6 +2,7 @@ from ..lib.circuitbuilder import GapsCircuitBuilder as CB
 from ..lib.resultdump import ResultDump
 from ..lib.resultdump import Result
 from ..lib.relaylist import RelayList
+from ..lib.relayprioritizer import RelayPrioritizer
 from ..util.simpleauth import is_good_clientside_password_file
 from ..util.simpleauth import authenticate_to_server
 from sbws.globals import (fail_hard, is_initted)
@@ -11,7 +12,6 @@ from argparse import ArgumentDefaultsHelpFormatter
 from multiprocessing.dummy import Pool
 from threading import Event
 from threading import RLock
-import random
 import socks
 import socket
 import time
@@ -119,6 +119,7 @@ def measure_relay(args, cb, rl, relay):
     ResultDump. Otherwise returns None '''
     circ_id = cb.build_circuit([relay.fingerprint, args.helper_relay])
     if not circ_id:
+        log.debug('Could not build circuit involving', relay.nickname)
         return
     # A function that attaches all streams that gets created on
     # connect() to the given circuit
@@ -213,25 +214,22 @@ def test_speedtest(args):
     cb = CB(args, log, controller=controller)
     rl = RelayList(args, log, controller=controller)
     rd = ResultDump(args, log, end_event)
+    rp = RelayPrioritizer(args, log, rl, rd)
     max_pending_results = args.threads
     pool = Pool(max_pending_results)
     pending_results = []
-    relays = rl.relays
-    random.shuffle(relays)
-    for target in relays[0:2]:
-        callback = result_putter(rd)
-        callback_err = result_putter_error(target)
-        async_result = pool.apply_async(
-            measure_relay, [args, cb, rl, target], {},
-            callback, callback_err)
-        pending_results.append(async_result)
-        while len(pending_results) >= max_pending_results:
-            time.sleep(5)
-            pending_results = [r for r in pending_results if not r.ready()]
-    log.notice('Waiting for all results')
-    for r in pending_results:
-        r.wait()
-    log.notice('Got all results')
+    while True:
+        for target in rp.best_priority():
+            log.debug('Measuring', target.nickname)
+            callback = result_putter(rd)
+            callback_err = result_putter_error(target)
+            async_result = pool.apply_async(
+                measure_relay, [args, cb, rl, target], {},
+                callback, callback_err)
+            pending_results.append(async_result)
+            while len(pending_results) >= max_pending_results:
+                time.sleep(5)
+                pending_results = [r for r in pending_results if not r.ready()]
 
 
 def gen_parser(sub):

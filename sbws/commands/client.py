@@ -212,7 +212,7 @@ def test_speedtest(args):
         log_fn=log.debug)
     cb = CB(args, log, controller=controller)
     rl = RelayList(args, log, controller=controller)
-    rd = ResultDump(log, args.result_directory, end_event)
+    rd = ResultDump(args, log, end_event)
     max_pending_results = args.threads
     pool = Pool(max_pending_results)
     pending_results = []

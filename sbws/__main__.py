@@ -17,6 +17,9 @@ def create_parser():
     p.add_argument(
         '-q', '--quiet', action='count', default=0,
         help='Decrease log level verbosity from the configured value')
+    p.add_argument(
+        '--data-period', type=int, default=5,
+        help='Days into the past to consider data fresh')
     sub = p.add_subparsers(dest='command')
     sbws.commands.client.gen_parser(sub)
     sbws.commands.generate.gen_parser(sub)

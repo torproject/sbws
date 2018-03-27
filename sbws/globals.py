@@ -8,7 +8,6 @@ G_INIT_FILE_MAP = [
     (os.path.join(G_PKG_DIR, 'passwords.txt.example'),
      'passwords.txt', 'file'),
 ]
-log = None
 
 
 def is_initted(d):

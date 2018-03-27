@@ -30,7 +30,8 @@ class RelayPrioritizer:
                 priority += freshness
             relay.priority = priority
         relays = sorted(relays, key=lambda r: r.priority)
-        for relay in relays[0:25]:
+        cutoff = max(int(len(relays) * 0.05), 50)
+        for relay in relays[0:cutoff]:
             self.log.debug('Returning next relay', relay.nickname,
                            'with priority', relay.priority)
             del(relay.priority)

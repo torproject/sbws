@@ -35,7 +35,7 @@ def main():
         'client': {'f': sbws.commands.client.main,
                    'a': def_args, 'kw': def_kwargs},
         'generate': {'f': sbws.commands.generate.main,
-                   'a': def_args, 'kw': def_kwargs},
+                     'a': def_args, 'kw': def_kwargs},
         'init': {'f': sbws.commands.init.main,
                  'a': def_args, 'kw': def_kwargs},
         'server': {'f': sbws.commands.server.main,

@@ -274,7 +274,6 @@ def main(args, log_):
         fail_hard('Must specify either control port or socket. '
                   'Not "{}"'.format(args.control[0]))
     if args.control[0] == 'port':
-
         args.control[1] = int(args.control[1])
 
     valid, error_reason = is_good_clientside_password_file(args.password_file)

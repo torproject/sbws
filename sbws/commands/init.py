@@ -12,13 +12,13 @@ def main(args, log_):
     global log
     log = log_
     if is_initted(os.getcwd()):
-        fail_hard('Directory already seems to be initted')
+        fail_hard('Directory already seems to be initted', log=log)
 
     dotdir = os.path.join(os.getcwd(), '.sbws')
     os.makedirs(dotdir, exist_ok=True)
 
     for src, dst, ftype in G_INIT_FILE_MAP:
-        log.info(dst, '({})'.format(ftype))
+        log.info('Creating', dst, '({})'.format(ftype))
         if os.path.exists(dst):
             log.warn(dst, 'already exists, not overwriting')
             continue

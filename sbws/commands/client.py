@@ -275,6 +275,7 @@ def main(args, log_):
                   'Not "{}"'.format(args.control[0]))
     if args.control[0] == 'port':
         args.control[1] = int(args.control[1])
+    os.makedirs(args.result_directory, exist_ok=True)
 
     valid, error_reason = is_good_clientside_password_file(args.password_file)
     if not valid:

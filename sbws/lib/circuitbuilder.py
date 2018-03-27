@@ -90,9 +90,9 @@ class CircuitBuilder:
 
     def __del__(self):
         c = self.controller
-        if not stem_utils.is_controller_okay(c):
-            return
         if not self.close_circuits_on_exit:
+            return
+        if not stem_utils.is_controller_okay(c):
             return
         for circ_id in self.built_circuits:
             if c.get_circuit(circ_id, default=None):

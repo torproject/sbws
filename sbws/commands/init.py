@@ -20,6 +20,9 @@ def main(args, log_):
     for src, dst, ftype in G_INIT_FILE_MAP:
         log.info(dst, '({})'.format(ftype))
         if ftype == 'file':
-            shutil.copy(src, dst)
+            try:
+                shutil.copy(src, dst)
+            except PermissionError as e:
+                log.warn('Unable to create {}: {}'.format(dst, e))
         else:
             fail_hard('Cannot init ftype', ftype)

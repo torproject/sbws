@@ -38,3 +38,15 @@ accept any password in the file.
 **lib/circuitbuilder.py** Only one subclass of CircuitBuilder is used as of
 this writing, and that is GapsCircuitBuilder. Oddly enough, there are no gaps
 in the circuits we ask it to build.
+
+# Documentation
+
+See more documentation in [/docs/source/](/docs/source/)
+
+## Build HTML documentation
+
+    pip install -e .[doc]
+    cd docs
+    make html
+
+The generated HTML will be in [/docs/build/](/docs/build/)

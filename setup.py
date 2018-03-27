@@ -72,6 +72,7 @@ setup(
     extras_require={
         'dev': [],
         'test': [],
-        'doc': ['sphinx'],
+        # recommonmark: to make sphinx render markdown
+        'doc': ['sphinx', 'recommonmark'],
     },
 )

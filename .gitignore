@@ -2,3 +2,4 @@ __pycache__
 venv
 passwords.txt
 *.egg-info
+docs/build

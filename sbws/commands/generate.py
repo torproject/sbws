@@ -2,6 +2,7 @@ from sbws.globals import (fail_hard, is_initted)
 from argparse import ArgumentDefaultsHelpFormatter
 from statistics import median
 import os
+import sys
 import json
 import time
 
@@ -44,11 +45,22 @@ def result_data_to_v3bw_line(data, fingerprint):
     return V3BWLine(fingerprint, speed, nick, rtts)
 
 
-def scale_lines(v3bw_lines, scale_max):
+def warn_if_not_accurate_enough(lines, constant):
+    margin = 0.001
+    accuracy_ratio = (sum([l.bw for l in lines]) / len(lines)) / constant
+    if accuracy_ratio < 1 - margin or accuracy_ratio > 1 + margin:
+        print('WARNING: There was {}% error and only +/- {}% is '
+              'allowed'.format(round((1-accuracy_ratio)*100, 2),
+                               round(margin*100, 2)), file=sys.stderr)
+
+
+def scale_lines(v3bw_lines, scale_constant):
+    scale = len(v3bw_lines) * scale_constant
     total = sum([l.bw for l in v3bw_lines])
-    ratio = scale_max / total
+    ratio = scale / total
     for line in v3bw_lines:
         line.bw = round(line.bw * ratio)
+    warn_if_not_accurate_enough(v3bw_lines, scale_constant)
     return v3bw_lines
 
 
@@ -59,9 +71,9 @@ def gen_parser(sub):
                    help='Where result data from the sbws client is stored')
     p.add_argument('--output', default='/dev/stdout', type=str,
                    help='Where to write v3bw file')
-    p.add_argument('--scale-max', default=50000000, type=int,
-                   help='When scaling bw weights, scale them up/down '
-                   'as if this is the sum of all measurements')
+    p.add_argument('--scale-constant', default=7500, type=int,
+                   help='When scaling bw weights, scale them using this const '
+                   'multiplied by the number of measured relays')
 
 
 def main(args, log_):
@@ -71,6 +83,8 @@ def main(args, log_):
         fail_hard('Directory isn\'t initted')
     if not os.path.isdir(args.result_directory):
         fail_hard(args.result_directory, 'does not exist')
+    if args.scale_constant < 1:
+        fail_hard('--scale-constant must be positive')
 
     data_fnames = sorted(os.listdir(args.result_directory), reverse=True)
     data_fnames = data_fnames[0:14]
@@ -80,7 +94,7 @@ def main(args, log_):
         data = read_result_file(fname, data)
     data_lines = [result_data_to_v3bw_line(data, fp) for fp in data]
     data_lines = sorted(data_lines, key=lambda d: d.bw, reverse=True)
-    data_lines = scale_lines(data_lines, args.scale_max)
+    data_lines = scale_lines(data_lines, args.scale_constant)
     with open(args.output, 'wt') as fd:
         fd.write('{}\n'.format(int(time.time())))
         for line in data_lines:

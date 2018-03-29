@@ -37,6 +37,15 @@ sbws.commands.server module
     :show-inheritance:
 
 
+sbws.commands.stats module
+---------------------------
+
+.. automodule:: sbws.commands.stats
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
 Module contents
 ---------------
 

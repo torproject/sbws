@@ -9,7 +9,20 @@ from queue import Queue
 from queue import Empty
 from datetime import date
 from datetime import timedelta
+from enum import Enum
 from stem.descriptor.router_status_entry import RouterStatusEntryV3
+
+
+class _StrEnum(str, Enum):
+    pass
+
+
+class _ResultType(_StrEnum):
+    Success = 'success'
+    Error = 'error-misc'
+    ErrorCircuit = 'error-circ'
+    ErrorStream = 'error-stream'
+    ErrorAuth = 'error-auth'
 
 
 class Result:
@@ -24,15 +37,16 @@ class Result:
             self.nickname = nickname
             self.address = address
 
-    def __init__(self, relay, circ, server_host, rtts, download_results,
-                 t=None):
+    def __init__(self, relay, circ, server_host, t=None):
         self._relay = Result.Relay(relay.fingerprint, relay.nickname,
                                    relay.address)
         self._circ = circ
         self._server_host = server_host
-        self._downloads = download_results
-        self._rtts = rtts
         self._time = time.time() if t is None else t
+
+    @property
+    def type(self):
+        raise NotImplementedError()
 
     @property
     def fingerprint(self):
@@ -51,39 +65,169 @@ class Result:
         return self._circ
 
     @property
-    def rtts(self):
-        return self._rtts
+    def server_host(self):
+        return self._server_host
 
     @property
     def time(self):
         return self._time
 
-    @property
-    def downloads(self):
-        return self._downloads
+    def to_dict(self):
+        return {
+            'fingerprint': self.fingerprint,
+            'nickname': self.nickname,
+            'address': self.address,
+            'circ': self.circ,
+            'server_host': self.server_host,
+            'time': self.time,
+            'type': self.type,
+        }
+
+    @staticmethod
+    def from_dict(d):
+        assert 'type' in d
+        if d['type'] == _ResultType.Success.value:
+            return ResultSuccess.from_dict(d)
+        elif d['type'] == _ResultType.Error.value:
+            return ResultError.from_dict(d)
+        elif d['type'] == _ResultType.ErrorCircuit.value:
+            return ResultErrorCircuit.from_dict(d)
+        elif d['type'] == _ResultType.ErrorStream.value:
+            return ResultErrorStream.from_dict(d)
+        elif d['type'] == _ResultType.ErrorAuth.value:
+            return ResultErrorAuth.from_dict(d)
+        else:
+            raise NotImplementedError(
+                'Unknown result type {}'.format(d['type']))
+
+    def __str__(self):
+        return json.dumps(self.to_dict())
+
+
+class ResultError(Result):
+    def __init__(self, *a, msg=None, **kw):
+        super().__init__(*a, **kw)
+        self._msg = msg
 
     @property
-    def server_host(self):
-        return self._server_host
+    def type(self):
+        return _ResultType.Error
+
+    @property
+    def msg(self):
+        return self._msg
 
     @staticmethod
     def from_dict(d):
         assert isinstance(d, dict)
-        return Result(
+        return ResultError(
             Result.Relay(d['fingerprint'], d['nickname'], d['address']),
-            d['circ'], d['server_host'], d['rtts'], d['downloads'], d['time'])
+            d['circ'], d['server_host'], msg=d['msg'], t=d['time'])
 
-    def __str__(self):
-        return json.dumps({
-            'fingerprint': self.fingerprint,
-            'nickname': self.nickname,
-            'time': self.time,
-            'downloads': self.downloads,
-            'address': self.address,
-            'circ': self.circ,
-            'rtts': self.rtts,
-            'server_host': self.server_host
+    def to_dict(self):
+        d = super().to_dict()
+        d.update({
+            'msg': self.msg,
         })
+        return d
+
+
+class ResultErrorCircuit(ResultError):
+    def __init__(self, *a, **kw):
+        super().__init__(*a, **kw)
+
+    @property
+    def type(self):
+        return _ResultType.ErrorCircuit
+
+    @staticmethod
+    def from_dict(d):
+        assert isinstance(d, dict)
+        return ResultErrorCircuit(
+            Result.Relay(d['fingerprint'], d['nickname'], d['address']),
+            d['circ'], d['server_host'], msg=d['msg'], t=d['time'])
+
+    def to_dict(self):
+        d = super().to_dict()
+        return d
+
+
+class ResultErrorStream(ResultError):
+    def __init__(self, *a, **kw):
+        super().__init__(*a, **kw)
+
+    @property
+    def type(self):
+        return _ResultType.ErrorStream
+
+    @staticmethod
+    def from_dict(d):
+        assert isinstance(d, dict)
+        return ResultErrorStream(
+            Result.Relay(d['fingerprint'], d['nickname'], d['address']),
+            d['circ'], d['server_host'], msg=d['msg'], t=d['time'])
+
+    def to_dict(self):
+        d = super().to_dict()
+        return d
+
+
+class ResultErrorAuth(ResultError):
+    def __init__(self, *a, **kw):
+        super().__init__(*a, **kw)
+
+    @property
+    def type(self):
+        return _ResultType.ErrorAuth
+
+    @staticmethod
+    def from_dict(d):
+        assert isinstance(d, dict)
+        return ResultErrorAuth(
+            Result.Relay(d['fingerprint'], d['nickname'], d['address']),
+            d['circ'], d['server_host'], msg=d['msg'], t=d['time'])
+
+    def to_dict(self):
+        d = super().to_dict()
+        return d
+
+
+class ResultSuccess(Result):
+    def __init__(self, rtts, downloads, *a, **kw):
+        try:
+            super().__init__(*a, **kw)
+        except TypeError as e:
+            print('ERROR doing super init:', e)
+        self._rtts = rtts
+        self._downloads = downloads
+
+    @property
+    def type(self):
+        return _ResultType.Success
+
+    @property
+    def rtts(self):
+        return self._rtts
+
+    @property
+    def downloads(self):
+        return self._downloads
+
+    @staticmethod
+    def from_dict(d):
+        assert isinstance(d, dict)
+        return ResultSuccess(
+            d['rtts'], d['downloads'],
+            Result.Relay(d['fingerprint'], d['nickname'], d['address']),
+            d['circ'], d['server_host'], t=d['time'])
+
+    def to_dict(self):
+        d = super().to_dict()
+        d.update({
+            'rtts': self.rtts,
+            'downloads': self.downloads,
+        })
+        return d
 
 
 class ResultDump:

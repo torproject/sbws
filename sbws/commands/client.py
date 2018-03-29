@@ -2,7 +2,9 @@
 
 from ..lib.circuitbuilder import GapsCircuitBuilder as CB
 from ..lib.resultdump import ResultDump
-from ..lib.resultdump import Result
+from ..lib.resultdump import ResultSuccess
+from ..lib.resultdump import ResultErrorCircuit
+from ..lib.resultdump import ResultErrorAuth
 from ..lib.relaylist import RelayList
 from ..lib.relayprioritizer import RelayPrioritizer
 from ..util.simpleauth import is_good_clientside_password_file
@@ -151,7 +153,9 @@ def measure_relay(args, cb, rl, relay):
     circ_id = cb.build_circuit([relay.fingerprint, args.helper_relay])
     if not circ_id:
         log.debug('Could not build circuit involving', relay.nickname)
-        return
+        return ResultErrorCircuit(
+            relay, [relay.fingerprint, args.helper_relay], args.server_host)
+    circ_fps = cb.get_circuit_path(circ_id)
     # A function that attaches all streams that gets created on
     # connect() to the given circuit
     listener = stem_utils.attach_stream_to_circuit_listener(
@@ -173,9 +177,11 @@ def measure_relay(args, cb, rl, relay):
         return
     if not authenticate_to_server(s, args.password_file, log.info):
         log.info('Unable to authenticate to the server')
+        res = ResultErrorAuth(
+            relay, circ_fps, args.server_host)
         close_socket(s)
         cb.close_circuit(circ_id)
-        return
+        return res
     log.debug('Authed to server successfully')
     # FIRST: measure the end-to-end RTT many times
     rtts = measure_rtt_to_server(s)
@@ -219,9 +225,8 @@ def measure_relay(args, cb, rl, relay):
             # that it will probably take the target amount of time to download
             expected_amount = int(
                 expected_amount * DOWNLOAD_TIMES['target'] / result_time)
-    circ = cb.get_circuit_path(circ_id)
     cb.close_circuit(circ_id)
-    return Result(relay, circ, args.server_host, rtts, results)
+    return ResultSuccess(rtts, results, relay, circ_fps, args.server_host)
 
 
 def result_putter(result_dump):

@@ -1,4 +1,7 @@
 from sbws.globals import (fail_hard, is_initted)
+from sbws.lib.resultdump import Result
+from sbws.lib.resultdump import ResultError
+from sbws.lib.resultdump import ResultSuccess
 from argparse import ArgumentDefaultsHelpFormatter
 from statistics import median
 import os
@@ -12,10 +15,14 @@ def read_result_file(fname, starting_dict=None):
     with open(fname, 'rt') as fd:
         for line in fd:
             d = json.loads(line)
+            res = Result.from_dict(d)
+            if isinstance(res, ResultError):
+                continue
+            assert isinstance(res, ResultSuccess)
             fp = d['fingerprint']
             if fp not in data:
                 data[fp] = []
-            data[fp].append(d)
+            data[fp].append(res)
     return data
 
 
@@ -37,11 +44,14 @@ class V3BWLine:
 def result_data_to_v3bw_line(data, fingerprint):
     assert fingerprint in data
     results = data[fingerprint]
-    nick = results[0]['nickname']
+    for res in results:
+        assert isinstance(res, ResultSuccess)
+    results = data[fingerprint]
+    nick = results[0].nickname
     speeds = [dl['amount'] / dl['duration']
-              for r in results for dl in r['downloads']]
+              for r in results for dl in r.downloads]
     speed = median(speeds)
-    rtts = [rtt for r in results for rtt in r['rtts']]
+    rtts = [rtt for r in results for rtt in r.rtts]
     return V3BWLine(fingerprint, speed, nick, rtts)
 
 

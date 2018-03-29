@@ -2,6 +2,7 @@ import sbws.commands.client
 import sbws.commands.generate
 import sbws.commands.init
 import sbws.commands.server
+import sbws.commands.stats
 from sbws.globals import make_logger
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
@@ -25,6 +26,7 @@ def create_parser():
     sbws.commands.generate.gen_parser(sub)
     sbws.commands.init.gen_parser(sub)
     sbws.commands.server.gen_parser(sub)
+    sbws.commands.stats.gen_parser(sub)
     return p
 
 
@@ -43,6 +45,8 @@ def main():
                  'a': def_args, 'kw': def_kwargs},
         'server': {'f': sbws.commands.server.main,
                    'a': def_args, 'kw': def_kwargs},
+        'stats': {'f': sbws.commands.stats.main,
+                  'a': def_args, 'kw': def_kwargs},
     }
     try:
         if args.command not in known_commands:

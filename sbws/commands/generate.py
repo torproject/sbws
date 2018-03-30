@@ -64,13 +64,16 @@ def warn_if_not_accurate_enough(lines, constant):
                                round(margin*100, 2)), file=sys.stderr)
 
 
-def scale_lines(v3bw_lines, scale_constant):
-    scale = len(v3bw_lines) * scale_constant
+def scale_lines(args, v3bw_lines):
     total = sum([l.bw for l in v3bw_lines])
+    if not args.raw:
+        scale = len(v3bw_lines) * args.scale_constant
+    else:
+        scale = total
     ratio = scale / total
     for line in v3bw_lines:
-        line.bw = round(line.bw * ratio)
-    warn_if_not_accurate_enough(v3bw_lines, scale_constant)
+        line.bw = round(line.bw * ratio) + 1
+    warn_if_not_accurate_enough(v3bw_lines, args.scale_constant)
     return v3bw_lines
 
 
@@ -84,6 +87,9 @@ def gen_parser(sub):
     p.add_argument('--scale-constant', default=7500, type=int,
                    help='When scaling bw weights, scale them using this const '
                    'multiplied by the number of measured relays')
+    p.add_argument('--raw', '--no-scale', action='store_true',
+                   help='If specified, use bandwidth values as they are, with '
+                   'no scaling')
 
 
 def main(args, log_):
@@ -104,7 +110,7 @@ def main(args, log_):
         data = read_result_file(fname, data)
     data_lines = [result_data_to_v3bw_line(data, fp) for fp in data]
     data_lines = sorted(data_lines, key=lambda d: d.bw, reverse=True)
-    data_lines = scale_lines(data_lines, args.scale_constant)
+    data_lines = scale_lines(args, data_lines)
     with open(args.output, 'wt') as fd:
         fd.write('{}\n'.format(int(time.time())))
         for line in data_lines:

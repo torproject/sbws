@@ -313,7 +313,9 @@ class ResultDump:
             if result is None:
                 continue
             elif not isinstance(result, Result):
-                self.log.warn('failure', result, type(result))
+                self.log.warn('The only thing we should ever receive in the '
+                              'result thread is a Result type. Ignoring',
+                              type(result))
                 continue
             fp = result.fingerprint
             nick = result.nickname

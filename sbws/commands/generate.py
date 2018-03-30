@@ -5,7 +5,6 @@ from sbws.lib.resultdump import ResultSuccess
 from argparse import ArgumentDefaultsHelpFormatter
 from statistics import median
 import os
-import sys
 import json
 import time
 
@@ -58,10 +57,11 @@ def result_data_to_v3bw_line(data, fingerprint):
 def warn_if_not_accurate_enough(lines, constant):
     margin = 0.001
     accuracy_ratio = (sum([l.bw for l in lines]) / len(lines)) / constant
+    log.info('The generated lines are within {:.5}% of what they should '
+             'be'.format((1-accuracy_ratio)*100))
     if accuracy_ratio < 1 - margin or accuracy_ratio > 1 + margin:
-        print('WARNING: There was {}% error and only +/- {}% is '
-              'allowed'.format(round((1-accuracy_ratio)*100, 2),
-                               round(margin*100, 2)), file=sys.stderr)
+        log.warn('There was {:.3}% error and only +/- {:.3}% is '
+                 'allowed'.format((1-accuracy_ratio)*100, margin*100, 2))
 
 
 def scale_lines(args, v3bw_lines):

@@ -1,5 +1,5 @@
-__pycache__
-venv
+__pycache__/
+venv*/
 passwords.txt
-*.egg-info
+*.egg-info/
 docs/build

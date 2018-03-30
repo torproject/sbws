@@ -189,10 +189,10 @@ def measure_relay(args, conf, cb, rl, relay):
     expected_amount = conf.getint('client', 'initial_read_request')
     num_downloads = conf.getint('client', 'num_downloads')
     download_times = {
-        'toofast': conf.getint('client', 'download_toofast'),
-        'min': conf.getint('client', 'download_min'),
-        'target': conf.getint('client', 'download_target'),
-        'max': conf.getint('client', 'download_max'),
+        'toofast': conf.getfloat('client', 'download_toofast'),
+        'min': conf.getfloat('client', 'download_min'),
+        'target': conf.getfloat('client', 'download_target'),
+        'max': conf.getfloat('client', 'download_max'),
     }
     while len(results) < num_downloads:
         # Tell the server to send us the current expected_amount.

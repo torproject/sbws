@@ -10,6 +10,7 @@ Welcome to simple-bw-scanner's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   specification
    README
    sbws
 

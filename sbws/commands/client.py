@@ -25,14 +25,6 @@ import os
 end_event = Event()
 stream_building_lock = RLock()
 
-# TODO: Store these in a config file. See github#14
-# NOTE: move constants to a different file so it's easy to adjust?
-# there these values come from?, avg tor speed?
-MAX_RECV_PER_READ = 1*1024*1024
-DOWNLOAD_TIMES = {'toofast': 1, 'min': 5, 'target': 6, 'max': 10}
-DESIRED_RESULTS = 5
-INITIAL_READ_REQUEST = 16*1024
-
 
 def make_socket(socks_host, socks_port):
     ''' Make a socket that uses the provided socks5 proxy. Note at this point
@@ -80,13 +72,13 @@ def tell_server_amount(sock, expected_amount):
     return True
 
 
-def timed_recv_from_server(sock, yet_to_read):
+def timed_recv_from_server(sock, conf, yet_to_read):
     ''' Return the time in seconds it took to read <yet_to_read> bytes from
     the server. Return None if error '''
     assert yet_to_read > 0
     start_time = time.time()
     while yet_to_read > 0:
-        limit = min(MAX_RECV_PER_READ, yet_to_read)
+        limit = min(conf.getint('client', 'max_recv_per_read'), yet_to_read)
         try:
             read_this_time = len(sock.recv(limit))
         except (socket.timeout, ConnectionResetError, BrokenPipeError) as e:
@@ -122,7 +114,7 @@ def measure_rtt_to_server(sock):
     return rtts
 
 
-def measure_relay(args, cb, rl, relay):
+def measure_relay(args, conf, cb, rl, relay):
     ''' Runs in a worker thread. Measures the given relay. If all measurements
     are successful, returns a Result that should get handed off to the
     ResultDump. Otherwise returns None.
@@ -135,7 +127,7 @@ def measure_relay(args, cb, rl, relay):
        we built
     3. measure the end-to-end RTT many times
     4. measure throughput on the built circuit, repeat the following until we
-       have reached DESIRED_RESULTS
+       have reached <num_downloads>
        4.1. tell the files server the desired amount of bytes to get
        4.2. get the bytes and the time it took
        4.3. calculate the expected amount of bytes according to:
@@ -165,7 +157,8 @@ def measure_relay(args, cb, rl, relay):
         # circuit when we connect()
         stem_utils.add_event_listener(
             cb.controller, listener, EventType.STREAM)
-        s = make_socket(args.socks_host, args.socks_port)
+        s = make_socket(conf['client']['tor_socks_host'],
+                        conf.getint('client', 'tor_socks_port'))
         # This call blocks until we are connected (or give up). We get attched
         # to the right circuit in the background.
         connected = socket_connect(s, args.server_host, args.server_port)
@@ -175,7 +168,8 @@ def measure_relay(args, cb, rl, relay):
         log.info('Unable to connect to', args.server_host, args.server_port)
         cb.close_circuit(circ_id)
         return
-    if not authenticate_to_server(s, args.password_file, log.info):
+    pw_file = conf.get('paths', 'passwords')
+    if not authenticate_to_server(s, pw_file, log.info):
         log.info('Unable to authenticate to the server')
         res = ResultErrorAuth(
             relay, circ_fps, args.server_host)
@@ -192,8 +186,15 @@ def measure_relay(args, cb, rl, relay):
     # SECOND: measure throughput on this circuit. Start with what should be a
     # small amount
     results = []
-    expected_amount = INITIAL_READ_REQUEST
-    while len(results) < DESIRED_RESULTS:
+    expected_amount = conf.getint('client', 'initial_read_request')
+    num_downloads = conf.getint('client', 'num_downloads')
+    download_times = {
+        'toofast': conf.getint('client', 'download_toofast'),
+        'min': conf.getint('client', 'download_min'),
+        'target': conf.getint('client', 'download_target'),
+        'max': conf.getint('client', 'download_max'),
+    }
+    while len(results) < num_downloads:
         # Tell the server to send us the current expected_amount.
         if not tell_server_amount(s, expected_amount):
             close_socket(s)
@@ -201,21 +202,21 @@ def measure_relay(args, cb, rl, relay):
             return
         # Then read that many bytes from the server and get the time it took to
         # do so
-        result_time = timed_recv_from_server(s, expected_amount)
+        result_time = timed_recv_from_server(s, conf, expected_amount)
         if result_time is None:
             close_socket(s)
             cb.close_circuit(circ_id)
             return
         # Adjust amount of bytes to download in the next download
-        if result_time < DOWNLOAD_TIMES['toofast']:
+        if result_time < download_times['toofast']:
             # Way too fast, greatly increase the amount we ask for
             expected_amount = int(expected_amount * 10)
-        elif result_time < DOWNLOAD_TIMES['min']:
+        elif result_time < download_times['min']:
             # A little too fast, increase the amount we ask for such that it
             # will probably take the target amount of time to download
             expected_amount = int(
-                expected_amount * DOWNLOAD_TIMES['target'] / result_time)
-        elif result_time < DOWNLOAD_TIMES['max']:
+                expected_amount * download_times['target'] / result_time)
+        elif result_time < download_times['max']:
             # result_time is between min and max, record the result and don't
             # change the expected_amount
             results.append(
@@ -224,7 +225,7 @@ def measure_relay(args, cb, rl, relay):
             # result_time is too large, decrease the amount we ask for such
             # that it will probably take the target amount of time to download
             expected_amount = int(
-                expected_amount * DOWNLOAD_TIMES['target'] / result_time)
+                expected_amount * download_times['target'] / result_time)
     cb.close_circuit(circ_id)
     return ResultSuccess(rtts, results, relay, circ_fps, args.server_host)
 
@@ -247,16 +248,17 @@ def result_putter_error(target):
     return closure
 
 
-def test_speedtest(args):
-    controller = stem_utils.init_controller(
-        port=args.control[1] if args.control[0] == 'port' else None,
-        path=args.control[1] if args.control[0] == 'socket' else None,
-        log_fn=log.debug)
-    cb = CB(args, log, controller=controller)
-    rl = RelayList(args, log, controller=controller)
-    rd = ResultDump(args, log, end_event)
-    rp = RelayPrioritizer(args, log, rl, rd)
-    max_pending_results = args.threads
+def test_speedtest(args, conf):
+    controller = None
+    controller, error_msg = stem_utils.init_controller_with_config(conf)
+    if not controller:
+        fail_hard(error_msg, log=log)
+    assert controller
+    cb = CB(args, conf, log, controller=controller)
+    rl = RelayList(args, conf, log, controller=controller)
+    rd = ResultDump(args, conf, log, end_event)
+    rp = RelayPrioritizer(args, conf, log, rl, rd)
+    max_pending_results = conf.getint('client', 'measurement_threads')
     pool = Pool(max_pending_results)
     pending_results = []
     while True:
@@ -265,7 +267,7 @@ def test_speedtest(args):
             callback = result_putter(rd)
             callback_err = result_putter_error(target)
             async_result = pool.apply_async(
-                measure_relay, [args, cb, rl, target], {},
+                measure_relay, [args, conf, cb, rl, target], {},
                 callback, callback_err)
             pending_results.append(async_result)
             while len(pending_results) >= max_pending_results:
@@ -276,52 +278,42 @@ def test_speedtest(args):
 def gen_parser(sub):
     p = sub.add_parser('client',
                        formatter_class=ArgumentDefaultsHelpFormatter)
-    p.add_argument('--control', nargs=2, metavar=('TYPE', 'LOCATION'),
-                   default=['port', '9051'],
-                   help='How to control Tor. Examples: "port 9051" or '
-                   '"socket /var/lib/tor/control"')
-    p.add_argument('--socks-host', default='127.0.0.1', type=str,
-                   help='Host for a local Tor SocksPort')
-    p.add_argument('--socks-port', default=9050, type=int,
-                   help='Port for a local Tor SocksPort')
     p.add_argument('--server-host', default='127.0.0.1', type=str,
                    help='Host for a measurement server')
-    p.add_argument('--server-port', default=4444, type=int,
+    p.add_argument('--server-port', default=31648, type=int,
                    help='Port for a measurement server')
-    p.add_argument('--result-directory', default='dd', type=str,
-                   help='Where to store raw result output')
-    p.add_argument('--threads', default=1, type=int,
-                   help='Number of measurements to make in parallel')
     p.add_argument('--helper-relay', type=str, required=True,
                    help='Relay to which to build circuits and is running '
                    'the sbws server')
-    p.add_argument('--password-file', type=str, default='passwords.txt',
-                   help='Read the first line and use it as the password '
-                   'when authenticating to the server.')
 
 
-def main(args, log_):
+def main(args, conf, log_):
     global log
     log = log_
-    if not is_initted(os.getcwd()):
+    if not is_initted(args.directory):
         fail_hard('Sbws isn\'t initialized. Try sbws init', log=log)
 
-    if args.threads < 1:
-        fail_hard('--threads must be larger than 1', log=log)
+    if conf.getint('client', 'measurement_threads') < 1:
+        fail_hard('Number of measurement threads must be larger than 1',
+                  log=log)
 
-    if args.control[0] not in ['port', 'socket']:
+    if conf['tor']['control_type'] not in ['port', 'socket']:
         fail_hard('Must specify either control port or socket. '
-                  'Not "{}"'.format(args.control[0]), log=log)
-    if args.control[0] == 'port':
-        args.control[1] = int(args.control[1])
-    os.makedirs(args.result_directory, exist_ok=True)
+                  'Not "{}"'.format(conf['tor']['control_type'], log=log))
+    if conf['tor']['control_type'] == 'port':
+        try:
+            conf.getint('tor', 'control_location')
+        except ValueError as e:
+            fail_hard('Couldn\'t read control port from config:', e, log=log)
+    os.makedirs(conf['paths']['datadir'], exist_ok=True)
 
-    valid, error_reason = is_good_clientside_password_file(args.password_file)
+    pw_file = conf.get('paths', 'passwords')
+    valid, error_reason = is_good_clientside_password_file(pw_file)
     if not valid:
         fail_hard(error_reason)
 
     try:
-        test_speedtest(args)
+        test_speedtest(args, conf)
     except KeyboardInterrupt as e:
         raise e
     finally:

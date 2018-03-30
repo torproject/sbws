@@ -11,11 +11,10 @@ class RelayList:
     '''
     REFRESH_INTERVAL = 300  # seconds
 
-    def __init__(self, args, log, controller=None):
+    def __init__(self, args, conf, log, controller=None):
         if controller is None:
-            self._controller = stem_utils.init_controller(
-                port=args.control[1] if args.control[0] == 'port' else None,
-                path=args.control[1] if args.control[0] == 'socket' else None)
+            c, error_msg = stem_utils.init_controller_with_config(conf)
+            assert c, error_msg
         else:
             self._controller = controller
         self.log = log

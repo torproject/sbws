@@ -19,7 +19,11 @@ def get_package_data():
     #     for f in fs:
     #         other_files.append(os.path.join(r, f))
     # return other_files
-    return ['passwords.txt.example']
+    return [
+        'passwords.txt.example',
+        'config.default.ini',
+        'config.example.ini',
+    ]
 
 
 def get_data_files():

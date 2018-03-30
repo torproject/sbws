@@ -80,8 +80,6 @@ def scale_lines(args, v3bw_lines):
 def gen_parser(sub):
     p = sub.add_parser('generate',
                        formatter_class=ArgumentDefaultsHelpFormatter)
-    p.add_argument('--result-directory', default='dd', type=str,
-                   help='Where result data from the sbws client is stored')
     p.add_argument('--output', default='/dev/stdout', type=str,
                    help='Where to write v3bw file')
     p.add_argument('--scale-constant', default=7500, type=int,
@@ -92,19 +90,21 @@ def gen_parser(sub):
                    'no scaling')
 
 
-def main(args, log_):
+def main(args, conf, log_):
     global log
     log = log_
-    if not is_initted(os.getcwd()):
+    if not is_initted(args.directory):
         fail_hard('Sbws isn\'t initialized.  Try sbws init', log=log)
-    if not os.path.isdir(args.result_directory):
-        fail_hard(args.result_directory, 'does not exist')
+
+    datadir = conf['paths']['datadir']
+    if not os.path.isdir(datadir):
+        fail_hard(datadir, 'does not exist')
     if args.scale_constant < 1:
         fail_hard('--scale-constant must be positive')
 
-    data_fnames = sorted(os.listdir(args.result_directory), reverse=True)
+    data_fnames = sorted(os.listdir(datadir), reverse=True)
     data_fnames = data_fnames[0:14]
-    data_fnames = [os.path.join(args.result_directory, f) for f in data_fnames]
+    data_fnames = [os.path.join(datadir, f) for f in data_fnames]
     data = {}
     for fname in data_fnames:
         data = read_result_file(fname, data)

@@ -25,10 +25,10 @@ ERROR_PENALTY = 0.5
 
 
 class RelayPrioritizer:
-    def __init__(self, args, log, relay_list, result_dump):
+    def __init__(self, args, conf, log, relay_list, result_dump):
         assert isinstance(relay_list, RelayList)
         assert isinstance(result_dump, ResultDump)
-        self.fresh_seconds = args.data_period*24*60*60
+        self.fresh_seconds = conf.getint('general', 'data_period')*24*60*60
         self.log = log
         self.relay_list = relay_list
         self.result_dump = result_dump

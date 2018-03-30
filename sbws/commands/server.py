@@ -5,21 +5,10 @@ from argparse import ArgumentDefaultsHelpFormatter
 from threading import Thread
 import socket
 import time
-import os
-
-
-MAX_SEND_PER_WRITE = 100*1024*1024
-MAX_SEND_PER_WRITE = 4096
 
 
 def gen_parser(sub):
-    p = sub.add_parser('server',
-                       formatter_class=ArgumentDefaultsHelpFormatter)
-    p.add_argument('bind_ip', type=str, default='127.0.0.1')
-    p.add_argument('bind_port', type=int, default=4444)
-    p.add_argument('--password-file', type=str, default='passwords.txt',
-                   help='All lines in this file will be considered '
-                   'valid passwords scanners may use to authenticate.')
+    sub.add_parser('server', formatter_class=ArgumentDefaultsHelpFormatter)
 
 
 def read_line(s):
@@ -62,11 +51,12 @@ def get_send_amount(sock):
     return send_amount
 
 
-def write_to_client(sock, amount):
+def write_to_client(sock, conf, amount):
     ''' Returns True if successful; else False '''
     log.info('Sending client no.', sock.fileno(), amount, 'bytes')
     while amount > 0:
-        amount_this_time = min(MAX_SEND_PER_WRITE, amount)
+        amount_this_time = min(conf.getint('server', 'max_send_per_write'),
+                               amount)
         amount -= amount_this_time
         try:
             sock.send(b'a' * amount_this_time)
@@ -76,9 +66,11 @@ def write_to_client(sock, amount):
     return True
 
 
-def new_thread(args, sock):
+def new_thread(args, conf, sock):
+    pw_file = conf.get('paths', 'passwords')
+
     def closure():
-        if not authenticate_client(sock, args.password_file, log.info):
+        if not authenticate_client(sock, pw_file, log.info):
             log.info('Client did not provide valid auth')
             close_socket(sock)
             return
@@ -89,24 +81,25 @@ def new_thread(args, sock):
                 log.info('Couldn\'t get an amount to send to', sock.fileno())
                 close_socket(sock)
                 return
-            write_to_client(sock, send_amount)
+            write_to_client(sock, conf, send_amount)
         close_socket(sock)
     thread = Thread(target=closure)
     return thread
 
 
-def main(args, log_):
+def main(args, conf, log_):
     global log
     log = log_
-    if not is_initted(os.getcwd()):
+    if not is_initted(args.directory):
         fail_hard('Sbws isn\'t initialized. Try sbws init', log=log)
 
-    valid, error_reason = is_good_serverside_password_file(args.password_file)
+    pw_file = conf.get('paths', 'passwords')
+    valid, error_reason = is_good_serverside_password_file(pw_file)
     if not valid:
         fail_hard(error_reason)
 
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    h = (args.bind_ip, args.bind_port)
+    h = (conf['server']['bind_ip'], conf.getint('server', 'bind_port'))
     log.notice('binding to', h)
     while True:
         try:
@@ -122,7 +115,7 @@ def main(args, log_):
         while True:
             sock, addr = server.accept()
             log.info('accepting connection from', addr, 'as', sock.fileno())
-            t = new_thread(args, sock)
+            t = new_thread(args, conf, sock)
             t.start()
     except KeyboardInterrupt:
         pass

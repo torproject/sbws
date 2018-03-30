@@ -43,6 +43,22 @@ in the circuits we ask it to build.
 
 See more documentation in [/docs/source/](/docs/source/)
 
+## Configuration
+
+Sbws has two config files it reads.
+
+It first reads the config file containing the default values for almost all
+options. If you installed sbws in a virtual environment located at /tmp/venv, then
+you will probably find the `config.default.ini` in a place such as
+`/tmp/venv/lib/python3.5/site-packages/sbws/`
+**You should never edit this file**. You can also click on
+[this link](/sbws/config.default.ini) to see the default config file if you're
+reading this on GitHub.
+
+Sbws then reads your custom config file. By default, after running `sbws init`,
+it is located in `~/.sbws/config.ini`. A configuration option in this file
+overwrites the default file found in the default file.
+
 ### Build HTML documentation
 
     pip install -e .[doc]

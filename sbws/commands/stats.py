@@ -46,23 +46,22 @@ def print_stats(data):
 
 
 def gen_parser(sub):
-    p = sub.add_parser('stats',
-                       formatter_class=ArgumentDefaultsHelpFormatter)
-    p.add_argument('--result-directory', default='dd', type=str,
-                   help='Where result data from the sbws client is stored')
+    sub.add_parser('stats', formatter_class=ArgumentDefaultsHelpFormatter)
 
 
-def main(args, log_):
+def main(args, conf, log_):
     global log
     log = log_
-    if not is_initted(os.getcwd()):
+    if not is_initted(args.directory):
         fail_hard('Sbws isn\'t initialized. Try sbws init', log=log)
-    if not os.path.isdir(args.result_directory):
-        fail_hard(args.result_directory, 'does not exist')
 
-    data_fnames = sorted(os.listdir(args.result_directory), reverse=True)
+    datadir = conf['paths']['datadir']
+    if not os.path.isdir(datadir):
+        fail_hard(datadir, 'does not exist', log=log)
+
+    data_fnames = sorted(os.listdir(datadir), reverse=True)
     data_fnames = data_fnames[0:14]
-    data_fnames = [os.path.join(args.result_directory, f) for f in data_fnames]
+    data_fnames = [os.path.join(datadir, f) for f in data_fnames]
     data = {}
     for fname in data_fnames:
         data = read_result_file(fname, data)

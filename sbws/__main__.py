@@ -3,11 +3,17 @@ import sbws.commands.generate
 import sbws.commands.init
 import sbws.commands.server
 import sbws.commands.stats
+from sbws.util.config import get_config
 from sbws.globals import make_logger
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
-
+import os
 
 VERSION = '0.0.1'
+
+
+def _default_dot_sbws_dname():
+    home = os.path.expanduser('~')
+    return os.path.join(home, '.sbws')
 
 
 def create_parser():
@@ -18,9 +24,8 @@ def create_parser():
     p.add_argument(
         '-q', '--quiet', action='count', default=0,
         help='Decrease log level verbosity from the configured value')
-    p.add_argument(
-        '--data-period', type=int, default=5,
-        help='Days into the past to consider data fresh')
+    p.add_argument('-d', '--directory', default=_default_dot_sbws_dname(),
+                   help='Name of the .sbws directory')
     sub = p.add_subparsers(dest='command')
     sbws.commands.client.gen_parser(sub)
     sbws.commands.generate.gen_parser(sub)
@@ -33,8 +38,9 @@ def create_parser():
 def main():
     parser = create_parser()
     args = parser.parse_args()
-    log = make_logger(args)
-    def_args = [args, log]
+    conf = get_config(args)
+    log = make_logger(args, conf)
+    def_args = [args, conf, log]
     def_kwargs = {}
     known_commands = {
         'client': {'f': sbws.commands.client.main,

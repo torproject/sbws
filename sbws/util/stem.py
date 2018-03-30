@@ -1,12 +1,14 @@
 from stem.control import Controller
 from stem import (SocketError, InvalidRequest, UnsatisfiableRequest)
 from stem.connection import IncorrectSocketType
+from configparser import ConfigParser
 
 __all__ = [
     'add_event_listener',
     'remove_event_listener',
     'attach_stream_to_circuit_listener',
     'init_controller',
+    'init_controller_with_config',
     'is_controller_okay',
     'fp_or_nick_to_relay',
 ]
@@ -53,8 +55,7 @@ def remove_event_listener(controller, func, log_fn=print):
     controller.remove_event_listener(func)
 
 
-def init_controller(port=None, path=None, set_custom_stream_settings=True,
-                    log_fn=print):
+def init_controller(port=None, path=None, set_custom_stream_settings=True):
     # make sure only one is set
     assert port is not None or path is not None
     assert not (port is not None and path is not None)
@@ -65,19 +66,35 @@ def init_controller(port=None, path=None, set_custom_stream_settings=True,
     if port:
         c = _init_controller_port(port)
         if not c:
-            log_fn('Unable to reach tor on control port', port)
-            return None
+            return None, 'Unable to reach tor on control port'
     else:
         c = _init_controller_socket(path)
         if not c:
-            log_fn('Unable to reach tor on control socket', path)
-            return None
+            return None, 'Unable to reach tor on control socket'
     assert c is not None
-    log_fn('Connected to Tor via', port if port else path)
     if set_custom_stream_settings:
         c.set_conf('__DisablePredictedCircuits', '1')
         c.set_conf('__LeaveStreamsUnattached', '1')
-    return c
+    return c, ''
+
+
+def init_controller_with_config(conf):
+    assert isinstance(conf, ConfigParser)
+    if conf['tor']['control_type'] not in ['port', 'socket']:
+        return None, 'control_type in config must be either port or socket'
+    if conf['tor']['control_type'] == 'port':
+        try:
+            port = conf.getint('tor', 'control_location')
+        except ValueError:
+            return None, 'control_location must be int if control_type = port'
+        c, error_msg = init_controller(port=port)
+        if not c:
+            return None, error_msg
+        return c, ''
+    c, error_msg = init_controller(path=conf['tor']['control_location'])
+    if not c:
+        return None, error_msg
+    return c, ''
 
 
 def is_controller_okay(c):

@@ -2,6 +2,8 @@ from sbws.globals import (fail_hard, is_initted)
 from sbws.lib.resultdump import Result
 from sbws.lib.resultdump import ResultError
 from sbws.lib.resultdump import ResultSuccess
+from sbws.lib.resultdump import load_recent_results_in_datadir
+from sbws.lib.resultdump import group_results_by_relay
 from argparse import ArgumentDefaultsHelpFormatter
 import os
 import json
@@ -59,10 +61,8 @@ def main(args, conf, log_):
     if not os.path.isdir(datadir):
         fail_hard(datadir, 'does not exist', log=log)
 
-    data_fnames = sorted(os.listdir(datadir), reverse=True)
-    data_fnames = data_fnames[0:14]
-    data_fnames = [os.path.join(datadir, f) for f in data_fnames]
-    data = {}
-    for fname in data_fnames:
-        data = read_result_file(fname, data)
+    fresh_days = conf.getint('general', 'data_period')
+    results = load_recent_results_in_datadir(
+        fresh_days, datadir, success_only=False, log_fn=log.debug)
+    data = group_results_by_relay(results)
     print_stats(data)

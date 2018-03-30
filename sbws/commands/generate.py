@@ -1,28 +1,12 @@
 from sbws.globals import (fail_hard, is_initted)
 from sbws.lib.resultdump import Result
-from sbws.lib.resultdump import ResultError
 from sbws.lib.resultdump import ResultSuccess
+from sbws.lib.resultdump import load_recent_results_in_datadir
+from sbws.lib.resultdump import group_results_by_relay
 from argparse import ArgumentDefaultsHelpFormatter
 from statistics import median
 import os
-import json
 import time
-
-
-def read_result_file(fname, starting_dict=None):
-    data = starting_dict if starting_dict else {}
-    with open(fname, 'rt') as fd:
-        for line in fd:
-            d = json.loads(line)
-            res = Result.from_dict(d)
-            if isinstance(res, ResultError):
-                continue
-            assert isinstance(res, ResultSuccess)
-            fp = d['fingerprint']
-            if fp not in data:
-                data[fp] = []
-            data[fp].append(res)
-    return data
 
 
 class V3BWLine:
@@ -102,12 +86,10 @@ def main(args, conf, log_):
     if args.scale_constant < 1:
         fail_hard('--scale-constant must be positive')
 
-    data_fnames = sorted(os.listdir(datadir), reverse=True)
-    data_fnames = data_fnames[0:14]
-    data_fnames = [os.path.join(datadir, f) for f in data_fnames]
-    data = {}
-    for fname in data_fnames:
-        data = read_result_file(fname, data)
+    fresh_days = conf.getint('general', 'data_period')
+    results = load_recent_results_in_datadir(
+        fresh_days, datadir, success_only=True, log_fn=log.debug)
+    data = group_results_by_relay(results)
     data_lines = [result_data_to_v3bw_line(data, fp) for fp in data]
     data_lines = sorted(data_lines, key=lambda d: d.bw, reverse=True)
     data_lines = scale_lines(args, data_lines)

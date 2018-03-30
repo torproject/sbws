@@ -293,7 +293,7 @@ class ResultDump:
         working_day = oldest_day
         while working_day <= today:
             pattern = os.path.join(
-                self.datadir, '**', '{}*'.format(working_day))
+                self.datadir, '**', '{}*.txt'.format(working_day))
             for fname in glob(pattern, recursive=True):
                 data.extend(self._load_data_file(fname))
             working_day += timedelta(days=1)

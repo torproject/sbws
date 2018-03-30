@@ -1,5 +1,6 @@
 from stem.control import Controller
 from stem import (SocketError, InvalidRequest, UnsatisfiableRequest)
+from stem.connection import IncorrectSocketType
 
 __all__ = [
     'add_event_listener',
@@ -64,10 +65,12 @@ def init_controller(port=None, path=None, set_custom_stream_settings=True,
     if port:
         c = _init_controller_port(port)
         if not c:
+            log_fn('Unable to reach tor on control port', port)
             return None
     else:
         c = _init_controller_socket(path)
         if not c:
+            log_fn('Unable to reach tor on control socket', path)
             return None
     assert c is not None
     log_fn('Connected to Tor via', port if port else path)
@@ -87,10 +90,10 @@ def _init_controller_port(port):
     assert isinstance(port, int)
     try:
         c = Controller.from_port(port=port)
-    except SocketError:
+        c.authenticate()
+    except (IncorrectSocketType, SocketError):
         return None
     # TODO: Allow for auth via more than just CookieAuthentication
-    c.authenticate()
     return c
 
 
@@ -98,8 +101,8 @@ def _init_controller_socket(socket):
     assert isinstance(socket, str)
     try:
         c = Controller.from_socket_file(path=socket)
-    except SocketError:
+        c.authenticate()
+    except (IncorrectSocketType, SocketError):
         return None
     # TODO: Allow for auth via more than just CookieAuthentication
-    c.authenticate()
     return c

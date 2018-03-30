@@ -1,4 +1,4 @@
-# simple-bw-scanner
+# Readme
 
 It doesn't get simplier than this, folks.
 
@@ -11,7 +11,7 @@ The scanner builds two hop circuits consisting of the relay being measured and
 the helper relay running server.py. Over these circuits it measures RTT and
 download performance.
 
-# Installing
+## Installing
 
 Clone the repo
 
@@ -22,7 +22,7 @@ Clone the repo
     sbws client -h
     sbws server -h
 
-# Authenticating to `sbws server`
+## Authenticating to `sbws server`
 
 Generate a password and store in passwords.txt. It must be 64 characters (or
 bytes?) long and valid unicode. Just use regular ASCII 1-byte chars, as in this
@@ -39,11 +39,11 @@ accept any password in the file.
 this writing, and that is GapsCircuitBuilder. Oddly enough, there are no gaps
 in the circuits we ask it to build.
 
-# Documentation
+## Documentation
 
 See more documentation in [/docs/source/](/docs/source/)
 
-## Build HTML documentation
+### Build HTML documentation
 
     pip install -e .[doc]
     cd docs

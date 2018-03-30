@@ -304,14 +304,14 @@ def main(args, log_):
     global log
     log = log_
     if not is_initted(os.getcwd()):
-        fail_hard('Directory isn\'t initted')
+        fail_hard('Sbws isn\'t initialized. Try sbws init', log=log)
 
     if args.threads < 1:
-        fail_hard('--threads must be larger than 1')
+        fail_hard('--threads must be larger than 1', log=log)
 
     if args.control[0] not in ['port', 'socket']:
         fail_hard('Must specify either control port or socket. '
-                  'Not "{}"'.format(args.control[0]))
+                  'Not "{}"'.format(args.control[0]), log=log)
     if args.control[0] == 'port':
         args.control[1] = int(args.control[1])
     os.makedirs(args.result_directory, exist_ok=True)

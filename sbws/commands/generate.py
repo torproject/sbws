@@ -96,7 +96,7 @@ def main(args, log_):
     global log
     log = log_
     if not is_initted(os.getcwd()):
-        fail_hard('Directory isn\'t initted')
+        fail_hard('Sbws isn\'t initialized.  Try sbws init', log=log)
     if not os.path.isdir(args.result_directory):
         fail_hard(args.result_directory, 'does not exist')
     if args.scale_constant < 1:

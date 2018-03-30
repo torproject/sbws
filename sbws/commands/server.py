@@ -99,7 +99,7 @@ def main(args, log_):
     global log
     log = log_
     if not is_initted(os.getcwd()):
-        fail_hard('Directory isn\'t initted')
+        fail_hard('Sbws isn\'t initialized. Try sbws init', log=log)
 
     valid, error_reason = is_good_serverside_password_file(args.password_file)
     if not valid:

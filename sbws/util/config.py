@@ -1,5 +1,6 @@
 from configparser import (ConfigParser, ExtendedInterpolation)
 import os
+from string import Template
 from sbws.globals import G_PKG_DIR
 
 
@@ -42,3 +43,221 @@ def get_user_example_config():
     assert os.path.isfile(fname)
     conf = _read_config_file(conf, fname)
     return conf
+
+
+def validate_config(conf):
+    ''' Checks the given conf for bad values or bad combinations of values. If
+    there's something wrong, returns False and a list of error messages.
+    Otherwise, return True and an empty list '''
+    errors = []
+    errors.extend(_validate_general(conf))
+    errors.extend(_validate_client(conf))
+    errors.extend(_validate_server(conf))
+    errors.extend(_validate_tor(conf))
+    errors.extend(_validate_paths(conf))
+    return len(errors) < 1, errors
+
+
+def _validate_general(conf):
+    errors = []
+    sec = 'general'
+    err_tmpl = Template('$sec/$key ($val): $e')
+    ints = {
+        'data_period': {'minimum': 1, 'maximum': None},
+    }
+    enums = {
+        'log_level': {'valid': ['debug', 'info', 'notice', 'warn', 'error']},
+    }
+    all_valid_keys = list(ints.keys()) + list(enums.keys())
+    errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))
+    errors.extend(_validate_section_ints(conf, sec, ints, err_tmpl))
+    errors.extend(_validate_section_enums(conf, sec, enums, err_tmpl))
+    return errors
+
+
+def _validate_paths(conf):
+    errors = []
+    sec = 'paths'
+    err_tmpl = Template('$sec/$key ($val): $e')
+    unvalidated_keys = ['passwords', 'datadir', 'sbws_home']
+    all_valid_keys = unvalidated_keys
+    errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))
+    return errors
+
+
+def _validate_client(conf):
+    errors = []
+    sec = 'client'
+    err_tmpl = Template('$sec/$key ($val): $e')
+    ints = {
+        'max_recv_per_read': {'minimum': 1, 'maximum': None},
+        'num_downloads': {'minimum': 1, 'maximum': None},
+        'initial_read_request': {'minimum': 1, 'maximum': None},
+        'measurement_threads': {'minimum': 1, 'maximum': None},
+    }
+    floats = {
+        'download_toofast': {'minimum': 0.001, 'maximum': None},
+        'download_min': {'minimum': 0.001, 'maximum': None},
+        'download_target': {'minimum': 0.001, 'maximum': None},
+        'download_max': {'minimum': 0.001, 'maximum': None},
+    }
+    hosts = {
+        'tor_socks_host': {},
+    }
+    ports = {
+        'tor_socks_port': {},
+    }
+    all_valid_keys = list(ints.keys()) + list(floats.keys()) + \
+        list(hosts.keys()) + list(ports.keys())
+    errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))
+    errors.extend(_validate_section_ints(conf, sec, ints, err_tmpl))
+    errors.extend(_validate_section_floats(conf, sec, floats, err_tmpl))
+    # XXX: validate hosts func doesn't do anything currently
+    errors.extend(_validate_section_hosts(conf, sec, hosts, err_tmpl))
+    errors.extend(_validate_section_ports(conf, sec, ports, err_tmpl))
+    return errors
+
+
+def _validate_server(conf):
+    errors = []
+    sec = 'server'
+    err_tmpl = Template('$sec/$key ($val): $e')
+    ints = {
+        'max_send_per_write': {'minimum': 1, 'maximum': None},
+    }
+    hosts = {
+        'bind_ip': {},
+    }
+    ports = {
+        'bind_port': {},
+    }
+    all_valid_keys = list(ints.keys()) + list(hosts.keys()) + \
+        list(ports.keys())
+    errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))
+    errors.extend(_validate_section_ints(conf, sec, ints, err_tmpl))
+    # XXX: validate hosts func doesn't do anything currently
+    errors.extend(_validate_section_hosts(conf, sec, hosts, err_tmpl))
+    errors.extend(_validate_section_ports(conf, sec, ports, err_tmpl))
+    return errors
+
+
+def _validate_tor(conf):
+    errors = []
+    sec = 'tor'
+    err_tmpl = Template('$sec/$key ($val): $e')
+    enums = {
+        'control_type': {'valid': ['port', 'socket']},
+    }
+    unvalidated_keys = ['control_location']
+    all_valid_keys = list(enums.keys()) + unvalidated_keys
+    errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))
+    errors.extend(_validate_section_enums(conf, sec, enums, err_tmpl))
+    return errors
+
+
+def _validate_section_keys(conf, sec, keys, tmpl):
+    errors = []
+    section = conf[sec]
+    for key in section:
+        if key not in keys:
+            errors.append(tmpl.substitute(
+                sec=sec, key=key, val=section[key], e='Unknown key'))
+    return errors
+
+
+def _validate_section_enums(conf, sec, enums, tmpl):
+    errors = []
+    section = conf[sec]
+    for key in enums:
+        valid = enums[key]['valid']
+        if section[key] not in valid:
+            errors.append(tmpl.substitute(
+                sec=sec, key=key, val=section[key],
+                e='Must be one of {}'.format(valid)))
+    return errors
+
+
+def _validate_section_ints(conf, sec, ints, tmpl):
+    errors = []
+    section = conf[sec]
+    for key in ints:
+        valid, error = _validate_int(
+            section, key, minimum=ints[key]['minimum'],
+            maximum=ints[key]['maximum'])
+        if not valid:
+            errors.append(tmpl.substitute(
+                sec=sec, key=key, val=section[key], e=error))
+    return errors
+
+
+def _validate_section_floats(conf, sec, floats, tmpl):
+    errors = []
+    section = conf[sec]
+    for key in floats:
+        valid, error = _validate_float(
+            section, key, minimum=floats[key]['minimum'],
+            maximum=floats[key]['maximum'])
+        if not valid:
+            errors.append(tmpl.substitute(
+                sec=sec, key=key, val=section[key], e=error))
+    return errors
+
+
+def _validate_section_hosts(conf, sec, hosts, tmpl):
+    errors = []
+    section = conf[sec]
+    for key in hosts:
+        valid, error = _validate_host(section, key)
+        if not valid:
+            errors.append(tmpl.substitute(
+                sec=sec, key=key, val=section[key], e=error))
+    return errors
+
+
+def _validate_section_ports(conf, sec, ports, tmpl):
+    errors = []
+    section = conf[sec]
+    for key in ports:
+        valid, error = _validate_int(section, key, minimum=1, maximum=2**16)
+        if not valid:
+            errors.append(tmpl.substitute(
+                sec=sec, key=key, val=section[key],
+                e='Not a valid port ({})'.format(error)))
+    return errors
+
+
+def _validate_int(section, key, minimum=None, maximum=None):
+    try:
+        value = section.getint(key)
+    except ValueError as e:
+        return False, e
+    if minimum is not None:
+        assert isinstance(minimum, int)
+        if value < minimum:
+            return False, 'Cannot be less than {}'.format(minimum)
+    if maximum is not None:
+        assert isinstance(maximum, int)
+        if value > maximum:
+            return False, 'Cannot be greater than {}'.format(maximum)
+    return True, ''
+
+
+def _validate_float(section, key, minimum=None, maximum=None):
+    try:
+        value = section.getfloat(key)
+    except ValueError as e:
+        return False, e
+    if minimum is not None:
+        assert isinstance(minimum, float)
+        if value < minimum:
+            return False, 'Cannot be less than {}'.format(minimum)
+    if maximum is not None:
+        assert isinstance(maximum, float)
+        if value > maximum:
+            return False, 'Cannot be greater than {}'.format(maximum)
+    return True, ''
+
+
+def _validate_host(section, key):
+    # XXX: Implement this
+    return True, ''

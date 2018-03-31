@@ -4,6 +4,7 @@ import sbws.commands.init
 import sbws.commands.server
 import sbws.commands.stats
 from sbws.util.config import get_config
+from sbws.util.config import validate_config
 from sbws.globals import make_logger
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import os
@@ -40,6 +41,11 @@ def main():
     args = parser.parse_args()
     conf = get_config(args)
     log = make_logger(args, conf)
+    conf_valid, conf_errors = validate_config(conf)
+    if not conf_valid:
+        for e in conf_errors:
+            log.error(e)
+        exit(1)
     def_args = [args, conf, log]
     def_kwargs = {}
     known_commands = {

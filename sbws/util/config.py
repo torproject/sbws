@@ -55,6 +55,7 @@ def validate_config(conf):
     errors.extend(_validate_server(conf))
     errors.extend(_validate_tor(conf))
     errors.extend(_validate_paths(conf))
+    errors.extend(_validate_helpers(conf))
     return len(errors) < 1, errors
 
 
@@ -155,6 +156,47 @@ def _validate_tor(conf):
     return errors
 
 
+def _validate_helpers(conf):
+    errors = []
+    sec = 'helpers'
+    section = conf[sec]
+    err_tmpl = Template('$sec/$key ($val): $e')
+    addtional_helper_sections = []
+    for key in section.keys():
+        valid, error_msg = _validate_boolean(section, key)
+        value = section[key]
+        if not valid:
+            errors.append(err_tmpl.substitute(
+                sec=sec, key=key, val=value, e=error_msg))
+            continue
+        assert valid
+        if section.getboolean(key):
+            addtional_helper_sections.append('{}.{}'.format(sec, key))
+    fps = {
+        'relay': {},
+    }
+    hosts = {
+        'server_host': {},
+    }
+    ports = {
+        'server_port': {},
+    }
+    passwords = {
+        'password': {},
+    }
+    all_valid_keys = list(fps.keys()) + list(hosts.keys()) + \
+        list(ports.keys()) + list(passwords.keys())
+    for sec in addtional_helper_sections:
+        errors.extend(_validate_section_keys(conf, sec, all_valid_keys,
+                                             err_tmpl))
+        errors.extend(_validate_section_fingerprints(conf, sec, fps, err_tmpl))
+        errors.extend(_validate_section_hosts(conf, sec, hosts, err_tmpl))
+        errors.extend(_validate_section_ports(conf, sec, ports, err_tmpl))
+        errors.extend(_validate_section_passwords(conf, sec, passwords,
+                                                  err_tmpl))
+    return errors
+
+
 def _validate_section_keys(conf, sec, keys, tmpl):
     errors = []
     section = conf[sec]
@@ -226,6 +268,30 @@ def _validate_section_ports(conf, sec, ports, tmpl):
     return errors
 
 
+def _validate_section_fingerprints(conf, sec, fps, tmpl):
+    errors = []
+    section = conf[sec]
+    for key in fps:
+        valid, error = _validate_fingerprint(section, key)
+        if not valid:
+            errors.append(tmpl.substitute(
+                sec=sec, key=key, val=section[key],
+                e='Not a valid fingerprint ({})'.format(error)))
+    return errors
+
+
+def _validate_section_passwords(conf, sec, passwords, tmpl):
+    errors = []
+    section = conf[sec]
+    for key in passwords:
+        valid, error = _validate_password(section, key)
+        if not valid:
+            errors.append(tmpl.substitute(
+                sec=sec, key=key, val=section[key],
+                e='Not a valid password ({})'.format(error)))
+    return errors
+
+
 def _validate_int(section, key, minimum=None, maximum=None):
     try:
         value = section.getint(key)
@@ -239,6 +305,14 @@ def _validate_int(section, key, minimum=None, maximum=None):
         assert isinstance(maximum, int)
         if value > maximum:
             return False, 'Cannot be greater than {}'.format(maximum)
+    return True, ''
+
+
+def _validate_boolean(section, key):
+    try:
+        section.getboolean(key)
+    except ValueError as e:
+        return False, e
     return True, ''
 
 
@@ -260,4 +334,34 @@ def _validate_float(section, key, minimum=None, maximum=None):
 
 def _validate_host(section, key):
     # XXX: Implement this
+    return True, ''
+
+
+def _validate_fingerprint(section, key):
+    alphabet = '0123456789ABCDEF'
+    length = 40
+    return _validate_string(section, key, min_len=length, max_len=length,
+                            alphabet=alphabet)
+
+
+def _validate_password(section, key):
+    alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    length = 64
+    return _validate_string(section, key, min_len=length, max_len=length,
+                            alphabet=alphabet)
+
+
+def _validate_string(section, key, min_len=None, max_len=None, alphabet=None):
+    s = section[key]
+    if min_len is not None and len(s) < min_len:
+        return False, '{} is below minimum allowed length {}'.format(
+            len(s), min_len)
+    if max_len is not None and len(s) > max_len:
+        return False, '{} is above maximum allowed length {}'.format(
+            len(s), max_len)
+    if alphabet is not None:
+        for i, c in enumerate(s):
+            if c not in alphabet:
+                return False, 'Letter {} at position {} is not in allowed '\
+                    'characters "{}"'.format(c, i, alphabet)
     return True, ''

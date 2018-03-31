@@ -9,6 +9,7 @@ import os
 import json
 from datetime import date
 from datetime import timedelta
+from statistics import mean
 
 
 def read_result_file(fname, starting_dict=None):
@@ -24,7 +25,35 @@ def read_result_file(fname, starting_dict=None):
     return data
 
 
-def print_stats(data):
+def _print_stats_error_types(data):
+    counts = {'total': 0}
+    for fp in data:
+        results = data[fp]
+        for result in results:
+            if result.type not in counts:
+                log.debug('Found a', result.type, 'for the first time')
+                counts[result.type] = 0
+            counts[result.type] += 1
+            counts['total'] += 1
+    for count_type in counts:
+        if count_type == 'total':
+            continue
+        if 'error' not in count_type:
+            continue
+        number = counts[count_type]
+        print('{}/{} ({:.2f}%) results were {}'.format(
+            number, counts['total'], 100*number/counts['total'], count_type))
+
+
+def _print_averages(data):
+    mean_success = mean([
+        len([r for r in data[fp] if isinstance(r, ResultSuccess)])
+        for fp in data])
+    print('Average {:.2f} successful measurements per '
+          'relay'.format(mean_success))
+
+
+def print_stats(args, data):
     results = []
     for fp in data:
         results.extend(data[fp])
@@ -39,16 +68,21 @@ def print_stats(data):
     # remove microseconds for prettier printing
     duration = duration - timedelta(microseconds=duration.microseconds)
     print(len(data), 'relays have recent results')
+    _print_averages(data)
     print(len(results), 'total results, and {:.1f}% are successes'.format(
         percent_success_results))
     print(len(success_results), 'success results and',
           len(error_results), 'error results')
     print('Results come from', first, 'to', last, 'over a period of',
           duration)
+    if args.error_types:
+        _print_stats_error_types(data)
 
 
 def gen_parser(sub):
-    sub.add_parser('stats', formatter_class=ArgumentDefaultsHelpFormatter)
+    p = sub.add_parser('stats', formatter_class=ArgumentDefaultsHelpFormatter)
+    p.add_argument('--error-types', action='store_true',
+                   help='Also print information about each error type')
 
 
 def main(args, conf, log_):
@@ -65,4 +99,4 @@ def main(args, conf, log_):
     results = load_recent_results_in_datadir(
         fresh_days, datadir, success_only=False, log_fn=log.debug)
     data = group_results_by_relay(results)
-    print_stats(data)
+    print_stats(args, data)

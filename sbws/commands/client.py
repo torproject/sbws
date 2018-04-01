@@ -92,12 +92,12 @@ def timed_recv_from_server(sock, conf, yet_to_read):
     return end_time - start_time
 
 
-def measure_rtt_to_server(sock):
+def measure_rtt_to_server(sock, conf):
     ''' Make multiple end-to-end RTT measurements. If something goes wrong and
     not all of them can be made, return None. Otherwise return a list of the
     RTTs (in seconds). '''
     rtts = []
-    for _ in range(0, 10):
+    for _ in range(0, conf.getint('client', 'num_rtts')):
         start_time = time.time()
         if not tell_server_amount(sock, 1):
             log.info('Unable to ping server on', sock.fileno())
@@ -187,7 +187,7 @@ def measure_relay(args, conf, helpers, cb, rl, relay):
         return res
     log.debug('Authed to server successfully')
     # FIRST: measure the end-to-end RTT many times
-    rtts = measure_rtt_to_server(s)
+    rtts = measure_rtt_to_server(s, conf)
     if rtts is None:
         close_socket(s)
         cb.close_circuit(circ_id)

@@ -339,7 +339,7 @@ class ResultDump:
         ''' Main loop for the ResultDump thread '''
         with self.data_lock:
             self.data = load_recent_results_in_datadir(
-                self.fresh_days, self.datadir, self.log.debug)
+                self.fresh_days, self.datadir, log_fn=self.log.debug)
         while not (self.end_event.is_set() and self.queue.empty()):
             try:
                 event = self.queue.get(timeout=1)

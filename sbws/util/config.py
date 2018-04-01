@@ -54,6 +54,7 @@ def validate_config(conf):
     errors.extend(_validate_general(conf))
     errors.extend(_validate_client(conf))
     errors.extend(_validate_server(conf))
+    errors.extend(_validate_server_passwords(conf))
     errors.extend(_validate_tor(conf))
     errors.extend(_validate_paths(conf))
     errors.extend(_validate_helpers(conf))
@@ -141,6 +142,19 @@ def _validate_server(conf):
     # XXX: validate hosts func doesn't do anything currently
     errors.extend(_validate_section_hosts(conf, sec, hosts, err_tmpl))
     errors.extend(_validate_section_ports(conf, sec, ports, err_tmpl))
+    return errors
+
+
+def _validate_server_passwords(conf):
+    errors = []
+    sec = 'server.passwords'
+    err_tmpl = Template('$sec/$key ($val): $e')
+    section = conf[sec]
+    for key in section.keys():
+        valid, error_msg = _validate_password(section, key)
+        if not valid:
+            errors.append(err_tmpl.substitute(
+                sec=sec, key=key, val=section[key], e=error_msg))
     return errors
 
 

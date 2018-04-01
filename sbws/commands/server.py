@@ -1,5 +1,4 @@
 from ..util.simpleauth import authenticate_client
-from ..util.simpleauth import is_good_serverside_password_file
 from sbws.globals import (fail_hard, is_initted)
 from argparse import ArgumentDefaultsHelpFormatter
 from threading import Thread
@@ -66,11 +65,9 @@ def write_to_client(sock, conf, amount):
     return True
 
 
-def new_thread(args, conf, sock):
-    pw_file = conf.get('paths', 'passwords')
-
+def new_thread(args, conf, sock, passwords):
     def closure():
-        if not authenticate_client(sock, pw_file, log.info):
+        if not authenticate_client(sock, passwords, log.info):
             log.info('Client did not provide valid auth')
             close_socket(sock)
             return
@@ -93,10 +90,10 @@ def main(args, conf, log_):
     if not is_initted(args.directory):
         fail_hard('Sbws isn\'t initialized. Try sbws init', log=log)
 
-    pw_file = conf.get('paths', 'passwords')
-    valid, error_reason = is_good_serverside_password_file(pw_file)
-    if not valid:
-        fail_hard(error_reason)
+    passwords = [conf['server.passwords'][key]
+                 for key in conf['server.passwords']]
+    if len(passwords) < 1:
+        fail_hard('Sbws server needs at least one password', log=log)
 
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     h = (conf['server']['bind_ip'], conf.getint('server', 'bind_port'))
@@ -115,7 +112,7 @@ def main(args, conf, log_):
         while True:
             sock, addr = server.accept()
             log.info('accepting connection from', addr, 'as', sock.fileno())
-            t = new_thread(args, conf, sock)
+            t = new_thread(args, conf, sock, passwords)
             t.start()
     except KeyboardInterrupt:
         pass

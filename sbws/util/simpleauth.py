@@ -1,4 +1,3 @@
-import os
 import socket
 
 MAGIC_BYTES = b'SBWS'
@@ -6,12 +5,13 @@ SUCCESS_BYTES = b'1'
 PW_LEN = 64
 
 
-def authenticate_client(sock, pw_file, log_fn=print):
+def authenticate_client(sock, passwords, log_fn=print):
     ''' Use this on the server side to read bytes from the client and properly
     authenticate them. Return True if the client checks out, otherwise False.
     '''
     assert sock.fileno() > 0
-    assert is_good_serverside_password_file(pw_file)
+    assert isinstance(passwords, list)
+    assert len(passwords) > 0
     try:
         magic = sock.recv(len(MAGIC_BYTES))
     except socket.timeout as e:
@@ -30,7 +30,7 @@ def authenticate_client(sock, pw_file, log_fn=print):
         log_fn(e)
         return False
 
-    if not _is_valid_password(pw, pw_file):
+    if not _is_valid_password(pw, passwords):
         log_fn('Invalid password')
         return False
 
@@ -61,32 +61,9 @@ def authenticate_to_server(sock, pw, log_fn=print):
     return True
 
 
-def is_good_serverside_password_file(pw_file):
-    ''' Returns True if all the lines in the file are PW_LEN chars long.
-    Otherwise returns False and reason string '''
-    if not os.path.isfile(pw_file):
-        return False, '{} does not exist'.format(pw_file)
-    has_a_line = False
-    with open(pw_file, 'rt') as fd:
-        for i, line in enumerate(fd):
-            if line[0] == '#':
-                continue
-            has_a_line = True
-            if len(line) != PW_LEN + 1:
-                return False, '{}:{} is not {} chars long'.format(pw_file,
-                                                                  i+1, PW_LEN)
-    if not has_a_line:
-        return False, '{} must have at least one line'.format(pw_file)
-    return True, ''
-
-
-def _is_valid_password(pw, pw_file):
-    assert is_good_serverside_password_file(pw_file)
-    with open(pw_file, 'rt') as fd:
-        for line in fd:
-            if line[0] == '#':
-                continue
-            line = line[0:-1]
-            if pw == line:
-                return True
+def _is_valid_password(pw, passwords):
+    assert isinstance(passwords, list)
+    assert len(passwords) > 0
+    if len(pw) == PW_LEN and pw in passwords:
+        return True
     return False

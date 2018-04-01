@@ -7,6 +7,7 @@ from ..lib.resultdump import ResultErrorCircuit
 from ..lib.resultdump import ResultErrorAuth
 from ..lib.relaylist import RelayList
 from ..lib.relayprioritizer import RelayPrioritizer
+from ..lib.helperrelay import HelperRelayList
 from ..util.simpleauth import is_good_clientside_password_file
 from ..util.simpleauth import authenticate_to_server
 from sbws.globals import (fail_hard, is_initted)
@@ -114,7 +115,7 @@ def measure_rtt_to_server(sock):
     return rtts
 
 
-def measure_relay(args, conf, cb, rl, relay):
+def measure_relay(args, conf, helpers, cb, rl, relay):
     ''' Runs in a worker thread. Measures the given relay. If all measurements
     are successful, returns a Result that should get handed off to the
     ResultDump. Otherwise returns None.
@@ -142,11 +143,12 @@ def measure_relay(args, conf, cb, rl, relay):
        4.4. write down the results
 
     '''
-    circ_id = cb.build_circuit([relay.fingerprint, args.helper_relay])
+    helper = helpers.next(blacklist=[relay.fingerprint])
+    circ_id = cb.build_circuit([relay.fingerprint, helper.fingerprint])
     if not circ_id:
         log.debug('Could not build circuit involving', relay.nickname)
         return ResultErrorCircuit(
-            relay, [relay.fingerprint, args.helper_relay], args.server_host)
+            relay, [relay.fingerprint, helper.fingerprint], helper.server_host)
     circ_fps = cb.get_circuit_path(circ_id)
     # A function that attaches all streams that gets created on
     # connect() to the given circuit
@@ -161,18 +163,19 @@ def measure_relay(args, conf, cb, rl, relay):
                         conf.getint('client', 'tor_socks_port'))
         # This call blocks until we are connected (or give up). We get attched
         # to the right circuit in the background.
-        connected = socket_connect(s, args.server_host, args.server_port)
+        connected = socket_connect(s, helper.server_host, helper.server_port)
         stem_utils.remove_event_listener(cb.controller, listener,
                                          log_fn=log.info)
     if not connected:
-        log.info('Unable to connect to', args.server_host, args.server_port)
+        log.info('Unable to connect to', helper.server_host,
+                 helper.server_port)
         cb.close_circuit(circ_id)
         return
     pw_file = conf.get('paths', 'passwords')
     if not authenticate_to_server(s, pw_file, log.info):
         log.info('Unable to authenticate to the server')
         res = ResultErrorAuth(
-            relay, circ_fps, args.server_host)
+            relay, circ_fps, helper.server_host)
         close_socket(s)
         cb.close_circuit(circ_id)
         return res
@@ -227,7 +230,7 @@ def measure_relay(args, conf, cb, rl, relay):
             expected_amount = int(
                 expected_amount * download_times['target'] / result_time)
     cb.close_circuit(circ_id)
-    return ResultSuccess(rtts, results, relay, circ_fps, args.server_host)
+    return ResultSuccess(rtts, results, relay, circ_fps, helper.server_host)
 
 
 def result_putter(result_dump):
@@ -258,6 +261,10 @@ def test_speedtest(args, conf):
     rl = RelayList(args, conf, log, controller=controller)
     rd = ResultDump(args, conf, log, end_event)
     rp = RelayPrioritizer(args, conf, log, rl, rd)
+    helpers, error_msg = HelperRelayList.from_config(
+        args, conf, log, controller=controller)
+    if not helpers:
+        fail_hard(error_msg)
     max_pending_results = conf.getint('client', 'measurement_threads')
     pool = Pool(max_pending_results)
     pending_results = []
@@ -267,7 +274,7 @@ def test_speedtest(args, conf):
             callback = result_putter(rd)
             callback_err = result_putter_error(target)
             async_result = pool.apply_async(
-                measure_relay, [args, conf, cb, rl, target], {},
+                measure_relay, [args, conf, helpers, cb, rl, target], {},
                 callback, callback_err)
             pending_results.append(async_result)
             while len(pending_results) >= max_pending_results:
@@ -276,15 +283,7 @@ def test_speedtest(args, conf):
 
 
 def gen_parser(sub):
-    p = sub.add_parser('client',
-                       formatter_class=ArgumentDefaultsHelpFormatter)
-    p.add_argument('--server-host', default='127.0.0.1', type=str,
-                   help='Host for a measurement server')
-    p.add_argument('--server-port', default=31648, type=int,
-                   help='Port for a measurement server')
-    p.add_argument('--helper-relay', type=str, required=True,
-                   help='Relay to which to build circuits and is running '
-                   'the sbws server')
+    sub.add_parser('client', formatter_class=ArgumentDefaultsHelpFormatter)
 
 
 def main(args, conf, log_):

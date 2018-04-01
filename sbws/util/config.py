@@ -188,6 +188,10 @@ def _validate_helpers(conf):
     all_valid_keys = list(fps.keys()) + list(hosts.keys()) + \
         list(ports.keys()) + list(passwords.keys())
     for sec in addtional_helper_sections:
+        if sec not in conf:
+            errors.append('{} is an enabled helper but is not a section in '
+                          'the config'.format(sec))
+            continue
         errors.extend(_validate_section_keys(conf, sec, all_valid_keys,
                                              err_tmpl))
         errors.extend(_validate_section_fingerprints(conf, sec, fps, err_tmpl))

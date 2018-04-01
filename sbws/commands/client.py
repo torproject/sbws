@@ -144,6 +144,9 @@ def measure_relay(args, conf, helpers, cb, rl, relay):
 
     '''
     helper = helpers.next(blacklist=[relay.fingerprint])
+    if not helper:
+        log.warn('Unable to get helper to measure', relay.nickname)
+        return None
     circ_id = cb.build_circuit([relay.fingerprint, helper.fingerprint])
     if not circ_id:
         log.debug('Could not build circuit involving', relay.nickname)

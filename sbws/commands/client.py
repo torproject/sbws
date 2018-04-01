@@ -117,8 +117,11 @@ def measure_rtt_to_server(sock):
 
 def measure_relay(args, conf, helpers, cb, rl, relay):
     ''' Runs in a worker thread. Measures the given relay. If all measurements
-    are successful, returns a Result that should get handed off to the
-    ResultDump. Otherwise returns None.
+    are successful, returns a ResultSuccess that should get handed off to the
+    ResultDump. If the measurement was not a success, returns a ResultError
+    type. If the measurement was not successful, but we known it isn't the
+    target relay's fault, return None. Only Result* types get recorded in the
+    ResultDump.
 
     In more detail:
     1. build a two hops circuit from the relay we are measuring to the helper

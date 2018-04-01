@@ -347,6 +347,7 @@ class ResultDump:
                 continue
             result = event
             if result is None:
+                self.log.debug('Got None in ResultDump')
                 continue
             elif not isinstance(result, Result):
                 self.log.warn('The only thing we should ever receive in the '

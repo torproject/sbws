@@ -42,11 +42,12 @@ def authenticate_client(sock, pw_file, log_fn=print):
     return True
 
 
-def authenticate_to_server(sock, pw_file, log_fn=print):
+def authenticate_to_server(sock, pw, log_fn=print):
     ''' Use this on the client side to send bytes to the server and properly
     authenticate to them. Returns True if successful, otherwise False '''
     assert sock.fileno() > 0
-    pw = _get_client_password(pw_file)
+    assert isinstance(pw, str)
+    assert len(pw) == PW_LEN
     try:
         sock.send(MAGIC_BYTES)
         sock.send(bytes(pw, 'utf-8'))
@@ -58,23 +59,6 @@ def authenticate_to_server(sock, pw_file, log_fn=print):
         log_fn('Didn\'t get success code from server')
         return False
     return True
-
-
-def is_good_clientside_password_file(pw_file):
-    ''' Returns True if the file exists and the first line of the file is a
-    valid password character string. Otherwise return False and reason
-    string '''
-    if not os.path.isfile(pw_file):
-        return False, '{} does not exist'.format(pw_file)
-    with open(pw_file, 'rt') as fd:
-        for line in fd:
-            if line[0] == '#':
-                continue
-            if len(line) != PW_LEN + 1:
-                return False, 'First non-comment line of {} must be {} '\
-                    'chars long to be a valid password'.format(pw_file, PW_LEN)
-            return True, ''
-    return False, 'There were no non-comment lines in {}'.format(pw_file)
 
 
 def is_good_serverside_password_file(pw_file):
@@ -106,12 +90,3 @@ def _is_valid_password(pw, pw_file):
             if pw == line:
                 return True
     return False
-
-
-def _get_client_password(pw_file):
-    assert is_good_clientside_password_file(pw_file)
-    with open(pw_file, 'rt') as fd:
-        for line in fd:
-            if line[0] == '#':
-                continue
-            return line[0:-1]

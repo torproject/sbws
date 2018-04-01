@@ -8,7 +8,6 @@ from ..lib.resultdump import ResultErrorAuth
 from ..lib.relaylist import RelayList
 from ..lib.relayprioritizer import RelayPrioritizer
 from ..lib.helperrelay import HelperRelayList
-from ..util.simpleauth import is_good_clientside_password_file
 from ..util.simpleauth import authenticate_to_server
 from sbws.globals import (fail_hard, is_initted)
 import sbws.util.stem as stem_utils
@@ -177,8 +176,7 @@ def measure_relay(args, conf, helpers, cb, rl, relay):
                  helper.server_port)
         cb.close_circuit(circ_id)
         return
-    pw_file = conf.get('paths', 'passwords')
-    if not authenticate_to_server(s, pw_file, log.info):
+    if not authenticate_to_server(s, helper.password, log.info):
         log.info('Unable to authenticate to the server')
         res = ResultErrorAuth(
             relay, circ_fps, helper.server_host)
@@ -311,11 +309,6 @@ def main(args, conf, log_):
         except ValueError as e:
             fail_hard('Couldn\'t read control port from config:', e, log=log)
     os.makedirs(conf['paths']['datadir'], exist_ok=True)
-
-    pw_file = conf.get('paths', 'passwords')
-    valid, error_reason = is_good_clientside_password_file(pw_file)
-    if not valid:
-        fail_hard(error_reason)
 
     try:
         test_speedtest(args, conf)

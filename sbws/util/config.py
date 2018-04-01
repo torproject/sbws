@@ -94,7 +94,7 @@ def _validate_client(conf):
     ints = {
         'max_recv_per_read': {'minimum': 1, 'maximum': None},
         'num_rtts': {'minimum': 1, 'maximum': 100},
-        'num_downloads': {'minimum': 1, 'maximum': None},
+        'num_downloads': {'minimum': 1, 'maximum': 100},
         'initial_read_request': {'minimum': 1, 'maximum': None},
         'measurement_threads': {'minimum': 1, 'maximum': None},
     }

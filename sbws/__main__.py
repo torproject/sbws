@@ -1,6 +1,7 @@
 import sbws.commands.client
 import sbws.commands.generate
 import sbws.commands.init
+import sbws.commands.pwgen
 import sbws.commands.server
 import sbws.commands.stats
 from sbws.util.config import get_config
@@ -31,6 +32,7 @@ def create_parser():
     sbws.commands.client.gen_parser(sub)
     sbws.commands.generate.gen_parser(sub)
     sbws.commands.init.gen_parser(sub)
+    sbws.commands.pwgen.gen_parser(sub)
     sbws.commands.server.gen_parser(sub)
     sbws.commands.stats.gen_parser(sub)
     return p
@@ -81,6 +83,8 @@ def main():
                      'a': def_args, 'kw': def_kwargs},
         'init': {'f': sbws.commands.init.main,
                  'a': def_args, 'kw': def_kwargs},
+        'pwgen': {'f': sbws.commands.pwgen.main,
+                  'a': def_args, 'kw': def_kwargs},
         'server': {'f': sbws.commands.server.main,
                    'a': def_args, 'kw': def_kwargs},
         'stats': {'f': sbws.commands.stats.main,

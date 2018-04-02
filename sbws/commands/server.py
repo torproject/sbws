@@ -50,6 +50,8 @@ def close_socket(s):
 
 def get_send_amount(sock):
     line = read_line(sock, max_len=16)
+    if line is None:
+        return None
     # if len(line) == 16, then it is much more likely we read garbage or not an
     # entire line instead of a legit number of bytes to send. So say we've
     # failed.

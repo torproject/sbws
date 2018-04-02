@@ -22,7 +22,7 @@ def main(args, conf, log_):
     config_fname = os.path.join(args.directory, 'config.ini')
     c = get_user_example_config(log_fn=log.debug)
     c['paths']['sbws_home'] = args.directory
-    log.info('Creating', config_fname)
+    log.info('Creating', config_fname, 'based on example config')
     with open(config_fname, 'wt') as fd:
         c.write(fd)
 

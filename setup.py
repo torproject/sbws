@@ -46,7 +46,7 @@ setup(
     long_description=long_description,
     author='Matt Traudt',
     author_email='pastly@torproject.org',
-    # license='MIT',
+    license='CC0',
     # https://packaging.python.org/tutorials/distributing-packages/#id48
     # https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[

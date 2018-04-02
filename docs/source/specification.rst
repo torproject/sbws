@@ -196,6 +196,13 @@ bytes an sbws server receives are not the correct magic bytes, the server
 SHOULD close the connection.
 
 If the client sends the correct magic bytes, the server does nothing in
+response. Therefore, the client SHOULD immediately followup with the version of
+the wire protocol it will speak. This version is an integer, but is sent as a
+string followed by a newline. So version 1 would be sent as the two byte
+string, ``"1\n"``.
+
+If the server does not support the version that the client sent, it MUST
+immediately close the connection.  Otherwise, the server does nothing in
 response. Therefore, the client SHOULD immediately followup with its 64
 character password.
 
@@ -205,8 +212,6 @@ MUST send to the client the 1 byte success code.
 
 Once the client receives the success code, the handshake is complete and the
 simple loop may begin.
-
-**XXX Update this section if a version is added**
 
 3.2.2 Simple loop
 -----------------

@@ -64,7 +64,10 @@ def scale_lines(args, v3bw_lines):
 
 
 def gen_parser(sub):
-    p = sub.add_parser('generate',
+    d = 'Generate a v3bw file based on recent results. A v3bw file is the '\
+        'file Tor directory authorities want to read and base their '\
+        'bandwidth votes on.'
+    p = sub.add_parser('generate', description=d,
                        formatter_class=ArgumentDefaultsHelpFormatter)
     p.add_argument('--output', default='/dev/stdout', type=str,
                    help='Where to write v3bw file')
@@ -84,9 +87,9 @@ def main(args, conf, log_):
 
     datadir = conf['paths']['datadir']
     if not os.path.isdir(datadir):
-        fail_hard(datadir, 'does not exist')
+        fail_hard(datadir, 'does not exist', log=log)
     if args.scale_constant < 1:
-        fail_hard('--scale-constant must be positive')
+        fail_hard('--scale-constant must be positive', log=log)
 
     fresh_days = conf.getint('general', 'data_period')
     results = load_recent_results_in_datadir(

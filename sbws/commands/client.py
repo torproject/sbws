@@ -287,7 +287,12 @@ def test_speedtest(args, conf):
 
 
 def gen_parser(sub):
-    sub.add_parser('client', formatter_class=ArgumentDefaultsHelpFormatter)
+    d = 'The client side of sbws. This should be run on a well-connected '\
+        'machine on the Internet with a healthy amount of spare bandwidth. '\
+        'This continuously builds circuits, measures relays, and dumps '\
+        'results into a datadir, commonly found in ~/.sbws'
+    sub.add_parser('client', formatter_class=ArgumentDefaultsHelpFormatter,
+                   description=d)
 
 
 def main(args, conf, log_):

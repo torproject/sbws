@@ -80,7 +80,9 @@ def print_stats(args, data):
 
 
 def gen_parser(sub):
-    p = sub.add_parser('stats', formatter_class=ArgumentDefaultsHelpFormatter)
+    d = 'Write some statistics about the data collected so far to stdout'
+    p = sub.add_parser('stats', formatter_class=ArgumentDefaultsHelpFormatter,
+                       description=d)
     p.add_argument('--error-types', action='store_true',
                    help='Also print information about each error type')
 

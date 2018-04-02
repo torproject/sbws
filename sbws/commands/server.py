@@ -8,7 +8,11 @@ import time
 
 
 def gen_parser(sub):
-    sub.add_parser('server', formatter_class=ArgumentDefaultsHelpFormatter)
+    d = 'The server side of sbws. This should be run on the same machine as '\
+        'a helper relay. This listens for clients connections and responds '\
+        'with the number of bytes the client requests.'
+    sub.add_parser('server', formatter_class=ArgumentDefaultsHelpFormatter,
+                   description=d)
 
 
 def close_socket(s):

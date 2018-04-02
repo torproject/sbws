@@ -6,7 +6,11 @@ import shutil
 
 
 def gen_parser(sub):
-    p = sub.add_parser('init', formatter_class=ArgumentDefaultsHelpFormatter)
+    d = 'Initialize a directory so sbws can use it for configuration, '\
+        'data storage, etc. A common default directory is ~/.sbws but check '\
+        'the output of sbws -h to verify.'
+    p = sub.add_parser('init', formatter_class=ArgumentDefaultsHelpFormatter,
+                       description=d)
 
 
 def main(args, conf, log_):

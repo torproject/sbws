@@ -10,11 +10,16 @@ def gen_parser(sub):
     sub.add_parser('server', formatter_class=ArgumentDefaultsHelpFormatter)
 
 
-def read_line(s):
+def read_line(s, max_len=None):
     ''' read until b'\n' is seen on the socket <s>. Return everything up until
     the newline as a str. If nothing can be read, return None. Note how that is
     different than if a newline is the first character; in that case, an empty
-    str is returned '''
+    str is returned.
+
+    If max_len is specified, then that's the maximum number of characters that
+    will be returned, even if a newline is not read yet.
+    '''
+    assert max_len is None or max_len > 0
     chars = None
     while True:
         try:
@@ -29,6 +34,8 @@ def read_line(s):
         if c == b'\n':
             break
         chars += c.decode('utf-8')
+        if max_len is not None and len(chars) >= max_len:
+            return chars[0:max_len]
     return chars
 
 
@@ -42,7 +49,12 @@ def close_socket(s):
 
 
 def get_send_amount(sock):
-    line = read_line(sock)
+    line = read_line(sock, max_len=16)
+    # if len(line) == 16, then it is much more likely we read garbage or not an
+    # entire line instead of a legit number of bytes to send. So say we've
+    # failed.
+    if len(line) == 16:
+        return None
     try:
         send_amount = int(line)
     except (TypeError, ValueError):

@@ -1,4 +1,5 @@
 from ..util.simpleauth import authenticate_client
+from ..util.sockio import read_line
 from sbws.globals import (fail_hard, is_initted)
 from argparse import ArgumentDefaultsHelpFormatter
 from threading import Thread
@@ -8,35 +9,6 @@ import time
 
 def gen_parser(sub):
     sub.add_parser('server', formatter_class=ArgumentDefaultsHelpFormatter)
-
-
-def read_line(s, max_len=None):
-    ''' read until b'\n' is seen on the socket <s>. Return everything up until
-    the newline as a str. If nothing can be read, return None. Note how that is
-    different than if a newline is the first character; in that case, an empty
-    str is returned.
-
-    If max_len is specified, then that's the maximum number of characters that
-    will be returned, even if a newline is not read yet.
-    '''
-    assert max_len is None or max_len > 0
-    chars = None
-    while True:
-        try:
-            c = s.recv(1)
-        except (ConnectionResetError, BrokenPipeError, socket.timeout) as e:
-            log.info(e)
-            return None
-        if not c:
-            return chars
-        if chars is None:
-            chars = ''
-        if c == b'\n':
-            break
-        chars += c.decode('utf-8')
-        if max_len is not None and len(chars) >= max_len:
-            return chars[0:max_len]
-    return chars
 
 
 def close_socket(s):
@@ -49,7 +21,7 @@ def close_socket(s):
 
 
 def get_send_amount(sock):
-    line = read_line(sock, max_len=16)
+    line = read_line(sock, max_len=16, log_fn=log.info)
     if line is None:
         return None
     # if len(line) == 16, then it is much more likely we read garbage or not an

@@ -10,18 +10,19 @@ import time
 
 
 class V3BWLine:
-    def __init__(self, fp, bw, nick, rtts):
+    def __init__(self, fp, bw, nick, rtts, last_time):
         self.fp = fp
         self.bw = bw
         self.nick = nick
         # convert to ms
         rtts = [round(r * 1000) for r in rtts]
         self.rtt = round(median(rtts))
+        self.time = last_time
 
     def __str__(self):
-        frmt = 'node_id={fp} bw={sp} nick={n} rtt={rtt}'
+        frmt = 'node_id={fp} bw={sp} nick={n} rtt={rtt} time={t}'
         return frmt.format(fp=self.fp, sp=round(self.bw), n=self.nick,
-                           rtt=self.rtt)
+                           rtt=self.rtt, t=self.time)
 
 
 def result_data_to_v3bw_line(data, fingerprint):
@@ -35,7 +36,8 @@ def result_data_to_v3bw_line(data, fingerprint):
               for r in results for dl in r.downloads]
     speed = median(speeds)
     rtts = [rtt for r in results for rtt in r.rtts]
-    return V3BWLine(fingerprint, speed, nick, rtts)
+    last_time = round(max([r.time for r in results]))
+    return V3BWLine(fingerprint, speed, nick, rtts, last_time)
 
 
 def warn_if_not_accurate_enough(lines, constant):

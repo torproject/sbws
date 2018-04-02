@@ -20,7 +20,7 @@ def main(args, conf, log_):
         os.makedirs(args.directory, exist_ok=False)
 
     config_fname = os.path.join(args.directory, 'config.ini')
-    c = get_user_example_config()
+    c = get_user_example_config(log_fn=log.debug)
     c['paths']['sbws_home'] = args.directory
     log.info('Creating', config_fname)
     with open(config_fname, 'wt') as fd:

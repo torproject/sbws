@@ -9,7 +9,7 @@ from sbws.globals import make_logger
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import os
 
-VERSION = '0.0.1'
+VERSION = '0.1.0'
 
 
 def _default_dot_sbws_dname():

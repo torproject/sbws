@@ -8,8 +8,10 @@ ALPHABET = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 def gen_parser(sub):
     d = 'Generate a password suitable for use by a sbws client for '\
         'authenticating to an sbws server.'
-    sub.add_parser('pwgen', formatter_class=ArgumentDefaultsHelpFormatter,
-                   description=d)
+    p = sub.add_parser('pwgen', formatter_class=ArgumentDefaultsHelpFormatter,
+                       description=d)
+    p.add_argument('--output', type=str, default='/dev/stdout',
+                   help='Where to write the password')
 
 
 def rand_char():
@@ -20,11 +22,12 @@ def rand_str():
     s = ''
     while len(s) < PW_LEN:
         s += rand_char()
+    assert len(s) == PW_LEN
     return s
 
 
 def main(args, conf, log_):
     global log
     log = log_
-    s = rand_str()
-    print(s)
+    with open(args.output, 'wt') as fd:
+        fd.write(rand_str() + '\n')

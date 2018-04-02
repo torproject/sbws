@@ -4,9 +4,14 @@ from sbws.lib.pastlylogger import PastlyLogger
 
 G_PKG_DIR = os.path.abspath(os.path.dirname(__file__))
 G_INIT_FILE_MAP = [
-    # (source, destination, type)
-    (os.path.join(G_PKG_DIR, 'passwords.txt.example'),
-     'passwords.txt', 'file'),
+    # Specified as:
+    #     (source, destination, type)
+    # Where:
+    #     - source is relative to the sbws/ directory
+    #     - destination is relative to $HOME/.sbws/ directory (or whatever the
+    #     user specified as their directory with --directory)
+    #     - type is 'file', and ideally type 'dir' will be supported in the
+    #     future as needed
 ]
 
 

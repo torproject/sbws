@@ -2,9 +2,11 @@ from ..util.simpleauth import authenticate_client
 from ..util.sockio import read_line
 from sbws.globals import (fail_hard, is_initted)
 from argparse import ArgumentDefaultsHelpFormatter
+from functools import lru_cache
 from threading import Thread
 import socket
 import time
+import random
 
 
 def gen_parser(sub):
@@ -40,6 +42,47 @@ def get_send_amount(sock):
     return send_amount
 
 
+@lru_cache(maxsize=8)
+def _generate_random_string(length):
+    ''' Generates a VERY WEAKLY random string. It felt wrong only sending a
+    ton of a single character, but generating a long and "truely" random
+    string is way too expensive. Furthermore, we don't just send random bytes
+    (which may be easy to generate) because for some reason I have it in my
+    head that doing everything in simple ascii, 1 byte == 1 char, and sometimes
+    line-based way is a smart idea.
+
+    Anyway. This shuffles the alphabet. It then concatenates this shuffled
+    alphabet as many times as necessary to get a string as long or longer than
+    the required length. It then returns the string up until the required
+    length.
+
+    Oh. Also it caches a few results based on the requested length. That's
+    another thing that hurts its randomness.
+    '''
+    assert length > 0
+    # start = time.time()
+    repeats = int(length / len(_generate_random_string.alphabet)) + 1
+    random.shuffle(_generate_random_string.alphabet)
+    s = ''.join(_generate_random_string.alphabet)
+    s = s * repeats
+    # stop = time.time()
+    # _generate_random_string.acc += stop - start
+    # if stop >= 60 + _generate_random_string.last_log:
+    #     log.notice('Spent', _generate_random_string.acc,
+    #                'seconds in the last minute generating "random" strings')
+    #     _generate_random_string.acc = 0
+    #     _generate_random_string.last_log = stop
+    assert len(s) >= length
+    return s[:length]
+
+
+_generate_random_string.alphabet = list('abcdefghijklmnopqrstuvwxyz'
+                                        'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+                                        '0123456789')
+# _generate_random_string.acc = 0
+# _generate_random_string.last_log = time.time()
+
+
 def write_to_client(sock, conf, amount):
     ''' Returns True if successful; else False '''
     log.info('Sending client no.', sock.fileno(), amount, 'bytes')
@@ -48,7 +91,8 @@ def write_to_client(sock, conf, amount):
                                amount)
         amount -= amount_this_time
         try:
-            sock.send(b'a' * amount_this_time)
+            sock.send(bytes(
+                _generate_random_string(amount_this_time), 'utf-8'))
         except (socket.timeout, ConnectionResetError, BrokenPipeError) as e:
             log.info('fd', sock.fileno(), ':', e)
             return False
@@ -107,4 +151,6 @@ def main(args, conf, log_):
     except KeyboardInterrupt:
         pass
     finally:
+        log.info('Generate random string stats:',
+                 _generate_random_string.cache_info())
         close_socket(server)

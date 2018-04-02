@@ -1,7 +1,7 @@
 import socket
 
 MAGIC_BYTES = b'SBWS'
-SUCCESS_BYTES = b'1'
+SUCCESS_BYTES = b'.'
 PW_LEN = 64
 
 

@@ -39,13 +39,20 @@ def load_result_file(fname, success_only=False, log_fn=print):
     age of the results '''
     assert os.path.isfile(fname)
     d = []
+    num_ignored = 0
     with open(fname, 'rt') as fd:
         for line in fd:
             r = Result.from_dict(json.loads(line.strip()))
+            if r is None:
+                num_ignored += 1
+                continue
             if success_only and isinstance(r, ResultError):
                 continue
             d.append(r)
     log_fn('Read', len(d), 'lines from', fname)
+    if num_ignored > 0:
+        log_fn('Had to ignore', num_ignored,
+               'results due to not knowing how to parse them.')
     return d
 
 
@@ -169,11 +176,14 @@ class Result:
 
     @staticmethod
     def from_dict(d):
+        ''' Given a dict, returns the Result* subtype that is represented by
+        the dict. If we don't know how to parse the dict into a Result and it's
+        likely because the programmer forgot to implement something, raises
+        NotImplementedError. If we can't parse the dict for some other reason,
+        return None. '''
         assert 'version' in d
         if d['version'] != RES_PROTO_VER:
-            raise TypeError(
-                'Asked to parse result with version {} but we can only '
-                'handle version {}'.format(d['version'], RES_PROTO_VER))
+            return None
         assert 'type' in d
         if d['type'] == _ResultType.Success.value:
             return ResultSuccess.from_dict(d)

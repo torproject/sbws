@@ -1,5 +1,4 @@
 from sbws.globals import (fail_hard, is_initted)
-from sbws.lib.resultdump import Result
 from sbws.lib.resultdump import ResultSuccess
 from sbws.lib.resultdump import load_recent_results_in_datadir
 from sbws.lib.resultdump import group_results_by_relay
@@ -72,6 +71,10 @@ def gen_parser(sub):
                        formatter_class=ArgumentDefaultsHelpFormatter)
     p.add_argument('--output', default='/dev/stdout', type=str,
                    help='Where to write v3bw file')
+    # The reason for --scale-constant defaulting to 7500 is because at one
+    # time, torflow happened to generate output that averaged to 7500 bw units
+    # per relay. We wanted the ability to try to be like torflow. See
+    # https://lists.torproject.org/pipermail/tor-dev/2018-March/013049.html
     p.add_argument('--scale-constant', default=7500, type=int,
                    help='When scaling bw weights, scale them using this const '
                    'multiplied by the number of measured relays')

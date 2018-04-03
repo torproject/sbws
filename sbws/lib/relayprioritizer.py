@@ -1,3 +1,4 @@
+from decimal import Decimal
 from ..lib.resultdump import ResultDump
 from ..lib.resultdump import Result
 from ..lib.resultdump import ResultError
@@ -55,6 +56,7 @@ class RelayPrioritizer:
         get around to giving the relay another chance at a getting a successful
         measurement.
         '''
+        fn_tstart = Decimal(time.time())
         relays = copy.deepcopy(self.relay_list.relays)
         rd = self.result_dump
         for relay in relays:
@@ -84,6 +86,10 @@ class RelayPrioritizer:
         # relays at the front
         relays = sorted(relays, key=lambda r: r.priority)
         cutoff = max(int(len(relays) * PERCENT_TO_RETURN), MIN_TO_RETURN)
+        fn_tstop = Decimal(time.time())
+        fn_tdelta = (fn_tstop - fn_tstart) * 1000
+        self.log.info('Spent {0:.3f} msecs calculating relay best priority'.
+                        format(fn_tdelta))
         # Finally, slowly return the relays to the caller (after removing the
         # priority member we polluted the variable with ...)
         for relay in relays[0:cutoff]:

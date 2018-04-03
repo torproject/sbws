@@ -150,6 +150,10 @@ class Result:
     def time(self):
         return self._time
 
+    @property
+    def version(self):
+        return RES_PROTO_VER
+
     def to_dict(self):
         return {
             'fingerprint': self.fingerprint,
@@ -160,7 +164,7 @@ class Result:
             'time': self.time,
             'type': self.type,
             'scanner': self.scanner,
-            'version': RES_PROTO_VER,
+            'version': self.version,
         }
 
     @staticmethod

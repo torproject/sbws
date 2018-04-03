@@ -78,7 +78,7 @@ class PastlyLogger:
             self.debug_fd = None
             self.debug_fd_mutex = None
 
-        self.debug('Creating PastlyLogger instance')
+        # self.debug('Creating PastlyLogger instance')
 
     def __call__(self, *s):
         if self.default_level == 'debug': return self.debug(*s)
@@ -88,7 +88,7 @@ class PastlyLogger:
         elif self.default_level == 'error': return self.error(*s)
 
     def __del__(self):
-        self.debug('Deleting PastlyLogger instance')
+        # self.debug('Deleting PastlyLogger instance')
         self.flush()
         if self.error_fd: self.error_fd.close()
         if self.warn_fd: self.warn_fd.close()

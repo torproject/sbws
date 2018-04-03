@@ -112,9 +112,9 @@ def new_thread(args, conf, sock):
             send_amount = get_send_amount(sock)
             if send_amount is None:
                 log.info('Couldn\'t get an amount to send to', sock.fileno())
-                close_socket(sock)
-                return
+                break
             write_to_client(sock, conf, send_amount)
+        log.notice(client_name, 'on', sock.fileno(), 'went away')
         close_socket(sock)
     thread = Thread(target=closure)
     return thread

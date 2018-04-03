@@ -13,6 +13,9 @@ from enum import Enum
 from stem.descriptor.router_status_entry import RouterStatusEntryV3
 
 
+RES_PROTO_VER = 1
+
+
 def group_results_by_relay(results, starting_dict=None):
     ''' Given a list of Results, sort them by the relay fingerprint that they
     measured and return the resulting dict. Optionally start with the given
@@ -157,10 +160,16 @@ class Result:
             'time': self.time,
             'type': self.type,
             'scanner': self.scanner,
+            'version': RES_PROTO_VER,
         }
 
     @staticmethod
     def from_dict(d):
+        assert 'version' in d
+        if d['version'] != RES_PROTO_VER:
+            raise TypeError(
+                'Asked to parse result with version {} but we can only '
+                'handle version {}'.format(d['version'], RES_PROTO_VER))
         assert 'type' in d
         if d['type'] == _ResultType.Success.value:
             return ResultSuccess.from_dict(d)

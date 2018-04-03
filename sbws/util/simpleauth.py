@@ -4,7 +4,7 @@ import socket
 MAGIC_BYTES = b'SBWS'
 SUCCESS_BYTES = b'.'
 PW_LEN = 64
-PROTO_VER = b'1'
+WIRE_PROTO_VER = b'1'
 
 
 def authenticate_client(sock, passwords, log_fn=print):
@@ -28,9 +28,9 @@ def authenticate_client(sock, passwords, log_fn=print):
     except socket.timeout as e:
         log_fn(e)
         return False
-    if line != str(PROTO_VER, 'utf-8'):
+    if line != str(WIRE_PROTO_VER, 'utf-8'):
         log_fn('Client gave protocol version {} but we support {}'.format(
-            line, str(PROTO_VER, 'utf-8')))
+            line, str(WIRE_PROTO_VER, 'utf-8')))
         return False
 
     try:
@@ -62,7 +62,7 @@ def authenticate_to_server(sock, pw, log_fn=print):
     assert len(pw) == PW_LEN
     try:
         sock.send(MAGIC_BYTES)
-        sock.send(PROTO_VER + b'\n')
+        sock.send(WIRE_PROTO_VER + b'\n')
         sock.send(bytes(pw, 'utf-8'))
         msg = sock.recv(len(SUCCESS_BYTES))
     except (socket.timeout, ConnectionResetError, BrokenPipeError) as e:

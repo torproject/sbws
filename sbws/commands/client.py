@@ -145,6 +145,7 @@ def measure_relay(args, conf, helpers, cb, rl, relay):
        4.4. write down the results
 
     '''
+    our_nick = conf['client']['nickname']
     helper = helpers.next(blacklist=[relay.fingerprint])
     if not helper:
         log.warn('Unable to get helper to measure', relay.nickname)
@@ -153,7 +154,8 @@ def measure_relay(args, conf, helpers, cb, rl, relay):
     if not circ_id:
         log.debug('Could not build circuit involving', relay.nickname)
         return ResultErrorCircuit(
-            relay, [relay.fingerprint, helper.fingerprint], helper.server_host)
+            relay, [relay.fingerprint, helper.fingerprint], helper.server_host,
+            our_nick)
     circ_fps = cb.get_circuit_path(circ_id)
     # A function that attaches all streams that gets created on
     # connect() to the given circuit
@@ -179,7 +181,7 @@ def measure_relay(args, conf, helpers, cb, rl, relay):
     if not authenticate_to_server(s, helper.password, log.info):
         log.info('Unable to authenticate to the server')
         res = ResultErrorAuth(
-            relay, circ_fps, helper.server_host)
+            relay, circ_fps, helper.server_host, our_nick)
         close_socket(s)
         cb.close_circuit(circ_id)
         return res
@@ -234,7 +236,8 @@ def measure_relay(args, conf, helpers, cb, rl, relay):
             expected_amount = int(
                 expected_amount * download_times['target'] / result_time)
     cb.close_circuit(circ_id)
-    return ResultSuccess(rtts, results, relay, circ_fps, helper.server_host)
+    return ResultSuccess(rtts, results, relay, circ_fps, helper.server_host,
+                         our_nick)
 
 
 def result_putter(result_dump):

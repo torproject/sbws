@@ -112,13 +112,17 @@ def _validate_client(conf):
         'tor_socks_port': {},
     }
     all_valid_keys = list(ints.keys()) + list(floats.keys()) + \
-        list(hosts.keys()) + list(ports.keys())
+        list(hosts.keys()) + list(ports.keys()) + ['nickname']
     errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))
     errors.extend(_validate_section_ints(conf, sec, ints, err_tmpl))
     errors.extend(_validate_section_floats(conf, sec, floats, err_tmpl))
     # XXX: validate hosts func doesn't do anything currently
     errors.extend(_validate_section_hosts(conf, sec, hosts, err_tmpl))
     errors.extend(_validate_section_ports(conf, sec, ports, err_tmpl))
+    valid, error_msg = _validate_nickname(conf[sec], 'nickname')
+    if not valid:
+        errors.append(err_tmpl.substitute(
+            sec=sec, key='nickname', val=conf[sec]['nickname'], e=error_msg))
     return errors
 
 
@@ -368,6 +372,14 @@ def _validate_password(section, key):
     alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
     length = 64
     return _validate_string(section, key, min_len=length, max_len=length,
+                            alphabet=alphabet)
+
+
+def _validate_nickname(section, key):
+    alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    min_len = 1
+    max_len = 32
+    return _validate_string(section, key, min_len=min_len, max_len=max_len,
                             alphabet=alphabet)
 
 

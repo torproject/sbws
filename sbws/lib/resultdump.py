@@ -107,11 +107,12 @@ class Result:
             self.nickname = nickname
             self.address = address
 
-    def __init__(self, relay, circ, server_host, t=None):
+    def __init__(self, relay, circ, server_host, client_nick, t=None):
         self._relay = Result.Relay(relay.fingerprint, relay.nickname,
                                    relay.address)
         self._circ = circ
         self._server_host = server_host
+        self._scanner = client_nick
         self._time = time.time() if t is None else t
 
     @property
@@ -139,6 +140,10 @@ class Result:
         return self._server_host
 
     @property
+    def scanner(self):
+        return self._scanner
+
+    @property
     def time(self):
         return self._time
 
@@ -151,6 +156,7 @@ class Result:
             'server_host': self.server_host,
             'time': self.time,
             'type': self.type,
+            'scanner': self.scanner,
         }
 
     @staticmethod
@@ -192,7 +198,8 @@ class ResultError(Result):
         assert isinstance(d, dict)
         return ResultError(
             Result.Relay(d['fingerprint'], d['nickname'], d['address']),
-            d['circ'], d['server_host'], msg=d['msg'], t=d['time'])
+            d['circ'], d['server_host'], d['scanner'],
+            msg=d['msg'], t=d['time'])
 
     def to_dict(self):
         d = super().to_dict()
@@ -215,7 +222,8 @@ class ResultErrorCircuit(ResultError):
         assert isinstance(d, dict)
         return ResultErrorCircuit(
             Result.Relay(d['fingerprint'], d['nickname'], d['address']),
-            d['circ'], d['server_host'], msg=d['msg'], t=d['time'])
+            d['circ'], d['server_host'], d['scanner'],
+            msg=d['msg'], t=d['time'])
 
     def to_dict(self):
         d = super().to_dict()
@@ -235,7 +243,8 @@ class ResultErrorStream(ResultError):
         assert isinstance(d, dict)
         return ResultErrorStream(
             Result.Relay(d['fingerprint'], d['nickname'], d['address']),
-            d['circ'], d['server_host'], msg=d['msg'], t=d['time'])
+            d['circ'], d['server_host'], d['scanner'],
+            msg=d['msg'], t=d['time'])
 
     def to_dict(self):
         d = super().to_dict()
@@ -255,7 +264,8 @@ class ResultErrorAuth(ResultError):
         assert isinstance(d, dict)
         return ResultErrorAuth(
             Result.Relay(d['fingerprint'], d['nickname'], d['address']),
-            d['circ'], d['server_host'], msg=d['msg'], t=d['time'])
+            d['circ'], d['server_host'], d['scanner'],
+            msg=d['msg'], t=d['time'])
 
     def to_dict(self):
         d = super().to_dict()
@@ -289,7 +299,8 @@ class ResultSuccess(Result):
         return ResultSuccess(
             d['rtts'], d['downloads'],
             Result.Relay(d['fingerprint'], d['nickname'], d['address']),
-            d['circ'], d['server_host'], t=d['time'])
+            d['circ'], d['server_host'], d['scanner'],
+            t=d['time'])
 
     def to_dict(self):
         d = super().to_dict()

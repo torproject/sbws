@@ -46,7 +46,7 @@ def warn_if_not_accurate_enough(lines, constant):
     log.info('The generated lines are within {:.5}% of what they should '
              'be'.format((1-accuracy_ratio)*100))
     if accuracy_ratio < 1 - margin or accuracy_ratio > 1 + margin:
-        log.warn('There was {:.3}% error and only +/- {:.3}% is '
+        log.warn('There was {:.3f}% error and only +/- {:.3f}% is '
                  'allowed'.format((1-accuracy_ratio)*100, margin*100, 2))
 
 

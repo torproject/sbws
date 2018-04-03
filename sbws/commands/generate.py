@@ -52,14 +52,15 @@ def warn_if_not_accurate_enough(lines, constant):
 
 def scale_lines(args, v3bw_lines):
     total = sum([l.bw for l in v3bw_lines])
-    if not args.raw:
+    if args.scale:
         scale = len(v3bw_lines) * args.scale_constant
     else:
         scale = total
     ratio = scale / total
     for line in v3bw_lines:
         line.bw = round(line.bw * ratio) + 1
-    warn_if_not_accurate_enough(v3bw_lines, args.scale_constant)
+    if args.scale:
+        warn_if_not_accurate_enough(v3bw_lines, args.scale_constant)
     return v3bw_lines
 
 
@@ -74,9 +75,11 @@ def gen_parser(sub):
     p.add_argument('--scale-constant', default=7500, type=int,
                    help='When scaling bw weights, scale them using this const '
                    'multiplied by the number of measured relays')
-    p.add_argument('--raw', '--no-scale', action='store_true',
-                   help='If specified, use bandwidth values as they are, with '
-                   'no scaling')
+    p.add_argument('--scale', action='store_true',
+                   help='If specified, do not use bandwidth values as they '
+                   'are, but scale them such that we have a budget of '
+                   'scale_constant * num_measured_relays = bandwidth to give '
+                   'out, and we do so proportionally')
 
 
 def main(args, conf, log_):

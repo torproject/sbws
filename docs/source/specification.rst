@@ -258,69 +258,75 @@ This is a successful result.
 ::
 
     {
-      "server_host": "torrelay.example.com",
+      "nickname": "test007r",
+      "circ": [
+        "35ABD93AA6F6EAC9A5690D205961C043F56E8D5B",
+        "DB0E268A2BA8A061F03F1F3BA98A0155B4608A23"
+      ],
+      "type": "success",
+      "fingerprint": "35ABD93AA6F6EAC9A5690D205961C043F56E8D5B",
+      "rtts": [
+        0.01746225357055664,
+        0.02101755142211914,
+        0.019290447235107422,
+        0.019827604293823242,
+        0.019453763961791992,
+        0.019289731979370117,
+        0.02017045021057129,
+        0.018725872039794922,
+        0.019000768661499023,
+        0.019316434860229492
+      ],
       "downloads": [
         {
-          "amount": 4135356,
-          "duration": 5.320193767547607
+          "amount": 42609660,
+          "duration": 6.512440204620361
         },
         {
-          "amount": 4135356,
-          "duration": 5.107725381851196
+          "amount": 42609660,
+          "duration": 6.519377708435059
         },
         {
-          "amount": 4135356,
-          "duration": 5.4456682205200195
+          "amount": 42609660,
+          "duration": 6.640781879425049
         },
         {
-          "amount": 4968177,
-          "duration": 6.062507390975952
+          "amount": 42609660,
+          "duration": 6.742352485656738
         },
         {
-          "amount": 4968177,
-          "duration": 6.231214284896851
+          "amount": 42609660,
+          "duration": 6.292598724365234
         }
       ],
-      "time": 1522319054.6500683,
-      "rtts": [
-        0.20087122917175293,
-        0.231292724609375,
-        0.20166778564453125,
-        0.20285797119140625,
-        0.19684314727783203,
-        0.2004106044769287,
-        0.21907258033752441,
-        0.20097804069519043,
-        0.2036900520324707,
-        0.20600032806396484
-      ],
-      "address": "555.555.555.555",
-      "nickname": "TorRelayNumber1",
-      "type": "success",
-      "fingerprint": "00112233445566778899AABBCCDDEEFF00112233",
-      "circ": [
-        "00112233445566778899AABBCCDDEEFF00112233",
-        "67890ABCDEF0123456789ABCDEF0123456789ABC"
-      ]
+      "version": 1,
+      "server_host": "127.0.0.1",
+      "scanner": "PastlyDesktop",
+      "time": 1522715280.8080218,
+      "address": "127.0.0.1"
     }
+
 
 And this is an example result from a failed measurement.
 
 ::
 
     {
-      "server_host": "torrelay.example.com",
-      "time": 1522319017.4709446,
-      "msg": null,
-      "address": "555.555.555.555",
-      "nickname": "TorRelayNumber1",
-      "type": "error-circ",
-      "fingerprint": "00112233445566778899AABBCCDDEEFF00112233",
       "circ": [
-        "00112233445566778899AABBCCDDEEFF00112233",
-        "67890ABCDEF0123456789ABCDEF0123456789ABC"
-      ]
+        "51C56AC6368C7116548CBE3882931CC7223AA657",
+        "DB0E268A2BA8A061F03F1F3BA98A0155B4608A23"
+      ],
+      "address": "127.0.0.1",
+      "msg": null,
+      "fingerprint": "51C56AC6368C7116548CBE3882931CC7223AA657",
+      "scanner": "PastlyDesktop",
+      "version": 1,
+      "nickname": "test001a",
+      "server_host": "127.0.0.1",
+      "type": "error-auth",
+      "time": 1522715568.0314171
     }
+
 
 3.4 Simple result processing
 ----------------------------

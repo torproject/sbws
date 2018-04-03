@@ -11,6 +11,20 @@ The scanner builds two hop circuits consisting of the relay being measured and
 the helper relay running server.py. Over these circuits it measures RTT and
 download performance.
 
+## Boring things
+
+This project follows [semantic versioning][] and thus every major version has
+the potential for breaking changes. You can find information about what those
+are at the following places.
+
+- In [`CHANGELOG.md`](/CHANGELOG.md)
+
+[semantic versioning]: https://semver.org/
+
+This project is released to the public domain under the CC0 1.0 Universal
+license. See [`LICENSE.md`](/LICENSE.md) for more information.
+
+
 ## Installing
 
 Clone the repo

@@ -134,10 +134,17 @@ character passwords in the server's ``passwords.txt``.
 
 We now describe various core parts of sbws.
 
+.. _relay-prioritization:
+
 3.1 Simple relay prioritization
 -------------------------------
 
 This may be the most complex part of sbws.
+
+:class:`RelayPrioritizer <sbws.lib.relayprioritizer.RelayPrioritizer>`
+
+.. autoclass:: sbws.lib.relayprioritizer.RelayPrioritizer
+  :noindex:
 
 Sbws makes an effort to prioritize measurements of relays that don't have many
 recent results. For example: relays that just joined the Tor network or relays

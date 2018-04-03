@@ -99,13 +99,15 @@ def write_to_client(sock, conf, amount):
     return True
 
 
-def new_thread(args, conf, sock, passwords):
+def new_thread(args, conf, sock):
     def closure():
-        if not authenticate_client(sock, passwords, log.info):
+        client_name = authenticate_client(
+            sock, conf['server.passwords'], log.info)
+        if not client_name:
             log.info('Client did not provide valid auth')
             close_socket(sock)
             return
-        log.debug('Client authed successfully')
+        log.notice(client_name, 'authenticated on', sock.fileno())
         while True:
             send_amount = get_send_amount(sock)
             if send_amount is None:
@@ -124,9 +126,7 @@ def main(args, conf, log_):
     if not is_initted(args.directory):
         fail_hard('Sbws isn\'t initialized. Try sbws init', log=log)
 
-    passwords = [conf['server.passwords'][key]
-                 for key in conf['server.passwords']]
-    if len(passwords) < 1:
+    if len(conf['server.passwords']) < 1:
         fail_hard('Sbws server needs at least one password', log=log)
 
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -146,7 +146,7 @@ def main(args, conf, log_):
         while True:
             sock, addr = server.accept()
             log.info('accepting connection from', addr, 'as', sock.fileno())
-            t = new_thread(args, conf, sock, passwords)
+            t = new_thread(args, conf, sock)
             t.start()
     except KeyboardInterrupt:
         pass

@@ -20,14 +20,6 @@ sbws.lib.pastlylogger module
     :undoc-members:
     :show-inheritance:
 
-sbws.lib.periodicevent module
------------------------------
-
-.. automodule:: sbws.lib.periodicevent
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 sbws.lib.relaylist module
 -------------------------
 

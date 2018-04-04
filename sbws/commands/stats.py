@@ -41,6 +41,14 @@ def _print_averages(data):
 
 
 def print_stats(args, data):
+    '''
+    Called from main to print various statistics about the organized **data**
+    to stdout.
+
+    :param argparse.Namespace args: command line arguments
+    :param dict data: keyed by relay fingerprint, and with values of
+        :class:`sbws.lib.resultdump.Result` subclasses
+    '''
     results = []
     for fp in data:
         results.extend(data[fp])
@@ -67,6 +75,12 @@ def print_stats(args, data):
 
 
 def gen_parser(sub):
+    '''
+    Helper function for the broader argument parser generating code that adds
+    in all the possible command line arguments for the stats command.
+
+    :param argparse._SubParsersAction sub: what to add a sub-parser to
+    '''
     d = 'Write some statistics about the data collected so far to stdout'
     p = sub.add_parser('stats', formatter_class=ArgumentDefaultsHelpFormatter,
                        description=d)
@@ -75,6 +89,13 @@ def gen_parser(sub):
 
 
 def main(args, conf, log_):
+    '''
+    Main entry point into the stats command.
+
+    :param argparse.Namespace args: command line arguments
+    :param configparser.ConfigParser conf: parsed config files
+    :param sbws.lib.pastlylogger.PastlyLogger log_: logging class instance
+    '''
     global log
     log = log_
     if not is_initted(args.directory):

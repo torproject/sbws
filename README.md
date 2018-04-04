@@ -21,9 +21,16 @@ are at the following places.
 
 [semantic versioning]: https://semver.org/
 
+In addition to the overall semantic version for sbws as a whole, there are
+simple integer versions for (i) the protcol sbws clients and servers use to
+speak to each other, and (ii) the format in which results are stored.
+Incrementing either of these version numbers requires a major version change
+for sbws. (Note that the reverse is **not** true: a major sbws version change
+does not require the integer versions for the wire protocol or result format to
+change)
+
 This project is released to the public domain under the CC0 1.0 Universal
 license. See [`LICENSE.md`](/LICENSE.md) for more information.
-
 
 ## Installing
 

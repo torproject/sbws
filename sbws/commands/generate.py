@@ -57,7 +57,7 @@ def scale_lines(args, v3bw_lines):
         scale = total
     ratio = scale / total
     for line in v3bw_lines:
-        line.bw = round(line.bw * ratio) + 1
+        line.bw = round(line.bw * ratio)
     if args.scale:
         warn_if_not_accurate_enough(v3bw_lines, args.scale_constant)
     return v3bw_lines

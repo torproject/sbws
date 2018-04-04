@@ -38,7 +38,6 @@ def print_regular(bws):
 def main(args):
     cont = get_controller(args)
     cont.authenticate()
-    bws = []
     bws = [ns.bandwidth for ns in cont.get_network_statuses()]
     if args.quiet:
         print_quiet(bws)

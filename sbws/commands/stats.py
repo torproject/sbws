@@ -12,19 +12,6 @@ from datetime import timedelta
 from statistics import mean
 
 
-def read_result_file(fname, starting_dict=None):
-    data = starting_dict if starting_dict else {}
-    with open(fname, 'rt') as fd:
-        for line in fd:
-            d = json.loads(line)
-            res = Result.from_dict(d)
-            fp = d['fingerprint']
-            if fp not in data:
-                data[fp] = []
-            data[fp].append(res)
-    return data
-
-
 def _print_stats_error_types(data):
     counts = {'total': 0}
     for fp in data:

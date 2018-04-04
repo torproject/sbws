@@ -52,6 +52,7 @@ def print_stats(args, data):
     results = []
     for fp in data:
         results.extend(data[fp])
+    assert len([r for r in results if not isinstance(r, Result)]) == 0
     error_results = [r for r in results if isinstance(r, ResultError)]
     success_results = [r for r in results if isinstance(r, ResultSuccess)]
     percent_success_results = 100 * len(success_results) / len(results)

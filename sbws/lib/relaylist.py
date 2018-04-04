@@ -17,6 +17,7 @@ class RelayList:
             assert c, error_msg
         else:
             self._controller = controller
+        self.rng = random.SystemRandom()
         self.log = log
         self._refresh()
 
@@ -63,7 +64,7 @@ class RelayList:
 
     def random_relay(self):
         relays = self.relays
-        return random.choice(relays)
+        return self.rng.choice(relays)
 
     def _relays_with_flag(self, flag):
         relays = self.relays

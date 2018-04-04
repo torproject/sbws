@@ -15,7 +15,7 @@ def gen_parser(sub):
 
 
 def rand_char():
-    return random.choice(ALPHABET)
+    return rng.choice(ALPHABET)
 
 
 def rand_str():
@@ -28,6 +28,8 @@ def rand_str():
 
 def main(args, conf, log_):
     global log
+    global rng
     log = log_
+    rng = random.SystemRandom()
     with open(args.output, 'wt') as fd:
         fd.write(rand_str() + '\n')

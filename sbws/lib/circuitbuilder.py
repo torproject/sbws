@@ -44,6 +44,7 @@ class CircuitBuilder:
         else:
             self.controller = controller
         self.log = log
+        self.rng = random.SystemRandom()
         self.relay_list = RelayList(args, conf, log,
                                     controller=self.controller)
         self.built_circuits = set()
@@ -113,7 +114,7 @@ class RandomCircuitBuilder(CircuitBuilder):
         ''' builds circuit of <length> and returns its (str) ID '''
         if not valid_circuit_length(length):
             raise PathLengthException()
-        fps = [r.fingerprint for r in random.sample(self.relays, length)]
+        fps = [r.fingerprint for r in self.rng.sample(self.relays, length)]
         return self._build_circuit_impl(fps)
 
 
@@ -139,8 +140,8 @@ class GuardedCircuitBuilder(CircuitBuilder):
         includes the guard in the first hop position '''
         if not valid_circuit_length(length):
             raise PathLengthException()
-        fps = [random.choice(self.guards).fingerprint] + \
-            [r.fingerprint for r in random.sample(self.relays, length-1)]
+        fps = [self.rng.choice(self.guards).fingerprint] + \
+            [r.fingerprint for r in self.rng.sample(self.relays, length-1)]
         return self._build_circuit_impl(fps)
 
 
@@ -159,8 +160,8 @@ class ExitCircuitBuilder(CircuitBuilder):
         ''' builds circuit of <length> and returns its (str) ID. '''
         if not valid_circuit_length(length):
             raise PathLengthException()
-        fps = [r.fingerprint for r in random.sample(self.relays, length-1)] + \
-            [random.choice(self.exits).fingerprint]
+        fps = [r.fingerprint for r in self.rng.sample(self.relays, length-1)] \
+            + [self.rng.choice(self.exits).fingerprint]
         return self._build_circuit_impl(fps)
 
 
@@ -196,7 +197,7 @@ class GapsCircuitBuilder(CircuitBuilder):
             return None
         chosen_fps = []
         while len(chosen_fps) < number:
-            choice = random.choice(all_fps)
+            choice = self.rng.choice(all_fps)
             if choice in black_fps:
                 continue
             chosen_fps.append(choice)

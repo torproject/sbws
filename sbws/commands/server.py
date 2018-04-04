@@ -62,7 +62,7 @@ def _generate_random_string(length):
     assert length > 0
     # start = time.time()
     repeats = int(length / len(_generate_random_string.alphabet)) + 1
-    random.shuffle(_generate_random_string.alphabet)
+    rng.shuffle(_generate_random_string.alphabet)
     s = ''.join(_generate_random_string.alphabet)
     s = s * repeats
     # stop = time.time()
@@ -122,7 +122,9 @@ def new_thread(args, conf, sock):
 
 def main(args, conf, log_):
     global log
+    global rng
     log = log_
+    rng = random.SystemRandom()
     if not is_initted(args.directory):
         fail_hard('Sbws isn\'t initialized. Try sbws init', log=log)
 

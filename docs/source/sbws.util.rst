@@ -4,10 +4,34 @@ sbws.util package
 Submodules
 ----------
 
+sbws.util.config module
+---------------------------
+
+.. automodule:: sbws.util.config
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+sbws.util.parser module
+---------------------------
+
+.. automodule:: sbws.util.parser
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 sbws.util.simpleauth module
 ---------------------------
 
 .. automodule:: sbws.util.simpleauth
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+sbws.util.sockio module
+---------------------------
+
+.. automodule:: sbws.util.sockio
     :members:
     :undoc-members:
     :show-inheritance:

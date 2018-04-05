@@ -12,6 +12,14 @@ sbws.lib.circuitbuilder module
     :undoc-members:
     :show-inheritance:
 
+sbws.lib.helperrelay module
+----------------------------
+
+.. automodule:: sbws.lib.helperrelay
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 sbws.lib.pastlylogger module
 ----------------------------
 

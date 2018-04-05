@@ -39,6 +39,23 @@ def _print_averages(data):
           'relay'.format(mean_success))
 
 
+def _results_into_bandwidths(results, limit=5):
+    '''
+    For all the given resutls, extract their download statistics and normalize
+    them into bytes/second bandwidths.
+
+    :param list results: list of :class:`sbws.list.resultdump.ResultSuccess`
+    :param int limit: The maximum number of bandwidths to return
+    :returns: list of up to `limit` bandwidths, with the largest first
+    '''
+    downloads = []
+    for result in results:
+        assert isinstance(result, ResultSuccess)
+        for dl in result.downloads:
+            downloads.append(dl['amount'] / dl['duration'])
+    return sorted(downloads, reverse=True)[:limit]
+
+
 def print_stats(args, data):
     '''
     Called from main to print various statistics about the organized **data**
@@ -55,6 +72,9 @@ def print_stats(args, data):
     error_results = [r for r in results if isinstance(r, ResultError)]
     success_results = [r for r in results if isinstance(r, ResultSuccess)]
     percent_success_results = 100 * len(success_results) / len(results)
+    fastest_transfers = _results_into_bandwidths(success_results)
+    fastest_transfer = 0 if len(fastest_transfers) < 1 else \
+        fastest_transfers[0]
     first_time = min([r.time for r in results])
     last_time = max([r.time for r in results])
     first = date.fromtimestamp(first_time)
@@ -68,6 +88,8 @@ def print_stats(args, data):
         percent_success_results))
     print(len(success_results), 'success results and',
           len(error_results), 'error results')
+    print('The fastest download was {:.2f} KiB/s'.format(
+        fastest_transfer/1024))
     print('Results come from', first, 'to', last, 'over a period of',
           duration)
     if args.error_types:

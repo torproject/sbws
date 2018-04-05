@@ -10,6 +10,7 @@ from ..lib.relayprioritizer import RelayPrioritizer
 from ..lib.helperrelay import HelperRelayList
 from ..util.simpleauth import authenticate_to_server
 from sbws.globals import (fail_hard, is_initted)
+from sbws.globals import (MIN_REQ_BYTES, MAX_REQ_BYTES)
 import sbws.util.stem as stem_utils
 from stem.control import EventType
 from argparse import ArgumentDefaultsHelpFormatter
@@ -59,7 +60,8 @@ def socket_connect(s, addr, port):
 
 def tell_server_amount(sock, expected_amount):
     ''' Returns True on success; else False '''
-    assert expected_amount > 0
+    assert expected_amount >= MIN_REQ_BYTES
+    assert expected_amount <= MAX_REQ_BYTES
     # expectd_amount should come in as an int, but we send it to the server as
     # a string (ignore the difference between bytes and str in python. You know
     # what I mean).
@@ -98,7 +100,7 @@ def measure_rtt_to_server(sock, conf):
     rtts = []
     for _ in range(0, conf.getint('client', 'num_rtts')):
         start_time = time.time()
-        if not tell_server_amount(sock, 1):
+        if not tell_server_amount(sock, MIN_REQ_BYTES):
             log.info('Unable to ping server on', sock.fileno())
             return
         try:
@@ -204,6 +206,11 @@ def measure_relay(args, conf, helpers, cb, rl, relay):
         'max': conf.getfloat('client', 'download_max'),
     }
     while len(results) < num_downloads:
+        if expected_amount == MAX_REQ_BYTES:
+            log.warn('We are requesting the maximum number of bytes we are '
+                     'allowed to ask for from a server in order to measure',
+                     relay.nickname, 'via helper', helper.fingerprint[0:8],
+                     'and we don\'t expect this to happen very often.')
         # Tell the server to send us the current expected_amount.
         if not tell_server_amount(s, expected_amount):
             close_socket(s)
@@ -216,28 +223,55 @@ def measure_relay(args, conf, helpers, cb, rl, relay):
             close_socket(s)
             cb.close_circuit(circ_id)
             return
-        # Adjust amount of bytes to download in the next download
-        if result_time < download_times['toofast']:
-            # Way too fast, greatly increase the amount we ask for
-            expected_amount = int(expected_amount * 10)
-        elif result_time < download_times['min']:
-            # A little too fast, increase the amount we ask for such that it
-            # will probably take the target amount of time to download
-            expected_amount = int(
-                expected_amount * download_times['target'] / result_time)
-        elif result_time < download_times['max']:
-            # result_time is between min and max, record the result and don't
-            # change the expected_amount
-            results.append(
-                {'duration': result_time, 'amount': expected_amount})
-        else:
-            # result_time is too large, decrease the amount we ask for such
-            # that it will probably take the target amount of time to download
-            expected_amount = int(
-                expected_amount * download_times['target'] / result_time)
+        # Determine if we should keep the result we got based on how long it
+        # took the download. Then keep it if we should.
+        if _should_keep_result(
+                expected_amount == MAX_REQ_BYTES, result_time, download_times):
+            results.append({
+                'duration': result_time, 'amount': expected_amount
+            })
+        # Recalculate the amount we next will ask for the server to send us
+        expected_amount = _next_expected_amount(
+            expected_amount, result_time, download_times)
     cb.close_circuit(circ_id)
     return ResultSuccess(rtts, results, relay, circ_fps, helper.server_host,
                          our_nick)
+
+
+def _should_keep_result(did_request_maximum, result_time, download_times):
+    # In the normal case, we didn't ask for the maximum allowed amount. So we
+    # should only allow ourselves to keep results that are between the min and
+    # max allowed time
+    if not did_request_maximum and \
+            result_time >= download_times['min'] and \
+            result_time < download_times['max']:
+        return True
+    # If we did request the maximum amount, we should keep the result as long
+    # as it took less than the maximum amount of time
+    if did_request_maximum and \
+            result_time < download_times['max']:
+        return True
+    # In all other cases, return false
+    log.debug('Not keeping result time {:.2f}s.'.format(result_time),
+              '' if not did_request_maximum else 'We requested the maximum '
+              'amount allowed')
+    return False
+
+
+def _next_expected_amount(expected_amount, result_time, download_times):
+    if result_time < download_times['toofast']:
+        # Way too fast, greatly increase the amount we ask for
+        expected_amount = int(expected_amount * 5)
+    elif result_time < download_times['min'] or \
+            result_time >= download_times['max']:
+        # As long as the result is between min/max, keep the expected amount
+        # the same. Otherwise, adjust so we are aiming for the target amount.
+        expected_amount = int(
+            expected_amount * download_times['target'] / result_time)
+    # Make sure we don't request too much or too little
+    expected_amount = max(MIN_REQ_BYTES, expected_amount)
+    expected_amount = min(MAX_REQ_BYTES, expected_amount)
+    return expected_amount
 
 
 def result_putter(result_dump):

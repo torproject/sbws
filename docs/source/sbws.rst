@@ -1,5 +1,5 @@
-sbws package
-============
+Simple Bandwidth Scanner package
+================================
 
 Subpackages
 -----------

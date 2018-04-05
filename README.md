@@ -80,3 +80,22 @@ overwrites the default file found in the default file.
     make html
 
 The generated HTML will be in [/docs/build/](/docs/build/)
+
+### Running tests
+
+Make sure you have test dependencies installed. From within the top level
+repository directory:
+
+    pip install -e .[test]
+
+This should install tox and pytest.
+
+Since my development environment has Python 3.5 and tox is only configured to
+test 3.5, both the `tox` and `pytest` commands have the same result. Once sbws
+gets properly open source, Travis should run tox with a variety of Python 3.X
+versions.
+
+To run the tests, run `pytest`. To generate HTML output of test coverage, run
+`pytest --cov --cov-report=html`. A `htmlcov` directory will be created in
+current working directory. Open it in a web browser and prepare to be amazed.
+It will highlight (un)covered lines! How cool is that?!

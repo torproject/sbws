@@ -85,6 +85,12 @@ def gen_parser(sub):
                    'out, and we do so proportionally')
 
 
+def log_stats(data_lines):
+    total_bw = sum([l.bw for l in data_lines])
+    bw_per_line = total_bw / len(data_lines) / 1024
+    log.info('Mean bandwidth per line: {:.2f} "KiB"'.format(bw_per_line))
+
+
 def main(args, conf, log_):
     global log
     log = log_
@@ -104,6 +110,7 @@ def main(args, conf, log_):
     data_lines = [result_data_to_v3bw_line(data, fp) for fp in data]
     data_lines = sorted(data_lines, key=lambda d: d.bw, reverse=True)
     data_lines = scale_lines(args, data_lines)
+    log_stats(data_lines)
     with open(args.output, 'wt') as fd:
         fd.write('{}\n'.format(int(time.time())))
         for line in data_lines:

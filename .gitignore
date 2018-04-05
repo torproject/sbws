@@ -3,3 +3,7 @@ venv*/
 passwords.txt
 *.egg-info/
 docs/build
+.tox
+.coverage
+htmlcov
+.pytest_cache

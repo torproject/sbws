@@ -75,7 +75,7 @@ setup(
     ],
     extras_require={
         'dev': [],
-        'test': [],
+        'test': ['tox', 'pytest', 'pytest-cov'],
         # recommonmark: to make sphinx render markdown
         'doc': ['sphinx', 'recommonmark'],
     },

@@ -6,7 +6,6 @@ from sbws.lib.resultdump import load_recent_results_in_datadir
 from sbws.lib.resultdump import group_results_by_relay
 from argparse import ArgumentDefaultsHelpFormatter
 import os
-import json
 from datetime import date
 from datetime import timedelta
 from statistics import mean

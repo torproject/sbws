@@ -108,5 +108,8 @@ def main(args, conf, log_):
     fresh_days = conf.getint('general', 'data_period')
     results = load_recent_results_in_datadir(
         fresh_days, datadir, success_only=False, log_fn=log.debug)
+    if len(results) < 1:
+        log.notice('No fresh results')
+        return
     data = group_results_by_relay(results)
     print_stats(args, data)

@@ -81,7 +81,7 @@ overwrites the default file found in the default file.
 
 The generated HTML will be in [/docs/build/](/docs/build/)
 
-### Running tests
+## Running tests
 
 Make sure you have test dependencies installed. From within the top level
 repository directory:

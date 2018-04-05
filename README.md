@@ -47,12 +47,6 @@ Clone the repo
 
 **XXX Write this.**
 
-----------
-
-**lib/circuitbuilder.py** Only one subclass of CircuitBuilder is used as of
-this writing, and that is GapsCircuitBuilder. Oddly enough, there are no gaps
-in the circuits we ask it to build.
-
 ## Documentation
 
 See more documentation in [/docs/source/](/docs/source/)
@@ -73,7 +67,27 @@ Sbws then reads your custom config file. By default, after running `sbws init`,
 it is located in `~/.sbws/config.ini`. A configuration option in this file
 overwrites the default file found in the default file.
 
-### Build HTML documentation
+**No other configuration files are read.** The only files that are read are the
+`config.default.ini` file located in a place the user shouldn't touch, and the
+`config.ini` in their `.sbws` directory.
+
+## The `.sbws` directory
+
+By default is `~/.sbws`. You can choose a different one by specifying `-d` when
+calling sbws.
+
+    sbws -d /tmp/testing-dotsbws init
+    sbws -d /tmp/testing-dotsbws client
+
+In this directory you will find
+
+- `config.ini` The configuration file you should be editing if you want to
+  modify sbws's behavior.
+- `datadir` Once your sbws client has started gathering results, it will dump
+  them into this directory. Other sbws commands (such as generate and stats)
+  read results from the files in this directory.
+
+## Build HTML documentation
 
     pip install -e .[doc]
     cd docs

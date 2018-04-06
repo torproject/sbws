@@ -1,3 +1,4 @@
+from sbws import version
 from sbws.globals import (fail_hard, is_initted)
 from sbws.lib.resultdump import ResultSuccess
 from sbws.lib.resultdump import load_recent_results_in_datadir
@@ -113,5 +114,6 @@ def main(args, conf, log_):
     log_stats(data_lines)
     with open(args.output, 'wt') as fd:
         fd.write('{}\n'.format(int(time.time())))
+        fd.write('version={}\n'.format(version))
         for line in data_lines:
             fd.write('{}\n'.format(str(line)))

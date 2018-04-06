@@ -74,17 +74,6 @@ a backward incompatible way.
 This project is released to the public domain under the CC0 1.0 Universal
 license. See [`LICENSE.md`](/LICENSE.md) for more information.
 
-## Installing
-
-Clone the repo
-
-    virtualenv -p python3 venv
-    source venv/bin/activate
-    pip install .
-    sbws init
-    sbws client -h
-    sbws server -h
-
 ## Authenticating to `sbws server`
 
 **XXX Write this.**

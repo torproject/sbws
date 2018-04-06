@@ -13,6 +13,8 @@ download performance.
 
 ## Boring things
 
+### Versioning
+
 This project follows [semantic versioning][] and thus every major version has
 the potential for breaking changes. You can find information about what those
 are at the following places.
@@ -28,6 +30,46 @@ Incrementing either of these version numbers requires a major version change
 for sbws. (Note that the reverse is **not** true: a major sbws version change
 does not require the integer versions for the wire protocol or result format to
 change)
+
+### The public API for sbws
+
+As required by semantic versioning, the public API for sbws will not change
+without a major version bump. The public API is
+
+- **The available configuration options and their defaults**. New options may
+  be added without a major version bump, but no options will be removed, nor
+will defaults be drastically changed. Examples of drastic changes to defaults
+include obvious things like flipping any boolean value or a location for data
+storage, but also more subjective things, such as increasing the target
+download time significantly (6s to 60s). Examples of an insignificant change
+include changing the default client nickname. Rule of thumb: if it is likely to
+affect results or sbws behavior significantly, it is a major change.
+
+- **The name and function of commands**. The command you run to perform certain
+  actions will not change in a backward incompatible way without a major
+version change. For example to generate a v3bw file you will always run `sbws
+generate` unless there is a major version bump and the release notes indicate
+the command has changed.
+
+- **The format of output**. Results (stored in `~/.sbws/datadir` by default)
+  will not change their format in a backward incompatible way without both a
+major version bump and a bump in the result version integer. The v3bw file
+generated with `sbws generate` will not change its format without a major
+version bump. *Log lines and the output of `sbws stats` are exceptions to this
+rule*.
+
+- **The wire protocol**. The way `sbws client` and `sbws server` speak will not
+  change in a backward incompatible way without both a major version bump and a
+bump in the wire protocol version integer.
+
+- **NOT the name, location, signature, or existance of python functions**. Sbws
+  is meant to be ran as a standalone program. It is not at all meant to be
+treated or used like a library. Users of sbws do *not* need an understanding of
+how its code is laid out. Therefore the code may change drastically without a
+major version bump as long as the way users interact with it does not change in
+a backward incompatible way.
+
+### License
 
 This project is released to the public domain under the CC0 1.0 Universal
 license. See [`LICENSE.md`](/LICENSE.md) for more information.

@@ -9,8 +9,8 @@ def gen_parser(sub):
     d = 'Initialize a directory so sbws can use it for configuration, '\
         'data storage, etc. A common default directory is ~/.sbws but check '\
         'the output of sbws -h to verify.'
-    p = sub.add_parser('init', formatter_class=ArgumentDefaultsHelpFormatter,
-                       description=d)
+    sub.add_parser('init', formatter_class=ArgumentDefaultsHelpFormatter,
+                   description=d)
 
 
 def main(args, conf, log_):

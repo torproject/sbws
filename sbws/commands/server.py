@@ -129,7 +129,11 @@ def main(args, conf, log_):
         fail_hard('Sbws isn\'t initialized. Try sbws init', log=log)
 
     if len(conf['server.passwords']) < 1:
-        fail_hard('Sbws server needs at least one password', log=log)
+        fail_hard('Sbws server needs at least one passwordin the section'\
+                  ' [server.passwords] in the config file in',
+                   conf.get('sbws_home'),
+                   '.See doc/XX for more information on the configuration.',
+                    log=log)
 
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     h = (conf['server']['bind_ip'], conf.getint('server', 'bind_port'))

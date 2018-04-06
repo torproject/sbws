@@ -9,8 +9,6 @@ from sbws.util.config import validate_config
 from sbws.util.parser import create_parser
 from sbws.globals import make_logger
 
-VERSION = '0.1.0'
-
 
 def _log_buffer():
     ''' Little helper for when you want to log some things before the

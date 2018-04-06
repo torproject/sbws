@@ -12,6 +12,8 @@ Welcome to Simple Bandwidth Scanner's documentation!
    :caption: Contents:
 
    specification
+   INSTALL
+   DEPLOY
    README
    AUTHORS
    sbws

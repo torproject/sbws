@@ -7,6 +7,7 @@ from threading import Thread
 import socket
 import time
 import random
+import os
 
 
 def gen_parser(sub):
@@ -129,11 +130,11 @@ def main(args, conf, log_):
         fail_hard('Sbws isn\'t initialized. Try sbws init', log=log)
 
     if len(conf['server.passwords']) < 1:
-        fail_hard('Sbws server needs at least one passwordin the section'\
-                  ' [server.passwords] in the config file in',
-                   conf.get('sbws_home'),
-                   '.See doc/XX for more information on the configuration.',
-                    log=log)
+        conf_fname = os.path.join(args.directory, 'config.ini')
+        fail_hard('Sbws server needs at least one password in the section'\
+                  ' [server.passwords] in the config file in {}. See '\
+                  'doc/installing.rst for more information.'\
+                  .format(conf_fname), log=log)
 
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     h = (conf['server']['bind_ip'], conf.getint('server', 'bind_port'))

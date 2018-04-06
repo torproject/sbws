@@ -3,6 +3,11 @@ import os
 from string import Template
 from sbws.globals import G_PKG_DIR
 
+_ALPHANUM = 'abcdefghijklmnopqrstuvwxyz'
+_ALPHANUM += _ALPHANUM.upper()
+_ALPHANUM += '0123456789'
+
+_HEX = '0123456789ABCDEF'
 
 def _read_config_file(conf, fname, log_fn=print):
     assert os.path.isfile(fname)
@@ -362,21 +367,21 @@ def _validate_host(section, key):
 
 
 def _validate_fingerprint(section, key):
-    alphabet = '0123456789ABCDEF'
+    alphabet = _HEX
     length = 40
     return _validate_string(section, key, min_len=length, max_len=length,
                             alphabet=alphabet)
 
 
 def _validate_password(section, key):
-    alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    alphabet = _ALPHANUM
     length = 64
     return _validate_string(section, key, min_len=length, max_len=length,
                             alphabet=alphabet)
 
 
 def _validate_nickname(section, key):
-    alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    alphabet = _ALPHANUM
     min_len = 1
     max_len = 32
     return _validate_string(section, key, min_len=min_len, max_len=max_len,

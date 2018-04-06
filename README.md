@@ -1,6 +1,6 @@
 # Readme
 
-It doesn't get simplier than this, folks.
+It doesn't get simpler than this, folks.
 
 Run `sbws server` on the same machine as a relay with an exit policy that
 allows exiting to itself on a single port. (Notice: it won't get the exit flag)
@@ -22,7 +22,7 @@ are at the following places.
 [semantic versioning]: https://semver.org/
 
 In addition to the overall semantic version for sbws as a whole, there are
-simple integer versions for (i) the protcol sbws clients and servers use to
+simple integer versions for (i) the protocol sbws clients and servers use to
 speak to each other, and (ii) the format in which results are stored.
 Incrementing either of these version numbers requires a major version change
 for sbws. (Note that the reverse is **not** true: a major sbws version change

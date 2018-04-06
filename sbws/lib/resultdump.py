@@ -11,9 +11,7 @@ from datetime import date
 from datetime import timedelta
 from enum import Enum
 from stem.descriptor.router_status_entry import RouterStatusEntryV3
-
-
-RES_PROTO_VER = 1
+from sbws import res_proto_ver
 
 
 def group_results_by_relay(results, starting_dict=None):
@@ -159,7 +157,7 @@ class Result:
 
     @property
     def version(self):
-        return RES_PROTO_VER
+        return res_proto_ver
 
     def to_dict(self):
         return {
@@ -182,7 +180,7 @@ class Result:
         NotImplementedError. If we can't parse the dict for some other reason,
         return None. '''
         assert 'version' in d
-        if d['version'] != RES_PROTO_VER:
+        if d['version'] != res_proto_ver:
             return None
         assert 'type' in d
         if d['type'] == _ResultType.Success.value:

@@ -6,6 +6,7 @@ from codecs import open
 import os
 import re
 
+
 here = os.path.abspath(os.path.dirname(__file__))
 
 with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
@@ -30,18 +31,16 @@ def get_data_files():
     return []
 
 
-def find_version(fname):
-    with open(fname, 'rt') as fd:
-        contents = fd.read()
-        match = re.search(r"^VERSION = ['\"]([^'\"]*)['\"]", contents, re.M)
-        if match:
-            return match.group(1)
-        raise RuntimeError('Unable to find version string')
-
+def find_version():
+    with open(os.path.join("sbws", "__init__.py")) as fp:
+        for line in fp:
+            if "version" in line.strip():
+                version = line.split("=", 1)[1].strip().strip("'")
+                break
 
 setup(
     name='sbws',
-    version=find_version('sbws/__main__.py'),
+    version=find_version(),
     description='Simple Bandwidth Scanner',
     long_description=long_description,
     author='Matt Traudt',

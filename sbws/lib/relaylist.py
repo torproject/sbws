@@ -49,6 +49,10 @@ class RelayList:
         return self._relays_with_flag(Flag.HSDIR)
 
     @property
+    def authorities(self):
+        return self._relays_with_flag(Flag.AUTHORITY)
+
+    @property
     def unmeasured(self):
         ''' SEEMS BROKEN in stem 1.6.0 as it always returns no relays '''
         relays = self.relays

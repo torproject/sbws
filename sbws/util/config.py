@@ -116,14 +116,19 @@ def _validate_client(conf):
     ports = {
         'tor_socks_port': {},
     }
+    bools = {
+        'measure_authorities': {},
+    }
     all_valid_keys = list(ints.keys()) + list(floats.keys()) + \
-        list(hosts.keys()) + list(ports.keys()) + ['nickname']
+        list(hosts.keys()) + list(ports.keys()) + list(bools.keys()) + \
+        ['nickname']
     errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))
     errors.extend(_validate_section_ints(conf, sec, ints, err_tmpl))
     errors.extend(_validate_section_floats(conf, sec, floats, err_tmpl))
     # XXX: validate hosts func doesn't do anything currently
     errors.extend(_validate_section_hosts(conf, sec, hosts, err_tmpl))
     errors.extend(_validate_section_ports(conf, sec, ports, err_tmpl))
+    errors.extend(_validate_section_bools(conf, sec, bools, err_tmpl))
     valid, error_msg = _validate_nickname(conf[sec], 'nickname')
     if not valid:
         errors.append(err_tmpl.substitute(
@@ -294,6 +299,18 @@ def _validate_section_ports(conf, sec, ports, tmpl):
             errors.append(tmpl.substitute(
                 sec=sec, key=key, val=section[key],
                 e='Not a valid port ({})'.format(error)))
+    return errors
+
+
+def _validate_section_bools(conf, sec, bools, tmpl):
+    errors = []
+    section = conf[sec]
+    for key in bools:
+        valid, error = _validate_boolean(section, key)
+        if not valid:
+            errors.append(tmpl.substitute(
+                sec=sec, key=key, val=section[key],
+                e='Not a valid boolean string ({})'.format(error)))
     return errors
 
 

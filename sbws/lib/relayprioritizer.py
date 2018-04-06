@@ -33,6 +33,8 @@ class RelayPrioritizer:
         self.log = log
         self.relay_list = relay_list
         self.result_dump = result_dump
+        self.measure_authorities = conf.getboolean(
+            'client', 'measure_authorities')
 
     def best_priority(self):
         ''' Return a generator containing the best priority relays.
@@ -57,7 +59,12 @@ class RelayPrioritizer:
         measurement.
         '''
         fn_tstart = Decimal(time.time())
-        relays = copy.deepcopy(self.relay_list.relays)
+        if self.measure_authorities:
+            relays = copy.deepcopy(self.relay_list.relays)
+        else:
+            relays = copy.deepcopy(self.relay_list.relays)
+            relays = [r for r in relays
+                      if r not in self.relay_list.authorities]
         rd = self.result_dump
         for relay in relays:
             results = rd.results_for_relay(relay)

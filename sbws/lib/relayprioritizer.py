@@ -89,7 +89,7 @@ class RelayPrioritizer:
         fn_tstop = Decimal(time.time())
         fn_tdelta = (fn_tstop - fn_tstart) * 1000
         self.log.info('Spent {0:.3f} msecs calculating relay best priority'.
-                        format(fn_tdelta))
+                      format(fn_tdelta))
         # Finally, slowly return the relays to the caller (after removing the
         # priority member we polluted the variable with ...)
         for relay in relays[0:cutoff]:

@@ -4,6 +4,8 @@ import sbws.commands.init
 import sbws.commands.pwgen
 import sbws.commands.server
 import sbws.commands.stats
+from sbws import version
+
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import os
 
@@ -15,6 +17,9 @@ def _default_dot_sbws_dname():
 
 def create_parser():
     p = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
+    p.add_argument(
+        '--version' , action='version', help='sbws version',
+        version='%(prog)s {}'.format(version))
     p.add_argument(
         '-v', '--verbose', action='count', default=0,
         help='Increase log level verbosity from the configured value')

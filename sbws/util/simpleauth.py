@@ -1,10 +1,10 @@
 from ..util.sockio import read_line
 import socket
+from sbws import wire_proto_ver
 
 MAGIC_BYTES = b'SBWS'
 SUCCESS_BYTES = b'.'
 PW_LEN = 64
-WIRE_PROTO_VER = b'1'
 
 
 def authenticate_client(sock, conf_section, log_fn=print):
@@ -28,9 +28,9 @@ def authenticate_client(sock, conf_section, log_fn=print):
     except socket.timeout as e:
         log_fn(e)
         return None
-    if line != str(WIRE_PROTO_VER, 'utf-8'):
+    if line != str(wire_proto_ver):
         log_fn('Client gave protocol version {} but we support {}'.format(
-            line, str(WIRE_PROTO_VER, 'utf-8')))
+            line, wire_proto_ver))
         return None
 
     try:
@@ -63,7 +63,7 @@ def authenticate_to_server(sock, pw, log_fn=print):
     assert len(pw) == PW_LEN
     try:
         sock.send(MAGIC_BYTES)
-        sock.send(WIRE_PROTO_VER + b'\n')
+        sock.send(bytes('{}\n'.format(wire_proto_ver), 'utf-8'))
         sock.send(bytes(pw, 'utf-8'))
         msg = sock.recv(len(SUCCESS_BYTES))
     except (socket.timeout, ConnectionResetError, BrokenPipeError) as e:

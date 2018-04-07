@@ -1,7 +1,7 @@
 from ..util.simpleauth import authenticate_client
 from ..util.sockio import read_line
 from sbws.globals import (fail_hard, is_initted)
-from sbws.globals import SOCKET_TIMEOUT
+from sbws.globals import (MIN_REQ_BYTES, MAX_REQ_BYTES, SOCKET_TIMEOUT)
 from argparse import ArgumentDefaultsHelpFormatter
 from functools import lru_cache
 from threading import Thread
@@ -114,6 +114,10 @@ def new_thread(args, conf, sock):
             send_amount = get_send_amount(sock)
             if send_amount is None:
                 log.info('Couldn\'t get an amount to send to', sock.fileno())
+                break
+            if send_amount < MIN_REQ_BYTES or send_amount > MAX_REQ_BYTES:
+                log.warn(client_name, 'requested', send_amount, 'bytes, which '
+                         'is not valid')
                 break
             write_to_client(sock, conf, send_amount)
         log.notice(client_name, 'on', sock.fileno(), 'went away')

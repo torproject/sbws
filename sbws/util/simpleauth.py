@@ -23,11 +23,7 @@ def authenticate_client(sock, conf_section, log_fn=print):
         log_fn('Magic string doesn\'t match')
         return None
 
-    try:
-        line = read_line(sock, max_len=4, log_fn=log_fn)
-    except socket.timeout as e:
-        log_fn(e)
-        return None
+    line = read_line(sock, max_len=4, log_fn=log_fn)
     if line != str(wire_proto_ver):
         log_fn('Client gave protocol version {} but we support {}'.format(
             line, wire_proto_ver))

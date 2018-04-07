@@ -131,9 +131,9 @@ def main(args, conf, log_):
 
     if len(conf['server.passwords']) < 1:
         conf_fname = os.path.join(args.directory, 'config.ini')
-        fail_hard('Sbws server needs at least one password in the section'\
-                  ' [server.passwords] in the config file in {}. See '\
-                  'doc/installing.rst for more information.'\
+        fail_hard('Sbws server needs at least one password in the section'
+                  ' [server.passwords] in the config file in {}. See '
+                  'DEPLOY.rst for more information.'
                   .format(conf_fname), log=log)
 
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

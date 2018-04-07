@@ -17,7 +17,6 @@ from argparse import ArgumentDefaultsHelpFormatter
 from multiprocessing.dummy import Pool
 from threading import Event
 from threading import RLock
-import traceback
 import socks
 import socket
 import time
@@ -101,7 +100,7 @@ def measure_rtt_to_server(sock, conf):
     rtts = []
     for _ in range(0, conf.getint('client', 'num_rtts')):
         start_time = time.time()
-        if not tell_server_amount(sock, -1):
+        if not tell_server_amount(sock, MIN_REQ_BYTES):
             log.info('Unable to ping server on', sock.fileno())
             return
         try:
@@ -288,7 +287,6 @@ def result_putter_error(target):
     measurement -- and return that function so it can be used by someone else
     '''
     def closure(err):
-        log.warn(traceback.format_exc())
         log.warn('Unhandled exception caught while measuring {}: {} {}'.format(
             target.nickname, type(err), err))
     return closure
@@ -318,7 +316,7 @@ def test_speedtest(args, conf):
             callback_err = result_putter_error(target)
             async_result = pool.apply_async(
                 measure_relay, [args, conf, helpers, cb, rl, target], {},
-                callback)
+                callback, callback_err)
             pending_results.append(async_result)
             while len(pending_results) >= max_pending_results:
                 time.sleep(5)

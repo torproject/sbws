@@ -18,7 +18,7 @@ def _default_dot_sbws_dname():
 def create_parser():
     p = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
     p.add_argument(
-        '--version' , action='version', help='sbws version',
+        '--version', action='version', help='sbws version',
         version='%(prog)s {}'.format(version))
     p.add_argument(
         '-v', '--verbose', action='count', default=0,

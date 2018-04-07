@@ -49,7 +49,7 @@ def authenticate_client(sock, conf_section, log_fn=print):
 
     try:
         sock.send(SUCCESS_BYTES)
-    except (ConnectionResetError, BrokenPipeError) as e:
+    except (socket.timeout, ConnectionResetError, BrokenPipeError) as e:
         log_fn(e)
         return None
     return client_name

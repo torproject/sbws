@@ -18,7 +18,7 @@ G_INIT_FILE_MAP = [
 # server. If these are changed, a WIRE_PROTO_VER bump is required, which also
 # happens to require an sbws major version bump.
 MIN_REQ_BYTES = 1
-MAX_REQ_BYTES = 50 * 1024 * 1024  # 50 MiB, tentatively XXX github #11
+MAX_REQ_BYTES = 1 * 1024 * 1024 * 1024  # 1 GiB
 SOCKET_TIMEOUT = 60  # seconds
 
 

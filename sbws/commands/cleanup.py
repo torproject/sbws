@@ -18,8 +18,10 @@ def gen_parser(sub):
     '''
     d = 'Compress data files that are no longer fresh and delete data files '\
         'that stopped being fresh a long time ago'
-    sub.add_parser('cleanup', formatter_class=ArgumentDefaultsHelpFormatter,
-                   description=d)
+    p = sub.add_parser('cleanup', description=d,
+                       formatter_class=ArgumentDefaultsHelpFormatter)
+    p.add_argument('--dry-run', action='store_true',
+                   help='Don\'t actually compress or delete anything')
 
 
 def _get_older_files_than(dname, num_days_ago, extensions):
@@ -53,21 +55,24 @@ def _get_older_files_than(dname, num_days_ago, extensions):
     return sorted([f for f in all_fnames if f not in new_fnames])
 
 
-def _remove_rotten_files(datadir, rotten_days):
+def _remove_rotten_files(datadir, rotten_days, dry_run=True):
     assert os.path.isdir(datadir)
     assert isinstance(rotten_days, int)
     fnames = _get_older_files_than(datadir, rotten_days, ['.txt', '.txt.gz'])
     for fname in fnames:
         log.info('Deleting', fname)
-        os.remove(fname)
+        if not dry_run:
+            os.remove(fname)
 
 
-def _compress_stale_files(datadir, stale_days):
+def _compress_stale_files(datadir, stale_days, dry_run=True):
     assert os.path.isdir(datadir)
     assert isinstance(stale_days, int)
     fnames = _get_older_files_than(datadir, stale_days, ['.txt'])
     for fname in fnames:
         log.info('Compressing', fname)
+        if dry_run:
+            continue
         with open(fname, 'rt') as in_fd:
             out_fname = fname + '.gz'
             with gzip.open(out_fname, 'wt') as out_fd:
@@ -110,5 +115,5 @@ def main(args, conf, log_):
                  'if necessary, it is recommended to make stale_days at least '
                  'twice the data_period.'.format(stale_days, fresh_days))
 
-    _remove_rotten_files(datadir, rotten_days)
-    _compress_stale_files(datadir, stale_days)
+    _remove_rotten_files(datadir, rotten_days, dry_run=args.dry_run)
+    _compress_stale_files(datadir, stale_days, dry_run=args.dry_run)

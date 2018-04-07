@@ -1,3 +1,4 @@
+import sbws.commands.cleanup
 import sbws.commands.client
 import sbws.commands.generate
 import sbws.commands.init
@@ -49,6 +50,8 @@ def main():
     def_args = [args, conf, log]
     def_kwargs = {}
     known_commands = {
+        'cleanup': {'f': sbws.commands.cleanup.main,
+                    'a': def_args, 'kw': def_kwargs},
         'client': {'f': sbws.commands.client.main,
                    'a': def_args, 'kw': def_kwargs},
         'generate': {'f': sbws.commands.generate.main,

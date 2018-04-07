@@ -57,6 +57,7 @@ def validate_config(conf):
     Otherwise, return True and an empty list '''
     errors = []
     errors.extend(_validate_general(conf))
+    errors.extend(_validate_cleanup(conf))
     errors.extend(_validate_client(conf))
     errors.extend(_validate_server(conf))
     errors.extend(_validate_server_passwords(conf))
@@ -64,6 +65,20 @@ def validate_config(conf):
     errors.extend(_validate_paths(conf))
     errors.extend(_validate_helpers(conf))
     return len(errors) < 1, errors
+
+
+def _validate_cleanup(conf):
+    errors = []
+    sec = 'cleanup'
+    err_tmpl = Template('$sec/$key ($val): $e')
+    ints = {
+        'stale_days': {'minimum': 1, 'maximum': None},
+        'rotten_days': {'minimum': 1, 'maximum': None},
+    }
+    all_valid_keys = list(ints.keys())
+    errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))
+    errors.extend(_validate_section_ints(conf, sec, ints, err_tmpl))
+    return errors
 
 
 def _validate_general(conf):

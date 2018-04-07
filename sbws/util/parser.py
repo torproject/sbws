@@ -1,3 +1,4 @@
+import sbws.commands.cleanup
 import sbws.commands.client
 import sbws.commands.generate
 import sbws.commands.init
@@ -29,6 +30,7 @@ def create_parser():
     p.add_argument('-d', '--directory', default=_default_dot_sbws_dname(),
                    help='Name of the .sbws directory')
     sub = p.add_subparsers(dest='command')
+    sbws.commands.cleanup.gen_parser(sub)
     sbws.commands.client.gen_parser(sub)
     sbws.commands.generate.gen_parser(sub)
     sbws.commands.init.gen_parser(sub)

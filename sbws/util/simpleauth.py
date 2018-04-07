@@ -11,6 +11,14 @@ def authenticate_client(sock, conf_section, log_fn=print):
     ''' Use this on the server side to read bytes from the client and properly
     authenticate them. Return the name of the client who has authenticated if
     they provided a good password, otherwise None.
+
+    :param socket.socket sock: The open and blocking socket to use to
+        communicate with the client
+    :param configparser.SectionProxy conf_section: The ``[server.passwords]``
+        section from the sbws config file
+    :returns: The name of the client that successfully authenticated as a str,
+        as pulled from the ``[server.passwords]`` section of the config. If
+        the client couldn't authenticate, returns None
     '''
     assert sock.fileno() > 0
     assert len(conf_section) > 0
@@ -52,8 +60,17 @@ def authenticate_client(sock, conf_section, log_fn=print):
 
 
 def authenticate_to_server(sock, pw, log_fn=print):
-    ''' Use this on the client side to send bytes to the server and properly
-    authenticate to them. Returns True if successful, otherwise False '''
+    '''
+    Use this on the server side to send bytes to the server and properly
+    authenticate to them.
+
+    :param socket.socket sock: The open and blocking socket to use to
+        communicate with the server
+    :param str pw: 64 character password string to give to the server for
+        identification
+    :returns: True if we authenticated to the server successfully, False
+        otherwise. On False, the caller should close the socket
+    '''
     assert sock.fileno() > 0
     assert isinstance(pw, str)
     assert len(pw) == PW_LEN

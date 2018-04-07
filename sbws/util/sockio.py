@@ -18,9 +18,9 @@ def read_line(s, max_len=None, log_fn=print):
     :param func log_fn: Function with a signature similar to ``print`` to call
         if an error occurs
     :raises UnicodeDecodeError: If any byte is not a valid utf8 byte
-    :returns: Everything read up until a newline and with a maximum length of
-        **max_len**. If nothing could be read, returns None. If a newline is
-        the first character, returns an empty string.
+    :returns: Everything read up until a newline as a str and with a maximum
+        length of **max_len**. If nothing could be read, returns None. If a
+        newline is the first character, returns an empty str.
     '''
     assert isinstance(s, socket.socket)
     assert max_len is None or (isinstance(max_len, int) and max_len > 0)

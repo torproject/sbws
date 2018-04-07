@@ -1,6 +1,7 @@
 from ..util.simpleauth import authenticate_client
 from ..util.sockio import read_line
 from sbws.globals import (fail_hard, is_initted)
+from sbws.globals import SOCKET_TIMEOUT
 from argparse import ArgumentDefaultsHelpFormatter
 from functools import lru_cache
 from threading import Thread
@@ -152,6 +153,7 @@ def main(args, conf, log_):
     try:
         while True:
             sock, addr = server.accept()
+            sock.settimeout(SOCKET_TIMEOUT)
             log.info('accepting connection from', addr, 'as', sock.fileno())
             t = new_thread(args, conf, sock)
             t.start()

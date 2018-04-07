@@ -10,7 +10,7 @@ from ..lib.relayprioritizer import RelayPrioritizer
 from ..lib.helperrelay import HelperRelayList
 from ..util.simpleauth import authenticate_to_server
 from sbws.globals import (fail_hard, is_initted)
-from sbws.globals import (MIN_REQ_BYTES, MAX_REQ_BYTES)
+from sbws.globals import (MIN_REQ_BYTES, MAX_REQ_BYTES, SOCKET_TIMEOUT)
 import sbws.util.stem as stem_utils
 from stem.control import EventType
 from argparse import ArgumentDefaultsHelpFormatter
@@ -32,7 +32,7 @@ def make_socket(socks_host, socks_port):
     the socket hasn't connect()ed anywhere '''
     s = socks.socksocket()
     s.set_proxy(socks.PROXY_TYPE_SOCKS5, socks_host, socks_port)
-    s.settimeout(10)
+    s.settimeout(SOCKET_TIMEOUT)
     return s
 
 

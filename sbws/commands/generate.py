@@ -51,7 +51,10 @@ def warn_if_not_accurate_enough(lines, constant):
 
 
 def scale_lines(args, v3bw_lines):
+    assert len(v3bw_lines) > 0
     total = sum([l.bw for l in v3bw_lines])
+    # In case total is zero, it will run on ZeroDivision
+    assert total > 0
     if args.scale:
         scale = len(v3bw_lines) * args.scale_constant
     else:
@@ -87,6 +90,7 @@ def gen_parser(sub):
 
 
 def log_stats(data_lines):
+    assert len(data_lines) > 0
     total_bw = sum([l.bw for l in data_lines])
     bw_per_line = total_bw / len(data_lines) / 1024
     log.info('Mean bandwidth per line: {:.2f} "KiB"'.format(bw_per_line))
@@ -107,6 +111,10 @@ def main(args, conf, log_):
     fresh_days = conf.getint('general', 'data_period')
     results = load_recent_results_in_datadir(
         fresh_days, datadir, success_only=True, log_fn=log.debug)
+    if len(results) < 1:
+        log.warn('No recent results, so not generating anything. (Have you '
+                 'ran sbws client recently?)')
+        return
     data = group_results_by_relay(results)
     data_lines = [result_data_to_v3bw_line(data, fp) for fp in data]
     data_lines = sorted(data_lines, key=lambda d: d.bw, reverse=True)

@@ -51,7 +51,7 @@ def warn_if_not_accurate_enough(lines, constant):
 
 
 def scale_lines(args, v3bw_lines):
-    assert len(v3bw_lines > 0)
+    assert len(v3bw_lines) > 0
     total = sum([l.bw for l in v3bw_lines])
     # In case total is zero, it will run on ZeroDivision
     assert total > 0
@@ -90,6 +90,7 @@ def gen_parser(sub):
 
 
 def log_stats(data_lines):
+    assert len(data_lines) > 0
     total_bw = sum([l.bw for l in data_lines])
     bw_per_line = total_bw / len(data_lines) / 1024
     log.info('Mean bandwidth per line: {:.2f} "KiB"'.format(bw_per_line))

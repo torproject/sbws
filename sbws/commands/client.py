@@ -21,6 +21,8 @@ import socks
 import socket
 import time
 import os
+import sys
+import traceback
 
 
 end_event = Event()
@@ -238,6 +240,26 @@ def measure_relay(args, conf, helpers, cb, rl, relay):
                          our_nick)
 
 
+def dispatch_worker_thread(*a, **kw):
+    try:
+        return measure_relay(*a, **kw)
+    except Exception as err:
+        log.error('Unhandled exception: {} {}'.format(type(err), err))
+        _, _, tb = sys.exc_info()
+        if tb is not None:
+            tb_info = traceback.extract_tb(tb)
+            dots = '    '
+            for loc in tb_info:
+                fname, line, func, text = loc
+                fname = os.path.basename(fname)
+                log.error(
+                    dots, '{}:{} {} --> {}'.format(fname, line, func, text))
+                dots += '>>'
+        else:
+            log.error('No traceback available :(')
+        raise err
+
+
 def _should_keep_result(did_request_maximum, result_time, download_times):
     # In the normal case, we didn't ask for the maximum allowed amount. So we
     # should only allow ourselves to keep results that are between the min and
@@ -315,8 +337,8 @@ def run_speedtest(args, conf):
             callback = result_putter(rd)
             callback_err = result_putter_error(target)
             async_result = pool.apply_async(
-                measure_relay, [args, conf, helpers, cb, rl, target], {},
-                callback, callback_err)
+                dispatch_worker_thread, [args, conf, helpers, cb, rl, target],
+                {}, callback, callback_err)
             pending_results.append(async_result)
             while len(pending_results) >= max_pending_results:
                 time.sleep(5)

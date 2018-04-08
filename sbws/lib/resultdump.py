@@ -90,11 +90,10 @@ def load_recent_results_in_datadir(fresh_days, datadir, success_only=False,
     results = trim_results(fresh_days, results, log_fn=log_fn)
     if len(results) == 0:
         log_fn('Results files that are valid not found. '
-               'Probabbly sbws client was not run first or '
-               'it was run more than {} days ago or '
-               'it was used a different datadir to {}.'.
+               'Probably sbws client was not run first or '
+               'it ran more than {} days ago or '
+               'it was using a different datadir than {}.'.
                format(data_period, datadir))
-        exit(0)
     return results
 
 

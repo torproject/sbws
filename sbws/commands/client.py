@@ -292,7 +292,7 @@ def result_putter_error(target):
     return closure
 
 
-def test_speedtest(args, conf):
+def run_speedtest(args, conf):
     controller = None
     controller, error_msg = stem_utils.init_controller_with_config(conf)
     if not controller:
@@ -353,7 +353,7 @@ def main(args, conf, log_):
     os.makedirs(conf['paths']['datadir'], exist_ok=True)
 
     try:
-        test_speedtest(args, conf)
+        run_speedtest(args, conf)
     except KeyboardInterrupt as e:
         raise e
     finally:

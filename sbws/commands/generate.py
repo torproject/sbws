@@ -111,8 +111,10 @@ def main(args, conf, log_):
     fresh_days = conf.getint('general', 'data_period')
     results = load_recent_results_in_datadir(
         fresh_days, datadir, success_only=True, log_fn=log.debug)
-    # NOTE: here program would have already exit if no results
-    # still should be asserted?
+    if len(results) < 1:
+        log.warn('No recent results, so not generating anything. (Have you '
+                 'ran sbws client recently?)')
+        return
     data = group_results_by_relay(results)
     data_lines = [result_data_to_v3bw_line(data, fp) for fp in data]
     data_lines = sorted(data_lines, key=lambda d: d.bw, reverse=True)

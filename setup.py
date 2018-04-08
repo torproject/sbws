@@ -73,7 +73,7 @@ setup(
         'pysocks',
     ],
     extras_require={
-        'dev': [],
+        'dev': ['flake8'],
         'test': ['tox', 'pytest', 'pytest-cov'],
         # recommonmark: to make sphinx render markdown
         'doc': ['sphinx', 'recommonmark'],

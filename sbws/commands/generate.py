@@ -51,7 +51,10 @@ def warn_if_not_accurate_enough(lines, constant):
 
 
 def scale_lines(args, v3bw_lines):
+    assert len(v3bw_lines > 0)
     total = sum([l.bw for l in v3bw_lines])
+    # In case total is zero, it will run on ZeroDivision
+    assert total > 0
     if args.scale:
         scale = len(v3bw_lines) * args.scale_constant
     else:

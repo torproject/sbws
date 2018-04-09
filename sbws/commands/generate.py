@@ -12,7 +12,7 @@ import time
 class V3BWLine:
     def __init__(self, fp, bw, nick, rtts, last_time):
         self.fp = fp
-        self.bw = bw
+        self.bw = max(round(bw), 1)
         self.nick = nick
         # convert to ms
         rtts = [round(r * 1000) for r in rtts]
@@ -21,8 +21,8 @@ class V3BWLine:
 
     def __str__(self):
         frmt = 'node_id={fp} bw={sp} nick={n} rtt={rtt} time={t}'
-        return frmt.format(fp=self.fp, sp=round(self.bw), n=self.nick,
-                           rtt=self.rtt, t=self.time)
+        return frmt.format(fp=self.fp, sp=self.bw, n=self.nick, rtt=self.rtt,
+                           t=self.time)
 
 
 def result_data_to_v3bw_line(data, fingerprint):

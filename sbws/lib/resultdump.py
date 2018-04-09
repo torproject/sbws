@@ -10,6 +10,7 @@ from queue import Empty
 from datetime import date
 from datetime import timedelta
 from enum import Enum
+from filelock import FileLock
 from stem.descriptor.router_status_entry import RouterStatusEntryV3
 from sbws import res_proto_ver
 
@@ -105,8 +106,9 @@ def write_result_to_datadir(result, datadir):
     ext = '.txt'
     result_fname = os.path.join(
         datadir, '{}{}'.format(dt, ext))
-    with open(result_fname, 'at') as fd:
-        fd.write('{}\n'.format(str(result)))
+    with FileLock(os.path.join(datadir, 'lockfile')):
+        with open(result_fname, 'at') as fd:
+            fd.write('{}\n'.format(str(result)))
 
 
 class _StrEnum(str, Enum):

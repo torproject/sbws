@@ -149,3 +149,88 @@ def dotsbws_success_result(empty_dotsbws_datadir):
     dd = conf['paths']['datadir']
     write_result_to_datadir(result, dd)
     return empty_dotsbws_datadir
+
+
+@pytest.fixture(scope='function')
+def dotsbws_success_result_one_relay(empty_dotsbws_datadir):
+    '''
+    Creates an ~/.sbws with a a couple of fresh ResultSuccess for one relay
+    '''
+    args = _PseudoArguments(directory=empty_dotsbws_datadir.name)
+    conf = get_config(args)
+    dd = conf['paths']['datadir']
+    fp1 = 'A' * 40
+    fp2 = 'B' * 40
+    circ = [fp1, fp2]
+    nick = 'CowSayWhat'
+    relay_ip = '169.254.100.1'
+    server_ip = '169.254.100.2'
+    client_nick = 'SBWSclient'
+    rtts = [5, 25]
+    downloads = [{'duration': 4, 'amount': 40}]
+    t = time.time()
+    relay = Result.Relay(fp1, nick, relay_ip)
+    result = ResultSuccess(rtts, downloads, relay, circ, server_ip,
+                           client_nick, t=t)
+    write_result_to_datadir(result, dd)
+
+    rtts = [10, 20]
+    downloads = [{'duration': 4, 'amount': 80}]
+    t = time.time()
+    result = ResultSuccess(rtts, downloads, relay, circ, server_ip,
+                           client_nick, t=t)
+    write_result_to_datadir(result, dd)
+    return empty_dotsbws_datadir
+
+
+@pytest.fixture(scope='function')
+def dotsbws_success_result_two_relays(empty_dotsbws_datadir):
+    '''
+    Creates an ~/.sbws with a a couple of fresh ResultSuccess for a couple or
+    relays
+    '''
+    args = _PseudoArguments(directory=empty_dotsbws_datadir.name)
+    conf = get_config(args)
+    dd = conf['paths']['datadir']
+    fp1 = 'A' * 40
+    fp2 = 'C' * 40
+    circ = [fp1, fp2]
+    nick = 'CowSayWhat1'
+    relay_ip = '169.254.100.1'
+    server_ip = '169.254.100.3'
+    client_nick = 'SBWSclient'
+    rtts = [5, 25]
+    downloads = [{'duration': 4, 'amount': 40}]
+    t = time.time()
+    relay = Result.Relay(fp1, nick, relay_ip)
+    result = ResultSuccess(rtts, downloads, relay, circ, server_ip,
+                           client_nick, t=t)
+    write_result_to_datadir(result, dd)
+
+    rtts = [10, 20]
+    downloads = [{'duration': 4, 'amount': 80}]
+    t = time.time()
+    result = ResultSuccess(rtts, downloads, relay, circ, server_ip,
+                           client_nick, t=t)
+    write_result_to_datadir(result, dd)
+
+    fp1 = 'B' * 40
+    circ = [fp1, fp2]
+    nick = 'CowSayWhat2'
+    relay_ip = '169.254.100.2'
+    rtts = [50, 250]
+    downloads = [{'duration': 4, 'amount': 400}]
+    t = time.time()
+    relay = Result.Relay(fp1, nick, relay_ip)
+    result = ResultSuccess(rtts, downloads, relay, circ, server_ip,
+                           client_nick, t=t)
+    write_result_to_datadir(result, dd)
+
+    rtts = [100, 200]
+    downloads = [{'duration': 4, 'amount': 800}]
+    t = time.time()
+    result = ResultSuccess(rtts, downloads, relay, circ, server_ip,
+                           client_nick, t=t)
+    write_result_to_datadir(result, dd)
+
+    return empty_dotsbws_datadir

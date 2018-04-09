@@ -1,6 +1,7 @@
 from sbws.lib.resultdump import ResultError
 from sbws.lib.resultdump import ResultSuccess
 from sbws.lib.resultdump import Result
+from sbws.lib.resultdump import write_result_to_datadir
 from sbws.util.config import get_config
 from sbws.util.parser import create_parser
 import sbws.commands.init
@@ -8,7 +9,6 @@ from tempfile import TemporaryDirectory
 import pytest
 import os
 import time
-from datetime import date
 
 
 class MockPastlyLogger:
@@ -101,13 +101,8 @@ def dotsbws_error_result(empty_dotsbws_datadir):
     t = time.time()
     relay = Result.Relay(fp1, nick, relay_ip)
     result = ResultError(relay, circ, server_ip, client_nick, t=t, msg=msg)
-
-    dt = date.fromtimestamp(t)
-    ext = '.txt'
-    fname = os.path.join(empty_dotsbws_datadir.name, 'datadir',
-                         '{}{}'.format(dt, ext))
-    with open(fname, 'at') as fd:
-        fd.write('{}\n'.format(str(result)))
+    dd = os.path.join(empty_dotsbws_datadir.name, 'datadir')
+    write_result_to_datadir(result, dd)
     return empty_dotsbws_datadir
 
 
@@ -129,10 +124,6 @@ def dotsbws_success_result(empty_dotsbws_datadir):
     relay = Result.Relay(fp1, nick, relay_ip)
     result = ResultSuccess(rtts, downloads, relay, circ, server_ip,
                            client_nick, t=t)
-    dt = date.fromtimestamp(t)
-    ext = '.txt'
-    fname = os.path.join(empty_dotsbws_datadir.name, 'datadir',
-                         '{}{}'.format(dt, ext))
-    with open(fname, 'at') as fd:
-        fd.write('{}\n'.format(str(result)))
+    dd = os.path.join(empty_dotsbws_datadir.name, 'datadir')
+    write_result_to_datadir(result, dd)
     return empty_dotsbws_datadir

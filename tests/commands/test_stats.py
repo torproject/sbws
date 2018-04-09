@@ -3,6 +3,7 @@ from sbws.util.config import get_config
 from sbws.lib.resultdump import ResultError
 from sbws.lib.resultdump import ResultSuccess
 from sbws.lib.resultdump import Result
+from sbws.lib.resultdump import write_result_to_datadir
 import sbws.commands.init
 import sbws.commands.stats
 from datetime import date
@@ -22,12 +23,9 @@ def add_single_stale_result(dname):
         Result.Relay('DEADBEEF1111', 'CowSayWhat', '127.0.0.1'),
         ['DEADBEEF1111', 'BEADDEEF2222'],
         '127.0.1.1', 'SBWSclient', t=19950216)
-    os.makedirs(os.path.join(str(dname), 'datadir'))
-    dt = date.fromtimestamp(r.time)
-    ext = '.txt'
-    fname = os.path.join(str(dname), 'datadir', '{}{}'.format(dt, ext))
-    with open(fname, 'wt') as fd:
-        fd.write('{}\n'.format(str(r)))
+    dd = os.path.join(str(dname), 'datadir')
+    os.makedirs(dd)
+    write_result_to_datadir(r, dd)
 
 
 def add_single_fresh_result(dname):
@@ -35,12 +33,9 @@ def add_single_fresh_result(dname):
         Result.Relay('DEADBEEF1111', 'CowSayWhat', '127.0.0.1'),
         ['DEADBEEF1111', 'BEADDEEF2222'],
         '127.0.1.1', 'SBWSclient', t=time.time())
-    os.makedirs(os.path.join(str(dname), 'datadir'))
-    dt = date.fromtimestamp(r.time)
-    ext = '.txt'
-    fname = os.path.join(str(dname), 'datadir', '{}{}'.format(dt, ext))
-    with open(fname, 'wt') as fd:
-        fd.write('{}\n'.format(str(r)))
+    dd = os.path.join(str(dname), 'datadir')
+    os.makedirs(dd)
+    write_result_to_datadir(r, dd)
 
 
 def add_two_fresh_results(dname):
@@ -53,13 +48,10 @@ def add_two_fresh_results(dname):
         Result.Relay('DEADBEEF1111', 'CowSayWhat', '127.0.0.1'),
         ['DEADBEEF1111', 'BEADDEEF2222'],
         '127.0.1.1', 'SBWSclient', t=time.time())
-    os.makedirs(os.path.join(str(dname), 'datadir'))
-    dt = date.fromtimestamp(r1.time)
-    ext = '.txt'
-    fname = os.path.join(str(dname), 'datadir', '{}{}'.format(dt, ext))
-    with open(fname, 'wt') as fd:
-        fd.write('{}\n'.format(str(r1)))
-        fd.write('{}\n'.format(str(r2)))
+    dd = os.path.join(str(dname), 'datadir')
+    os.makedirs(dd)
+    write_result_to_datadir(r1, dd)
+    write_result_to_datadir(r2, dd)
 
 
 def test_stats_uninitted(tmpdir, log):

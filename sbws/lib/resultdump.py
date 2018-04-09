@@ -97,6 +97,18 @@ def load_recent_results_in_datadir(fresh_days, datadir, success_only=False,
     return results
 
 
+def write_result_to_datadir(result, datadir):
+    ''' Can be called from any thread '''
+    assert isinstance(result, Result)
+    assert os.path.isdir(datadir)
+    dt = date.fromtimestamp(result.time)
+    ext = '.txt'
+    result_fname = os.path.join(
+        datadir, '{}{}'.format(dt, ext))
+    with open(result_fname, 'at') as fd:
+        fd.write('{}\n'.format(str(result)))
+
+
 class _StrEnum(str, Enum):
     pass
 
@@ -363,16 +375,6 @@ class ResultDump:
             self.data = trim_results(self.fresh_days, self.data,
                                      self.log.debug)
 
-    def write_result(self, result):
-        ''' Call from ResultDump thread '''
-        assert isinstance(result, Result)
-        dt = date.fromtimestamp(result.time)
-        ext = '.txt'
-        result_fname = os.path.join(
-            self.datadir, '{}{}'.format(dt, ext))
-        with open(result_fname, 'at') as fd:
-            fd.write('{}\n'.format(str(result)))
-
     def enter(self):
         ''' Main loop for the ResultDump thread '''
         with self.data_lock:
@@ -395,7 +397,7 @@ class ResultDump:
             fp = result.fingerprint
             nick = result.nickname
             self.store_result(result)
-            self.write_result(result)
+            write_result_to_datadir(result, self.datadir)
             self.log.debug(fp, nick, 'finished measurement')
 
     def results_for_relay(self, relay):

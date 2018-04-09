@@ -1,3 +1,4 @@
+from sbws.globals import time_now
 import os
 import time
 import json
@@ -61,7 +62,7 @@ def trim_results(fresh_days, results, log_fn=print):
     assert isinstance(fresh_days, int)
     assert isinstance(results, list)
     data_period = fresh_days * 24*60*60
-    oldest_allowed = time.time() - data_period
+    oldest_allowed = time_now() - data_period
     out_results = []
     for result in results:
         if result.time >= oldest_allowed:
@@ -78,7 +79,7 @@ def load_recent_results_in_datadir(fresh_days, datadir, success_only=False,
     assert isinstance(fresh_days, int)
     assert os.path.isdir(datadir)
     results = []
-    today = date.fromtimestamp(time.time())
+    today = date.fromtimestamp(time_now())
     data_period = fresh_days + 2
     oldest_day = today - timedelta(days=data_period)
     working_day = oldest_day
@@ -141,7 +142,7 @@ class Result:
         self._circ = circ
         self._server_host = server_host
         self._scanner = client_nick
-        self._time = time.time() if t is None else t
+        self._time = time_now() if t is None else t
 
     @property
     def type(self):

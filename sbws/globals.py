@@ -1,4 +1,5 @@
 import os
+import time
 from sbws.lib.pastlylogger import PastlyLogger
 
 
@@ -52,6 +53,16 @@ def fail_hard(*s, log=None):
         else:
             print(*s)
     exit(1)
+
+
+def time_now():
+    '''
+    Return the current time in seconds since 1970. This function exists to
+    make testing easier
+
+    :returns: Unix timestamp as a float
+    '''
+    return time.time()
 
 
 def _log_level_string_to_int(s):

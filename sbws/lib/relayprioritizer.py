@@ -3,6 +3,7 @@ from ..lib.resultdump import ResultDump
 from ..lib.resultdump import Result
 from ..lib.resultdump import ResultError
 from ..lib.relaylist import RelayList
+from sbws.globals import time_now
 import time
 import copy
 
@@ -58,7 +59,7 @@ class RelayPrioritizer:
         get around to giving the relay another chance at a getting a successful
         measurement.
         '''
-        fn_tstart = Decimal(time.time())
+        fn_tstart = Decimal(time_now())
         if self.measure_authorities:
             relays = copy.deepcopy(self.relay_list.relays)
         else:
@@ -70,7 +71,7 @@ class RelayPrioritizer:
             results = rd.results_for_relay(relay)
             priority = 0
             # The time before which we do not consider results valid anymore
-            oldest_allowed = time.time() - self.fresh_seconds
+            oldest_allowed = time_now() - self.fresh_seconds
             for result in results:
                 assert isinstance(result, Result)
                 # Ignore results that are too far in the past
@@ -93,7 +94,7 @@ class RelayPrioritizer:
         # relays at the front
         relays = sorted(relays, key=lambda r: r.priority)
         cutoff = max(int(len(relays) * PERCENT_TO_RETURN), MIN_TO_RETURN)
-        fn_tstop = Decimal(time.time())
+        fn_tstop = Decimal(time_now())
         fn_tdelta = (fn_tstop - fn_tstart) * 1000
         self.log.info('Spent {0:.3f} msecs calculating relay best priority'.
                       format(fn_tdelta))

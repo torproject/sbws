@@ -1,6 +1,6 @@
 from ..util.simpleauth import authenticate_client
 from ..util.sockio import read_line
-from sbws.globals import (fail_hard, is_initted)
+from sbws.globals import (fail_hard, is_initted, time_now)
 from sbws.globals import (MIN_REQ_BYTES, MAX_REQ_BYTES, SOCKET_TIMEOUT)
 from argparse import ArgumentDefaultsHelpFormatter
 from functools import lru_cache
@@ -62,12 +62,12 @@ def _generate_random_string(length):
     another thing that hurts its randomness.
     '''
     assert length > 0
-    # start = time.time()
+    # start = time_now()
     repeats = int(length / len(_generate_random_string.alphabet)) + 1
     rng.shuffle(_generate_random_string.alphabet)
     s = ''.join(_generate_random_string.alphabet)
     s = s * repeats
-    # stop = time.time()
+    # stop = time_now()
     # _generate_random_string.acc += stop - start
     # if stop >= 60 + _generate_random_string.last_log:
     #     log.notice('Spent', _generate_random_string.acc,
@@ -82,7 +82,7 @@ _generate_random_string.alphabet = list('abcdefghijklmnopqrstuvwxyz'
                                         'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
                                         '0123456789')
 # _generate_random_string.acc = 0
-# _generate_random_string.last_log = time.time()
+# _generate_random_string.last_log = time_now()
 
 
 def write_to_client(sock, conf, amount):

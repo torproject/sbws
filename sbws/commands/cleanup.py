@@ -1,4 +1,4 @@
-from sbws.globals import (fail_hard, is_initted)
+from sbws.globals import (fail_hard, is_initted, time_now)
 from argparse import ArgumentDefaultsHelpFormatter
 from datetime import date
 from datetime import timedelta
@@ -40,7 +40,7 @@ def _get_older_files_than(dname, num_days_ago, extensions):
             all_fnames.add(fname)
     # Figure out what files are too new
     new_fnames = set()
-    today = date.fromtimestamp(time.time())
+    today = date.fromtimestamp(time_now())
     oldest_day = today - timedelta(days=num_days_ago)
     working_day = oldest_day
     while working_day < today:

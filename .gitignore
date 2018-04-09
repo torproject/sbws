@@ -1,6 +1,7 @@
 __pycache__/
 venv*/
 passwords.txt
+*.swp
 *.egg-info/
 docs/build
 .tox

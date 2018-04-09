@@ -1,9 +1,13 @@
 class MockPastlyLogger:
-    def __init__(self, *a, **kw):
+    def __init__(self, *a, _do_print=False, **kw):
+        self._logged_lines = []
+        self._do_print = _do_print
         pass
 
     def debug(self, *s):
-        print(*s)
+        self._logged_lines.append(' '.join(str(_) for _ in s))
+        if self._do_print:
+            print(*s)
 
     def info(self, *s):
         return self.debug(*s)
@@ -16,3 +20,9 @@ class MockPastlyLogger:
 
     def error(self, *s):
         return self.warn(*s)
+
+    def test_get_logged_lines(self, clear=True):
+        for line in self._logged_lines:
+            yield line
+        if clear:
+            self._logged_lines = []

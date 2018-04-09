@@ -4,7 +4,6 @@ from setuptools import setup, find_packages
 # To use a consistent encoding
 from codecs import open
 import os
-import re
 
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -36,7 +35,8 @@ def find_version():
         for line in fp:
             if "version" in line.strip():
                 version = line.split("=", 1)[1].strip().strip("'")
-                break
+                return version
+
 
 setup(
     name='sbws',

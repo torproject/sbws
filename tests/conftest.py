@@ -9,6 +9,22 @@ from tempfile import TemporaryDirectory
 import pytest
 import os
 import time
+import argparse
+
+
+class _PseudoArguments(argparse.Namespace):
+    '''
+    Just enough of the argparse.Namespace (what you get when you do
+    args = parser.parse_args()) to make get_config() happy
+
+    >>> args = _PseudoArguments(directory='/home/matt/.sbws')
+    >>> args.directory
+    '/home/matt/.sbws'
+
+    '''
+    def __init__(self, **kw):
+        for key in kw:
+            setattr(self, key, kw[key])
 
 
 class MockPastlyLogger:
@@ -80,8 +96,10 @@ def empty_dotsbws_datadir(empty_dotsbws):
     '''
     Creates a ~/.sbws with nothing in it but a config.ini and an empty datadir
     '''
-    dname = os.path.join(empty_dotsbws.name, 'datadir')
-    os.makedirs(dname, exist_ok=False)
+    args = _PseudoArguments(directory=empty_dotsbws.name)
+    conf = get_config(args)
+    dd = conf['paths']['datadir']
+    os.makedirs(dd, exist_ok=False)
     return empty_dotsbws
 
 
@@ -101,7 +119,9 @@ def dotsbws_error_result(empty_dotsbws_datadir):
     t = time.time()
     relay = Result.Relay(fp1, nick, relay_ip)
     result = ResultError(relay, circ, server_ip, client_nick, t=t, msg=msg)
-    dd = os.path.join(empty_dotsbws_datadir.name, 'datadir')
+    args = _PseudoArguments(directory=empty_dotsbws_datadir.name)
+    conf = get_config(args)
+    dd = conf['paths']['datadir']
     write_result_to_datadir(result, dd)
     return empty_dotsbws_datadir
 
@@ -124,6 +144,8 @@ def dotsbws_success_result(empty_dotsbws_datadir):
     relay = Result.Relay(fp1, nick, relay_ip)
     result = ResultSuccess(rtts, downloads, relay, circ, server_ip,
                            client_nick, t=t)
-    dd = os.path.join(empty_dotsbws_datadir.name, 'datadir')
+    args = _PseudoArguments(directory=empty_dotsbws_datadir.name)
+    conf = get_config(args)
+    dd = conf['paths']['datadir']
     write_result_to_datadir(result, dd)
     return empty_dotsbws_datadir

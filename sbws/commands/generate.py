@@ -6,7 +6,6 @@ from sbws.lib.resultdump import group_results_by_relay
 from argparse import ArgumentDefaultsHelpFormatter
 from statistics import median
 import os
-import time
 
 
 class V3BWLine:

@@ -228,7 +228,7 @@ class GapsCircuitBuilder(CircuitBuilder):
         assert len(insert_relays) == num_missing
         path = [r.fingerprint if r else insert_relays.pop().fingerprint
                 for r in path]
-        #self.log.info('building', '->'.join([r[0:8] for r in path]))
+        # self.log.info('building', '->'.join([r[0:8] for r in path]))
         return self._build_circuit_impl(path)
 
 

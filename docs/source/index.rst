@@ -15,7 +15,9 @@ Welcome to Simple Bandwidth Scanner's documentation!
    INSTALL
    DEPLOY
    README
+   CONTRIBUTING
    AUTHORS
+   LICENSE
    sbws
 
 Indices and tables

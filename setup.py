@@ -74,8 +74,8 @@ setup(
         'filelock',
     ],
     extras_require={
-        'dev': [],
-        'test': ['tox', 'pytest', 'pytest-cov'],
+        'dev': ['flake8'],
+        'test': ['tox', 'pytest', 'coverage'],
         # recommonmark: to make sphinx render markdown
         'doc': ['sphinx', 'recommonmark'],
     },

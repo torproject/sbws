@@ -4,7 +4,6 @@ from ..lib.resultdump import Result
 from ..lib.resultdump import ResultError
 from ..lib.relaylist import RelayList
 from sbws.globals import time_now
-import time
 import copy
 
 

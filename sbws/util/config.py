@@ -9,6 +9,7 @@ _ALPHANUM += '0123456789'
 
 _HEX = '0123456789ABCDEF'
 
+
 def _read_config_file(conf, fname, log_fn=print):
     assert os.path.isfile(fname)
     log_fn('Reading config file', fname)

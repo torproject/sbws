@@ -4,7 +4,6 @@ from datetime import date
 from datetime import timedelta
 from glob import glob
 import os
-import time
 import gzip
 import shutil
 

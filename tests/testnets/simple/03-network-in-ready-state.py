@@ -46,7 +46,7 @@ def get_has_full_consensus(cont, network_size, timeout=60):
     return False
 
 
-def is_relay_ready(sock_fname, network_size):
+def is_tor_ready(sock_fname, network_size):
     with get_controller(sock_fname) as cont:
         if not get_is_bootstrapped(cont):
             logger.warning('%s not bootstrapped, Tor not ready', sock_fname)
@@ -61,18 +61,18 @@ def is_relay_ready(sock_fname, network_size):
 
 def main(args):
     for datadir in args.datadir:
-        logger.info('Checking %s', datadir)
+        logger.info('Checking if %s is ready', datadir)
         sock_fname = os.path.join(datadir, 'control_socket')
         assert os.path.exists(sock_fname)
-        if not is_relay_ready(sock_fname, network_size=args.size):
+        if not is_tor_ready(sock_fname, network_size=args.size):
             return 1
     # If we got to this point, it seems like every relay is completely ready.
     # Do one more check to make sure that's still the case.
     for datadir in args.datadir:
-        logger.info('Verifying %s', datadir)
+        logger.info('Verifying %s is still ready', datadir)
         sock_fname = os.path.join(datadir, 'control_socket')
         assert os.path.exists(sock_fname)
-        if not is_relay_ready(sock_fname, network_size=args.size):
+        if not is_tor_ready(sock_fname, network_size=args.size):
             return 1
     return 0
 

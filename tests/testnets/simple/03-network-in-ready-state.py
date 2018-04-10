@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 from argparse import RawTextHelpFormatter, ArgumentParser
 from stem.control import Controller
-import stem
 import time
 import os
 import logging
@@ -78,7 +77,7 @@ def main(args):
     return 0
 
 
-if __name__=='__main__':
+if __name__ == '__main__':
     desc = '''
 Given the data directories for a local tor network, connect to the control
 socket in each directory and verify that the tor on the other end of the socket

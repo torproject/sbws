@@ -74,7 +74,7 @@ setup(
     ],
     extras_require={
         'dev': ['flake8'],
-        'test': ['tox', 'pytest', 'pytest-cov'],
+        'test': ['tox', 'pytest', 'coverage'],
         # recommonmark: to make sphinx render markdown
         'doc': ['sphinx', 'recommonmark'],
     },

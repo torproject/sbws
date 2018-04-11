@@ -139,6 +139,10 @@ done
 
 rm $auth_torrc_section
 
+# Get a random port between 2000 and 62000 while handling the fact that $RANDOM
+# doesn't go up that high
+sbws_server_port=$(( ((RANDOM<<15)|RANDOM) % 60000 + 2000 ))
+
 echo "
 [paths]
 datadir = \${sbws_home}/datadir
@@ -163,6 +167,9 @@ download_max = 5
 num_rtts = 5
 num_downloads = 3
 
+[server]
+bind_port = $sbws_server_port
+
 [server.passwords]
 client1 = 9Xa9Ulp9bD5GGLuFm6XYZBtc2VhWQlJgpRRF9SpmfoujrFwdRwBizpqcSMHix6Jc
 client2 = gNeJoOiB7eya7QrpjtxlwSQO42eXazawJIEh5BbKJ1pZ0RFxT45Rbqv28wWyD4pk
@@ -176,18 +183,18 @@ exit3 = on
 [helpers.exit1]
 relay = $(get_fingerprint exit1)
 server_host = 127.0.0.1
-server_port = 31648
+server_port = $sbws_server_port
 password = gNeJoOiB7eya7QrpjtxlwSQO42eXazawJIEh5BbKJ1pZ0RFxT45Rbqv28wWyD4pk
 
 [helpers.exit2]
 relay = $(get_fingerprint exit2)
 server_host = 127.0.0.1
-server_port = 31648
+server_port = $sbws_server_port
 password = 9Xa9Ulp9bD5GGLuFm6XYZBtc2VhWQlJgpRRF9SpmfoujrFwdRwBizpqcSMHix6Jc
 
 [helpers.exit3]
 relay = $(get_fingerprint exit3)
 server_host = 127.0.0.1
-server_port = 31648
+server_port = $sbws_server_port
 password = Onqr54A6xavBV5yxd4KCNPIl5mR6UdnAb21XX8t3kbEvTd28o6HQxFA2Gim8kxil
 " > config.ini

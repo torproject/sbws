@@ -9,8 +9,9 @@ source 00-common.sh
 function get_fingerprint {
 	dir=$1
 	[ -f $dir/torrc ] || exit 2
-	tor --ignore-missing-torrc -f <(cat $dir/torrc; echo "
-	") --Address 8.8.8.8 --list-fingerprint | tail -n 1 | cut -d ' ' -f 2- | sed 's|\ ||g'
+	tor --ignore-missing-torrc -f $dir/torrc  --Address 8.8.8.8 \
+		--list-fingerprint | tail -n 1 | cut -d ' ' -f 2- \
+		| sed 's|\ ||g'
 }
 
 function get_v3ident {

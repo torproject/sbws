@@ -141,15 +141,26 @@ def main(args, conf, log_):
                   'DEPLOY.rst for more information.'
                   .format(conf_fname), log=log)
 
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     h = (conf['server']['bind_ip'], conf.getint('server', 'bind_port'))
     log.notice('Binding to', h)
     while True:
         try:
+            # first try IPv4
+            log.debug('Trying to bind while assuming ipv4')
+            server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             server.bind(h)
-        except OSError as e:
-            log.warn(e)
-            time.sleep(5)
+        except OSError as e1:
+            try:
+                # then try IPv6
+                log.debug('Trying to bind while assuming ipv6')
+                server = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+                server.bind(h)
+            except OSError as e2:
+                log.warn(e1)
+                log.warn(e2)
+                time.sleep(5)
+            else:
+                break
         else:
             break
     log.notice('Listening on', h)

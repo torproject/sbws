@@ -143,7 +143,7 @@ def main(args, conf, log_):
 
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     h = (conf['server']['bind_ip'], conf.getint('server', 'bind_port'))
-    log.notice('binding to', h)
+    log.notice('Binding to', h)
     while True:
         try:
             server.bind(h)
@@ -152,7 +152,7 @@ def main(args, conf, log_):
             time.sleep(5)
         else:
             break
-    log.notice('listening on', h)
+    log.notice('Listening on', h)
     server.listen(5)
     try:
         while True:

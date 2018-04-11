@@ -156,6 +156,12 @@ nickname = SbwsTestnetClient
 tor_socks_host = $client_tor_socks_proxy_ip
 tor_socks_port = $socksport
 measurement_threads = 4
+download_toofast = 0.1
+download_min = 1
+download_target = 2
+download_max = 5
+num_rtts = 5
+num_downloads = 3
 
 [server.passwords]
 client1 = 9Xa9Ulp9bD5GGLuFm6XYZBtc2VhWQlJgpRRF9SpmfoujrFwdRwBizpqcSMHix6Jc

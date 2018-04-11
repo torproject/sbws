@@ -6,13 +6,19 @@ function cleanup {
 }
 trap cleanup EXIT
 
+function list_of_nets {
+	find . -mindepth 2 -maxdepth 2 -type f -name '.net' |\
+		xargs dirname | sort -u | xargs
+}
+
 function usage {
 	echo "Usage: $0 <net>"
-	echo "Where <net> is one of: $(find . -mindepth 1 -maxdepth 1 -type d | xargs )"
+	echo "Where <net> is one of: $(list_of_nets)"
 }
 
 [ "$1" == "" ] && usage && exit 1 || net="$1"
 [ ! -d "$net" ] && usage && exit 1
+[ ! -f "$net/.net" ] && usage && exit 1
 
 pushd $net
 ./01-gen-configs.sh

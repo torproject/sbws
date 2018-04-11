@@ -65,7 +65,7 @@ setup(
     # test_suite='test',
     entry_points={
         'console_scripts': [
-            'sbws = sbws.__main__:main',
+            'sbws = sbws.sbws:main',
         ]
     },
     install_requires=[

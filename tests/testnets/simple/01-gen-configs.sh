@@ -40,8 +40,6 @@ do
 		DataDirectory $A
 		PidFile $A/tor.pid
 		Log notice file $A/notice.log
-		LogTimeGranularity 1
-		SafeLogging 0
 		ShutdownWaitLength 2
 		ExitRelay 0
 		AuthoritativeDirectory 1
@@ -74,8 +72,6 @@ do
 		DataDirectory $A
 		PidFile $A/tor.pid
 		Log notice file $A/notice.log
-		LogTimeGranularity 1
-		SafeLogging 0
 		ShutdownWaitLength 2
 		ExitRelay 0
 		Address $ip
@@ -100,8 +96,6 @@ do
 		DataDirectory $A
 		PidFile $A/tor.pid
 		Log notice file $A/notice.log
-		LogTimeGranularity 1
-		SafeLogging 0
 		ShutdownWaitLength 2
 		ExitRelay 1
 		Address $ip
@@ -134,6 +128,8 @@ do
 	cat $auth_torrc_section >> $torrc
 	echo "
 		TestingTorNetwork 1
+		LogTimeGranularity 1
+		SafeLogging 0
 	" >> $torrc
 done
 

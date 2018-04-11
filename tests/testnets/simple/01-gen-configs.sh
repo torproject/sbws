@@ -23,6 +23,8 @@ function get_v3ident {
 
 
 next_ip="1"
+client_tor_socks_proxy_ip=""
+client_tor_socks_proxy_nick=""
 
 echo -n '' > $auth_torrc_section
 rm -fr auth?/ relay?/ exit?/
@@ -31,6 +33,8 @@ do
 	mkdir -pv $A/keys
 	chmod 700 $A
 	ip=${ip_space}${next_ip}
+	[ "$client_tor_socks_proxy_ip" == "" ] && client_tor_socks_proxy_ip="$ip"
+	[ "$client_tor_socks_proxy_nick" == "" ] && client_tor_socks_proxy_nick="$A"
 	echo -n '' | tor-gencert --create-identity-key --passphrase-fd 0 -m 24 -a $ip:$dirport
 	echo "
 		DataDirectory $A
@@ -134,3 +138,50 @@ do
 done
 
 rm $auth_torrc_section
+
+echo "
+[paths]
+datadir = \${sbws_home}/datadir
+sbws_home = .
+
+[general]
+log_level = debug
+
+[tor]
+control_type = socket
+control_location = $client_tor_socks_proxy_nick/control_socket
+
+[client]
+nickname = SbwsTestnetClient
+tor_socks_host = $client_tor_socks_proxy_ip
+tor_socks_port = $socksport
+measurement_threads = 4
+
+[server.passwords]
+client1 = 9Xa9Ulp9bD5GGLuFm6XYZBtc2VhWQlJgpRRF9SpmfoujrFwdRwBizpqcSMHix6Jc
+client2 = gNeJoOiB7eya7QrpjtxlwSQO42eXazawJIEh5BbKJ1pZ0RFxT45Rbqv28wWyD4pk
+client3 = Onqr54A6xavBV5yxd4KCNPIl5mR6UdnAb21XX8t3kbEvTd28o6HQxFA2Gim8kxil
+
+[helpers]
+exit1 = on
+exit2 = on
+exit3 = on
+
+[helpers.exit1]
+relay = $(get_fingerprint exit1)
+server_host = 127.0.0.1
+server_port = 31648
+password = gNeJoOiB7eya7QrpjtxlwSQO42eXazawJIEh5BbKJ1pZ0RFxT45Rbqv28wWyD4pk
+
+[helpers.exit2]
+relay = $(get_fingerprint exit2)
+server_host = 127.0.0.1
+server_port = 31648
+password = 9Xa9Ulp9bD5GGLuFm6XYZBtc2VhWQlJgpRRF9SpmfoujrFwdRwBizpqcSMHix6Jc
+
+[helpers.exit3]
+relay = $(get_fingerprint exit3)
+server_host = 127.0.0.1
+server_port = 31648
+password = Onqr54A6xavBV5yxd4KCNPIl5mR6UdnAb21XX8t3kbEvTd28o6HQxFA2Gim8kxil
+" > config.ini

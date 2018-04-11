@@ -139,7 +139,7 @@ rm $auth_torrc_section
 echo "
 [paths]
 datadir = \${sbws_home}/datadir
-sbws_home = .
+sbws_home = $(pwd)
 
 [general]
 log_level = debug

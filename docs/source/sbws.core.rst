@@ -1,46 +1,46 @@
-sbws.commands package
+sbws.core package
 =====================
 
 Submodules
 ----------
 
-sbws.commands.client module
+sbws.core.client module
 ---------------------------
 
-.. automodule:: sbws.commands.client
+.. automodule:: sbws.core.client
     :members:
     :undoc-members:
     :show-inheritance:
 
-sbws.commands.generate module
+sbws.core.generate module
 -----------------------------
 
-.. automodule:: sbws.commands.generate
+.. automodule:: sbws.core.generate
     :members:
     :undoc-members:
     :show-inheritance:
 
-sbws.commands.init module
+sbws.core.init module
 -------------------------
 
-.. automodule:: sbws.commands.init
+.. automodule:: sbws.core.init
     :members:
     :undoc-members:
     :show-inheritance:
 
-sbws.commands.server module
+sbws.core.server module
 ---------------------------
 
-.. automodule:: sbws.commands.server
+.. automodule:: sbws.core.server
     :members:
     :undoc-members:
     :show-inheritance:
 
 
-sbws.commands.stats module
+sbws.core.stats module
 ---------------------------
 
-.. automodule:: sbws.commands.stats
+.. automodule:: sbws.core.stats
     :members:
     :undoc-members:
     :show-inheritance:
@@ -49,7 +49,7 @@ sbws.commands.stats module
 Module contents
 ---------------
 
-.. automodule:: sbws.commands
+.. automodule:: sbws.core
     :members:
     :undoc-members:
     :show-inheritance:

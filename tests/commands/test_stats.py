@@ -4,8 +4,8 @@ from sbws.lib.resultdump import ResultError
 from sbws.lib.resultdump import ResultSuccess
 from sbws.lib.resultdump import Result
 from sbws.lib.resultdump import write_result_to_datadir
-import sbws.commands.init
-import sbws.commands.stats
+import sbws.core.init
+import sbws.core.stats
 from datetime import date
 import os
 import time
@@ -15,7 +15,7 @@ def init_directory(dname, log):
     p = create_parser()
     args = p.parse_args('-d {} -vvvv init'.format(dname).split())
     conf = get_config(args, log_fn=log.debug)
-    sbws.commands.init.main(args, conf, log)
+    sbws.core.init.main(args, conf, log)
 
 
 def add_single_stale_result(dname):
@@ -62,7 +62,7 @@ def test_stats_uninitted(tmpdir, log):
     args = p.parse_args('-d {} -vvvv stats'.format(tmpdir).split())
     conf = get_config(args, log_fn=log.debug)
     try:
-        sbws.commands.stats.main(args, conf, log)
+        sbws.core.stats.main(args, conf, log)
     except SystemExit as e:
         assert e.code == 1
     else:
@@ -81,7 +81,7 @@ def test_stats_initted(tmpdir, log):
     args = p.parse_args('-d {} -vvvv stats'.format(tmpdir).split())
     conf = get_config(args, log_fn=log.debug)
     try:
-        sbws.commands.stats.main(args, conf, log)
+        sbws.core.stats.main(args, conf, log)
     except SystemExit as e:
         assert e.code == 1
     else:
@@ -100,7 +100,7 @@ def test_stats_stale_result(tmpdir, log):
     p = create_parser()
     args = p.parse_args('-d {} -vvvv stats'.format(tmpdir).split())
     conf = get_config(args, log_fn=log.debug)
-    sbws.commands.stats.main(args, conf, log)
+    sbws.core.stats.main(args, conf, log)
     lines = [l for l in log.test_get_logged_lines()]
     assert 'No fresh results' == lines[-1]
 
@@ -116,7 +116,7 @@ def test_stats_fresh_result(tmpdir, capsys, log):
     args = p.parse_args(
         '-d {} -vvvv stats --error-types'.format(tmpdir).split())
     conf = get_config(args, log_fn=log.debug)
-    sbws.commands.stats.main(args, conf, log)
+    sbws.core.stats.main(args, conf, log)
     captured = capsys.readouterr()
     lines = captured.out.strip().split('\n')
     needed_output_lines = [
@@ -147,7 +147,7 @@ def test_stats_fresh_results(tmpdir, capsys, log):
     args = p.parse_args(
         '-d {} -vvvv stats --error-types'.format(tmpdir).split())
     conf = get_config(args, log_fn=log.debug)
-    sbws.commands.stats.main(args, conf, log)
+    sbws.core.stats.main(args, conf, log)
     needed_output_lines = [
         '1 relays have recent results',
         '1 success results and 1 error results',

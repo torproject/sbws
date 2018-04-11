@@ -1,5 +1,5 @@
 from sbws import version
-import sbws.commands.generate
+import sbws.core.generate
 from sbws.util.config import get_config
 from sbws.lib.resultdump import load_recent_results_in_datadir
 from sbws.lib.resultdump import ResultSuccess
@@ -12,7 +12,7 @@ def test_generate_no_dotsbws(tmpdir, parser, log):
         '-d {} -vvvv generate'.format(dotsbws).split())
     conf = get_config(args, log.debug)
     try:
-        sbws.commands.generate.main(args, conf, log)
+        sbws.core.generate.main(args, conf, log)
     except SystemExit as e:
         assert e.code == 1
     else:
@@ -27,7 +27,7 @@ def test_generate_no_datadir(empty_dotsbws, parser, log):
         '-d {} -vvvv generate'.format(dotsbws.name).split())
     conf = get_config(args, log.debug)
     try:
-        sbws.commands.generate.main(args, conf, log)
+        sbws.core.generate.main(args, conf, log)
     except SystemExit as e:
         assert e.code == 1
     else:
@@ -44,7 +44,7 @@ def test_generate_bad_scale_constant(empty_dotsbws_datadir, parser, log):
         .format(dotsbws.name).split())
     conf = get_config(args, log.debug)
     try:
-        sbws.commands.generate.main(args, conf, log)
+        sbws.core.generate.main(args, conf, log)
     except SystemExit as e:
         assert e.code == 1
     else:
@@ -58,7 +58,7 @@ def test_generate_empty_datadir(empty_dotsbws_datadir, parser, log):
     args = parser.parse_args(
         '-d {} -vvvv generate'.format(dotsbws.name).split())
     conf = get_config(args, log.debug)
-    sbws.commands.generate.main(args, conf, log)
+    sbws.core.generate.main(args, conf, log)
     log_lines = [l for l in log.test_get_logged_lines()]
     assert 'No recent results' in log_lines[-1]
 
@@ -68,7 +68,7 @@ def test_generate_single_error(dotsbws_error_result, parser, log):
     args = parser.parse_args(
         '-d {} -vvvv generate'.format(dotsbws.name).split())
     conf = get_config(args, log.debug)
-    sbws.commands.generate.main(args, conf, log)
+    sbws.core.generate.main(args, conf, log)
     log_lines = [l for l in log.test_get_logged_lines()]
     dd = conf['paths']['datadir']
     for line in log_lines:
@@ -86,7 +86,7 @@ def test_generate_single_success_noscale(dotsbws_success_result, parser, log,
     args = parser.parse_args(
         '-d {} -vvvv generate'.format(dotsbws.name).split())
     conf = get_config(args, log.debug)
-    sbws.commands.generate.main(args, conf, log)
+    sbws.core.generate.main(args, conf, log)
     dd = conf['paths']['datadir']
     results = load_recent_results_in_datadir(
         1, dd, success_only=False, log_fn=log.debug)
@@ -118,7 +118,7 @@ def test_generate_single_success_scale(dotsbws_success_result, parser, log,
     args = parser.parse_args(
         '-d {} -vvvv generate --scale'.format(dotsbws.name).split())
     conf = get_config(args, log.debug)
-    sbws.commands.generate.main(args, conf, log)
+    sbws.core.generate.main(args, conf, log)
     dd = conf['paths']['datadir']
     results = load_recent_results_in_datadir(
         1, dd, success_only=False, log_fn=log.debug)
@@ -149,7 +149,7 @@ def test_generate_single_relay_success_noscale(
     args = parser.parse_args(
         '-d {} -vvvv generate'.format(dotsbws.name).split())
     conf = get_config(args, log.debug)
-    sbws.commands.generate.main(args, conf, log)
+    sbws.core.generate.main(args, conf, log)
     dd = conf['paths']['datadir']
     results = load_recent_results_in_datadir(
         1, dd, success_only=False, log_fn=log.debug)
@@ -182,7 +182,7 @@ def test_generate_single_relay_success_scale(
     args = parser.parse_args(
         '-d {} -vvvv generate --scale'.format(dotsbws.name).split())
     conf = get_config(args, log.debug)
-    sbws.commands.generate.main(args, conf, log)
+    sbws.core.generate.main(args, conf, log)
     dd = conf['paths']['datadir']
     results = load_recent_results_in_datadir(
         1, dd, success_only=False, log_fn=log.debug)
@@ -213,7 +213,7 @@ def test_generate_two_relays_success_noscale(
     args = parser.parse_args(
         '-d {} -vvvv generate'.format(dotsbws.name).split())
     conf = get_config(args, log.debug)
-    sbws.commands.generate.main(args, conf, log)
+    sbws.core.generate.main(args, conf, log)
     dd = conf['paths']['datadir']
     results = load_recent_results_in_datadir(
         1, dd, success_only=False, log_fn=log.debug)

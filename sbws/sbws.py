@@ -1,10 +1,10 @@
-import sbws.commands.cleanup
-import sbws.commands.client
-import sbws.commands.generate
-import sbws.commands.init
-import sbws.commands.pwgen
-import sbws.commands.server
-import sbws.commands.stats
+import sbws.core.cleanup
+import sbws.core.client
+import sbws.core.generate
+import sbws.core.init
+import sbws.core.pwgen
+import sbws.core.server
+import sbws.core.stats
 from sbws.util.config import get_config
 from sbws.util.config import validate_config
 from sbws.util.parser import create_parser
@@ -50,19 +50,19 @@ def main():
     def_args = [args, conf, log]
     def_kwargs = {}
     known_commands = {
-        'cleanup': {'f': sbws.commands.cleanup.main,
+        'cleanup': {'f': sbws.core.cleanup.main,
                     'a': def_args, 'kw': def_kwargs},
-        'client': {'f': sbws.commands.client.main,
+        'client': {'f': sbws.core.client.main,
                    'a': def_args, 'kw': def_kwargs},
-        'generate': {'f': sbws.commands.generate.main,
+        'generate': {'f': sbws.core.generate.main,
                      'a': def_args, 'kw': def_kwargs},
-        'init': {'f': sbws.commands.init.main,
+        'init': {'f': sbws.core.init.main,
                  'a': def_args, 'kw': def_kwargs},
-        'pwgen': {'f': sbws.commands.pwgen.main,
+        'pwgen': {'f': sbws.core.pwgen.main,
                   'a': def_args, 'kw': def_kwargs},
-        'server': {'f': sbws.commands.server.main,
+        'server': {'f': sbws.core.server.main,
                    'a': def_args, 'kw': def_kwargs},
-        'stats': {'f': sbws.commands.stats.main,
+        'stats': {'f': sbws.core.stats.main,
                   'a': def_args, 'kw': def_kwargs},
     }
     try:

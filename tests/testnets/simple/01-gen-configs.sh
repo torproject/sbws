@@ -98,6 +98,9 @@ do
 		Log notice file $A/notice.log
 		ShutdownWaitLength 2
 		ExitRelay 1
+		IPv6Exit 1
+		ExitPolicy accept *:*
+		ExitPolicy reject *:*
 		Address $ip
 		SocksPort $ip:$socksport
 		ControlPort $ip:$controlport

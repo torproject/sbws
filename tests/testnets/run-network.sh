@@ -8,7 +8,7 @@ trap cleanup EXIT
 
 function usage {
 	echo "Usage: $0 <net>"
-	echo "Where <net> is one of: $(find . -mindepth 1 -maxdepth 1 -type d)"
+	echo "Where <net> is one of: $(find . -mindepth 1 -maxdepth 1 -type d | xargs )"
 }
 
 [ "$1" == "" ] && usage && exit 1 || net="$1"

@@ -168,6 +168,7 @@ num_rtts = 5
 num_downloads = 3
 
 [server]
+bind_ip = ::
 bind_port = $sbws_server_port
 
 [server.passwords]
@@ -182,19 +183,19 @@ exit3 = on
 
 [helpers.exit1]
 relay = $(get_fingerprint exit1)
-server_host = 127.0.0.1
+server_host = ::1
 server_port = $sbws_server_port
 password = gNeJoOiB7eya7QrpjtxlwSQO42eXazawJIEh5BbKJ1pZ0RFxT45Rbqv28wWyD4pk
 
 [helpers.exit2]
 relay = $(get_fingerprint exit2)
-server_host = 127.0.0.1
+server_host = ::1
 server_port = $sbws_server_port
 password = 9Xa9Ulp9bD5GGLuFm6XYZBtc2VhWQlJgpRRF9SpmfoujrFwdRwBizpqcSMHix6Jc
 
 [helpers.exit3]
 relay = $(get_fingerprint exit3)
-server_host = 127.0.0.1
+server_host = ::1
 server_port = $sbws_server_port
 password = Onqr54A6xavBV5yxd4KCNPIl5mR6UdnAb21XX8t3kbEvTd28o6HQxFA2Gim8kxil
 " > config.ini

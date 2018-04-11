@@ -25,7 +25,7 @@ function get_v3ident {
 next_ip="1"
 
 echo -n '' > $auth_torrc_section
-rm -fr auth?/ relay?/
+rm -fr auth?/ relay?/ exit?/
 for A in auth1 auth2 auth3
 do
 	mkdir -pv $A/keys

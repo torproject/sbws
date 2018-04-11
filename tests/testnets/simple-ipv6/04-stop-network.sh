@@ -1,3 +1,1 @@
-#!/usr/bin/env bash
-
-kill -INT $(cat {auth,relay,exit}*/tor.pid)
+../simple.common/04-stop-network.sh

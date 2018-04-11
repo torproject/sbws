@@ -128,6 +128,7 @@ do
 	cat $auth_torrc_section >> $torrc
 	echo "
 		TestingTorNetwork 1
+		NumCPUs 1
 		LogTimeGranularity 1
 		SafeLogging 0
 	" >> $torrc

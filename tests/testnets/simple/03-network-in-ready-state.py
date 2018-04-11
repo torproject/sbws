@@ -24,7 +24,7 @@ def get_is_bootstrapped(cont, timeout=60):
             logger.debug('Tor is bootstrapped')
             return True
         time.sleep(1)
-    logger.debug('Tor didn\'t bootstrap before timeout')
+    logger.debug('Tor didn\'t bootstrap before timeout. Last line: %s', line)
     return False
 
 

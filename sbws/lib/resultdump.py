@@ -1,6 +1,5 @@
 from sbws.globals import time_now
 import os
-import time
 import json
 from glob import glob
 from threading import Thread

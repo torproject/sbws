@@ -1,7 +1,6 @@
 from sbws.globals import time_now
 import sbws.util.stem as stem_utils
 from stem import Flag
-import time
 import random
 
 

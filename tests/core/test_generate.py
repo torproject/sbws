@@ -107,7 +107,7 @@ def test_generate_single_success_noscale(dotsbws_success_result, parser, log,
     bw = round(median([dl['amount'] / dl['duration']
                        for dl in result.downloads]))
     rtt = median([round(r * 1000) for r in result.rtts])
-    bw_line = 'node_id={} bw={} nick={} rtt={} time={}'.format(
+    bw_line = 'node_id=${} bw={} nick={} rtt={} time={}'.format(
         result.fingerprint, bw, result.nickname, rtt, round(result.time))
     assert stdout_lines[2] == bw_line
 
@@ -138,7 +138,7 @@ def test_generate_single_success_scale(dotsbws_success_result, parser, log,
 
     bw = 7500
     rtt = median([round(r * 1000) for r in result.rtts])
-    bw_line = 'node_id={} bw={} nick={} rtt={} time={}'.format(
+    bw_line = 'node_id=${} bw={} nick={} rtt={} time={}'.format(
         result.fingerprint, bw, result.nickname, rtt, round(result.time))
     assert stdout_lines[2] == bw_line
 
@@ -171,7 +171,7 @@ def test_generate_single_relay_success_noscale(
               for dl in r.downloads]
     speed = round(median(speeds))
     rtt = round(median([round(r * 1000) for r in result.rtts]))
-    bw_line = 'node_id={} bw={} nick={} rtt={} time={}'.format(
+    bw_line = 'node_id=${} bw={} nick={} rtt={} time={}'.format(
         result.fingerprint, speed, result.nickname, rtt, round(result.time))
     assert stdout_lines[2] == bw_line
 
@@ -202,7 +202,7 @@ def test_generate_single_relay_success_scale(
 
     speed = 7500
     rtt = round(median([round(r * 1000) for r in result.rtts]))
-    bw_line = 'node_id={} bw={} nick={} rtt={} time={}'.format(
+    bw_line = 'node_id=${} bw={} nick={} rtt={} time={}'.format(
         result.fingerprint, speed, result.nickname, rtt, round(result.time))
     assert stdout_lines[2] == bw_line
 
@@ -240,7 +240,7 @@ def test_generate_two_relays_success_noscale(
     r1_speed = round(median(r1_speeds))
     r1_rtt = round(median([round(rtt * 1000) for r in r1_results
                            for rtt in r.rtts]))
-    bw_line = 'node_id={} bw={} nick={} rtt={} time={}'.format(
+    bw_line = 'node_id=${} bw={} nick={} rtt={} time={}'.format(
         r1_fingerprint, r1_speed, r1_name, r1_rtt, r1_time)
     assert stdout_lines[3] == bw_line
 
@@ -253,6 +253,6 @@ def test_generate_two_relays_success_noscale(
     r2_speed = round(median(r2_speeds))
     r2_rtt = round(median([round(rtt * 1000) for r in r2_results
                            for rtt in r.rtts]))
-    bw_line = 'node_id={} bw={} nick={} rtt={} time={}'.format(
+    bw_line = 'node_id=${} bw={} nick={} rtt={} time={}'.format(
         r2_fingerprint, r2_speed, r2_name, r2_rtt, r2_time)
     assert stdout_lines[2] == bw_line

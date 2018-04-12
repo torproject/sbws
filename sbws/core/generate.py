@@ -19,7 +19,7 @@ class V3BWLine:
         self.time = last_time
 
     def __str__(self):
-        frmt = 'node_id={fp} bw={sp} nick={n} rtt={rtt} time={t}'
+        frmt = 'node_id=${fp} bw={sp} nick={n} rtt={rtt} time={t}'
         return frmt.format(fp=self.fp, sp=self.bw, n=self.nick, rtt=self.rtt,
                            t=self.time)
 

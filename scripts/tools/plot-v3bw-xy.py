@@ -105,6 +105,14 @@ def main(args, pdf):
     plt.legend(loc='upper right')
     plt.xlabel(args.xlabel)
     plt.ylabel(args.ylabel)
+    if args.xmin is not None:
+        plt.xlim(xmin=args.xmin)
+    if args.ymin is not None:
+        plt.ylim(ymin=args.ymin)
+    if args.xmax is not None:
+        plt.xlim(xmax=args.xmax)
+    if args.ymax is not None:
+        plt.ylim(ymax=args.ymax)
     plt.title(args.title)
     pdf.savefig()
 
@@ -131,6 +139,10 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--title', type=str,
                         default='Correlation of various bwscanning systems',
                         help='What to title the plot in the PDF')
+    parser.add_argument('--xmin', type=float, default=0)
+    parser.add_argument('--ymin', type=float, default=0)
+    parser.add_argument('--xmax', type=float)
+    parser.add_argument('--ymax', type=float)
     parser.add_argument('-s', '--size', type=float, default=1,
                         help='Size of scatter plot points')
     args = parser.parse_args()

@@ -42,7 +42,7 @@ def _get_older_files_than(dname, num_days_ago, extensions):
     today = date.fromtimestamp(time_now())
     oldest_day = today - timedelta(days=num_days_ago)
     working_day = oldest_day
-    while working_day < today:
+    while working_day <= today:
         for ext in extensions:
             pattern = os.path.join(
                 dname, '**', '{}*{}'.format(working_day, ext))

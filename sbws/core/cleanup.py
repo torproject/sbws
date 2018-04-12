@@ -1,4 +1,4 @@
-from sbws.globals import (fail_hard, is_initted, time_now)
+from sbws.globals import (fail_hard, is_initted, time_now, lock_directory)
 from argparse import ArgumentDefaultsHelpFormatter
 from datetime import date
 from datetime import timedelta
@@ -57,26 +57,35 @@ def _get_older_files_than(dname, num_days_ago, extensions):
 def _remove_rotten_files(datadir, rotten_days, dry_run=True):
     assert os.path.isdir(datadir)
     assert isinstance(rotten_days, int)
-    fnames = _get_older_files_than(datadir, rotten_days, ['.txt', '.txt.gz'])
-    for fname in fnames:
-        log.info('Deleting', fname)
-        if not dry_run:
-            os.remove(fname)
+    # Hold the lock for basically the entire time just in case someone else
+    # moves files between when we get the list of files and when we try to
+    # delete them.
+    with lock_directory(datadir):
+        fnames = _get_older_files_than(datadir, rotten_days,
+                                       ['.txt', '.txt.gz'])
+        for fname in fnames:
+            log.info('Deleting', fname)
+            if not dry_run:
+                os.remove(fname)
 
 
 def _compress_stale_files(datadir, stale_days, dry_run=True):
     assert os.path.isdir(datadir)
     assert isinstance(stale_days, int)
-    fnames = _get_older_files_than(datadir, stale_days, ['.txt'])
-    for fname in fnames:
-        log.info('Compressing', fname)
-        if dry_run:
-            continue
-        with open(fname, 'rt') as in_fd:
-            out_fname = fname + '.gz'
-            with gzip.open(out_fname, 'wt') as out_fd:
-                shutil.copyfileobj(in_fd, out_fd)
-        os.remove(fname)
+    # Hold the lock for basically the entire time just in case someone else
+    # moves files between when we get the list of files and when we try to
+    # compress them.
+    with lock_directory(datadir):
+        fnames = _get_older_files_than(datadir, stale_days, ['.txt'])
+        for fname in fnames:
+            log.info('Compressing', fname)
+            if dry_run:
+                continue
+            with open(fname, 'rt') as in_fd:
+                out_fname = fname + '.gz'
+                with gzip.open(out_fname, 'wt') as out_fd:
+                    shutil.copyfileobj(in_fd, out_fd)
+            os.remove(fname)
 
 
 def main(args, conf, log_):

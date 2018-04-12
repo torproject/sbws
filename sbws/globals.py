@@ -1,6 +1,7 @@
+from sbws.lib.pastlylogger import PastlyLogger
 import os
 import time
-from sbws.lib.pastlylogger import PastlyLogger
+from filelock import FileLock
 
 
 G_PKG_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -119,3 +120,19 @@ def make_logger(args, conf):
     level = level + args.verbose - args.quiet
     level_str = _log_level_int_to_string(level)
     return get_logger(level_str, default_level_str)
+
+
+def lock_directory(dname):
+    '''
+    Holds a lock on a file in **dname** so that other sbws processes/threads
+    won't try to read/write while we are reading/writing in this directory.
+
+    >>> with lock_directory(dname):
+    >>>     # do things while you have the lock
+    >>> # no longer have lock
+
+    :param str dname: Name of directory we want to obtain a lock for
+    :retrurns: the FileLock context manager for you to use in a with statement
+    '''
+    assert os.path.isdir(dname)
+    return FileLock(os.path.join(dname, 'lockfile'))

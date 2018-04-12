@@ -1,4 +1,5 @@
 from sbws.globals import time_now
+from sbws.globals import lock_directory
 import os
 import json
 from glob import glob
@@ -10,7 +11,6 @@ from queue import Empty
 from datetime import date
 from datetime import timedelta
 from enum import Enum
-from filelock import FileLock
 from stem.descriptor.router_status_entry import RouterStatusEntryV3
 from sbws import res_proto_ver
 
@@ -39,15 +39,16 @@ def load_result_file(fname, success_only=False, log_fn=print):
     assert os.path.isfile(fname)
     d = []
     num_ignored = 0
-    with open(fname, 'rt') as fd:
-        for line in fd:
-            r = Result.from_dict(json.loads(line.strip()))
-            if r is None:
-                num_ignored += 1
-                continue
-            if success_only and isinstance(r, ResultError):
-                continue
-            d.append(r)
+    with lock_directory(os.path.dirname(fname)):
+        with open(fname, 'rt') as fd:
+            for line in fd:
+                r = Result.from_dict(json.loads(line.strip()))
+                if r is None:
+                    num_ignored += 1
+                    continue
+                if success_only and isinstance(r, ResultError):
+                    continue
+                d.append(r)
     log_fn('Read', len(d), 'lines from', fname)
     if num_ignored > 0:
         log_fn('Had to ignore', num_ignored,
@@ -106,7 +107,7 @@ def write_result_to_datadir(result, datadir):
     ext = '.txt'
     result_fname = os.path.join(
         datadir, '{}{}'.format(dt, ext))
-    with FileLock(os.path.join(datadir, 'lockfile')):
+    with lock_directory(datadir):
         with open(result_fname, 'at') as fd:
             fd.write('{}\n'.format(str(result)))
 

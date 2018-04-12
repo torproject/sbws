@@ -316,10 +316,7 @@ class ResultErrorAuth(ResultError):
 
 class ResultSuccess(Result):
     def __init__(self, rtts, downloads, *a, **kw):
-        try:
-            super().__init__(*a, **kw)
-        except TypeError as e:
-            print('ERROR doing super init:', e)
+        super().__init__(*a, **kw)
         self._rtts = rtts
         self._downloads = downloads
 

@@ -4,7 +4,7 @@ from sbws.lib.resultdump import Result
 from sbws.lib.resultdump import write_result_to_datadir
 from sbws.util.config import get_config
 from sbws.util.parser import create_parser
-import sbws.commands.init
+import sbws.core.init
 from tempfile import TemporaryDirectory
 import pytest
 import os
@@ -87,7 +87,7 @@ def empty_dotsbws(log, parser):
     d = TemporaryDirectory()
     args = parser.parse_args('-d {} -vvvv init'.format(d.name).split())
     conf = get_config(args, log_fn=log.debug)
-    sbws.commands.init.main(args, conf, log)
+    sbws.core.init.main(args, conf, log)
     return d
 
 

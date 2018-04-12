@@ -6,7 +6,7 @@ Subpackages
 
 .. toctree::
 
-    sbws.commands
+    sbws.core
     sbws.lib
     sbws.util
 

@@ -1,10 +1,10 @@
-import sbws.commands.cleanup
-import sbws.commands.client
-import sbws.commands.generate
-import sbws.commands.init
-import sbws.commands.pwgen
-import sbws.commands.server
-import sbws.commands.stats
+import sbws.core.cleanup
+import sbws.core.client
+import sbws.core.generate
+import sbws.core.init
+import sbws.core.pwgen
+import sbws.core.server
+import sbws.core.stats
 from sbws import version
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
@@ -30,11 +30,11 @@ def create_parser():
     p.add_argument('-d', '--directory', default=_default_dot_sbws_dname(),
                    help='Name of the .sbws directory')
     sub = p.add_subparsers(dest='command')
-    sbws.commands.cleanup.gen_parser(sub)
-    sbws.commands.client.gen_parser(sub)
-    sbws.commands.generate.gen_parser(sub)
-    sbws.commands.init.gen_parser(sub)
-    sbws.commands.pwgen.gen_parser(sub)
-    sbws.commands.server.gen_parser(sub)
-    sbws.commands.stats.gen_parser(sub)
+    sbws.core.cleanup.gen_parser(sub)
+    sbws.core.client.gen_parser(sub)
+    sbws.core.generate.gen_parser(sub)
+    sbws.core.init.gen_parser(sub)
+    sbws.core.pwgen.gen_parser(sub)
+    sbws.core.server.gen_parser(sub)
+    sbws.core.stats.gen_parser(sub)
     return p

@@ -9,6 +9,8 @@ import matplotlib; matplotlib.use('Agg')  # noqa; for systems without X11
 from matplotlib.backends.backend_pdf import PdfPages
 import pylab as plt
 
+colors = "krbgcmy"
+
 plt.rcParams.update({
     'axes.grid': True,
 })
@@ -82,6 +84,7 @@ def main(args, pdf):
             new_data[fp].update({label: y})
     data = new_data
     sort_label = all_labels[0]
+    all_labels_sorted = sorted(all_labels)
     # Sort the data points such that sort_label's highest value is first.
     # Assuming sort_label is label1, then turn into this list
     # [
@@ -95,13 +98,16 @@ def main(args, pdf):
     new_data = sorted(new_data, key=lambda k: k[sort_label], reverse=True)
     data = new_data
     # Plot data
-    for label in all_labels:
+    for label_i, label in enumerate(all_labels_sorted):
         x = []
         y = []
-        for i, point in enumerate(data):
-            x.append(i)
-            y.append(point[label] / 1000)
-        plt.scatter(x, y, s=args.size, label=label)
+        for point_i, point in enumerate(data):
+            x.append(point_i)
+            if 'sbws' in label:
+                y.append(point[label] / 1000)
+            else:
+                y.append(point[label])
+        plt.scatter(x, y, c=colors[label_i], s=args.size, label=label)
     plt.legend(loc='upper right')
     plt.xlabel(args.xlabel)
     plt.ylabel(args.ylabel)

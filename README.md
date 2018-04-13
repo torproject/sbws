@@ -74,10 +74,6 @@ a backward incompatible way.
 This project is released to the public domain under the CC0 1.0 Universal
 license. See [`LICENSE.md`](/LICENSE.md) for more information.
 
-## Authenticating to `sbws server`
-
-**XXX Write this.**
-
 ## Documentation
 
 See more documentation in [/docs/source/](/docs/source/)

@@ -12,6 +12,7 @@ Welcome to Simple Bandwidth Scanner's documentation!
    :caption: Contents:
 
    specification
+   config
    INSTALL
    DEPLOY
    README

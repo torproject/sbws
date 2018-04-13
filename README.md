@@ -78,25 +78,15 @@ license. See [`LICENSE.md`](/LICENSE.md) for more information.
 
 See more documentation in [/docs/source/](/docs/source/)
 
-## Configuration
+**XXX: replace the above sentence with a link to the documentation website**
 
-Sbws has two config files it reads.
+### Build HTML documentation
 
-It first reads the config file containing the default values for almost all
-options. If you installed sbws in a virtual environment located at /tmp/venv, then
-you will probably find the `config.default.ini` in a place such as
-`/tmp/venv/lib/python3.5/site-packages/sbws/`
-**You should never edit this file**. You can also click on
-[this link](/sbws/config.default.ini) to see the default config file if you're
-reading this on GitHub.
+    pip install -e .[doc]
+    cd docs
+    make html
 
-Sbws then reads your custom config file. By default, after running `sbws init`,
-it is located in `~/.sbws/config.ini`. A configuration option in this file
-overwrites the default file found in the default file.
-
-**No other configuration files are read.** The only files that are read are the
-`config.default.ini` file located in a place the user shouldn't touch, and the
-`config.ini` in their `.sbws` directory.
+The generated HTML will be in `docs/build/`.
 
 ## The `.sbws` directory
 
@@ -113,14 +103,6 @@ In this directory you will find
 - `datadir` Once your sbws client has started gathering results, it will dump
   them into this directory. Other sbws commands (such as generate and stats)
   read results from the files in this directory.
-
-## Build HTML documentation
-
-    pip install -e .[doc]
-    cd docs
-    make html
-
-The generated HTML will be in [/docs/build/](/docs/build/)
 
 ## Running tests
 

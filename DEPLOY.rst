@@ -25,7 +25,7 @@ with modifying its exit policy to allow exiting to one local IP on one port
 and the Tor relay it is running next to (ideally on the same machine) are
 referred to as a *helper*.
 
-First install sbws as in :doc:`/install`. Make sure you can run ``sbws client
+First install sbws as in :doc:`/INSTALL`. Make sure you can run ``sbws client
 -h`` and ``sbws server -h`` without error before moving on.
 
 **On ClientMachine** ...

@@ -84,7 +84,8 @@ those passwords you generated earlier.
 
 .. note ::
 
-    ``server_host`` can be an IP address. IPv4 will work, IPv6 is untested
+    ``server_host`` can be an IP address. IPv4 will work. IPv6 will work
+    without ``[brackets]``
 
 **XX1**
 

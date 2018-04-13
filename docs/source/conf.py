@@ -12,7 +12,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
+import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
@@ -23,10 +23,19 @@ project = 'Simple Bandwidth Scanner'
 copyright = 'Public Domain'
 author = 'Matt Traudt'
 
+
+def find_version():
+    with open(os.path.join("..", "..", "sbws", "__init__.py")) as fp:
+        for line in fp:
+            if "version" in line.strip():
+                version = line.split("=", 1)[1].strip().strip("'")
+                return version
+
+
 # The short X.Y version
-version = ''
+version = find_version()
 # The full version, including alpha/beta/rc tags
-release = ''
+release = version
 
 
 # -- General configuration ---------------------------------------------------

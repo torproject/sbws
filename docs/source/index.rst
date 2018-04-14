@@ -19,6 +19,7 @@ Welcome to Simple Bandwidth Scanner's documentation!
    CONTRIBUTING
    AUTHORS
    LICENSE
+   faq
    sbws
 
 Indices and tables

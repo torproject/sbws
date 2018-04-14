@@ -204,3 +204,8 @@ screen, tmux, or something like that.
 
 Once all the sbws servers that you want to use are running, you can run
 ``sbws client`` in screen, tmux, or something like that.
+
+.. _deploy_generate:
+
+.. todo:: document when should be run ``sbws generate``, whether it should be
+   add to a cron, etc...

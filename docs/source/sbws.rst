@@ -20,12 +20,3 @@ sbws.globals module
     :members:
     :undoc-members:
     :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: sbws
-    :members:
-    :undoc-members:
-    :show-inheritance:

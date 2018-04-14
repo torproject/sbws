@@ -28,6 +28,8 @@ selection process with the hope that every circuit they build will have roughly
 equal performance, regardless of the relays chosen. This achieves a form of
 load balancing.
 
+.. _problem:
+
 Historically, the directory authorities that ran bandwidth scanners (bandwidth
 authorities), ran torflow_. Time passed, it slowly become less maintained,
 and the collective knowledge of how it worked slipped away.

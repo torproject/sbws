@@ -91,6 +91,8 @@ bandwidth authority includes these aggregated results in its votes.
 2. Configuring Tor and sbws
 ---------------------------
 
+.. note:: i'd move all section 2 to :doc:`DEPLOY` and :doc:`config`
+
 Sbws does not require any complicated modifications to Tor. For all parts of
 sbws that interact with a Tor daemon, only a couple of simple configuration
 changes are required.
@@ -358,6 +360,8 @@ And this is an example result from a failed measurement.
 
 3.4 Simple result processing
 ----------------------------
+
+.. note:: "Periodically": how much time should that be?
 
 Periodically the bandwidth authorities need to use the results that have been
 gathered to inform their vote about relays' bandwidths. To do this they use

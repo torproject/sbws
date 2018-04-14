@@ -49,6 +49,18 @@ relay to a waiting server. Next we describe the process of periodically turning
 recently gathered results into an aggregate format ready for including in a
 bandwidth authority's votes.
 
+X. System overview
+-------------------
+
+- :term:`sbws client`:
+  The ``sbws`` implementation that perform the measurements
+- :term:`bandwidth authority`:
+  The server that runs ``sbws client``. It can also be a directory authorithy
+  or send the measurements to it.
+- :term:`sbws server`:
+  The ``sbws`` implementation that serves data used to measure the bandwidth
+- :term:`helper relay`:
+  The exit relay used by ``sbws client`` circuits to obtain data from the ``sbws server``
 
 1. Anatomy of a Tor network using sbws
 --------------------------------------

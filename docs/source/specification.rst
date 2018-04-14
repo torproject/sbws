@@ -5,6 +5,18 @@ Simple Bandwidth Scanner Specification
 :Date: 29 March 2018
 :Status: Draft
 
+0. Conventions
+------------------
+
+.. note:: specification sounds as synonym to me to RFC :)
+   though so far this does not seem needed
+
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
+"SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL"
+in this document are to be interpreted as described in BCP 14 :rfc:`2119`
+:rfc:`8174` when, and only when, they appear in all capitals, as shown here.
+
+.. todo:: if that is added then change following numeration
 
 0. Background
 -------------

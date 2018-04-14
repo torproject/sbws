@@ -13,9 +13,9 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
-
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join('.' '../', '../')))
+from sbws import version as __version__
 
 # -- Project information -----------------------------------------------------
 
@@ -23,17 +23,8 @@ project = 'Simple Bandwidth Scanner'
 copyright = 'Public Domain'
 author = 'Matt Traudt'
 
-
-def find_version():
-    with open(os.path.join("..", "..", "sbws", "__init__.py")) as fp:
-        for line in fp:
-            if "version" in line.strip():
-                version = line.split("=", 1)[1].strip().strip("'")
-                return version
-
-
 # The short X.Y version
-version = find_version()
+version = __version__
 # The full version, including alpha/beta/rc tags
 release = version
 

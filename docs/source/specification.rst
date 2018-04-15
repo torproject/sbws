@@ -134,6 +134,8 @@ character passwords in the server's ``passwords.txt``.
 
 We now describe various core parts of sbws.
 
+.. _prioritization:
+
 3.1 Simple relay prioritization
 -------------------------------
 

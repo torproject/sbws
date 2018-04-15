@@ -12,6 +12,13 @@ What is a ``bandwidth authority``?
 A server that runs ``sbws client``, the bandwidth scanner that performs the
 measurements. It can run in a directory authority or send to results to it.
 
+How many hops are the circuits used to perform the measurements?
+------------------------------------------------------------------
+
+.. todo:: see :ref:`XX`
+
+Two hops: the relay to be measured and the ``helper relay``
+
 
 What is a ``helper relay``?
 -----------------------------

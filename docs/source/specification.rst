@@ -162,6 +162,12 @@ character passwords in the server's ``passwords.txt``.
 
 We now describe various core parts of sbws.
 
+3.0 Selecting the relays to measure
+------------------------------------
+
+.. todo:: explain here how relays are selected (random),
+apart of the prioritization below
+
 3.1 Simple relay prioritization
 -------------------------------
 

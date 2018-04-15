@@ -11,6 +11,10 @@ Deploying Simple Bandwidth Scanner
     Determine if the sbws client and server can be on the same machine.
     Replace all instances of **XX2** with the answer.
 
+.. todo:: mark the terms here as terms for :doc:`glossary`?
+
+.. note:: maybe add here terms from :doc:`glossary`?
+
 
 So you want to run sbws for yourself. You will need
 
@@ -200,3 +204,8 @@ screen, tmux, or something like that.
 
 Once all the sbws servers that you want to use are running, you can run
 ``sbws client`` in screen, tmux, or something like that.
+
+.. _deploy_generate:
+
+.. todo:: document when should be run ``sbws generate``, whether it should be
+   add to a cron, etc...

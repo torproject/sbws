@@ -19,6 +19,10 @@ How many hops are the circuits used to perform the measurements?
 
 Two hops: the relay to be measured and the ``helper relay``
 
+How are selected the relays to be measured?
+--------------------------------------------
+
+.. todo:: see :ref:`prioritization`
 
 What is a ``helper relay``?
 -----------------------------

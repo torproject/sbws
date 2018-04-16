@@ -138,10 +138,9 @@ def main(args, conf):
 
     if len(conf['server.passwords']) < 1:
         conf_fname = os.path.join(args.directory, 'config.ini')
-        fail_hard('Sbws server needs at least one password in the section'
-                  ' [server.passwords] in the config file in {}. See '
-                  'DEPLOY.rst for more information.'
-                  .format(conf_fname))
+        fail_hard('Sbws server needs at least one password in the section '
+                  '[server.passwords] in the config file in %s. See '
+                  'DEPLOY.rst for more information.', conf_fname)
 
     h = (conf['server']['bind_ip'], conf.getint('server', 'bind_port'))
     log.info('Binding to %s:%d', *h)

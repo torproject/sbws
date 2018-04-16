@@ -109,12 +109,12 @@ def main(args, conf):
     stale_days = conf.getint('cleanup', 'stale_days')
     rotten_days = conf.getint('cleanup', 'rotten_days')
     if stale_days - 2 < fresh_days:
-        fail_hard('For safetly, cleanup/stale_days ({}) must be at least 2 '
-                  'days larger than general/data_period ({})'.format(
-                      stale_days, fresh_days))
+        fail_hard('For safetly, cleanup/stale_days (%d) must be at least 2 '
+                  'days larger than general/data_period (%d)', stale_days,
+                  fresh_days)
     if rotten_days < stale_days:
-        fail_hard('cleanup/rotten_days ({}) must be the same or larger than '
-                  'cleanup/stale_days ({})'.format(rotten_days, stale_days))
+        fail_hard('cleanup/rotten_days (%d) must be the same or larger than '
+                  'cleanup/stale_days (%d)', rotten_days, stale_days)
 
     if stale_days / 2 < fresh_days:
         log.warning(

@@ -52,7 +52,7 @@ def load_result_file(fname, success_only=False):
                 if success_only and isinstance(r, ResultError):
                     continue
                 d.append(r)
-    log.debug('Read %s lines from %s', len(d), fname)
+    log.debug('Read %d lines from %s', len(d), fname)
     if num_ignored > 0:
         log.warning('Had to ignore %d results due to not knowing how to '
                     'parse them.', num_ignored)
@@ -390,7 +390,7 @@ class ResultDump:
                 continue
             elif not isinstance(result, Result):
                 log.warning('The only thing we should ever receive in the '
-                            'result thread is a Result type. Ignoring',
+                            'result thread is a Result type. Ignoring %s',
                             type(result))
                 continue
             fp = result.fingerprint

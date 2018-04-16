@@ -1,13 +1,16 @@
 from ..util.sockio import read_line
 import socket
+import logging
 from sbws import wire_proto_ver
 
 MAGIC_BYTES = b'SBWS'
 SUCCESS_BYTES = b'.'
 PW_LEN = 64
 
+log = logging.getLogger(__name__)
 
-def authenticate_client(sock, conf_section, log_fn=print):
+
+def authenticate_client(sock, conf_section):
     ''' Use this on the server side to read bytes from the client and properly
     authenticate them. Return the name of the client who has authenticated if
     they provided a good password, otherwise None.
@@ -25,41 +28,41 @@ def authenticate_client(sock, conf_section, log_fn=print):
     try:
         magic = sock.recv(len(MAGIC_BYTES))
     except socket.timeout as e:
-        log_fn(e)
+        log.warning(e)
         return None
     if magic != MAGIC_BYTES:
-        log_fn('Magic string doesn\'t match')
+        log.warning('Magic string doesn\'t match')
         return None
 
-    line = read_line(sock, max_len=4, log_fn=log_fn)
+    line = read_line(sock, max_len=4)
     if line != str(wire_proto_ver):
-        log_fn('Client gave protocol version {} but we support {}'.format(
-            line, wire_proto_ver))
+        log.warning('Client gave protocol version %s but we support %d', line,
+                    wire_proto_ver)
         return None
 
     try:
         pw = str(sock.recv(PW_LEN), 'utf-8')
     except UnicodeDecodeError:
-        log_fn('Non-unicode password string received')
+        log.warning('Non-unicode password string received')
         return None
     except socket.timeout as e:
-        log_fn(e)
+        log.warning(e)
         return None
 
     client_name = _is_valid_password(pw, conf_section)
     if not client_name:
-        log_fn('Invalid password')
+        log.warning('Invalid password')
         return None
 
     try:
         sock.send(SUCCESS_BYTES)
     except (socket.timeout, ConnectionResetError, BrokenPipeError) as e:
-        log_fn(e)
+        log.warning(e)
         return None
     return client_name
 
 
-def authenticate_to_server(sock, pw, log_fn=print):
+def authenticate_to_server(sock, pw):
     '''
     Use this on the server side to send bytes to the server and properly
     authenticate to them.
@@ -80,10 +83,10 @@ def authenticate_to_server(sock, pw, log_fn=print):
         sock.send(bytes(pw, 'utf-8'))
         msg = sock.recv(len(SUCCESS_BYTES))
     except (socket.timeout, ConnectionResetError, BrokenPipeError) as e:
-        log_fn(e)
+        log.warning(e)
         return False
     if msg != SUCCESS_BYTES:
-        log_fn('Didn\'t get success code from server')
+        log.warning('Didn\'t get success code from server')
         return False
     return True
 

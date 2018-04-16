@@ -2,6 +2,9 @@ from stem.control import Controller
 from stem import (SocketError, InvalidRequest, UnsatisfiableRequest)
 from stem.connection import IncorrectSocketType
 from configparser import ConfigParser
+import logging
+
+log = logging.getLogger(__name__)
 
 __all__ = [
     'add_event_listener',
@@ -25,19 +28,19 @@ def fp_or_nick_to_relay(controller, fp_nick):
     return controller.get_network_status(fp_nick, default=None)
 
 
-def attach_stream_to_circuit_listener(controller, circ_id, log_fn=print):
+def attach_stream_to_circuit_listener(controller, circ_id):
     ''' Returns a function that should be given to add_event_listener(). It
     looks for newly created streams and attaches them to the given circ_id '''
     assert is_controller_okay(controller)
 
     def closure_stream_event_listener(st):
         if st.status == 'NEW' and st.purpose == 'USER':
-            log_fn('Attaching stream {} to circ {}'.format(st.id, circ_id))
+            log.debug('Attaching stream {} to circ {}'.format(st.id, circ_id))
             try:
                 controller.attach_stream(st.id, circ_id)
             except (UnsatisfiableRequest, InvalidRequest) as e:
-                log_fn('Couldn\'t attach stream to circ {}:'.format(circ_id),
-                       e)
+                log.warning('Couldn\'t attach stream to circ %s: %s',
+                            circ_id, e)
         else:
             pass
     return closure_stream_event_listener
@@ -48,9 +51,9 @@ def add_event_listener(controller, func, event):
     controller.add_event_listener(func, event)
 
 
-def remove_event_listener(controller, func, log_fn=print):
+def remove_event_listener(controller, func):
     if not is_controller_okay(controller):
-        log_fn('Warning: controller not okay so not trying to remove event')
+        log.warning('Controller not okay so not trying to remove event')
         return
     controller.remove_event_listener(func)
 

@@ -5,6 +5,9 @@ from ..lib.resultdump import ResultError
 from ..lib.relaylist import RelayList
 from sbws.globals import time_now
 import copy
+import logging
+
+log = logging.getLogger(__name__)
 
 
 # We want to at least return the MIN_TO_RETURN best priority relays ...
@@ -26,11 +29,10 @@ ERROR_PENALTY = 0.5
 
 
 class RelayPrioritizer:
-    def __init__(self, args, conf, log, relay_list, result_dump):
+    def __init__(self, args, conf, relay_list, result_dump):
         assert isinstance(relay_list, RelayList)
         assert isinstance(result_dump, ResultDump)
         self.fresh_seconds = conf.getint('general', 'data_period')*24*60*60
-        self.log = log
         self.relay_list = relay_list
         self.result_dump = result_dump
         self.measure_authorities = conf.getboolean(
@@ -83,9 +85,8 @@ class RelayPrioritizer:
                     # Reduce the freshness for results containing errors so
                     # that they are not de-prioritized as much. This way, we
                     # will come back to them sooner to try again.
-                    self.log.debug(
-                        'Cutting freshness for a', result.type.value,
-                        'result for', relay.nickname)
+                    log.debug('Cutting freshness for a %s result for %s',
+                              result.type.value, relay.nickname)
                     freshness *= (1 - ERROR_PENALTY)
                 priority += freshness
             relay.priority = priority
@@ -95,12 +96,12 @@ class RelayPrioritizer:
         cutoff = max(int(len(relays) * PERCENT_TO_RETURN), MIN_TO_RETURN)
         fn_tstop = Decimal(time_now())
         fn_tdelta = (fn_tstop - fn_tstart) * 1000
-        self.log.info('Spent {0:.3f} msecs calculating relay best priority'.
-                      format(fn_tdelta))
+        log.info('Spent {0:.3f} msecs calculating relay best priority'.
+                 format(fn_tdelta))
         # Finally, slowly return the relays to the caller (after removing the
         # priority member we polluted the variable with ...)
         for relay in relays[0:cutoff]:
-            self.log.debug('Returning next relay', relay.nickname,
-                           'with priority', round(relay.priority, 2))
+            log.debug('Returning next relay %s with priority %f',
+                      relay.nickname, round(relay.priority, 2))
             del(relay.priority)
             yield relay

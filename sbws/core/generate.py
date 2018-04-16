@@ -6,6 +6,9 @@ from sbws.lib.resultdump import group_results_by_relay
 from argparse import ArgumentDefaultsHelpFormatter
 from statistics import median
 import os
+import logging
+
+log = logging.getLogger(__name__)
 
 
 class V3BWLine:
@@ -45,8 +48,8 @@ def warn_if_not_accurate_enough(lines, constant):
     log.info('The generated lines are within {:.5}% of what they should '
              'be'.format((1-accuracy_ratio)*100))
     if accuracy_ratio < 1 - margin or accuracy_ratio > 1 + margin:
-        log.warn('There was {:.3f}% error and only +/- {:.3f}% is '
-                 'allowed'.format((1-accuracy_ratio)*100, margin*100, 2))
+        log.warning('There was {:.3f}% error and only +/- {:.3f}% is '
+                    'allowed'.format((1-accuracy_ratio)*100, margin*100, 2))
 
 
 def scale_lines(args, v3bw_lines):
@@ -95,24 +98,22 @@ def log_stats(data_lines):
     log.info('Mean bandwidth per line: {:.2f} "KiB"'.format(bw_per_line))
 
 
-def main(args, conf, log_):
-    global log
-    log = log_
+def main(args, conf):
     if not is_initted(args.directory):
-        fail_hard('Sbws isn\'t initialized.  Try sbws init', log=log)
+        fail_hard('Sbws isn\'t initialized.  Try sbws init')
 
     datadir = conf['paths']['datadir']
     if not os.path.isdir(datadir):
-        fail_hard(datadir, 'does not exist', log=log)
+        fail_hard('%s does not exist', datadir)
     if args.scale_constant < 1:
-        fail_hard('--scale-constant must be positive', log=log)
+        fail_hard('--scale-constant must be positive')
 
     fresh_days = conf.getint('general', 'data_period')
     results = load_recent_results_in_datadir(
-        fresh_days, datadir, success_only=True, log_fn=log.debug)
+        fresh_days, datadir, success_only=True)
     if len(results) < 1:
-        log.warn('No recent results, so not generating anything. (Have you '
-                 'ran sbws client recently?)')
+        log.warning('No recent results, so not generating anything. (Have you '
+                    'ran sbws client recently?)')
         return
     data = group_results_by_relay(results)
     data_lines = [result_data_to_v3bw_line(data, fp) for fp in data]

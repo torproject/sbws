@@ -23,10 +23,11 @@ import time
 import os
 import sys
 import traceback
-
+import logging
 
 end_event = Event()
 stream_building_lock = RLock()
+log = logging.getLogger(__name__)
 
 
 def make_socket(socks_host, socks_port):
@@ -52,10 +53,10 @@ def socket_connect(s, addr, port):
     IPv6. Works with IPv4 and hostnames '''
     try:
         s.connect((addr, port))
-        log.debug('Connected to', addr, port, 'via', s.fileno())
+        log.debug('Connected to %s:%d via %d', addr, port, s.fileno())
     except (socket.timeout, socks.GeneralProxyError,
             socks.ProxyConnectionError) as e:
-        log.warn(e)
+        log.warning(e)
         return False
     return True
 
@@ -103,7 +104,7 @@ def measure_rtt_to_server(sock, conf):
     for _ in range(0, conf.getint('client', 'num_rtts')):
         start_time = time_now()
         if not tell_server_amount(sock, MIN_REQ_BYTES):
-            log.info('Unable to ping server on', sock.fileno())
+            log.info('Unable to ping server on %d', sock.fileno())
             return
         try:
             amount_read = len(sock.recv(1))
@@ -112,7 +113,7 @@ def measure_rtt_to_server(sock, conf):
             return
         end_time = time_now()
         if amount_read == 0:
-            log.info('No pong from server on', sock.fileno())
+            log.info('No pong from server on %d', sock.fileno())
             return
         rtts.append(end_time - start_time)
     return rtts
@@ -152,11 +153,11 @@ def measure_relay(args, conf, helpers, cb, rl, relay):
     our_nick = conf['client']['nickname']
     helper = helpers.next(blacklist=[relay.fingerprint])
     if not helper:
-        log.warn('Unable to get helper to measure', relay.nickname)
+        log.warning('Unable to get helper to measure %s', relay.nickname)
         return None
     circ_id = cb.build_circuit([relay.fingerprint, helper.fingerprint])
     if not circ_id:
-        log.debug('Could not build circuit involving', relay.nickname)
+        log.debug('Could not build circuit involving %s', relay.nickname)
         return ResultErrorCircuit(
             relay, [relay.fingerprint, helper.fingerprint], helper.server_host,
             our_nick)
@@ -164,7 +165,7 @@ def measure_relay(args, conf, helpers, cb, rl, relay):
     # A function that attaches all streams that gets created on
     # connect() to the given circuit
     listener = stem_utils.attach_stream_to_circuit_listener(
-        cb.controller, circ_id, log_fn=log.debug)
+        cb.controller, circ_id)
     with stream_building_lock:
         # Tell stem about our listener so it can attach the stream to the
         # circuit when we connect()
@@ -175,14 +176,13 @@ def measure_relay(args, conf, helpers, cb, rl, relay):
         # This call blocks until we are connected (or give up). We get attched
         # to the right circuit in the background.
         connected = socket_connect(s, helper.server_host, helper.server_port)
-        stem_utils.remove_event_listener(cb.controller, listener,
-                                         log_fn=log.info)
+        stem_utils.remove_event_listener(cb.controller, listener)
     if not connected:
-        log.info('Unable to connect to', helper.server_host,
+        log.info('Unable to connect to %s:%d', helper.server_host,
                  helper.server_port)
         cb.close_circuit(circ_id)
         return
-    if not authenticate_to_server(s, helper.password, log.info):
+    if not authenticate_to_server(s, helper.password):
         log.info('Unable to authenticate to the server')
         res = ResultErrorAuth(
             relay, circ_fps, helper.server_host, our_nick)
@@ -209,10 +209,10 @@ def measure_relay(args, conf, helpers, cb, rl, relay):
     }
     while len(results) < num_downloads:
         if expected_amount == MAX_REQ_BYTES:
-            log.warn('We are requesting the maximum number of bytes we are '
-                     'allowed to ask for from a server in order to measure',
-                     relay.nickname, 'via helper', helper.fingerprint[0:8],
-                     'and we don\'t expect this to happen very often.')
+            log.warning('We are requesting the maximum number of bytes we are '
+                        'allowed to ask for from a server in order to measure '
+                        '%s via helper %s and we don\'t expect this to happen '
+                        'very often', relay.nickname, helper.fingerprint[0:8])
         # Tell the server to send us the current expected_amount.
         if not tell_server_amount(s, expected_amount):
             close_socket(s)
@@ -274,7 +274,7 @@ def _should_keep_result(did_request_maximum, result_time, download_times):
             result_time < download_times['max']:
         return True
     # In all other cases, return false
-    log.debug('Not keeping result time {:.2f}s.'.format(result_time),
+    log.debug('Not keeping result time %f.%s', result_time,
               '' if not did_request_maximum else 'We requested the maximum '
               'amount allowed')
     return False
@@ -309,8 +309,8 @@ def result_putter_error(target):
     measurement -- and return that function so it can be used by someone else
     '''
     def closure(err):
-        log.warn('Unhandled exception caught while measuring {}: {} {}'.format(
-            target.nickname, type(err), err))
+        log.warning('Unhandled exception caught while measuring {}: {} {}'
+                    .format(target.nickname, type(err), err))
     return closure
 
 
@@ -318,14 +318,14 @@ def run_speedtest(args, conf):
     controller = None
     controller, error_msg = stem_utils.init_controller_with_config(conf)
     if not controller:
-        fail_hard(error_msg, log=log)
+        fail_hard(error_msg)
     assert controller
-    cb = CB(args, conf, log, controller=controller)
-    rl = RelayList(args, conf, log, controller=controller)
-    rd = ResultDump(args, conf, log, end_event)
-    rp = RelayPrioritizer(args, conf, log, rl, rd)
+    cb = CB(args, conf, controller=controller)
+    rl = RelayList(args, conf, controller=controller)
+    rd = ResultDump(args, conf, end_event)
+    rp = RelayPrioritizer(args, conf, rl, rd)
     helpers, error_msg = HelperRelayList.from_config(
-        args, conf, log, controller=controller)
+        args, conf, controller=controller)
     if not helpers:
         fail_hard(error_msg)
     max_pending_results = conf.getint('client', 'measurement_threads')
@@ -333,7 +333,7 @@ def run_speedtest(args, conf):
     pending_results = []
     while True:
         for target in rp.best_priority():
-            log.debug('Measuring', target.nickname)
+            log.debug('Measuring %s', target.nickname)
             callback = result_putter(rd)
             callback_err = result_putter_error(target)
             async_result = pool.apply_async(
@@ -354,24 +354,21 @@ def gen_parser(sub):
                    description=d)
 
 
-def main(args, conf, log_):
-    global log
-    log = log_
+def main(args, conf):
     if not is_initted(args.directory):
-        fail_hard('Sbws isn\'t initialized. Try sbws init', log=log)
+        fail_hard('Sbws isn\'t initialized. Try sbws init')
 
     if conf.getint('client', 'measurement_threads') < 1:
-        fail_hard('Number of measurement threads must be larger than 1',
-                  log=log)
+        fail_hard('Number of measurement threads must be larger than 1')
 
     if conf['tor']['control_type'] not in ['port', 'socket']:
         fail_hard('Must specify either control port or socket. '
-                  'Not "{}"'.format(conf['tor']['control_type'], log=log))
+                  'Not "{}"'.format(conf['tor']['control_type']))
     if conf['tor']['control_type'] == 'port':
         try:
             conf.getint('tor', 'control_location')
         except ValueError as e:
-            fail_hard('Couldn\'t read control port from config:', e, log=log)
+            fail_hard('Couldn\'t read control port from config:', e)
     os.makedirs(conf['paths']['datadir'], exist_ok=True)
 
     try:

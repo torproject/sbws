@@ -1,7 +1,10 @@
 import socket
+import logging
+
+log = logging.getLogger(__name__)
 
 
-def read_line(s, max_len=None, log_fn=print):
+def read_line(s, max_len=None):
     '''
     Read from the blocking socket **s** until nothing can be read anymore or
     until a b'\n' is seen.
@@ -15,8 +18,6 @@ def read_line(s, max_len=None, log_fn=print):
     :param socket.socket s: Blocking socket to read from
     :param int max_len: Maximum number of bytes to read, not including a
         tailing newline
-    :param func log_fn: Function with a signature similar to ``print`` to call
-        if an error occurs
     :raises UnicodeDecodeError: If any byte is not a valid utf8 byte
     :returns: Everything read up until a newline as a str and with a maximum
         length of **max_len**. If nothing could be read, returns None. If a
@@ -29,7 +30,7 @@ def read_line(s, max_len=None, log_fn=print):
         try:
             c = s.recv(1)
         except (ConnectionResetError, BrokenPipeError, socket.timeout) as e:
-            log_fn(e)
+            log.warning(e)
             return None
         if not c:
             return chars

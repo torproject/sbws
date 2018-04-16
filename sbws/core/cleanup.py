@@ -6,6 +6,9 @@ from glob import glob
 import os
 import gzip
 import shutil
+import logging
+
+log = logging.getLogger(__name__)
 
 
 def gen_parser(sub):
@@ -64,7 +67,7 @@ def _remove_rotten_files(datadir, rotten_days, dry_run=True):
         fnames = _get_older_files_than(datadir, rotten_days,
                                        ['.txt', '.txt.gz'])
         for fname in fnames:
-            log.info('Deleting', fname)
+            log.info('Deleting %s', fname)
             if not dry_run:
                 os.remove(fname)
 
@@ -78,7 +81,7 @@ def _compress_stale_files(datadir, stale_days, dry_run=True):
     with lock_directory(datadir):
         fnames = _get_older_files_than(datadir, stale_days, ['.txt'])
         for fname in fnames:
-            log.info('Compressing', fname)
+            log.info('Compressing %s', fname)
             if dry_run:
                 continue
             with open(fname, 'rt') as in_fd:
@@ -88,22 +91,19 @@ def _compress_stale_files(datadir, stale_days, dry_run=True):
             os.remove(fname)
 
 
-def main(args, conf, log_):
+def main(args, conf):
     '''
     Main entry point in to the cleanup command.
 
     :param argparse.Namespace args: command line arguments
     :param configparser.ConfigParser conf: parsed config files
-    :param sbws.lib.pastlylogger.PastlyLogger log_: logging class instance
     '''
-    global log
-    log = log_
     if not is_initted(args.directory):
-        fail_hard('Sbws isn\'t initialized. Try sbws init', log=log)
+        fail_hard('Sbws isn\'t initialized. Try sbws init')
 
     datadir = conf['paths']['datadir']
     if not os.path.isdir(datadir):
-        fail_hard(datadir, 'does not exist', log=log)
+        fail_hard(datadir, 'does not exist')
 
     fresh_days = conf.getint('general', 'data_period')
     stale_days = conf.getint('cleanup', 'stale_days')
@@ -111,17 +111,17 @@ def main(args, conf, log_):
     if stale_days - 2 < fresh_days:
         fail_hard('For safetly, cleanup/stale_days ({}) must be at least 2 '
                   'days larger than general/data_period ({})'.format(
-                      stale_days, fresh_days), log=log)
+                      stale_days, fresh_days))
     if rotten_days < stale_days:
         fail_hard('cleanup/rotten_days ({}) must be the same or larger than '
-                  'cleanup/stale_days ({})'.format(rotten_days, stale_days),
-                  log=log)
+                  'cleanup/stale_days ({})'.format(rotten_days, stale_days))
 
     if stale_days / 2 < fresh_days:
-        log.warn('cleanup/stale_days ({}) is less than twice '
-                 'general/data_period ({}). For ease of parsing older results '
-                 'if necessary, it is recommended to make stale_days at least '
-                 'twice the data_period.'.format(stale_days, fresh_days))
+        log.warning(
+            'cleanup/stale_days (%d) is less than twice '
+            'general/data_period (%d). For ease of parsing older results '
+            'if necessary, it is recommended to make stale_days at least '
+            'twice the data_period.', stale_days, fresh_days)
 
     _remove_rotten_files(datadir, rotten_days, dry_run=args.dry_run)
     _compress_stale_files(datadir, stale_days, dry_run=args.dry_run)

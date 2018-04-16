@@ -1,5 +1,8 @@
 import random
 import sbws.util.stem as stem_utils
+import logging
+
+log = logging.getLogger(__name__)
 
 
 class HelperRelay:
@@ -27,7 +30,7 @@ class HelperRelay:
 
 
 class HelperRelayList:
-    def __init__(self, args, conf, log, helpers, controller=None):
+    def __init__(self, args, conf, helpers, controller=None):
         if controller is None:
             c, error_msg = stem_utils.init_controller_with_config(conf)
             assert c, error_msg
@@ -37,10 +40,9 @@ class HelperRelayList:
         for helper in helpers:
             assert isinstance(helper, HelperRelay)
         self.helpers = helpers
-        self.log = log
 
     @staticmethod
-    def from_config(args, conf, log, controller=None):
+    def from_config(args, conf, controller=None):
         ''' Returns a new HelperRelayList and an empty string if everything
         goes okay loading HelperRelays from the given config file. Otherwise,
         returns None and an error string '''
@@ -49,14 +51,14 @@ class HelperRelayList:
         helpers = []
         for key in section.keys():
             if not section.getboolean(key):
-                log.debug(key, 'is disabled; not loading it')
+                log.debug('%s is disabled; not loading it', key)
                 continue
             helper_sec = 'helpers.{}'.format(key)
             assert helper_sec in conf  # validate_config should require this
-            log.debug('Loading info for helper', key)
+            log.debug('Loading info for helper %s', key)
             helpers.append(HelperRelay(conf[helper_sec]))
         return HelperRelayList(
-            args, conf, log, helpers, controller=controller), ''
+            args, conf, helpers, controller=controller), ''
 
     def next(self, blacklist=[]):
         ''' Returns the next helper in the list that should be used. Do not

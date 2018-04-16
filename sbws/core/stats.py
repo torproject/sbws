@@ -9,6 +9,9 @@ import os
 from datetime import date
 from datetime import timedelta
 from statistics import mean
+import logging
+
+log = logging.getLogger(__name__)
 
 
 def _print_stats_error_types(data):
@@ -17,7 +20,7 @@ def _print_stats_error_types(data):
         results = data[fp]
         for result in results:
             if result.type not in counts:
-                log.debug('Found a', result.type, 'for the first time')
+                log.debug('Found a %s for the first time', result.type)
                 counts[result.type] = 0
             counts[result.type] += 1
             counts['total'] += 1
@@ -110,28 +113,25 @@ def gen_parser(sub):
                    help='Also print information about each error type')
 
 
-def main(args, conf, log_):
+def main(args, conf):
     '''
     Main entry point into the stats command.
 
     :param argparse.Namespace args: command line arguments
     :param configparser.ConfigParser conf: parsed config files
-    :param sbws.lib.pastlylogger.PastlyLogger log_: logging class instance
     '''
-    global log
-    log = log_
     if not is_initted(args.directory):
-        fail_hard('Sbws isn\'t initialized. Try sbws init', log=log)
+        fail_hard('Sbws isn\'t initialized. Try sbws init')
 
     datadir = conf['paths']['datadir']
     if not os.path.isdir(datadir):
-        fail_hard(datadir, 'does not exist', log=log)
+        fail_hard('%s does not exist', datadir)
 
     fresh_days = conf.getint('general', 'data_period')
     results = load_recent_results_in_datadir(
-        fresh_days, datadir, success_only=False, log_fn=log.debug)
+        fresh_days, datadir, success_only=False)
     if len(results) < 1:
-        log.notice('No fresh results')
+        log.warning('No fresh results')
         return
     data = group_results_by_relay(results)
     print_stats(args, data)

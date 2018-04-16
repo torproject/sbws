@@ -26,12 +26,11 @@ SOCKET_TIMEOUT = 60  # seconds
 def is_initted(d):
     if not os.path.isdir(d):
         return False
-    conf_fname = os.path.join(d, 'config.ini')
-    if not os.path.exists(conf_fname):
-        return False
-    conf_fname = os.path.join(d, 'config.log.ini')
-    if not os.path.exists(conf_fname):
-        return False
+    conf_fnames = [os.path.join(d, 'config.ini'),
+                   os.path.join(d, 'config.log.ini')]
+    for fname in conf_fnames:
+        if not os.path.exists(fname):
+            return False
     return True
 
 

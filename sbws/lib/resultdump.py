@@ -2,6 +2,7 @@ from sbws.globals import time_now
 from sbws.globals import lock_directory
 import os
 import json
+import logging
 from glob import glob
 from threading import Thread
 from threading import Event
@@ -13,6 +14,8 @@ from datetime import timedelta
 from enum import Enum
 from stem.descriptor.router_status_entry import RouterStatusEntryV3
 from sbws import res_proto_ver
+
+log = logging.getLogger(__name__)
 
 
 def group_results_by_relay(results, starting_dict=None):
@@ -31,7 +34,7 @@ def group_results_by_relay(results, starting_dict=None):
     return data
 
 
-def load_result_file(fname, success_only=False, log_fn=print):
+def load_result_file(fname, success_only=False):
     ''' Reads in all lines from the given file, and parses them into Result
     structures (or subclasses of Result). Optionally only keeps ResultSuccess.
     Returns all kept Results as a list. This function does not care about the
@@ -49,14 +52,14 @@ def load_result_file(fname, success_only=False, log_fn=print):
                 if success_only and isinstance(r, ResultError):
                     continue
                 d.append(r)
-    log_fn('Read', len(d), 'lines from', fname)
+    log.debug('Read %s lines from %s', len(d), fname)
     if num_ignored > 0:
-        log_fn('Had to ignore', num_ignored,
-               'results due to not knowing how to parse them.')
+        log.warning('Had to ignore %d results due to not knowing how to '
+                    'parse them.', num_ignored)
     return d
 
 
-def trim_results(fresh_days, results, log_fn=print):
+def trim_results(fresh_days, results):
     ''' Given a result list, remove all Results that are no longer valid and
     return the new list '''
     assert isinstance(fresh_days, int)
@@ -67,12 +70,11 @@ def trim_results(fresh_days, results, log_fn=print):
     for result in results:
         if result.time >= oldest_allowed:
             out_results.append(result)
-    log_fn('Keeping {}/{} results'.format(len(out_results), len(results)))
+    log.info('Keeping %d/%d results', len(out_results), len(results))
     return out_results
 
 
-def load_recent_results_in_datadir(fresh_days, datadir, success_only=False,
-                                   log_fn=print):
+def load_recent_results_in_datadir(fresh_days, datadir, success_only=False):
     ''' Given a data directory, read all results files in it that could have
     results in them that are still valid. Trim them, and return the valid
     Results as a list '''
@@ -86,16 +88,15 @@ def load_recent_results_in_datadir(fresh_days, datadir, success_only=False,
     while working_day <= today:
         pattern = os.path.join(datadir, '**', '{}*.txt'.format(working_day))
         for fname in glob(pattern, recursive=True):
-            results.extend(load_result_file(fname, success_only=success_only,
-                                            log_fn=log_fn))
+            results.extend(load_result_file(fname, success_only=success_only))
         working_day += timedelta(days=1)
-    results = trim_results(fresh_days, results, log_fn=log_fn)
+    results = trim_results(fresh_days, results)
     if len(results) == 0:
-        log_fn('Results files that are valid not found. '
-               'Probably sbws client was not run first or '
-               'it ran more than {} days ago or '
-               'it was using a different datadir than {}.'.
-               format(data_period, datadir))
+        log.warning('Results files that are valid not found. '
+                    'Probably sbws client was not run first or '
+                    'it ran more than %d days ago or '
+                    'it was using a different datadir than %s.', data_period,
+                    datadir)
     return results
 
 
@@ -353,11 +354,10 @@ class ResultSuccess(Result):
 class ResultDump:
     ''' Runs the enter() method in a new thread and collects new Results on its
     queue. Writes them to daily result files in the data directory '''
-    def __init__(self, args, conf, log, end_event):
+    def __init__(self, args, conf, end_event):
         assert os.path.isdir(conf['paths']['datadir'])
         assert isinstance(end_event, Event)
         self.conf = conf
-        self.log = log
         self.fresh_days = conf.getint('general', 'data_period')
         self.datadir = conf['paths']['datadir']
         self.end_event = end_event
@@ -372,14 +372,13 @@ class ResultDump:
         assert isinstance(result, Result)
         with self.data_lock:
             self.data.append(result)
-            self.data = trim_results(self.fresh_days, self.data,
-                                     self.log.debug)
+            self.data = trim_results(self.fresh_days, self.data)
 
     def enter(self):
         ''' Main loop for the ResultDump thread '''
         with self.data_lock:
             self.data = load_recent_results_in_datadir(
-                self.fresh_days, self.datadir, log_fn=self.log.debug)
+                self.fresh_days, self.datadir)
         while not (self.end_event.is_set() and self.queue.empty()):
             try:
                 event = self.queue.get(timeout=1)
@@ -387,18 +386,18 @@ class ResultDump:
                 continue
             result = event
             if result is None:
-                self.log.debug('Got None in ResultDump')
+                log.debug('Got None in ResultDump')
                 continue
             elif not isinstance(result, Result):
-                self.log.warn('The only thing we should ever receive in the '
-                              'result thread is a Result type. Ignoring',
-                              type(result))
+                log.warning('The only thing we should ever receive in the '
+                            'result thread is a Result type. Ignoring',
+                            type(result))
                 continue
             fp = result.fingerprint
             nick = result.nickname
             self.store_result(result)
             write_result_to_datadir(result, self.datadir)
-            self.log.debug(fp, nick, 'finished measurement')
+            log.debug(' %s %s finished measurement', fp, nick)
 
     def results_for_relay(self, relay):
         assert isinstance(relay, RouterStatusEntryV3)

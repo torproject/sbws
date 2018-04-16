@@ -27,67 +27,20 @@ class _PseudoArguments(argparse.Namespace):
             setattr(self, key, kw[key])
 
 
-class MockPastlyLogger:
-    def __init__(self, *a, _do_print=False, **kw):
-        self._logged_lines = []
-        self._do_print = _do_print
-        pass
-
-    def debug(self, *s):
-        self._logged_lines.append(' '.join(str(_) for _ in s))
-        if self._do_print:
-            print(*s)
-
-    def info(self, *s):
-        return self.debug(*s)
-
-    def notice(self, *s):
-        return self.info(*s)
-
-    def warn(self, *s):
-        return self.notice(*s)
-
-    def error(self, *s):
-        return self.warn(*s)
-
-    def test_get_logged_lines(self, clear=True):
-        '''
-        Return a generator containing all the lines we have logged. Optionally
-        clear the cache of lines after returning them all
-        '''
-        for line in self._logged_lines:
-            yield line
-        if clear:
-            self._logged_lines = []
-
-    def test_set_new_test(self):
-        '''
-        Clear any cached data that we might have accumulated from previous
-        tests
-        '''
-        self._logged_lines = []
-
-
-@pytest.fixture(scope='module')
-def log():
-    pl = MockPastlyLogger()
-    return pl
-
-
 @pytest.fixture(scope='session')
 def parser():
     return create_parser()
 
 
 @pytest.fixture(scope='function')
-def empty_dotsbws(log, parser):
+def empty_dotsbws(parser):
     '''
     Creates a ~/.sbws with nothing in it but a config.ini
     '''
     d = TemporaryDirectory()
     args = parser.parse_args('-d {} -vvvv init'.format(d.name).split())
-    conf = get_config(args, log_fn=log.debug)
-    sbws.core.init.main(args, conf, log)
+    conf = get_config(args)
+    sbws.core.init.main(args, conf)
     return d
 
 

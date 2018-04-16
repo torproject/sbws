@@ -9,6 +9,9 @@ import socket
 import time
 import random
 import os
+import logging
+
+log = logging.getLogger(__name__)
 
 
 def gen_parser(sub):
@@ -21,7 +24,7 @@ def gen_parser(sub):
 
 def close_socket(s):
     try:
-        log.info('Closing fd', s.fileno())
+        log.info('Closing fd %d', s.fileno())
         s.shutdown(socket.SHUT_RDWR)
         s.close()
     except OSError:
@@ -29,7 +32,7 @@ def close_socket(s):
 
 
 def get_send_amount(sock):
-    line = read_line(sock, max_len=16, log_fn=log.info)
+    line = read_line(sock, max_len=16)
     if line is None:
         return None
     # if len(line) == 16, then it is much more likely we read garbage or not an
@@ -70,8 +73,8 @@ def _generate_random_string(length):
     # stop = time_now()
     # _generate_random_string.acc += stop - start
     # if stop >= 60 + _generate_random_string.last_log:
-    #     log.notice('Spent', _generate_random_string.acc,
-    #                'seconds in the last minute generating "random" strings')
+    #     log.info('Spent', _generate_random_string.acc,
+    #              'seconds in the last minute generating "random" strings')
     #     _generate_random_string.acc = 0
     #     _generate_random_string.last_log = stop
     assert len(s) >= length
@@ -87,7 +90,7 @@ _generate_random_string.alphabet = list('abcdefghijklmnopqrstuvwxyz'
 
 def write_to_client(sock, conf, amount):
     ''' Returns True if successful; else False '''
-    log.info('Sending client no.', sock.fileno(), amount, 'bytes')
+    log.info('Sending client no. %d %d bytes', sock.fileno(), amount)
     while amount > 0:
         amount_this_time = min(conf.getint('server', 'max_send_per_write'),
                                amount)
@@ -96,7 +99,7 @@ def write_to_client(sock, conf, amount):
             sock.send(bytes(
                 _generate_random_string(amount_this_time), 'utf-8'))
         except (socket.timeout, ConnectionResetError, BrokenPipeError) as e:
-            log.info('fd', sock.fileno(), ':', e)
+            log.info('fd %d: %s', sock.fileno(), e)
             return False
     return True
 
@@ -104,45 +107,44 @@ def write_to_client(sock, conf, amount):
 def new_thread(args, conf, sock):
     def closure():
         client_name = authenticate_client(
-            sock, conf['server.passwords'], log.info)
+            sock, conf['server.passwords'])
         if not client_name:
             log.info('Client did not provide valid auth')
             close_socket(sock)
             return
-        log.notice(client_name, 'authenticated on', sock.fileno())
+        log.info('%s authenticated on %d', client_name, sock.fileno())
         while True:
             send_amount = get_send_amount(sock)
             if send_amount is None:
-                log.info('Couldn\'t get an amount to send to', sock.fileno())
+                log.info('Couldn\'t get an amount to send to %d',
+                         sock.fileno())
                 break
             if send_amount < MIN_REQ_BYTES or send_amount > MAX_REQ_BYTES:
-                log.warn(client_name, 'requested', send_amount, 'bytes, which '
-                         'is not valid')
+                log.warning('%s requested %d bytes, which is not valid',
+                            client_name, send_amount)
                 break
             write_to_client(sock, conf, send_amount)
-        log.notice(client_name, 'on', sock.fileno(), 'went away')
+        log.info('%s on %d went away', client_name, sock.fileno())
         close_socket(sock)
     thread = Thread(target=closure)
     return thread
 
 
-def main(args, conf, log_):
-    global log
+def main(args, conf):
     global rng
-    log = log_
     rng = random.SystemRandom()
     if not is_initted(args.directory):
-        fail_hard('Sbws isn\'t initialized. Try sbws init', log=log)
+        fail_hard('Sbws isn\'t initialized. Try sbws init')
 
     if len(conf['server.passwords']) < 1:
         conf_fname = os.path.join(args.directory, 'config.ini')
         fail_hard('Sbws server needs at least one password in the section'
                   ' [server.passwords] in the config file in {}. See '
                   'DEPLOY.rst for more information.'
-                  .format(conf_fname), log=log)
+                  .format(conf_fname))
 
     h = (conf['server']['bind_ip'], conf.getint('server', 'bind_port'))
-    log.notice('Binding to', h)
+    log.info('Binding to %s:%d', *h)
     while True:
         try:
             # first try IPv4
@@ -156,25 +158,26 @@ def main(args, conf, log_):
                 server = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
                 server.bind(h)
             except OSError as e2:
-                log.warn(e1)
-                log.warn(e2)
+                log.warning('IPv4 bind error: %s', e1)
+                log.warning('IPv6 bind error: %s', e2)
                 time.sleep(5)
             else:
                 break
         else:
             break
-    log.notice('Listening on', h)
+    log.info('Listening on %s:%d', h[0], h[1])
     server.listen(5)
     try:
         while True:
             sock, addr = server.accept()
             sock.settimeout(SOCKET_TIMEOUT)
-            log.info('accepting connection from', addr, 'as', sock.fileno())
+            log.info('accepting connection from %s:%d as %d', addr[0], addr[1],
+                     sock.fileno())
             t = new_thread(args, conf, sock)
             t.start()
     except KeyboardInterrupt:
         pass
     finally:
-        log.info('Generate random string stats:',
+        log.info('Generate random string stats: %s',
                  _generate_random_string.cache_info())
         close_socket(server)

@@ -9,13 +9,14 @@ import sbws.core.stats
 from datetime import date
 import os
 import time
+import logging
 
 
-def init_directory(dname, log):
+def init_directory(dname):
     p = create_parser()
     args = p.parse_args('-d {} -vvvv init'.format(dname).split())
-    conf = get_config(args, log_fn=log.debug)
-    sbws.core.init.main(args, conf, log)
+    conf = get_config(args)
+    sbws.core.init.main(args, conf)
 
 
 def add_single_stale_result(dname):
@@ -54,69 +55,69 @@ def add_two_fresh_results(dname):
     write_result_to_datadir(r2, dd)
 
 
-def test_stats_uninitted(tmpdir, log):
+def test_stats_uninitted(tmpdir, caplog):
     '''
     An un-initialized .sbws directory should fail hard and exit immediately
     '''
     p = create_parser()
     args = p.parse_args('-d {} -vvvv stats'.format(tmpdir).split())
-    conf = get_config(args, log_fn=log.debug)
+    conf = get_config(args)
     try:
-        sbws.core.stats.main(args, conf, log)
+        sbws.core.stats.main(args, conf)
     except SystemExit as e:
         assert e.code == 1
     else:
         assert None, 'Should have failed'
-    lines = [l for l in log.test_get_logged_lines()]
-    assert 'Sbws isn\'t initialized. Try sbws init' == lines[-1]
+    assert 'Sbws isn\'t initialized. Try sbws init' == \
+        caplog.records[-1].getMessage()
 
 
-def test_stats_initted(tmpdir, log):
+def test_stats_initted(tmpdir, caplog):
     '''
     An initialized but rather empty .sbws directory should fail about missing
     ~/.sbws/datadir
     '''
-    init_directory(tmpdir, log)
+    init_directory(tmpdir)
     p = create_parser()
     args = p.parse_args('-d {} -vvvv stats'.format(tmpdir).split())
-    conf = get_config(args, log_fn=log.debug)
+    conf = get_config(args)
     try:
-        sbws.core.stats.main(args, conf, log)
+        sbws.core.stats.main(args, conf)
     except SystemExit as e:
         assert e.code == 1
     else:
         assert None, 'Should have failed'
-    lines = [l for l in log.test_get_logged_lines()]
-    assert '{}/datadir does not exist'.format(tmpdir) == lines[-1]
+    assert '{}/datadir does not exist'.format(tmpdir) == \
+        caplog.records[-1].getMessage()
 
 
-def test_stats_stale_result(tmpdir, log):
+def test_stats_stale_result(tmpdir, caplog):
     '''
     An initialized .sbws directory with no fresh results should say so and
     exit cleanly
     '''
-    init_directory(tmpdir, log)
+    init_directory(tmpdir)
     add_single_stale_result(tmpdir)
     p = create_parser()
     args = p.parse_args('-d {} -vvvv stats'.format(tmpdir).split())
-    conf = get_config(args, log_fn=log.debug)
-    sbws.core.stats.main(args, conf, log)
-    lines = [l for l in log.test_get_logged_lines()]
-    assert 'No fresh results' == lines[-1]
+    conf = get_config(args)
+    sbws.core.stats.main(args, conf)
+    assert 'No fresh results' == caplog.records[-1].getMessage()
 
 
-def test_stats_fresh_result(tmpdir, capsys, log):
+def test_stats_fresh_result(tmpdir, capsys, caplog):
     '''
     An initialized .sbws directory with a fresh error result should have some
     boring stats and exit cleanly
     '''
-    init_directory(tmpdir, log)
+    caplog.set_level(logging.DEBUG)
+    init_directory(tmpdir)
     add_single_fresh_result(tmpdir)
     p = create_parser()
     args = p.parse_args(
         '-d {} -vvvv stats --error-types'.format(tmpdir).split())
-    conf = get_config(args, log_fn=log.debug)
-    sbws.core.stats.main(args, conf, log)
+    conf = get_config(args)
+    sbws.core.stats.main(args, conf)
     captured = capsys.readouterr()
     lines = captured.out.strip().split('\n')
     needed_output_lines = [
@@ -126,7 +127,7 @@ def test_stats_fresh_result(tmpdir, capsys, log):
     ]
     for needed_line in needed_output_lines:
         assert needed_line in lines
-    lines = [l for l in log.test_get_logged_lines()]
+    lines = [l.getMessage() for l in caplog.records]
     needed_log_lines = [
         'Read 1 lines from {}/{}/{}.txt'.format(
             tmpdir, 'datadir', date.fromtimestamp(time.time())),
@@ -136,18 +137,19 @@ def test_stats_fresh_result(tmpdir, capsys, log):
         assert needed_line in lines
 
 
-def test_stats_fresh_results(tmpdir, capsys, log):
+def test_stats_fresh_results(tmpdir, capsys, caplog):
     '''
     An initialized .sbws directory with a fresh error and fresh success should
     have some exciting stats and exit cleanly
     '''
-    init_directory(tmpdir, log)
+    caplog.set_level(logging.DEBUG)
+    init_directory(tmpdir)
     add_two_fresh_results(tmpdir)
     p = create_parser()
     args = p.parse_args(
         '-d {} -vvvv stats --error-types'.format(tmpdir).split())
-    conf = get_config(args, log_fn=log.debug)
-    sbws.core.stats.main(args, conf, log)
+    conf = get_config(args)
+    sbws.core.stats.main(args, conf)
     needed_output_lines = [
         '1 relays have recent results',
         '1 success results and 1 error results',
@@ -158,7 +160,7 @@ def test_stats_fresh_results(tmpdir, capsys, log):
     lines = captured.out.strip().split('\n')
     for needed_line in needed_output_lines:
         assert needed_line in lines
-    lines = [l for l in log.test_get_logged_lines()]
+    lines = [l.getMessage() for l in caplog.records]
     needed_log_lines = [
         'Read 2 lines from {}/{}/{}.txt'.format(
             tmpdir, 'datadir', date.fromtimestamp(time.time())),

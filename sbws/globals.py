@@ -1,8 +1,9 @@
-from sbws.lib.pastlylogger import PastlyLogger
 import os
 import time
+import logging
 from filelock import FileLock
 
+log = logging.getLogger(__name__)
 
 G_PKG_DIR = os.path.abspath(os.path.dirname(__file__))
 G_INIT_FILE_MAP = [
@@ -45,14 +46,10 @@ def is_initted(d):
     return True
 
 
-def fail_hard(*s, log=None):
+def fail_hard(*a, **kw):
     ''' Optionally log something to stdout ... and then exit as fast as
     possible '''
-    if s:
-        if log:
-            log.error(*s)
-        else:
-            print(*s)
+    log.error(*a, **kw)
     exit(1)
 
 
@@ -91,35 +88,6 @@ def _log_level_int_to_string(i):
         return 'warn'
     else:
         return 'error'
-
-
-def make_logger(args, conf):
-    def get_logger(level, default):
-        def_file = '/dev/stdout'
-        common_kwargs = {'log_threads': True, 'default': default}
-        if level == 'debug':
-            return PastlyLogger(debug=def_file, overwrite=['debug'],
-                                **common_kwargs)
-        if level == 'info':
-            return PastlyLogger(info=def_file, overwrite=['info'],
-                                **common_kwargs)
-        if level == 'notice':
-            return PastlyLogger(notice=def_file, overwrite=['notice'],
-                                **common_kwargs)
-        if level == 'warn':
-            return PastlyLogger(warn=def_file, overwrite=['warn'],
-                                **common_kwargs)
-        if level == 'error':
-            return PastlyLogger(error=def_file, overwrite=['error'],
-                                **common_kwargs)
-        else:
-            fail_hard('Unknown log level', level)
-    level_str = conf.get('general', 'log_level')
-    default_level_str = level_str
-    level = _log_level_string_to_int(level_str)
-    level = level + args.verbose - args.quiet
-    level_str = _log_level_int_to_string(level)
-    return get_logger(level_str, default_level_str)
 
 
 def lock_directory(dname):

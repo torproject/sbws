@@ -4,6 +4,7 @@ from sbws.util.simpleauth import (MAGIC_BYTES, PW_LEN, SUCCESS_BYTES)
 from sbws import wire_proto_ver
 from configparser import ConfigParser
 import socket
+import logging
 
 
 class MockServerSideSocket(socket.socket):
@@ -79,30 +80,30 @@ server_conf.read_dict({
 })
 
 
-def test_simpleauth_authclient_nodata(capsys):
+def test_simpleauth_authclient_nodata(caplog):
+    caplog.set_level(logging.DEBUG)
     in_data = b''
     sock = MockServerSideSocket(in_data)
     ret = authenticate_client(sock, server_conf['server.passwords'])
-    captured = capsys.readouterr()
-    assert captured.out == 'Magic string doesn\'t match\n'
+    assert len(caplog.records) == 1
+    assert 'Magic string doesn\'t match' == caplog.records[0].getMessage()
     assert ret is None
 
 
-def test_simpleauth_authclient_timeout_magic(capsys):
+def test_simpleauth_authclient_timeout_magic(caplog):
     sock = MockServerSideSocketTimeout()
     ret = authenticate_client(sock, server_conf['server.passwords'])
-    captured = capsys.readouterr()
     assert ret is None
-    assert captured.out == 'timeoutmock\n'
+    assert len(caplog.records) == 1
+    assert caplog.records[0].getMessage() == 'timeoutmock'
 
 
-def test_simpleauth_authclient_goodmagic(capsys):
+def test_simpleauth_authclient_goodmagic(caplog):
     in_data = MAGIC_BYTES
     sock = MockServerSideSocket(in_data)
     ret = authenticate_client(sock, server_conf['server.passwords'])
     assert ret is None
-    captured = capsys.readouterr()
-    lines = captured.out.strip().split('\n')
+    lines = [l.getMessage() for l in caplog.records]
     for line in lines:
         if 'Client gave protocol version None but we support' in line:
             break
@@ -110,74 +111,68 @@ def test_simpleauth_authclient_goodmagic(capsys):
         assert None, 'Couldn\'t find output indicating auth failure'
 
 
-def test_simpleauth_authclient_timeout_version(capsys):
+def test_simpleauth_authclient_timeout_version(caplog):
     in_data = MAGIC_BYTES
     sock = MockServerSideSocketDelayedTimeout(in_data)
     ret = authenticate_client(sock, server_conf['server.passwords'])
-    captured = capsys.readouterr()
     assert ret is None
-    assert 'timeoutmock' in captured.out  # Gets logged in read_line
-    assert 'Client gave protocol version None but we support' in captured.out
+    assert 'timeoutmock' in caplog.text  # Gets logged in read_line
+    assert 'Client gave protocol version None but we support' in caplog.text
 
 
-def test_simpleauth_authclient_goodversion(capsys):
+def test_simpleauth_authclient_goodversion(caplog):
     in_data = MAGIC_BYTES + bytes(str(wire_proto_ver), 'utf-8') + b'\n'
     sock = MockServerSideSocket(in_data)
     ret = authenticate_client(sock, server_conf['server.passwords'])
     assert ret is None
-    captured = capsys.readouterr()
-    assert captured.out == 'Invalid password\n'
+    assert 'Invalid password' in caplog.text
 
 
-def test_simpleauth_authclient_nonunicodepassword(capsys):
+def test_simpleauth_authclient_nonunicodepassword(caplog):
     in_data = MAGIC_BYTES + bytes(str(wire_proto_ver), 'utf-8') + b'\n'
     in_data += b'\x80' * PW_LEN
     sock = MockServerSideSocket(in_data)
     ret = authenticate_client(sock, server_conf['server.passwords'])
     assert ret is None
-    captured = capsys.readouterr()
-    assert captured.out == 'Non-unicode password string received\n'
+    assert 'Non-unicode password string received' in caplog.text
 
 
-def test_simpleauth_authclient_timeout_password(capsys):
+def test_simpleauth_authclient_timeout_password(caplog):
     in_data = MAGIC_BYTES + bytes(str(wire_proto_ver), 'utf-8') + b'\n'
     in_data += b'a' * (PW_LEN - 1)
     sock = MockServerSideSocketDelayedTimeout(in_data)
     ret = authenticate_client(sock, server_conf['server.passwords'])
     assert ret is None
-    captured = capsys.readouterr()
-    assert captured.out == 'timeoutmock\n'
+    assert 'timeoutmock' in caplog.text
 
 
-def test_simpleauth_authclient_badpassword(capsys):
+def test_simpleauth_authclient_badpassword(caplog):
     in_data = MAGIC_BYTES + bytes(str(wire_proto_ver), 'utf-8') + b'\n'
     in_data += b'c' * PW_LEN
     sock = MockServerSideSocket(in_data)
     ret = authenticate_client(sock, server_conf['server.passwords'])
     assert ret is None
-    captured = capsys.readouterr()
-    assert captured.out == 'Invalid password\n'
+    assert 'Invalid password' in caplog.text
 
 
-def test_simpleauth_authclient_goodpassword(capsys):
+def test_simpleauth_authclient_goodpassword(caplog):
+    caplog.set_level(logging.DEBUG)
     in_data = MAGIC_BYTES + bytes(str(wire_proto_ver), 'utf-8') + b'\n'
     in_data += b'a' * PW_LEN
     sock = MockServerSideSocket(in_data)
     ret = authenticate_client(sock, server_conf['server.passwords'])
     assert ret == 'client1'
-    captured = capsys.readouterr()
-    assert captured.out == ''
+    assert len(caplog.records) == 0
     assert sock.testing_get_sent_data() == SUCCESS_BYTES
 
 
-def test_simpleauth_authclient_cantsend(capsys):
+def test_simpleauth_authclient_cantsend(caplog):
     in_data = MAGIC_BYTES + bytes(str(wire_proto_ver), 'utf-8') + b'\n'
     in_data += b'a' * PW_LEN
     sock = MockServerSideSocketTimeoutOnSend(in_data)
     ret = authenticate_client(sock, server_conf['server.passwords'])
     assert ret is None
-    captured = capsys.readouterr()
-    assert captured.out == 'timeoutmock\n'
+    assert 'timeoutmock' in caplog.text
 
 
 class MockClientSideSocket(socket.socket):
@@ -221,35 +216,32 @@ class MockClientSideSocketWrongSuccessCode(MockClientSideSocket):
         return b'!'
 
 
-def test_simpleauth_authserver_timeout(capsys):
+def test_simpleauth_authserver_timeout(caplog):
     sock = MockClientSideSocketTimeout()
     pw = 'a' * PW_LEN
     ret = authenticate_to_server(sock, pw)
     assert ret is False
-    captured = capsys.readouterr()
-    assert captured.out == 'timeoutmock\n'
+    assert 'timeoutmock' in caplog.text
 
 
-def test_simpleauth_authserver_bad(capsys):
+def test_simpleauth_authserver_bad(caplog):
     sock = MockClientSideSocket()
     pw = 'b' * 64
     ret = authenticate_to_server(sock, pw)
     assert ret is False
-    captured = capsys.readouterr()
-    assert captured.out == 'connresetmock\n'
+    assert 'connresetmock' in caplog.text
 
 
-def test_simpleauth_authserver_good(capsys):
+def test_simpleauth_authserver_good():
     sock = MockClientSideSocket()
     pw = 'a' * 64
     ret = authenticate_to_server(sock, pw)
     assert ret is True
 
 
-def test_simpleauth_authserver_badsuccesscode(capsys):
+def test_simpleauth_authserver_badsuccesscode(caplog):
     sock = MockClientSideSocketWrongSuccessCode()
     pw = 'a' * 64
     ret = authenticate_to_server(sock, pw)
     assert ret is False
-    captured = capsys.readouterr()
-    assert captured.out == 'Didn\'t get success code from server\n'
+    assert 'Didn\'t get success code from server' in caplog.text

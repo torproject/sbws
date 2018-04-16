@@ -4,92 +4,92 @@ from sbws.util.config import get_config
 from sbws.lib.resultdump import load_recent_results_in_datadir
 from sbws.lib.resultdump import ResultSuccess
 from statistics import median
+import logging
+
+log = logging.getLogger(__name__)
 
 
-def test_generate_no_dotsbws(tmpdir, parser, log):
+def test_generate_no_dotsbws(tmpdir, caplog, parser):
+    caplog.set_level(logging.DEBUG)
     dotsbws = tmpdir
     args = parser.parse_args(
         '-d {} -vvvv generate'.format(dotsbws).split())
-    conf = get_config(args, log.debug)
+    conf = get_config(args)
     try:
-        sbws.core.generate.main(args, conf, log)
+        sbws.core.generate.main(args, conf)
     except SystemExit as e:
         assert e.code == 1
     else:
         assert None, 'Should have failed'
-    lines = [l for l in log.test_get_logged_lines()]
-    assert 'Sbws isn\'t initialized' in lines[-1]
+    assert 'Try sbws init' in caplog.records[-1].getMessage()
 
 
-def test_generate_no_datadir(empty_dotsbws, parser, log):
+def test_generate_no_datadir(empty_dotsbws, caplog, parser):
     dotsbws = empty_dotsbws
     args = parser.parse_args(
         '-d {} -vvvv generate'.format(dotsbws.name).split())
-    conf = get_config(args, log.debug)
+    conf = get_config(args)
     try:
-        sbws.core.generate.main(args, conf, log)
+        sbws.core.generate.main(args, conf)
     except SystemExit as e:
         assert e.code == 1
     else:
         assert None, 'Should have failed'
-    lines = [l for l in log.test_get_logged_lines()]
     dd = conf['paths']['datadir']
-    assert '{} does not exist'.format(dd) in lines[-1]
+    assert '{} does not exist'.format(dd) in caplog.records[-1].getMessage()
 
 
-def test_generate_bad_scale_constant(empty_dotsbws_datadir, parser, log):
+def test_generate_bad_scale_constant(empty_dotsbws_datadir, caplog, parser):
     dotsbws = empty_dotsbws_datadir
     args = parser.parse_args(
         '-d {} -vvvv generate --scale-constant -1'
         .format(dotsbws.name).split())
-    conf = get_config(args, log.debug)
+    conf = get_config(args)
     try:
-        sbws.core.generate.main(args, conf, log)
+        sbws.core.generate.main(args, conf)
     except SystemExit as e:
         assert e.code == 1
     else:
         assert None, 'Should have failed'
-    log_lines = [l for l in log.test_get_logged_lines()]
-    assert '--scale-constant must be positive' == log_lines[-1]
+    assert '--scale-constant must be positive' in \
+        caplog.records[-1].getMessage()
 
 
-def test_generate_empty_datadir(empty_dotsbws_datadir, parser, log):
+def test_generate_empty_datadir(empty_dotsbws_datadir, caplog, parser):
     dotsbws = empty_dotsbws_datadir
     args = parser.parse_args(
         '-d {} -vvvv generate'.format(dotsbws.name).split())
-    conf = get_config(args, log.debug)
-    sbws.core.generate.main(args, conf, log)
-    log_lines = [l for l in log.test_get_logged_lines()]
-    assert 'No recent results' in log_lines[-1]
+    conf = get_config(args)
+    sbws.core.generate.main(args, conf)
+    assert 'No recent results' in caplog.records[-1].getMessage()
 
 
-def test_generate_single_error(dotsbws_error_result, parser, log):
+def test_generate_single_error(dotsbws_error_result, caplog, parser):
+    caplog.set_level(logging.DEBUG)
     dotsbws = dotsbws_error_result
     args = parser.parse_args(
         '-d {} -vvvv generate'.format(dotsbws.name).split())
-    conf = get_config(args, log.debug)
-    sbws.core.generate.main(args, conf, log)
-    log_lines = [l for l in log.test_get_logged_lines()]
+    conf = get_config(args)
+    sbws.core.generate.main(args, conf)
     dd = conf['paths']['datadir']
-    for line in log_lines:
-        if 'Read 0 lines from {}'.format(dd) in line:
+    for record in caplog.records:
+        if 'Read 0 lines from {}'.format(dd) in record.getMessage():
             break
     else:
         assert None, 'Unable to find log line indicating 0 success results '\
             'in data file'
-    assert 'No recent results' in log_lines[-1]
+    assert 'No recent results' in caplog.records[-1].getMessage()
 
 
-def test_generate_single_success_noscale(dotsbws_success_result, parser, log,
-                                         capfd):
+def test_generate_single_success_noscale(dotsbws_success_result, caplog,
+                                         parser,  capfd):
     dotsbws = dotsbws_success_result
     args = parser.parse_args(
         '-d {} -vvvv generate'.format(dotsbws.name).split())
-    conf = get_config(args, log.debug)
-    sbws.core.generate.main(args, conf, log)
+    conf = get_config(args)
+    sbws.core.generate.main(args, conf)
     dd = conf['paths']['datadir']
-    results = load_recent_results_in_datadir(
-        1, dd, success_only=False, log_fn=log.debug)
+    results = load_recent_results_in_datadir(1, dd, success_only=False)
     assert len(results) == 1, 'There should be one result in the datadir'
     result = results[0]
     assert isinstance(result, ResultSuccess), 'The one existing result '\
@@ -112,16 +112,15 @@ def test_generate_single_success_noscale(dotsbws_success_result, parser, log,
     assert stdout_lines[2] == bw_line
 
 
-def test_generate_single_success_scale(dotsbws_success_result, parser, log,
+def test_generate_single_success_scale(dotsbws_success_result, parser,
                                        capfd):
     dotsbws = dotsbws_success_result
     args = parser.parse_args(
         '-d {} -vvvv generate --scale'.format(dotsbws.name).split())
-    conf = get_config(args, log.debug)
-    sbws.core.generate.main(args, conf, log)
+    conf = get_config(args)
+    sbws.core.generate.main(args, conf)
     dd = conf['paths']['datadir']
-    results = load_recent_results_in_datadir(
-        1, dd, success_only=False, log_fn=log.debug)
+    results = load_recent_results_in_datadir(1, dd, success_only=False)
     assert len(results) == 1, 'There should be one result in the datadir'
     result = results[0]
     assert isinstance(result, ResultSuccess), 'The one existing result '\
@@ -144,15 +143,14 @@ def test_generate_single_success_scale(dotsbws_success_result, parser, log,
 
 
 def test_generate_single_relay_success_noscale(
-        dotsbws_success_result_one_relay, parser, log, capfd):
+        dotsbws_success_result_one_relay, parser, capfd):
     dotsbws = dotsbws_success_result_one_relay
     args = parser.parse_args(
         '-d {} -vvvv generate'.format(dotsbws.name).split())
-    conf = get_config(args, log.debug)
-    sbws.core.generate.main(args, conf, log)
+    conf = get_config(args)
+    sbws.core.generate.main(args, conf)
     dd = conf['paths']['datadir']
-    results = load_recent_results_in_datadir(
-        1, dd, success_only=False, log_fn=log.debug)
+    results = load_recent_results_in_datadir(1, dd, success_only=False)
     assert len(results) == 2, 'There should be two results in the datadir'
     for result in results:
         assert isinstance(result, ResultSuccess), 'All existing results '\
@@ -177,15 +175,14 @@ def test_generate_single_relay_success_noscale(
 
 
 def test_generate_single_relay_success_scale(
-        dotsbws_success_result_one_relay, parser, log, capfd):
+        dotsbws_success_result_one_relay, parser, capfd):
     dotsbws = dotsbws_success_result_one_relay
     args = parser.parse_args(
         '-d {} -vvvv generate --scale'.format(dotsbws.name).split())
-    conf = get_config(args, log.debug)
-    sbws.core.generate.main(args, conf, log)
+    conf = get_config(args)
+    sbws.core.generate.main(args, conf)
     dd = conf['paths']['datadir']
-    results = load_recent_results_in_datadir(
-        1, dd, success_only=False, log_fn=log.debug)
+    results = load_recent_results_in_datadir(1, dd, success_only=False)
     assert len(results) == 2, 'There should be two results in the datadir'
     for result in results:
         assert isinstance(result, ResultSuccess), 'All existing results '\
@@ -208,15 +205,14 @@ def test_generate_single_relay_success_scale(
 
 
 def test_generate_two_relays_success_noscale(
-        dotsbws_success_result_two_relays, parser, log, capfd):
+        dotsbws_success_result_two_relays, parser, capfd):
     dotsbws = dotsbws_success_result_two_relays
     args = parser.parse_args(
         '-d {} -vvvv generate'.format(dotsbws.name).split())
-    conf = get_config(args, log.debug)
-    sbws.core.generate.main(args, conf, log)
+    conf = get_config(args)
+    sbws.core.generate.main(args, conf)
     dd = conf['paths']['datadir']
-    results = load_recent_results_in_datadir(
-        1, dd, success_only=False, log_fn=log.debug)
+    results = load_recent_results_in_datadir(1, dd, success_only=False)
     assert len(results) == 4, 'There should be 4 results in the datadir'
     for result in results:
         assert isinstance(result, ResultSuccess), 'All existing results '\

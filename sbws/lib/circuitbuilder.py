@@ -2,6 +2,9 @@ from stem import (CircuitExtensionFailed, InvalidRequest)
 import random
 import sbws.util.stem as stem_utils
 from .relaylist import RelayList
+import logging
+
+log = logging.getLogger(__name__)
 
 
 class PathLengthException(Exception):
@@ -35,7 +38,7 @@ class CircuitBuilder:
     them, but CircuitBuilder will keep track of existing circuits and close
     them when it is deleted.
     '''
-    def __init__(self, args, conf, log, controller=None,
+    def __init__(self, args, conf, controller=None,
                  close_circuits_on_exit=True):
         if controller is None:
             c, error_msg = stem_utils.init_controller_with_config(conf)
@@ -43,10 +46,8 @@ class CircuitBuilder:
             self.controller = c
         else:
             self.controller = controller
-        self.log = log
         self.rng = random.SystemRandom()
-        self.relay_list = RelayList(args, conf, log,
-                                    controller=self.controller)
+        self.relay_list = RelayList(args, conf, controller=self.controller)
         self.built_circuits = set()
         self.close_circuits_on_exit = close_circuits_on_exit
 
@@ -80,12 +81,12 @@ class CircuitBuilder:
             raise PathLengthException()
         c = self.controller
         assert stem_utils.is_controller_okay(c)
-        self.log.debug('Building', [p[0:8] for p in path])
+        log.debug('Building %s', [p[0:8] for p in path])
         for _ in range(0, 3):
             try:
                 circ_id = c.new_circuit(path, await_build=True)
             except (InvalidRequest, CircuitExtensionFailed) as e:
-                self.log.info(e)
+                log.info(e)
                 continue
             self.built_circuits.add(circ_id)
             return circ_id
@@ -130,9 +131,9 @@ class GuardedCircuitBuilder(CircuitBuilder):
                        for g in guards]
         if len(self.guards) > len([g for g in self.guards if g]):
             self.guards = [g for g in self.guards if g]
-            self.log.warn('Warning: couldn\'t find descriptors for all '
-                          'guards. Only using:',
-                          ', '.join([g.nickname for g in self.guards]))
+            log.warning('Warning: couldn\'t find descriptors for all '
+                        'guards. Only using:',
+                        ', '.join([g.nickname for g in self.guards]))
             assert len(self.guards) > 0
 
     def build_circuit(self, length=3):
@@ -182,7 +183,7 @@ class GapsCircuitBuilder(CircuitBuilder):
                 continue
             relay = stem_utils.fp_or_nick_to_relay(self.controller, fp)
             if not relay:
-                self.log.debug('Failed to get descriptor for relay', fp)
+                log.debug('Failed to get descriptor for relay', fp)
                 return None
             new_path.append(relay)
         return new_path
@@ -220,15 +221,14 @@ class GapsCircuitBuilder(CircuitBuilder):
         insert_relays = self._random_sample_relays(
             num_missing, [r for r in path if r is not None])
         if insert_relays is None:
-            self.log.warn(
-                'Problem building a circuit to satisfy',
-                [r.nickname if r else None for r in path], 'with available '
-                'relays in the network')
+            path = ','.join([r.nickname if r else None for r in path])
+            log.warning(
+                'Problem building a circuit to satisfy %s with available '
+                'relays in the network', path)
             return None
         assert len(insert_relays) == num_missing
         path = [r.fingerprint if r else insert_relays.pop().fingerprint
                 for r in path]
-        # self.log.info('building', '->'.join([r[0:8] for r in path]))
         return self._build_circuit_impl(path)
 
 

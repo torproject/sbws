@@ -32,7 +32,6 @@ def test_Result(time_now):
         pass
     else:
         assert None, 'Should have failed'
-    print(r.time)
 
 
 def test_Result_from_dict_bad_version():

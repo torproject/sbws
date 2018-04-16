@@ -132,7 +132,7 @@ class GuardedCircuitBuilder(CircuitBuilder):
         if len(self.guards) > len([g for g in self.guards if g]):
             self.guards = [g for g in self.guards if g]
             log.warning('Warning: couldn\'t find descriptors for all '
-                        'guards. Only using:',
+                        'guards. Only using: %s',
                         ', '.join([g.nickname for g in self.guards]))
             assert len(self.guards) > 0
 
@@ -183,7 +183,7 @@ class GapsCircuitBuilder(CircuitBuilder):
                 continue
             relay = stem_utils.fp_or_nick_to_relay(self.controller, fp)
             if not relay:
-                log.debug('Failed to get descriptor for relay', fp)
+                log.debug('Failed to get descriptor for relay %s', fp)
                 return None
             new_path.append(relay)
         return new_path

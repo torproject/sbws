@@ -309,8 +309,8 @@ def result_putter_error(target):
     measurement -- and return that function so it can be used by someone else
     '''
     def closure(err):
-        log.warning('Unhandled exception caught while measuring {}: {} {}'
-                    .format(target.nickname, type(err), err))
+        log.warning('Unhandled exception caught while measuring %s: %s %s',
+                    target.nickname, type(err), err)
     return closure
 
 
@@ -363,12 +363,12 @@ def main(args, conf):
 
     if conf['tor']['control_type'] not in ['port', 'socket']:
         fail_hard('Must specify either control port or socket. '
-                  'Not "{}"'.format(conf['tor']['control_type']))
+                  'Not "%s"', conf['tor']['control_type'])
     if conf['tor']['control_type'] == 'port':
         try:
             conf.getint('tor', 'control_location')
         except ValueError as e:
-            fail_hard('Couldn\'t read control port from config:', e)
+            fail_hard('Couldn\'t read control port from config: %s', e)
     os.makedirs(conf['paths']['datadir'], exist_ok=True)
 
     try:

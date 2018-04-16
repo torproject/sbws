@@ -35,7 +35,7 @@ def attach_stream_to_circuit_listener(controller, circ_id):
 
     def closure_stream_event_listener(st):
         if st.status == 'NEW' and st.purpose == 'USER':
-            log.debug('Attaching stream {} to circ {}'.format(st.id, circ_id))
+            log.debug('Attaching stream %s to circ %s', st.id, circ_id)
             try:
                 controller.attach_stream(st.id, circ_id)
             except (UnsatisfiableRequest, InvalidRequest) as e:

@@ -37,7 +37,7 @@ def is_initted(d):
 def fail_hard(*a, **kw):
     ''' Optionally log something to stdout ... and then exit as fast as
     possible '''
-    log.error(*a, **kw)
+    log.critical(*a, **kw)
     exit(1)
 
 

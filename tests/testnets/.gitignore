@@ -2,5 +2,5 @@ auth?/
 relay?/
 exit?/
 datadir
-config.ini
+config*.ini
 *.log

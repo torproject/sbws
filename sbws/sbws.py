@@ -22,7 +22,7 @@ def main():
     conf_valid, conf_errors = validate_config(conf)
     if not conf_valid:
         for e in conf_errors:
-            log.error(e)
+            log.critical(e)
         exit(1)
     def_args = [args, conf]
     def_kwargs = {}

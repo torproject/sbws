@@ -18,12 +18,12 @@ def main():
     parser = create_parser()
     args = parser.parse_args()
     conf = get_config(args)
-    configure_logging(conf)
     conf_valid, conf_errors = validate_config(conf)
     if not conf_valid:
         for e in conf_errors:
             log.critical(e)
         exit(1)
+    configure_logging(conf)
     def_args = [args, conf]
     def_kwargs = {}
     known_commands = {

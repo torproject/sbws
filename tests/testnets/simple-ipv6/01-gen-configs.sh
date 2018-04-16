@@ -153,7 +153,7 @@ log_level = debug
 
 [tor]
 control_type = socket
-control_location = $client_tor_socks_proxy_nick/control_socket
+control_location = \${paths:sbws_home}/$client_tor_socks_proxy_nick/control_socket
 
 [client]
 nickname = SbwsTestnetClient

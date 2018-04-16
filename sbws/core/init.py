@@ -1,8 +1,7 @@
-from sbws.globals import (G_INIT_FILE_MAP, is_initted, fail_hard)
+from sbws.globals import (is_initted, fail_hard)
 from sbws.util.config import get_user_example_config
 from argparse import ArgumentDefaultsHelpFormatter
 import os
-import shutil
 import logging
 
 log = logging.getLogger(__name__)
@@ -30,17 +29,3 @@ def main(args, conf):
     log.info('Creating %s based on example config', config_fname)
     with open(config_fname, 'wt') as fd:
         c.write(fd)
-
-    for src, dst, ftype in G_INIT_FILE_MAP:
-        dst = os.path.join(args.directory, dst)
-        if os.path.exists(dst):
-            log.warning('%s already exists, not overwriting', dst)
-            continue
-        if ftype == 'file':
-            log.info('Creating %s (%s)', dst, ftype)
-            try:
-                shutil.copy(src, dst)
-            except PermissionError as e:
-                log.warning('Unable to create {}: {}'.format(dst, e))
-        else:
-            fail_hard('Cannot init ftype', ftype)

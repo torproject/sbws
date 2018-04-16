@@ -6,16 +6,6 @@ from filelock import FileLock
 log = logging.getLogger(__name__)
 
 G_PKG_DIR = os.path.abspath(os.path.dirname(__file__))
-G_INIT_FILE_MAP = [
-    # Specified as:
-    #     (source, destination, type)
-    # Where:
-    #     - source is relative to the sbws/ directory
-    #     - destination is relative to $HOME/.sbws/ directory (or whatever the
-    #     user specified as their directory with --directory)
-    #     - type is 'file', and ideally type 'dir' will be supported in the
-    #     future as needed
-]
 
 # Minimum and maximum number of bytes a client is allowed to request from a
 # server. If these are changed, a WIRE_PROTO_VER bump is required, which also
@@ -36,10 +26,6 @@ SOCKET_TIMEOUT = 60  # seconds
 def is_initted(d):
     if not os.path.isdir(d):
         return False
-    for _, fname, _ in G_INIT_FILE_MAP:
-        fname = os.path.join(d, fname)
-        if not os.path.exists(fname):
-            return False
     conf_fname = os.path.join(d, 'config.ini')
     if not os.path.exists(conf_fname):
         return False

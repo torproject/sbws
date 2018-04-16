@@ -27,7 +27,7 @@ client_tor_socks_proxy_ip=""
 client_tor_socks_proxy_nick=""
 
 echo -n '' > $auth_torrc_section
-rm -fr auth?/ relay?/ exit?/ config.ini datadir/ *.log
+rm -fr auth?/ relay?/ exit?/ config*.ini datadir/ *.log
 for A in auth1 auth2 auth3
 do
 	mkdir -pv $A/keys

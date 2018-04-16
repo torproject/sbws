@@ -96,12 +96,11 @@ class RelayPrioritizer:
         cutoff = max(int(len(relays) * PERCENT_TO_RETURN), MIN_TO_RETURN)
         fn_tstop = Decimal(time_now())
         fn_tdelta = (fn_tstop - fn_tstart) * 1000
-        log.info('Spent {0:.3f} msecs calculating relay best priority'.
-                 format(fn_tdelta))
+        log.info('Spent %f msecs calculating relay best priority', fn_tdelta)
         # Finally, slowly return the relays to the caller (after removing the
         # priority member we polluted the variable with ...)
         for relay in relays[0:cutoff]:
             log.debug('Returning next relay %s with priority %f',
-                      relay.nickname, round(relay.priority, 2))
+                      relay.nickname, relay.priority)
             del(relay.priority)
             yield relay

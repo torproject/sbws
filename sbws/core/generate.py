@@ -48,8 +48,8 @@ def warn_if_not_accurate_enough(lines, constant):
     log.info('The generated lines are within {:.5}% of what they should '
              'be'.format((1-accuracy_ratio)*100))
     if accuracy_ratio < 1 - margin or accuracy_ratio > 1 + margin:
-        log.warning('There was {:.3f}% error and only +/- {:.3f}% is '
-                    'allowed'.format((1-accuracy_ratio)*100, margin*100, 2))
+        log.warning('There was %f%% error and only +/- %f%% is '
+                    'allowed', (1-accuracy_ratio)*100, margin*100)
 
 
 def scale_lines(args, v3bw_lines):

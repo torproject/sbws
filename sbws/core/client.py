@@ -275,8 +275,8 @@ def _should_keep_result(did_request_maximum, result_time, download_times):
         return True
     # In all other cases, return false
     log.debug('Not keeping result time %f.%s', result_time,
-              '' if not did_request_maximum else 'We requested the maximum '
-              'amount allowed')
+              '' if not did_request_maximum else ' We requested the maximum '
+              'amount allowed.')
     return False
 
 

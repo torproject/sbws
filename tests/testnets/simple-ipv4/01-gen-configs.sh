@@ -199,3 +199,4 @@ server_host = 127.0.0.1
 server_port = $sbws_server_port
 password = Onqr54A6xavBV5yxd4KCNPIl5mR6UdnAb21XX8t3kbEvTd28o6HQxFA2Gim8kxil
 " > config.ini
+touch config.log.ini

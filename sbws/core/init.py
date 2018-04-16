@@ -1,4 +1,4 @@
-from sbws.globals import (is_initted, fail_hard)
+from sbws.globals import (is_initted, fail_hard, touch_file)
 from sbws.util.config import get_user_example_config
 from argparse import ArgumentDefaultsHelpFormatter
 import os
@@ -23,6 +23,7 @@ def main(args, conf):
         log.info('Creating %s', args.directory)
         os.makedirs(args.directory, exist_ok=False)
 
+    touch_file(os.path.join(args.directory, 'config.log.ini'))
     config_fname = os.path.join(args.directory, 'config.ini')
     c = get_user_example_config()
     c['paths']['sbws_home'] = args.directory

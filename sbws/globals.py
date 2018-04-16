@@ -29,6 +29,9 @@ def is_initted(d):
     conf_fname = os.path.join(d, 'config.ini')
     if not os.path.exists(conf_fname):
         return False
+    conf_fname = os.path.join(d, 'config.log.ini')
+    if not os.path.exists(conf_fname):
+        return False
     return True
 
 
@@ -90,3 +93,18 @@ def lock_directory(dname):
     '''
     assert os.path.isdir(dname)
     return FileLock(os.path.join(dname, 'lockfile'))
+
+
+def touch_file(fname, times=None):
+    '''
+    If **fname** exists, update its last access and modified times to now. If
+    **fname** does not exist, create it. If **times** are specified, pass them
+    to os.utime for use.
+
+    :param str fname: Name of file to update or create
+    :param tuple times: 2-tuple of floats for access time and modified time
+        respectively
+    '''
+    log.debug('Touching %s', fname)
+    with open(fname, 'a') as fd:
+        os.utime(fd.fileno(), times=times)

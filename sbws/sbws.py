@@ -14,10 +14,17 @@ import logging
 log = logging.getLogger(__name__)
 
 
+def _adjust_log_level(args, conf):
+    if not args.log_level:
+        return
+    conf['logger_sbws']['level'] = args.log_level
+
+
 def main():
     parser = create_parser()
     args = parser.parse_args()
     conf = get_config(args)
+    _adjust_log_level(args, conf)
     conf_valid, conf_errors = validate_config(conf)
     if not conf_valid:
         for e in conf_errors:

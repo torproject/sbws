@@ -21,12 +21,9 @@ def create_parser():
     p.add_argument(
         '--version', action='version', help='sbws version',
         version='%(prog)s {}'.format(version))
-    p.add_argument(
-        '-v', '--verbose', action='count', default=0,
-        help='Increase log level verbosity from the configured value')
-    p.add_argument(
-        '-q', '--quiet', action='count', default=0,
-        help='Decrease log level verbosity from the configured value')
+    p.add_argument('--log-level',
+                   choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+                   help='Override the sbws log level')
     p.add_argument('-d', '--directory', default=_default_dot_sbws_dname(),
                    help='Name of the .sbws directory')
     sub = p.add_subparsers(dest='command')

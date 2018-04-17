@@ -50,33 +50,6 @@ def time_now():
     return time.time()
 
 
-def _log_level_string_to_int(s):
-    if s == 'debug':
-        return 4
-    elif s == 'info':
-        return 3
-    elif s == 'notice':
-        return 2
-    elif s == 'warn':
-        return 1
-    elif s == 'error':
-        return 0
-    fail_hard('Unknown log level:', s)
-
-
-def _log_level_int_to_string(i):
-    if i >= 4:
-        return 'debug'
-    elif i == 3:
-        return 'info'
-    elif i == 2:
-        return 'notice'
-    elif i == 1:
-        return 'warn'
-    else:
-        return 'error'
-
-
 def lock_directory(dname):
     '''
     Holds a lock on a file in **dname** so that other sbws processes/threads

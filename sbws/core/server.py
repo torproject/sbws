@@ -90,7 +90,7 @@ _generate_random_string.alphabet = list('abcdefghijklmnopqrstuvwxyz'
 
 def write_to_client(sock, conf, amount):
     ''' Returns True if successful; else False '''
-    log.info('Sending client no. %d %d bytes', sock.fileno(), amount)
+    log.debug('Sending client no. %d %d bytes', sock.fileno(), amount)
     while amount > 0:
         amount_this_time = min(conf.getint('server', 'max_send_per_write'),
                                amount)
@@ -116,8 +116,8 @@ def new_thread(args, conf, sock):
         while True:
             send_amount = get_send_amount(sock)
             if send_amount is None:
-                log.info('Couldn\'t get an amount to send to %d',
-                         sock.fileno())
+                log.debug('Couldn\'t get an amount to send to %d',
+                          sock.fileno())
                 break
             if send_amount < MIN_REQ_BYTES or send_amount > MAX_REQ_BYTES:
                 log.warning('%s requested %d bytes, which is not valid',

@@ -21,8 +21,6 @@ import socks
 import socket
 import time
 import os
-import sys
-import traceback
 import logging
 
 end_event = Event()
@@ -244,19 +242,7 @@ def dispatch_worker_thread(*a, **kw):
     try:
         return measure_relay(*a, **kw)
     except Exception as err:
-        log.error('Unhandled exception: {} {}'.format(type(err), err))
-        _, _, tb = sys.exc_info()
-        if tb is not None:
-            tb_info = traceback.extract_tb(tb)
-            dots = '    '
-            for loc in tb_info:
-                fname, line, func, text = loc
-                fname = os.path.basename(fname)
-                log.error(
-                    dots, '{}:{} {} --> {}'.format(fname, line, func, text))
-                dots += '>>'
-        else:
-            log.error('No traceback available :(')
+        log.exception('Unhandled exception in worker thread')
         raise err
 
 
@@ -309,8 +295,8 @@ def result_putter_error(target):
     measurement -- and return that function so it can be used by someone else
     '''
     def closure(err):
-        log.warning('Unhandled exception caught while measuring %s: %s %s',
-                    target.nickname, type(err), err)
+        log.error('Unhandled exception caught while measuring %s: %s %s',
+                  target.nickname, type(err), err)
     return closure
 
 

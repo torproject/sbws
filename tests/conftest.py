@@ -38,7 +38,8 @@ def empty_dotsbws(parser):
     Creates a ~/.sbws with nothing in it but a config.ini
     '''
     d = TemporaryDirectory()
-    args = parser.parse_args('-d {} -vvvv init'.format(d.name).split())
+    args = parser.parse_args(
+        '-d {} --log-level DEBUG init'.format(d.name).split())
     conf = get_config(args)
     sbws.core.init.main(args, conf)
     return d

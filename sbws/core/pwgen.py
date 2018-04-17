@@ -26,10 +26,8 @@ def rand_str():
     return s
 
 
-def main(args, conf, log_):
-    global log
+def main(args, conf):
     global rng
-    log = log_
     rng = random.SystemRandom()
     with open(args.output, 'wt') as fd:
         fd.write(rand_str() + '\n')

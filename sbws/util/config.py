@@ -127,13 +127,9 @@ def _validate_general(conf):
     ints = {
         'data_period': {'minimum': 1, 'maximum': None},
     }
-    enums = {
-        'log_level': {'valid': ['debug', 'info', 'notice', 'warn', 'error']},
-    }
-    all_valid_keys = list(ints.keys()) + list(enums.keys())
+    all_valid_keys = list(ints.keys())
     errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))
     errors.extend(_validate_section_ints(conf, sec, ints, err_tmpl))
-    errors.extend(_validate_section_enums(conf, sec, enums, err_tmpl))
     return errors
 
 

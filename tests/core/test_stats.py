@@ -14,7 +14,7 @@ import logging
 
 def init_directory(dname):
     p = create_parser()
-    args = p.parse_args('-d {} -vvvv init'.format(dname).split())
+    args = p.parse_args('-d {} --log-level DEBUG init'.format(dname).split())
     conf = get_config(args)
     sbws.core.init.main(args, conf)
 
@@ -60,7 +60,7 @@ def test_stats_uninitted(tmpdir, caplog):
     An un-initialized .sbws directory should fail hard and exit immediately
     '''
     p = create_parser()
-    args = p.parse_args('-d {} -vvvv stats'.format(tmpdir).split())
+    args = p.parse_args('-d {} --log-level DEBUG stats'.format(tmpdir).split())
     conf = get_config(args)
     try:
         sbws.core.stats.main(args, conf)
@@ -79,7 +79,7 @@ def test_stats_initted(tmpdir, caplog):
     '''
     init_directory(tmpdir)
     p = create_parser()
-    args = p.parse_args('-d {} -vvvv stats'.format(tmpdir).split())
+    args = p.parse_args('-d {} --log-level DEBUG stats'.format(tmpdir).split())
     conf = get_config(args)
     try:
         sbws.core.stats.main(args, conf)
@@ -99,7 +99,7 @@ def test_stats_stale_result(tmpdir, caplog):
     init_directory(tmpdir)
     add_single_stale_result(tmpdir)
     p = create_parser()
-    args = p.parse_args('-d {} -vvvv stats'.format(tmpdir).split())
+    args = p.parse_args('-d {} --log-level DEBUG stats'.format(tmpdir).split())
     conf = get_config(args)
     sbws.core.stats.main(args, conf)
     assert 'No fresh results' == caplog.records[-1].getMessage()
@@ -115,7 +115,7 @@ def test_stats_fresh_result(tmpdir, capsys, caplog):
     add_single_fresh_result(tmpdir)
     p = create_parser()
     args = p.parse_args(
-        '-d {} -vvvv stats --error-types'.format(tmpdir).split())
+        '-d {} --log-level DEBUG stats --error-types'.format(tmpdir).split())
     conf = get_config(args)
     sbws.core.stats.main(args, conf)
     captured = capsys.readouterr()
@@ -147,7 +147,7 @@ def test_stats_fresh_results(tmpdir, capsys, caplog):
     add_two_fresh_results(tmpdir)
     p = create_parser()
     args = p.parse_args(
-        '-d {} -vvvv stats --error-types'.format(tmpdir).split())
+        '-d {} --log-level DEBUG stats --error-types'.format(tmpdir).split())
     conf = get_config(args)
     sbws.core.stats.main(args, conf)
     needed_output_lines = [

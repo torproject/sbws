@@ -13,7 +13,7 @@ def test_generate_no_dotsbws(tmpdir, caplog, parser):
     caplog.set_level(logging.DEBUG)
     dotsbws = tmpdir
     args = parser.parse_args(
-        '-d {} -vvvv generate'.format(dotsbws).split())
+        '-d {} --log-level DEBUG generate'.format(dotsbws).split())
     conf = get_config(args)
     try:
         sbws.core.generate.main(args, conf)
@@ -27,7 +27,7 @@ def test_generate_no_dotsbws(tmpdir, caplog, parser):
 def test_generate_no_datadir(empty_dotsbws, caplog, parser):
     dotsbws = empty_dotsbws
     args = parser.parse_args(
-        '-d {} -vvvv generate'.format(dotsbws.name).split())
+        '-d {} --log-level DEBUG generate'.format(dotsbws.name).split())
     conf = get_config(args)
     try:
         sbws.core.generate.main(args, conf)
@@ -42,7 +42,7 @@ def test_generate_no_datadir(empty_dotsbws, caplog, parser):
 def test_generate_bad_scale_constant(empty_dotsbws_datadir, caplog, parser):
     dotsbws = empty_dotsbws_datadir
     args = parser.parse_args(
-        '-d {} -vvvv generate --scale-constant -1'
+        '-d {} --log-level DEBUG generate --scale-constant -1'
         .format(dotsbws.name).split())
     conf = get_config(args)
     try:
@@ -58,7 +58,7 @@ def test_generate_bad_scale_constant(empty_dotsbws_datadir, caplog, parser):
 def test_generate_empty_datadir(empty_dotsbws_datadir, caplog, parser):
     dotsbws = empty_dotsbws_datadir
     args = parser.parse_args(
-        '-d {} -vvvv generate'.format(dotsbws.name).split())
+        '-d {} --log-level DEBUG generate'.format(dotsbws.name).split())
     conf = get_config(args)
     sbws.core.generate.main(args, conf)
     assert 'No recent results' in caplog.records[-1].getMessage()
@@ -68,7 +68,7 @@ def test_generate_single_error(dotsbws_error_result, caplog, parser):
     caplog.set_level(logging.DEBUG)
     dotsbws = dotsbws_error_result
     args = parser.parse_args(
-        '-d {} -vvvv generate'.format(dotsbws.name).split())
+        '-d {} --log-level DEBUG generate'.format(dotsbws.name).split())
     conf = get_config(args)
     sbws.core.generate.main(args, conf)
     dd = conf['paths']['datadir']
@@ -85,7 +85,7 @@ def test_generate_single_success_noscale(dotsbws_success_result, caplog,
                                          parser,  capfd):
     dotsbws = dotsbws_success_result
     args = parser.parse_args(
-        '-d {} -vvvv generate'.format(dotsbws.name).split())
+        '-d {} --log-level DEBUG generate'.format(dotsbws.name).split())
     conf = get_config(args)
     sbws.core.generate.main(args, conf)
     dd = conf['paths']['datadir']
@@ -116,7 +116,8 @@ def test_generate_single_success_scale(dotsbws_success_result, parser,
                                        capfd):
     dotsbws = dotsbws_success_result
     args = parser.parse_args(
-        '-d {} -vvvv generate --scale'.format(dotsbws.name).split())
+        '-d {} --log-level DEBUG generate --scale'.format(dotsbws.name)
+        .split())
     conf = get_config(args)
     sbws.core.generate.main(args, conf)
     dd = conf['paths']['datadir']
@@ -146,7 +147,7 @@ def test_generate_single_relay_success_noscale(
         dotsbws_success_result_one_relay, parser, capfd):
     dotsbws = dotsbws_success_result_one_relay
     args = parser.parse_args(
-        '-d {} -vvvv generate'.format(dotsbws.name).split())
+        '-d {} --log-level DEBUG generate'.format(dotsbws.name).split())
     conf = get_config(args)
     sbws.core.generate.main(args, conf)
     dd = conf['paths']['datadir']
@@ -178,7 +179,8 @@ def test_generate_single_relay_success_scale(
         dotsbws_success_result_one_relay, parser, capfd):
     dotsbws = dotsbws_success_result_one_relay
     args = parser.parse_args(
-        '-d {} -vvvv generate --scale'.format(dotsbws.name).split())
+        '-d {} --log-level DEBUG generate --scale'.format(dotsbws.name)
+        .split())
     conf = get_config(args)
     sbws.core.generate.main(args, conf)
     dd = conf['paths']['datadir']
@@ -208,7 +210,7 @@ def test_generate_two_relays_success_noscale(
         dotsbws_success_result_two_relays, parser, capfd):
     dotsbws = dotsbws_success_result_two_relays
     args = parser.parse_args(
-        '-d {} -vvvv generate'.format(dotsbws.name).split())
+        '-d {} --log-level DEBUG generate'.format(dotsbws.name).split())
     conf = get_config(args)
     sbws.core.generate.main(args, conf)
     dd = conf['paths']['datadir']

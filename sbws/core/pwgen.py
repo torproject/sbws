@@ -10,8 +10,7 @@ def gen_parser(sub):
         'authenticating to an sbws server.'
     p = sub.add_parser('pwgen', formatter_class=ArgumentDefaultsHelpFormatter,
                        description=d)
-    p.add_argument('--output', type=str, default='/dev/stdout',
-                   help='Where to write the password')
+    p.add_argument('--output', type=str, help='Where to write the password')
 
 
 def rand_char():
@@ -29,5 +28,8 @@ def rand_str():
 def main(args, conf):
     global rng
     rng = random.SystemRandom()
-    with open(args.output, 'wt') as fd:
-        fd.write(rand_str() + '\n')
+    if args.output:
+        with open(args.output, 'wt') as fd:
+            fd.write(rand_str() + '\n')
+    else:
+        print(rand_str())

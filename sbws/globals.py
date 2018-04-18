@@ -29,7 +29,7 @@ def is_initted(d):
     conf_fnames = [os.path.join(d, 'config.ini'),
                    os.path.join(d, 'config.log.ini')]
     for fname in conf_fnames:
-        if not os.path.exists(fname):
+        if not os.path.isfile(fname):
             return False
     return True
 

@@ -1,5 +1,6 @@
 from sbws.globals import (is_initted, fail_hard, touch_file)
 from sbws.util.config import get_user_example_config
+from sbws.util.userquery import query_yes_no
 from argparse import ArgumentDefaultsHelpFormatter
 import os
 import logging
@@ -23,10 +24,18 @@ def main(args, conf):
         log.info('Creating %s', args.directory)
         os.makedirs(args.directory, exist_ok=False)
 
+    # Create config.log.ini ####
     touch_file(os.path.join(args.directory, 'config.log.ini'))
-    config_fname = os.path.join(args.directory, 'config.ini')
+
+    # Create config.ini ####
+    fname = os.path.join(args.directory, 'config.ini')
+    if os.path.exists(fname) and not os.path.isfile(fname):
+        fail_hard('Don\'t know how to handle %s existing as a non-file', fname)
+    if os.path.isfile(fname) and not query_yes_no(
+            'Is it okay to overwrite {}?'.format(fname), default=None):
+        fail_hard('Cannot continue')
     c = get_user_example_config()
     c['paths']['sbws_home'] = args.directory
-    log.info('Creating %s based on example config', config_fname)
-    with open(config_fname, 'wt') as fd:
+    log.info('Creating %s based on example config', fname)
+    with open(fname, 'wt') as fd:
         c.write(fd)

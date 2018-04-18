@@ -1,5 +1,5 @@
 import sbws.core.cleanup
-import sbws.core.client
+import sbws.core.scanner
 import sbws.core.generate
 import sbws.core.init
 import sbws.core.pwgen
@@ -36,8 +36,8 @@ def main():
     known_commands = {
         'cleanup': {'f': sbws.core.cleanup.main,
                     'a': def_args, 'kw': def_kwargs},
-        'client': {'f': sbws.core.client.main,
-                   'a': def_args, 'kw': def_kwargs},
+        'scanner': {'f': sbws.core.scanner.main,
+                    'a': def_args, 'kw': def_kwargs},
         'generate': {'f': sbws.core.generate.main,
                      'a': def_args, 'kw': def_kwargs},
         'init': {'f': sbws.core.init.main,

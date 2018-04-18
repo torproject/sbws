@@ -11,7 +11,7 @@ Simple Bandwidth Scanner Specification
 
 Some of the Tor directory authorities runs bandwidth scanners to measure the
 bandwidth of relays and include their measurements in their network status
-votes.  Client use the consensus of these weights to inform their path
+votes.  Scanner use the consensus of these weights to inform their path
 selection process with the hope that every circuit they build will have roughly
 equal performance, regardless of the relays chosen. This achieves a form of
 load balancing.
@@ -30,7 +30,7 @@ Rome 2018 Tor Project meeting. This document describes the implementation
 contained within the accompanying ``sbws`` package.
 
 First we cover the parts of sbws that continuously perform measurements;
-namely, the client that builds 2 hop Tor circuits through a target and helper
+namely, the scanner that builds 2 hop Tor circuits through a target and helper
 relay to a waiting server. Next we describe the process of periodically turning
 recently gathered results into an aggregate format ready for including in a
 bandwidth authority's votes.
@@ -40,16 +40,16 @@ bandwidth authority's votes.
 --------------------------------------
 
 First and foremost, the Tor network needs one or more helper relays to act as
-exits in the two hop circuits that sbws measurement clients build. These helper
+exits in the two hop circuits that sbws measurement scanners build. These helper
 relays need not be proper exits, but merely must support exiting to a single IP
 address and port, at which is listening an sbws server. Ideally the helper
 relay and sbws server are running on the same physical hardware. The sbws
-servers listen for clients to authenticate to them, and once successfully
-authenticated, wait for clients to request arbitrary numbers of bytes to be
+servers listen for scanners to authenticate to them, and once successfully
+authenticated, wait for scanners to request arbitrary numbers of bytes to be
 sent to them.
 
 Every directory authority that wishes to also vote on relay bandwidth must then
-run one or more sbws clients. The clients run continuously, constantly building
+run one or more sbws scanners. The scanners run continuously, constantly building
 circuits and measuring the amount of bandwidth each relay is capable of
 handling on the measurement circuit. Over these circuits it collects RTT data
 (by repeatedly requesting a single byte from the server) and available
@@ -91,10 +91,10 @@ addresses on the local machine. Finally we have a simple exit policy that
 allows exiting to the local machine on a single port and rejects all other exit
 traffic. *The relay will not get the exit flag.*
 
-2.2 Configuring the sbws client
+2.2 Configuring the sbws scanner
 -------------------------------
 
-For an sbws client, its Tor client configuration is even simpler. In addition
+For an sbws scanner, its Tor scanner configuration is even simpler. In addition
 to making sure it has a SocksPort, ControlPort, and some form of ControlPort
 authentication enabled, it is recommended circuit build timeout options be set
 as such.
@@ -104,7 +104,7 @@ as such.
     LearnCircuitBuildTimeout 0
     CircuitBuildTimeout 10
 
-When the sbws client starts up and connects to Tor, it will set the following
+When the sbws scanner starts up and connects to Tor, it will set the following
 two options.
 
 ::
@@ -113,20 +113,20 @@ two options.
     __LeaveStreamsUnattached 1
 
 The former simply to cut down on the number of unused circuits and the latter
-so that the client can attach streams to circuits manually.
+so that the scanner can attach streams to circuits manually.
 
-2.3 Sbws client/server authentication
+2.3 Sbws scanner/server authentication
 -------------------------------------
 
 **XXX This will be changed very soon to be more user friendly, but the idea is
 the same.**
 
-The sbws client keeps a ``passwords.txt`` file containing a single non-comment
+The sbws scanner keeps a ``passwords.txt`` file containing a single non-comment
 line containing a 64 character password consisting only of characters in the
 space ``a-zA-Z0-9``.
 
 The sbws similarly keeps a ``passwords.txt``, but its contains many 64
-character passwords. When a client connects, it must provide one of the 64
+character passwords. When a scanner connects, it must provide one of the 64
 character passwords in the server's ``passwords.txt``.
 
 3. How it all works
@@ -186,51 +186,51 @@ sooner.
 3.2 Simple wire protocol
 ------------------------
 
-In this subsection, the client/server communication that takes place after a
+In this subsection, the scanner/server communication that takes place after a
 Tor circuit is built and a TCP connection created in it is described.
 
 3.2.1 Simple handshake
 ----------------------
 
-After initiating a TCP connection over Tor to the server, the sbws client sends
+After initiating a TCP connection over Tor to the server, the sbws scanner sends
 4 magic bytes indicating it intends to speak sbws' protocol. If the first four
 bytes an sbws server receives are not the correct magic bytes, the server
 SHOULD close the connection.
 
-If the client sends the correct magic bytes, the server does nothing in
-response. Therefore, the client SHOULD immediately followup with the version of
+If the scanner sends the correct magic bytes, the server does nothing in
+response. Therefore, the scanner SHOULD immediately followup with the version of
 the wire protocol it will speak. This version is an integer, but is sent as a
 string followed by a newline. So version 1 would be sent as the two byte
 string, ``"1\n"``.
 
-If the server does not support the version that the client sent, it MUST
+If the server does not support the version that the scanner sent, it MUST
 immediately close the connection.  Otherwise, the server does nothing in
-response. Therefore, the client SHOULD immediately followup with its 64
+response. Therefore, the scanner SHOULD immediately followup with its 64
 character password.
 
-Upon receiving the client's full password, the server checks if it is valid. If
+Upon receiving the scanner's full password, the server checks if it is valid. If
 it is invalid, the server MUST immediately close the connection. Otherwise, the server
-MUST send to the client the 1 byte success code.
+MUST send to the scanner the 1 byte success code.
 
-Once the client receives the success code, the handshake is complete and the
+Once the scanner receives the success code, the handshake is complete and the
 simple loop may begin.
 
 3.2.2 Simple loop
 -----------------
 
-To begin the loop, the sbws client decides how many bytes it would like to
+To begin the loop, the sbws scanner decides how many bytes it would like to
 download from the server. To inform the server, it encodes an integer as text
-followed by a newline character. For example, to request 123 bytes, the client would
+followed by a newline character. For example, to request 123 bytes, the scanner would
 send to the server the string of four bytes ``"123\n"``.
 
-After indicating success to the client in the simple handshake, the server
-begins listening for the client to send a line as described above. Once the
+After indicating success to the scanner in the simple handshake, the server
+begins listening for the scanner to send a line as described above. Once the
 server reads a newline character (``'\n'``), it parses the string into an
-integer and proceeds to send the client that many bytes as fast as possible.
+integer and proceeds to send the scanner that many bytes as fast as possible.
 
-Immediately after requesting some amount of bytes from the server, the client
+Immediately after requesting some amount of bytes from the server, the scanner
 begins listening for the server to respond with arbitrary bytes until it has
-sent the amount it was expecting. At this point the client MUST close the
+sent the amount it was expecting. At this point the scanner MUST close the
 connection if it does not wish to make any more requests. Otherwise, the simple
 loop starts over.
 
@@ -245,10 +245,10 @@ stored -- **one per line** -- in text files in a data directory.
 The text files are simply named after the date. For example:
 ``2018-03-20.txt``.
 
-The sbws client only appends to these files, and it automatically starts a new
+The sbws scanner only appends to these files, and it automatically starts a new
 file when the system's clock ticks past midnight.
 
-To avoid any weird timezone-related issues, consumers of sbws client data (such
+To avoid any weird timezone-related issues, consumers of sbws scanner data (such
 as the generate and stats scripts) should read more files than strictly
 necessary. For example, if the validity period is 5 days, they should read 6
 days of files. Because all results have a Unix timestamp, consumers of sbws

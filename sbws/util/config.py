@@ -97,7 +97,7 @@ def validate_config(conf):
     errors = []
     errors.extend(_validate_general(conf))
     errors.extend(_validate_cleanup(conf))
-    errors.extend(_validate_client(conf))
+    errors.extend(_validate_scanner(conf))
     errors.extend(_validate_server(conf))
     errors.extend(_validate_server_passwords(conf))
     errors.extend(_validate_tor(conf))
@@ -143,9 +143,9 @@ def _validate_paths(conf):
     return errors
 
 
-def _validate_client(conf):
+def _validate_scanner(conf):
     errors = []
-    sec = 'client'
+    sec = 'scanner'
     err_tmpl = Template('$sec/$key ($val): $e')
     ints = {
         'max_recv_per_read': {'minimum': 1, 'maximum': None},

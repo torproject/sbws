@@ -36,7 +36,7 @@ class RelayPrioritizer:
         self.relay_list = relay_list
         self.result_dump = result_dump
         self.measure_authorities = conf.getboolean(
-            'client', 'measure_authorities')
+            'scanner', 'measure_authorities')
 
     def best_priority(self):
         ''' Return a generator containing the best priority relays.

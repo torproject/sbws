@@ -4,10 +4,10 @@ sbws.core package
 Submodules
 ----------
 
-sbws.core.client module
+sbws.core.scanner module
 ---------------------------
 
-.. automodule:: sbws.core.client
+.. automodule:: sbws.core.scanner
     :members:
     :undoc-members:
     :show-inheritance:

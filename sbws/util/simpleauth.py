@@ -10,18 +10,18 @@ PW_LEN = 64
 log = logging.getLogger(__name__)
 
 
-def authenticate_client(sock, conf_section):
-    ''' Use this on the server side to read bytes from the client and properly
-    authenticate them. Return the name of the client who has authenticated if
+def authenticate_scanner(sock, conf_section):
+    ''' Use this on the server side to read bytes from the scanner and properly
+    authenticate them. Return the name of the scanner who has authenticated if
     they provided a good password, otherwise None.
 
     :param socket.socket sock: The open and blocking socket to use to
-        communicate with the client
+        communicate with the scanner
     :param configparser.SectionProxy conf_section: The ``[server.passwords]``
         section from the sbws config file
-    :returns: The name of the client that successfully authenticated as a str,
+    :returns: The name of the scanner that successfully authenticated as a str,
         as pulled from the ``[server.passwords]`` section of the config. If
-        the client couldn't authenticate, returns None
+        the scanner couldn't authenticate, returns None
     '''
     assert sock.fileno() > 0
     assert len(conf_section) > 0
@@ -36,7 +36,7 @@ def authenticate_client(sock, conf_section):
 
     line = read_line(sock, max_len=4)
     if line != str(wire_proto_ver):
-        log.warning('Client gave protocol version %s but we support %d', line,
+        log.warning('Scanner gave protocol version %s but we support %d', line,
                     wire_proto_ver)
         return None
 
@@ -49,8 +49,8 @@ def authenticate_client(sock, conf_section):
         log.warning(e)
         return None
 
-    client_name = _is_valid_password(pw, conf_section)
-    if not client_name:
+    scanner_name = _is_valid_password(pw, conf_section)
+    if not scanner_name:
         log.warning('Invalid password')
         return None
 
@@ -59,7 +59,7 @@ def authenticate_client(sock, conf_section):
     except (socket.timeout, ConnectionResetError, BrokenPipeError) as e:
         log.warning(e)
         return None
-    return client_name
+    return scanner_name
 
 
 def authenticate_to_server(sock, pw):
@@ -93,7 +93,7 @@ def authenticate_to_server(sock, pw):
 
 def _is_valid_password(pw, conf_section):
     ''' Returns the key in the [server.passwords] section of the config for the
-    password the client provided (AKA: if the client provided a valid
+    password the scanner provided (AKA: if the scanner provided a valid
     password).  Otherwise return None '''
     assert len(conf_section) > 0
     if len(pw) != PW_LEN:

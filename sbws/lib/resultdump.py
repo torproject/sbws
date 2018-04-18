@@ -93,7 +93,7 @@ def load_recent_results_in_datadir(fresh_days, datadir, success_only=False):
     results = trim_results(fresh_days, results)
     if len(results) == 0:
         log.warning('Results files that are valid not found. '
-                    'Probably sbws client was not run first or '
+                    'Probably sbws scanner was not run first or '
                     'it ran more than %d days ago or '
                     'it was using a different datadir than %s.', data_period,
                     datadir)
@@ -137,12 +137,12 @@ class Result:
             self.nickname = nickname
             self.address = address
 
-    def __init__(self, relay, circ, server_host, client_nick, t=None):
+    def __init__(self, relay, circ, server_host, scanner_nick, t=None):
         self._relay = Result.Relay(relay.fingerprint, relay.nickname,
                                    relay.address)
         self._circ = circ
         self._server_host = server_host
-        self._scanner = client_nick
+        self._scanner = scanner_nick
         self._time = time_now() if t is None else t
 
     @property

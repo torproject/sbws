@@ -1,4 +1,4 @@
-from ..util.simpleauth import authenticate_client
+from ..util.simpleauth import authenticate_scanner
 from ..util.sockio import read_line
 from sbws.globals import (fail_hard, is_initted)
 from sbws.globals import (MIN_REQ_BYTES, MAX_REQ_BYTES, SOCKET_TIMEOUT)
@@ -16,8 +16,8 @@ log = logging.getLogger(__name__)
 
 def gen_parser(sub):
     d = 'The server side of sbws. This should be run on the same machine as '\
-        'a helper relay. This listens for clients connections and responds '\
-        'with the number of bytes the client requests.'
+        'a helper relay. This listens for scanners connections and responds '\
+        'with the number of bytes the scanner requests.'
     sub.add_parser('server', formatter_class=ArgumentDefaultsHelpFormatter,
                    description=d)
 
@@ -88,9 +88,9 @@ _generate_random_string.alphabet = list('abcdefghijklmnopqrstuvwxyz'
 # _generate_random_string.last_log = time_now()
 
 
-def write_to_client(sock, conf, amount):
+def write_to_scanner(sock, conf, amount):
     ''' Returns True if successful; else False '''
-    log.debug('Sending client no. %d %d bytes', sock.fileno(), amount)
+    log.debug('Sending scanner no. %d %d bytes', sock.fileno(), amount)
     while amount > 0:
         amount_this_time = min(conf.getint('server', 'max_send_per_write'),
                                amount)
@@ -106,13 +106,13 @@ def write_to_client(sock, conf, amount):
 
 def new_thread(args, conf, sock):
     def closure():
-        client_name = authenticate_client(
+        scanner_name = authenticate_scanner(
             sock, conf['server.passwords'])
-        if not client_name:
-            log.info('Client did not provide valid auth')
+        if not scanner_name:
+            log.info('Scanner did not provide valid auth')
             close_socket(sock)
             return
-        log.info('%s authenticated on %d', client_name, sock.fileno())
+        log.info('%s authenticated on %d', scanner_name, sock.fileno())
         while True:
             send_amount = get_send_amount(sock)
             if send_amount is None:
@@ -121,10 +121,10 @@ def new_thread(args, conf, sock):
                 break
             if send_amount < MIN_REQ_BYTES or send_amount > MAX_REQ_BYTES:
                 log.warning('%s requested %d bytes, which is not valid',
-                            client_name, send_amount)
+                            scanner_name, send_amount)
                 break
-            write_to_client(sock, conf, send_amount)
-        log.info('%s on %d went away', client_name, sock.fileno())
+            write_to_scanner(sock, conf, send_amount)
+        log.info('%s on %d went away', scanner_name, sock.fileno())
         close_socket(sock)
     thread = Thread(target=closure)
     return thread

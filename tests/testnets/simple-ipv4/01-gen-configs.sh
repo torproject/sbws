@@ -23,8 +23,8 @@ function get_v3ident {
 
 
 next_ip="1"
-client_tor_socks_proxy_ip=""
-client_tor_socks_proxy_nick=""
+scanner_tor_socks_proxy_ip=""
+scanner_tor_socks_proxy_nick=""
 
 echo -n '' > $auth_torrc_section
 rm -fr auth?/ relay?/ exit?/ config*.ini datadir/ *.log
@@ -33,8 +33,8 @@ do
 	mkdir -pv $A/keys
 	chmod 700 $A
 	ip=${ip_space}${next_ip}
-	[ "$client_tor_socks_proxy_ip" == "" ] && client_tor_socks_proxy_ip="$ip"
-	[ "$client_tor_socks_proxy_nick" == "" ] && client_tor_socks_proxy_nick="$A"
+	[ "$scanner_tor_socks_proxy_ip" == "" ] && scanner_tor_socks_proxy_ip="$ip"
+	[ "$scanner_tor_socks_proxy_nick" == "" ] && scanner_tor_socks_proxy_nick="$A"
 	echo -n '' | tor-gencert --create-identity-key --passphrase-fd 0 -m 24 -a $ip:$dirport
 	echo "
 		DataDirectory $A
@@ -150,11 +150,11 @@ sbws_home = $(pwd)
 
 [tor]
 control_type = socket
-control_location = \${paths:sbws_home}/$client_tor_socks_proxy_nick/control_socket
+control_location = \${paths:sbws_home}/$scanner_tor_socks_proxy_nick/control_socket
 
-[client]
-nickname = SbwsTestnetClient
-tor_socks_host = $client_tor_socks_proxy_ip
+[scanner]
+nickname = SbwsTestnetScanner
+tor_socks_host = $scanner_tor_socks_proxy_ip
 tor_socks_port = $socksport
 measurement_threads = 4
 download_toofast = 0.1
@@ -169,9 +169,9 @@ bind_ip = 127.0.0.1
 bind_port = $sbws_server_port
 
 [server.passwords]
-client1 = 9Xa9Ulp9bD5GGLuFm6XYZBtc2VhWQlJgpRRF9SpmfoujrFwdRwBizpqcSMHix6Jc
-client2 = gNeJoOiB7eya7QrpjtxlwSQO42eXazawJIEh5BbKJ1pZ0RFxT45Rbqv28wWyD4pk
-client3 = Onqr54A6xavBV5yxd4KCNPIl5mR6UdnAb21XX8t3kbEvTd28o6HQxFA2Gim8kxil
+scanner1 = 9Xa9Ulp9bD5GGLuFm6XYZBtc2VhWQlJgpRRF9SpmfoujrFwdRwBizpqcSMHix6Jc
+scanner2 = gNeJoOiB7eya7QrpjtxlwSQO42eXazawJIEh5BbKJ1pZ0RFxT45Rbqv28wWyD4pk
+scanner3 = Onqr54A6xavBV5yxd4KCNPIl5mR6UdnAb21XX8t3kbEvTd28o6HQxFA2Gim8kxil
 
 [helpers]
 exit1 = on

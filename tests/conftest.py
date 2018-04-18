@@ -68,11 +68,11 @@ def dotsbws_error_result(empty_dotsbws_datadir):
     nick = 'CowSayWhat'
     relay_ip = '169.254.100.1'
     server_ip = '169.254.100.2'
-    client_nick = 'SBWSclient'
+    scanner_nick = 'SBWSscanner'
     msg = 'UnitTest error message'
     t = time.time()
     relay = Result.Relay(fp1, nick, relay_ip)
-    result = ResultError(relay, circ, server_ip, client_nick, t=t, msg=msg)
+    result = ResultError(relay, circ, server_ip, scanner_nick, t=t, msg=msg)
     args = _PseudoArguments(directory=empty_dotsbws_datadir.name)
     conf = get_config(args)
     dd = conf['paths']['datadir']
@@ -91,13 +91,13 @@ def dotsbws_success_result(empty_dotsbws_datadir):
     nick = 'CowSayWhat'
     relay_ip = '169.254.100.1'
     server_ip = '169.254.100.2'
-    client_nick = 'SBWSclient'
+    scanner_nick = 'SBWSscanner'
     rtts = [4.242]
     downloads = [{'duration': 4, 'amount': 40}]
     t = time.time()
     relay = Result.Relay(fp1, nick, relay_ip)
     result = ResultSuccess(rtts, downloads, relay, circ, server_ip,
-                           client_nick, t=t)
+                           scanner_nick, t=t)
     args = _PseudoArguments(directory=empty_dotsbws_datadir.name)
     conf = get_config(args)
     dd = conf['paths']['datadir']
@@ -119,20 +119,20 @@ def dotsbws_success_result_one_relay(empty_dotsbws_datadir):
     nick = 'CowSayWhat'
     relay_ip = '169.254.100.1'
     server_ip = '169.254.100.2'
-    client_nick = 'SBWSclient'
+    scanner_nick = 'SBWSscanner'
     rtts = [5, 25]
     downloads = [{'duration': 4, 'amount': 40}]
     t = time.time()
     relay = Result.Relay(fp1, nick, relay_ip)
     result = ResultSuccess(rtts, downloads, relay, circ, server_ip,
-                           client_nick, t=t)
+                           scanner_nick, t=t)
     write_result_to_datadir(result, dd)
 
     rtts = [10, 20]
     downloads = [{'duration': 4, 'amount': 80}]
     t = time.time()
     result = ResultSuccess(rtts, downloads, relay, circ, server_ip,
-                           client_nick, t=t)
+                           scanner_nick, t=t)
     write_result_to_datadir(result, dd)
     return empty_dotsbws_datadir
 
@@ -152,20 +152,20 @@ def dotsbws_success_result_two_relays(empty_dotsbws_datadir):
     nick = 'CowSayWhat1'
     relay_ip = '169.254.100.1'
     server_ip = '169.254.100.3'
-    client_nick = 'SBWSclient'
+    scanner_nick = 'SBWSscanner'
     rtts = [5, 25]
     downloads = [{'duration': 4, 'amount': 40}]
     t = time.time()
     relay = Result.Relay(fp1, nick, relay_ip)
     result = ResultSuccess(rtts, downloads, relay, circ, server_ip,
-                           client_nick, t=t)
+                           scanner_nick, t=t)
     write_result_to_datadir(result, dd)
 
     rtts = [10, 20]
     downloads = [{'duration': 4, 'amount': 80}]
     t = time.time()
     result = ResultSuccess(rtts, downloads, relay, circ, server_ip,
-                           client_nick, t=t)
+                           scanner_nick, t=t)
     write_result_to_datadir(result, dd)
 
     fp1 = 'B' * 40
@@ -177,14 +177,14 @@ def dotsbws_success_result_two_relays(empty_dotsbws_datadir):
     t = time.time()
     relay = Result.Relay(fp1, nick, relay_ip)
     result = ResultSuccess(rtts, downloads, relay, circ, server_ip,
-                           client_nick, t=t)
+                           scanner_nick, t=t)
     write_result_to_datadir(result, dd)
 
     rtts = [100, 200]
     downloads = [{'duration': 4, 'amount': 800}]
     t = time.time()
     result = ResultSuccess(rtts, downloads, relay, circ, server_ip,
-                           client_nick, t=t)
+                           scanner_nick, t=t)
     write_result_to_datadir(result, dd)
 
     return empty_dotsbws_datadir

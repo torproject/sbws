@@ -81,7 +81,7 @@ def timed_recv_from_server(sock, conf, yet_to_read):
     assert yet_to_read > 0
     start_time = time_now()
     while yet_to_read > 0:
-        limit = min(conf.getint('client', 'max_recv_per_read'), yet_to_read)
+        limit = min(conf.getint('scanner', 'max_recv_per_read'), yet_to_read)
         try:
             read_this_time = len(sock.recv(limit))
         except (socket.timeout, ConnectionResetError, BrokenPipeError) as e:
@@ -99,7 +99,7 @@ def measure_rtt_to_server(sock, conf):
     not all of them can be made, return None. Otherwise return a list of the
     RTTs (in seconds). '''
     rtts = []
-    for _ in range(0, conf.getint('client', 'num_rtts')):
+    for _ in range(0, conf.getint('scanner', 'num_rtts')):
         start_time = time_now()
         if not tell_server_amount(sock, MIN_REQ_BYTES):
             log.info('Unable to ping server on %d', sock.fileno())
@@ -148,7 +148,7 @@ def measure_relay(args, conf, helpers, cb, rl, relay):
        4.4. write down the results
 
     '''
-    our_nick = conf['client']['nickname']
+    our_nick = conf['scanner']['nickname']
     helper = helpers.next(blacklist=[relay.fingerprint])
     if not helper:
         log.warning('Unable to get helper to measure %s', relay.nickname)
@@ -169,8 +169,8 @@ def measure_relay(args, conf, helpers, cb, rl, relay):
         # circuit when we connect()
         stem_utils.add_event_listener(
             cb.controller, listener, EventType.STREAM)
-        s = make_socket(conf['client']['tor_socks_host'],
-                        conf.getint('client', 'tor_socks_port'))
+        s = make_socket(conf['scanner']['tor_socks_host'],
+                        conf.getint('scanner', 'tor_socks_port'))
         # This call blocks until we are connected (or give up). We get attched
         # to the right circuit in the background.
         connected = socket_connect(s, helper.server_host, helper.server_port)
@@ -197,13 +197,13 @@ def measure_relay(args, conf, helpers, cb, rl, relay):
     # SECOND: measure throughput on this circuit. Start with what should be a
     # small amount
     results = []
-    expected_amount = conf.getint('client', 'initial_read_request')
-    num_downloads = conf.getint('client', 'num_downloads')
+    expected_amount = conf.getint('scanner', 'initial_read_request')
+    num_downloads = conf.getint('scanner', 'num_downloads')
     download_times = {
-        'toofast': conf.getfloat('client', 'download_toofast'),
-        'min': conf.getfloat('client', 'download_min'),
-        'target': conf.getfloat('client', 'download_target'),
-        'max': conf.getfloat('client', 'download_max'),
+        'toofast': conf.getfloat('scanner', 'download_toofast'),
+        'min': conf.getfloat('scanner', 'download_min'),
+        'target': conf.getfloat('scanner', 'download_target'),
+        'max': conf.getfloat('scanner', 'download_max'),
     }
     while len(results) < num_downloads:
         if expected_amount == MAX_REQ_BYTES:
@@ -314,7 +314,7 @@ def run_speedtest(args, conf):
         args, conf, controller=controller)
     if not helpers:
         fail_hard(error_msg)
-    max_pending_results = conf.getint('client', 'measurement_threads')
+    max_pending_results = conf.getint('scanner', 'measurement_threads')
     pool = Pool(max_pending_results)
     pending_results = []
     while True:
@@ -332,11 +332,11 @@ def run_speedtest(args, conf):
 
 
 def gen_parser(sub):
-    d = 'The client side of sbws. This should be run on a well-connected '\
+    d = 'The scanner side of sbws. This should be run on a well-connected '\
         'machine on the Internet with a healthy amount of spare bandwidth. '\
         'This continuously builds circuits, measures relays, and dumps '\
         'results into a datadir, commonly found in ~/.sbws'
-    sub.add_parser('client', formatter_class=ArgumentDefaultsHelpFormatter,
+    sub.add_parser('scanner', formatter_class=ArgumentDefaultsHelpFormatter,
                    description=d)
 
 
@@ -344,7 +344,7 @@ def main(args, conf):
     if not is_initted(args.directory):
         fail_hard('Sbws isn\'t initialized. Try sbws init')
 
-    if conf.getint('client', 'measurement_threads') < 1:
+    if conf.getint('scanner', 'measurement_threads') < 1:
         fail_hard('Number of measurement threads must be larger than 1')
 
     if conf['tor']['control_type'] not in ['port', 'socket']:

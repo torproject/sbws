@@ -1,5 +1,5 @@
 import sbws.core.cleanup
-import sbws.core.client
+import sbws.core.scanner
 import sbws.core.generate
 import sbws.core.init
 import sbws.core.pwgen
@@ -28,7 +28,7 @@ def create_parser():
                    help='Name of the .sbws directory')
     sub = p.add_subparsers(dest='command')
     sbws.core.cleanup.gen_parser(sub)
-    sbws.core.client.gen_parser(sub)
+    sbws.core.scanner.gen_parser(sub)
     sbws.core.generate.gen_parser(sub)
     sbws.core.init.gen_parser(sub)
     sbws.core.pwgen.gen_parser(sub)

@@ -85,7 +85,7 @@ is fully bootstrapped and has the right size of consensus.
 
 The "right size of consensus" is determined based on the number of data
 directories given to check. If that is not okay to assume (for example, there
-are some client data directories given to check), then specify the size
+are some scanner data directories given to check), then specify the size
 manually with --size.
 
 Waits up to 60 seconds for each check for each tor.

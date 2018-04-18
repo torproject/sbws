@@ -7,11 +7,11 @@ log = logging.getLogger(__name__)
 
 G_PKG_DIR = os.path.abspath(os.path.dirname(__file__))
 
-# Minimum and maximum number of bytes a client is allowed to request from a
+# Minimum and maximum number of bytes a scanner is allowed to request from a
 # server. If these are changed, a WIRE_PROTO_VER bump is required, which also
 # happens to require an sbws major version bump.
 #
-# Note for smart people and people who pull out Wireshark: Even if the client
+# Note for smart people and people who pull out Wireshark: Even if the scanner
 # requests 1 byte, that request and the 1 byte response will each be carried
 # over the Internet in 514 byte Tor cells. Theoretically we could bump the
 # minimum request size up to ~498 bytes, but I see no reason why we should.

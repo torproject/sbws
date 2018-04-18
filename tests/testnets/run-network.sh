@@ -30,7 +30,7 @@ echo 'All ready!'
 
 sbws -d . server > debug.server.log &
 sleep 1
-sbws -d . client > debug.client.log &
+sbws -d . scanner > debug.scanner.log &
 
 run_time="45"
 echo "Running for $run_time seconds ..."

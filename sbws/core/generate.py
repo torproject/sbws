@@ -113,7 +113,7 @@ def main(args, conf):
         fresh_days, datadir, success_only=True)
     if len(results) < 1:
         log.warning('No recent results, so not generating anything. (Have you '
-                    'ran sbws client recently?)')
+                    'ran sbws scanner recently?)')
         return
     data = group_results_by_relay(results)
     data_lines = [result_data_to_v3bw_line(data, fp) for fp in data]

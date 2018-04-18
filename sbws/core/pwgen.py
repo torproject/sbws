@@ -6,7 +6,7 @@ ALPHABET = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 
 
 def gen_parser(sub):
-    d = 'Generate a password suitable for use by a sbws client for '\
+    d = 'Generate a password suitable for use by a sbws scanner for '\
         'authenticating to an sbws server.'
     p = sub.add_parser('pwgen', formatter_class=ArgumentDefaultsHelpFormatter,
                        description=d)

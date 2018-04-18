@@ -243,8 +243,14 @@ def _validate_helpers(conf):
     err_tmpl = Template('$sec/$key ($val): $e')
     addtional_helper_sections = []
     for key in section.keys():
-        valid, error_msg = _validate_boolean(section, key)
         value = section[key]
+        if key == 'reachability_test_every':
+            valid, error_msg = _validate_int(section, key, minimum=1)
+            if not valid:
+                errors.append(err_tmpl.substitute(
+                    sec=sec, key=key, val=value, e=error_msg))
+            continue
+        valid, error_msg = _validate_boolean(section, key)
         if not valid:
             errors.append(err_tmpl.substitute(
                 sec=sec, key=key, val=value, e=error_msg))

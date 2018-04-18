@@ -148,9 +148,6 @@ echo "
 datadir = \${sbws_home}/datadir
 sbws_home = $(pwd)
 
-[general]
-log_level = debug
-
 [tor]
 control_type = socket
 control_location = \${paths:sbws_home}/$client_tor_socks_proxy_nick/control_socket

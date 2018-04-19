@@ -66,3 +66,10 @@ Why is there authentication between sbws scanner and sbws server?
 
 So random people on the Internet cannot discover an :term:`sbws server` and ask
 it to repeatedly send large amounts of data or otherwise abuse it.
+
+What ports does sbws use by default?
+------------------------------------
+
+- **31648/tcp**: The :term:`sbws server` listens on this port by default. It
+  does not need to be reachable from the Internet, but only from the
+  :term:`helper relay` near it.

@@ -30,7 +30,8 @@ class HelperRelay:
 
 
 class HelperRelayList:
-    def __init__(self, args, conf, helpers, controller=None):
+    def __init__(self, args, conf, helpers, stream_building_lock,
+                 controller=None):
         if controller is None:
             c, error_msg = stem_utils.init_controller_with_config(conf)
             assert c, error_msg
@@ -42,7 +43,7 @@ class HelperRelayList:
         self.helpers = helpers
 
     @staticmethod
-    def from_config(args, conf, controller=None):
+    def from_config(args, conf, stream_building_lock, controller=None):
         ''' Returns a new HelperRelayList and an empty string if everything
         goes okay loading HelperRelays from the given config file. Otherwise,
         returns None and an error string '''
@@ -58,7 +59,8 @@ class HelperRelayList:
             log.debug('Loading info for helper %s', key)
             helpers.append(HelperRelay(conf[helper_sec]))
         return HelperRelayList(
-            args, conf, helpers, controller=controller), ''
+            args, conf, helpers, stream_building_lock,
+            controller=controller), ''
 
     def next(self, blacklist=[]):
         ''' Returns the next helper in the list that should be used. Do not

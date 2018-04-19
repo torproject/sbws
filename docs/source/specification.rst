@@ -14,8 +14,6 @@ in this document are to be interpreted as described in BCP 14 (:rfc:`2119`
 and :rfc:`8174`) when, and only when, they appear in all capitals, as shown
 here.
 
-.. todo:: if that is added then change following numeration
-
 Background
 ----------
 

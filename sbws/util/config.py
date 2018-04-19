@@ -160,24 +160,15 @@ def _validate_scanner(conf):
         'download_target': {'minimum': 0.001, 'maximum': None},
         'download_max': {'minimum': 0.001, 'maximum': None},
     }
-    hosts = {
-        'tor_socks_host': {},
-    }
-    ports = {
-        'tor_socks_port': {},
-    }
     bools = {
         'measure_authorities': {},
     }
     all_valid_keys = list(ints.keys()) + list(floats.keys()) + \
-        list(hosts.keys()) + list(ports.keys()) + list(bools.keys()) + \
-        ['nickname']
+        list(bools.keys()) + ['nickname']
     errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))
     errors.extend(_validate_section_ints(conf, sec, ints, err_tmpl))
     errors.extend(_validate_section_floats(conf, sec, floats, err_tmpl))
     # XXX: validate hosts func doesn't do anything currently
-    errors.extend(_validate_section_hosts(conf, sec, hosts, err_tmpl))
-    errors.extend(_validate_section_ports(conf, sec, ports, err_tmpl))
     errors.extend(_validate_section_bools(conf, sec, bools, err_tmpl))
     valid, error_msg = _validate_nickname(conf[sec], 'nickname')
     if not valid:
@@ -229,10 +220,19 @@ def _validate_tor(conf):
     enums = {
         'control_type': {'valid': ['port', 'socket']},
     }
+    hosts = {
+        'socks_host': {},
+    }
+    ports = {
+        'socks_port': {},
+    }
     unvalidated_keys = ['control_location']
-    all_valid_keys = list(enums.keys()) + unvalidated_keys
+    all_valid_keys = list(enums.keys()) + list(hosts.keys()) + \
+        list(ports.keys()) + unvalidated_keys
     errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))
     errors.extend(_validate_section_enums(conf, sec, enums, err_tmpl))
+    errors.extend(_validate_section_hosts(conf, sec, hosts, err_tmpl))
+    errors.extend(_validate_section_ports(conf, sec, ports, err_tmpl))
     return errors
 
 

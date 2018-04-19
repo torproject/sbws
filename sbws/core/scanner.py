@@ -138,8 +138,8 @@ def measure_relay(args, conf, helpers, cb, rl, relay):
         # circuit when we connect()
         stem_utils.add_event_listener(
             cb.controller, listener, EventType.STREAM)
-        s = make_socket(conf['scanner']['tor_socks_host'],
-                        conf.getint('scanner', 'tor_socks_port'))
+        s = make_socket(conf['tor']['socks_host'],
+                        conf.getint('tor', 'socks_port'))
         # This call blocks until we are connected (or give up). We get attched
         # to the right circuit in the background.
         connected = socket_connect(s, helper.server_host, helper.server_port)

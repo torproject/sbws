@@ -151,11 +151,11 @@ sbws_home = $(pwd)
 [tor]
 control_type = socket
 control_location = \${paths:sbws_home}/$scanner_tor_socks_proxy_nick/control_socket
+socks_host = $scanner_tor_socks_proxy_ip
+socks_port = $socksport
 
 [scanner]
 nickname = SbwsTestnetScanner
-tor_socks_host = $scanner_tor_socks_proxy_ip
-tor_socks_port = $socksport
 measurement_threads = 4
 download_toofast = 0.1
 download_min = 1

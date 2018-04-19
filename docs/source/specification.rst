@@ -16,8 +16,8 @@ here.
 
 .. todo:: if that is added then change following numeration
 
-0. Background
--------------
+Background
+----------
 
 Some of the Tor directory authorities runs bandwidth scanners to measure the
 bandwidth of relays and include their measurements in their network status
@@ -47,8 +47,8 @@ relay to a waiting server. Next we describe the process of periodically turning
 recently gathered results into an aggregate format ready for including in a
 bandwidth authority's votes.
 
-X. System overview
--------------------
+System overview
+---------------
 
 - :term:`sbws client`:
   The ``sbws`` implementation that perform the measurements
@@ -60,8 +60,8 @@ X. System overview
 - :term:`helper relay`:
   The exit relay used by ``sbws client`` circuits to obtain data from the ``sbws server``
 
-1. Anatomy of a Tor network using sbws
---------------------------------------
+Anatomy of a Tor network using sbws
+-----------------------------------
 
 First and foremost, the Tor network needs one or more helper relays to act as
 exits in the two hop circuits that sbws measurement scanners build. These helper
@@ -86,8 +86,8 @@ This aggregates the previous few days' worth of measurement results into one
 RTT and one bandwidth per relay ever measured within the validity period. The
 bandwidth authority includes these aggregated results in its votes.
 
-2. Configuring Tor and sbws
----------------------------
+Configuring Tor and sbws
+------------------------
 
 .. note:: i'd move all section 2 to :doc:`DEPLOY` and :doc:`config`
 
@@ -98,8 +98,8 @@ changes are required.
 Sbws uses Stem_ to communicate with Tor over its ControlPort and PySocks_ to proxy
 traffic over Tor's SocksPort.
 
-2.1 Configuring the sbws server
--------------------------------
+Configuring the sbws server
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For an sbws server, its helper relay must have a few exit options set.
 
@@ -117,8 +117,8 @@ addresses on the local machine. Finally we have a simple exit policy that
 allows exiting to the local machine on a single port and rejects all other exit
 traffic. *The relay will not get the exit flag.*
 
-2.2 Configuring the sbws scanner
--------------------------------
+Configuring the sbws scanner
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For an sbws scanner, its Tor scanner configuration is even simpler. In addition
 to making sure it has a SocksPort, ControlPort, and some form of ControlPort
@@ -141,8 +141,8 @@ two options.
 The former simply to cut down on the number of unused circuits and the latter
 so that the scanner can attach streams to circuits manually.
 
-2.3 Sbws scanner/server authentication
--------------------------------------
+Sbws scanner/server authentication
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **XXX This will be changed very soon to be more user friendly, but the idea is
 the same.**
@@ -155,19 +155,19 @@ The sbws similarly keeps a ``passwords.txt``, but its contains many 64
 character passwords. When a scanner connects, it must provide one of the 64
 character passwords in the server's ``passwords.txt``.
 
-3. How it all works
--------------------
+How it all works
+----------------
 
 We now describe various core parts of sbws.
 
-3.0 Selecting the relays to measure
-------------------------------------
+Selecting the relays to measure
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. todo:: explain here how relays are selected (random),
 apart of the prioritization below
 
-3.1 Simple relay prioritization
--------------------------------
+Simple relay prioritization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This may be the most complex part of sbws.
 
@@ -213,14 +213,14 @@ measurements that were not successful. This makes the sum of freshnesses lower
 for that relay, and therefore the priority *better* so it can be measured again
 sooner.
 
-3.2 Simple wire protocol
-------------------------
+Simple wire protocol
+~~~~~~~~~~~~~~~~~~~~
 
 In this subsection, the scanner/server communication that takes place after a
 Tor circuit is built and a TCP connection created in it is described.
 
-3.2.1 Simple handshake
-----------------------
+Simple handshake
+''''''''''''''''
 
 After initiating a TCP connection over Tor to the server, the sbws scanner sends
 4 magic bytes indicating it intends to speak sbws' protocol. If the first four
@@ -245,8 +245,8 @@ MUST send to the scanner the 1 byte success code.
 Once the scanner receives the success code, the handshake is complete and the
 simple loop may begin.
 
-3.2.2 Simple loop
------------------
+Simple loop
+'''''''''''
 
 To begin the loop, the sbws scanner decides how many bytes it would like to
 download from the server. To inform the server, it encodes an integer as text
@@ -264,8 +264,8 @@ sent the amount it was expecting. At this point the scanner MUST close the
 connection if it does not wish to make any more requests. Otherwise, the simple
 loop starts over.
 
-3.3 Simple Result Storage
--------------------------
+Simple Result Storage
+~~~~~~~~~~~~~~~~~~~~~
 
 Internally, sbws has a hierarchy of ``Result`` classes for easy managing of
 different types of result (success, error-because-of-circuit-error,
@@ -360,8 +360,8 @@ And this is an example result from a failed measurement.
     }
 
 
-3.4 Simple result processing
-----------------------------
+Simple result processing
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. note:: "Periodically": how much time should that be?
 

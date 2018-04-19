@@ -17,18 +17,19 @@ here.
 Background
 ----------
 
-Some of the Tor directory authorities runs bandwidth scanners to measure the
-bandwidth of relays and include their measurements in their network status
-votes.  Scanner use the consensus of these weights to inform their path
-selection process with the hope that every circuit they build will have roughly
-equal performance, regardless of the relays chosen. This achieves a form of
-load balancing.
+Some of the Tor :term:`directory authorities <directory authority>`
+runs bandwidth scanners to measure the bandwidth of relays and include their
+measurements in their network status votes.  Scanner use the consensus of these
+weights to inform their path selection process with the hope that every circuit
+they build will have roughly equal performance, regardless of the relays
+chosen. This achieves a form of load balancing.
 
 .. _problem:
 
-Historically, the directory authorities that ran bandwidth scanners (bandwidth
-authorities), ran torflow_. Time passed, it slowly become less maintained,
-and the collective knowledge of how it worked slipped away.
+Historically, the directory authorities that ran bandwidth scanners
+(:term:`bandwidth authorities <bandwidth authority>`), ran torflow_. Time
+passed, it slowly become less maintained, and the collective knowledge of how
+it worked slipped away.
 
 The bandwidth authorities became increasingly unhappy having to run torflow.
 Twice yearly Tor Project meetings came and went. Everyone agreed a replacement

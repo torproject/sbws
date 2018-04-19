@@ -1,4 +1,4 @@
-from stem import (CircuitExtensionFailed, InvalidRequest)
+from stem import (CircuitExtensionFailed, InvalidRequest, ProtocolError)
 import random
 import sbws.util.stem as stem_utils
 from .relaylist import RelayList
@@ -85,7 +85,8 @@ class CircuitBuilder:
         for _ in range(0, 3):
             try:
                 circ_id = c.new_circuit(path, await_build=True)
-            except (InvalidRequest, CircuitExtensionFailed) as e:
+            except (InvalidRequest, CircuitExtensionFailed,
+                    ProtocolError) as e:
                 log.warning(e)
                 continue
             self.built_circuits.add(circ_id)

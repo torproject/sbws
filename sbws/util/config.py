@@ -241,7 +241,7 @@ def _validate_helpers(conf):
     sec = 'helpers'
     section = conf[sec]
     err_tmpl = Template('$sec/$key ($val): $e')
-    addtional_helper_sections = []
+    additional_helper_sections = []
     for key in section.keys():
         value = section[key]
         if key == 'reachability_test_every':
@@ -257,7 +257,7 @@ def _validate_helpers(conf):
             continue
         assert valid
         if section.getboolean(key):
-            addtional_helper_sections.append('{}.{}'.format(sec, key))
+            additional_helper_sections.append('{}.{}'.format(sec, key))
     fps = {
         'relay': {},
     }
@@ -272,7 +272,7 @@ def _validate_helpers(conf):
     }
     all_valid_keys = list(fps.keys()) + list(hosts.keys()) + \
         list(ports.keys()) + list(passwords.keys())
-    for sec in addtional_helper_sections:
+    for sec in additional_helper_sections:
         if sec not in conf:
             errors.append('{} is an enabled helper but is not a section in '
                           'the config'.format(sec))

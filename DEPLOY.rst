@@ -3,11 +3,6 @@ Deploying Simple Bandwidth Scanner
 
 .. todo::
 
-    Determine if the helper exit can specify 127.0.0.1 as the location of
-    the sbws server. Replace all instances of **XX1** with the answer.
-
-.. todo::
-
     Determine if the sbws client and server can be on the same machine.
     Replace all instances of **XX2** with the answer.
 
@@ -91,8 +86,6 @@ those passwords you generated earlier.
     ``server_host`` can be an IP address. IPv4 will work. IPv6 will work
     without ``[brackets]``
 
-**XX1**
-
 At this point you are done on ClientMachine for now. You should verify that the
 configuration is most likely valid by running a simple sbws command and seeing
 if it complains. The following indicates there is no problem.
@@ -132,7 +125,6 @@ torrc options.
     # End modifications needed for a non-exit sbws helper relay
 
 Replace ``33.33.33.33`` with the IP address of this machine.
-**XX1**
 
 If this is an exit relay, you will still need to set
 ``ExitPolicyRejectPrivate 0`` and allow exiting to a local IP address on a single
@@ -157,7 +149,6 @@ manually. The exit part of your torrc should look something like this.
     # End exit relay config and modifications needed for an exit sbws helper relay
 
 Again, replacing ``33.33.33.33`` with the IP address of this machine.
-**XX1**
 
 Once you are done editing your torrc, reload Tor. Make sure Tor is still
 running.
@@ -175,7 +166,9 @@ for this machine.
     [server]
     bind_ip = 33.33.33.33
 
-**XX1**
+You can set the ``bind_ip`` to ``0.0.0.0`` if you would like. It does not need
+to be reachable from the Internet, so you probably want to make sure your
+firewall does not allow incoming connections to sbws server's port.
 
 Now it's time to tell the sbws which clients we want to allow to use our
 server. Gather the 64 character passwords from all the clients you want to

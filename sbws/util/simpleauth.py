@@ -64,7 +64,7 @@ def authenticate_scanner(sock, conf_section):
 
 def authenticate_to_server(sock, pw):
     '''
-    Use this on the server side to send bytes to the server and properly
+    Use this on the scanner side to send bytes to the server and properly
     authenticate to them.
 
     :param socket.socket sock: The open and blocking socket to use to

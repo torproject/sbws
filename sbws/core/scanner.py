@@ -9,15 +9,15 @@ from ..lib.relaylist import RelayList
 from ..lib.relayprioritizer import RelayPrioritizer
 from ..lib.helperrelay import HelperRelayList
 from ..util.simpleauth import authenticate_to_server
+from ..util.sockio import (make_socket, close_socket, socket_connect)
 from sbws.globals import (fail_hard, is_initted, time_now)
-from sbws.globals import (MIN_REQ_BYTES, MAX_REQ_BYTES, SOCKET_TIMEOUT)
+from sbws.globals import (MIN_REQ_BYTES, MAX_REQ_BYTES)
 import sbws.util.stem as stem_utils
 from stem.control import EventType
 from argparse import ArgumentDefaultsHelpFormatter
 from multiprocessing.dummy import Pool
 from threading import Event
 from threading import RLock
-import socks
 import socket
 import time
 import os
@@ -26,37 +26,6 @@ import logging
 end_event = Event()
 stream_building_lock = RLock()
 log = logging.getLogger(__name__)
-
-
-def make_socket(socks_host, socks_port):
-    ''' Make a socket that uses the provided socks5 proxy. Note at this point
-    the socket hasn't connect()ed anywhere '''
-    s = socks.socksocket()
-    s.set_proxy(socks.PROXY_TYPE_SOCKS5, socks_host, socks_port)
-    s.settimeout(SOCKET_TIMEOUT)
-    return s
-
-
-def close_socket(s):
-    ''' Close the socket, and ignore errors '''
-    try:
-        s.shutdown(socket.SHUT_RDWR)
-        s.close()
-    except Exception:
-        pass
-
-
-def socket_connect(s, addr, port):
-    ''' connect() to addr:port on the given socket. Unknown compatibility with
-    IPv6. Works with IPv4 and hostnames '''
-    try:
-        s.connect((addr, port))
-        log.debug('Connected to %s:%d via %d', addr, port, s.fileno())
-    except (socket.timeout, socks.GeneralProxyError,
-            socks.ProxyConnectionError) as e:
-        log.warning(e)
-        return False
-    return True
 
 
 def tell_server_amount(sock, expected_amount):

@@ -48,6 +48,7 @@ class HelperRelayList:
             self.controller = c
         else:
             self.controller = controller
+        assert len(helpers) > 0
         for helper in helpers:
             assert isinstance(helper, HelperRelay)
         self._socks_proxy = (conf['tor']['socks_host'],

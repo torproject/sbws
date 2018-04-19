@@ -3,6 +3,7 @@ Simple Bandwidth Scanner Specification
 
 :Author: Matt Traudt
 :Date: 29 March 2018
+:Last Update: 19 April 2018
 :Status: Draft
 
 Conventions

@@ -258,9 +258,6 @@ def _validate_helpers(conf):
         assert valid
         if section.getboolean(key):
             addtional_helper_sections.append('{}.{}'.format(sec, key))
-    if len(addtional_helper_sections) < 1:
-        errors.append('Need more than 0 enabled helpers in [{}] section'
-                      .format(sec))
     fps = {
         'relay': {},
     }

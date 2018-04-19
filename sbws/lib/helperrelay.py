@@ -80,6 +80,8 @@ class HelperRelayList:
             assert helper_sec in conf  # validate_config should require this
             log.debug('Loading info for helper %s', key)
             helpers.append(HelperRelay(conf[helper_sec]))
+        if len(helpers) < 1:
+            return None, 'No enabled helpers in config'
         return HelperRelayList(args, conf, helpers, controller=controller), ''
 
     def _should_perform_reachability_test(self):

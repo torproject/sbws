@@ -280,7 +280,7 @@ def run_speedtest(args, conf):
     rd = ResultDump(args, conf, end_event)
     rp = RelayPrioritizer(args, conf, rl, rd)
     helpers, error_msg = HelperRelayList.from_config(
-        args, conf, stream_building_lock, controller=controller)
+        args, conf, controller=controller)
     if not helpers:
         fail_hard(error_msg)
     max_pending_results = conf.getint('scanner', 'measurement_threads')

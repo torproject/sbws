@@ -7,6 +7,7 @@ from stem.descriptor.router_status_entry import RouterStatusEntryV3
 from threading import RLock
 import random
 import logging
+import time
 
 log = logging.getLogger(__name__)
 
@@ -150,8 +151,18 @@ class HelperRelayList:
         pick a helper that has a relay with a fingerprint in the given
         blacklist. Returns None if no valid helper is available. '''
         with self._reachability_lock:
-            if self._should_perform_reachability_test():
-                self._perform_reachability_test()
+            while True:
+                if self._should_perform_reachability_test():
+                    self._perform_reachability_test()
+                if len(self._usable_helpers) > 0:
+                    break
+                time_till_next_check = self._reachability_test_every + 0.001
+                log.warning('Of our %d configured helpers, none are usable at '
+                            'this time. Sleeping %f seconds on this blocking '
+                            'call to HelperRelayList.next() until we can '
+                            'check for a usable helper again.',
+                            len(self._all_helpers), time_till_next_check)
+                time.sleep(time_till_next_check)
         assert not self._should_perform_reachability_test()
         random.shuffle(self._usable_helpers)
         for helper in self._usable_helpers:

@@ -86,7 +86,7 @@ class CircuitBuilder:
             try:
                 circ_id = c.new_circuit(path, await_build=True)
             except (InvalidRequest, CircuitExtensionFailed) as e:
-                log.info(e)
+                log.warning(e)
                 continue
             self.built_circuits.add(circ_id)
             return circ_id

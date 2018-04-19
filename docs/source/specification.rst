@@ -5,6 +5,18 @@ Simple Bandwidth Scanner Specification
 :Date: 29 March 2018
 :Status: Draft
 
+0. Conventions
+------------------
+
+.. note:: specification sounds as synonym to me to RFC :)
+   though so far this does not seem needed
+
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
+"SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL"
+in this document are to be interpreted as described in BCP 14 :rfc:`2119`
+:rfc:`8174` when, and only when, they appear in all capitals, as shown here.
+
+.. todo:: if that is added then change following numeration
 
 0. Background
 -------------
@@ -15,6 +27,8 @@ votes.  Scanner use the consensus of these weights to inform their path
 selection process with the hope that every circuit they build will have roughly
 equal performance, regardless of the relays chosen. This achieves a form of
 load balancing.
+
+.. _problem:
 
 Historically, the directory authorities that ran bandwidth scanners (bandwidth
 authorities), ran torflow_. Time passed, it slowly become less maintained,
@@ -35,6 +49,18 @@ relay to a waiting server. Next we describe the process of periodically turning
 recently gathered results into an aggregate format ready for including in a
 bandwidth authority's votes.
 
+X. System overview
+-------------------
+
+- :term:`sbws client`:
+  The ``sbws`` implementation that perform the measurements
+- :term:`bandwidth authority`:
+  The server that runs ``sbws client``. It can also be a directory authorithy
+  or send the measurements to it.
+- :term:`sbws server`:
+  The ``sbws`` implementation that serves data used to measure the bandwidth
+- :term:`helper relay`:
+  The exit relay used by ``sbws client`` circuits to obtain data from the ``sbws server``
 
 1. Anatomy of a Tor network using sbws
 --------------------------------------
@@ -64,6 +90,8 @@ bandwidth authority includes these aggregated results in its votes.
 
 2. Configuring Tor and sbws
 ---------------------------
+
+.. note:: i'd move all section 2 to :doc:`DEPLOY` and :doc:`config`
 
 Sbws does not require any complicated modifications to Tor. For all parts of
 sbws that interact with a Tor daemon, only a couple of simple configuration
@@ -134,7 +162,11 @@ character passwords in the server's ``passwords.txt``.
 
 We now describe various core parts of sbws.
 
-.. _prioritization:
+3.0 Selecting the relays to measure
+------------------------------------
+
+.. todo:: explain here how relays are selected (random),
+apart of the prioritization below
 
 3.1 Simple relay prioritization
 -------------------------------
@@ -332,6 +364,8 @@ And this is an example result from a failed measurement.
 
 3.4 Simple result processing
 ----------------------------
+
+.. note:: "Periodically": how much time should that be?
 
 Periodically the bandwidth authorities need to use the results that have been
 gathered to inform their vote about relays' bandwidths. To do this they use

@@ -9,22 +9,19 @@ from ..lib.relaylist import RelayList
 from ..lib.relayprioritizer import RelayPrioritizer
 from ..lib.helperrelay import HelperRelayList
 from ..util.simpleauth import authenticate_to_server
-from ..util.sockio import (make_socket, close_socket, socket_connect)
+from ..util.sockio import (make_socket, close_socket)
 from sbws.globals import (fail_hard, is_initted, time_now)
 from sbws.globals import (MIN_REQ_BYTES, MAX_REQ_BYTES)
 import sbws.util.stem as stem_utils
-from stem.control import EventType
 from argparse import ArgumentDefaultsHelpFormatter
 from multiprocessing.dummy import Pool
 from threading import Event
-from threading import RLock
 import socket
 import time
 import os
 import logging
 
 end_event = Event()
-stream_building_lock = RLock()
 log = logging.getLogger(__name__)
 
 
@@ -129,24 +126,14 @@ def measure_relay(args, conf, helpers, cb, rl, relay):
             relay, [relay.fingerprint, helper.fingerprint], helper.server_host,
             our_nick)
     circ_fps = cb.get_circuit_path(circ_id)
-    # A function that attaches all streams that gets created on
-    # connect() to the given circuit
-    listener = stem_utils.attach_stream_to_circuit_listener(
-        cb.controller, circ_id)
-    with stream_building_lock:
-        # Tell stem about our listener so it can attach the stream to the
-        # circuit when we connect()
-        stem_utils.add_event_listener(
-            cb.controller, listener, EventType.STREAM)
-        s = make_socket(conf['tor']['socks_host'],
-                        conf.getint('tor', 'socks_port'))
-        # This call blocks until we are connected (or give up). We get attched
-        # to the right circuit in the background.
-        connected = socket_connect(s, helper.server_host, helper.server_port)
-        stem_utils.remove_event_listener(cb.controller, listener)
+    s = make_socket(conf['tor']['socks_host'],
+                    conf.getint('tor', 'socks_port'))
+    connected = stem_utils.connect_over_circuit(
+        cb.controller, circ_id, s, helper.server_host, helper.server_port)
     if not connected:
         log.info('Unable to connect to %s:%d', helper.server_host,
                  helper.server_port)
+        close_socket(s)
         cb.close_circuit(circ_id)
         return
     if not authenticate_to_server(s, helper.password):

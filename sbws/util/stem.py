@@ -1,10 +1,14 @@
-from stem.control import Controller
+from stem.control import (Controller, EventType)
 from stem import (SocketError, InvalidRequest, UnsatisfiableRequest)
 from stem.connection import IncorrectSocketType
 from configparser import ConfigParser
+from threading import RLock
 import logging
+from sbws.util.sockio import socket_connect
 
 log = logging.getLogger(__name__)
+
+stream_building_lock = RLock()
 
 __all__ = [
     'add_event_listener',
@@ -56,6 +60,15 @@ def remove_event_listener(controller, func):
         log.warning('Controller not okay so not trying to remove event')
         return
     controller.remove_event_listener(func)
+
+
+def connect_over_circuit(controller, circ_id, sock, host, port):
+    with stream_building_lock:
+        listener = attach_stream_to_circuit_listener(controller, circ_id)
+        add_event_listener(controller, listener, EventType.STREAM)
+        connected = socket_connect(sock, host, port)
+        remove_event_listener(controller, listener)
+    return connected
 
 
 def init_controller(port=None, path=None, set_custom_stream_settings=True):

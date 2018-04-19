@@ -86,7 +86,10 @@ def authenticate_to_server(sock, pw):
         log.warning(e)
         return False
     if msg != SUCCESS_BYTES:
-        log.warning('Didn\'t get success code from server')
+        log.warning('Didn\'t get success code from server. Most likely the '
+                    'password we are giving it is wrong. It\'s also possible '
+                    'the server doesn\'t support wire protocol version %d.',
+                    wire_proto_ver)
         return False
     return True
 

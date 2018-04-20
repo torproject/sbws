@@ -11,8 +11,8 @@ function fail_hard {
 }
 
 make=$(which gmake &>/dev/null && echo "gmake" || echo "make")
-venv=$(pwd)/venv
-sbws_repo="$1"
+sbws_repo="$(realpath $1)"
+venv="$sbws_repo/venv"
 
 [ -d "$venv" ] || fail_hard "$venv doesn't exist"
 [ ! -z "$sbws_repo" ] || fail_hard "$0 <sbws_repo>"

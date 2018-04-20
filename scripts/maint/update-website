@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -e
+function cleanup {
+        echo -n ''
+}
+trap cleanup EXIT
+
+function fail_hard {
+        echo "$1"
+        exit 1
+}
+
+make=$(which gmake &>/dev/null && echo "gmake" || echo "make")
+venv=$(pwd)/venv
+sbws_repo="$1"
+
+[ -d "$venv" ] || fail_hard "$venv doesn't exist"
+[ ! -z "$sbws_repo" ] || fail_hard "$0 <sbws_repo>"
+[ -d "$sbws_repo" ] || fail_hard "$sbws_repo doesn't exist"
+
+pushd "$sbws_repo"
+
+git pull
+source "$venv/bin/activate"
+pip install -U --upgrade-strategy eager .[doc]
+
+pushd docs
+$make html
+popd

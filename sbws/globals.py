@@ -25,6 +25,7 @@ SOCKET_TIMEOUT = 60  # seconds
 
 def is_initted(d):
     if not os.path.isdir(d):
+        log.debug('%s not initialized: %s doesn\'t exist', d, d)
         return False
     conf_fnames = [os.path.join(d, 'config.ini'),
                    os.path.join(d, 'config.log.ini')]
@@ -32,6 +33,7 @@ def is_initted(d):
         if not os.path.isfile(fname):
             log.debug('%s not initialized: missing %s', d, fname)
             return False
+    log.debug('%s seems initialized.', d)
     return True
 
 

@@ -34,7 +34,7 @@ def result_data_to_v3bw_line(data, fingerprint):
         assert isinstance(res, ResultSuccess)
     results = data[fingerprint]
     nick = results[0].nickname
-    speeds = [dl['amount'] / dl['duration']
+    speeds = [dl['amount'] / dl['duration'] / 1024
               for r in results for dl in r.downloads]
     speed = median(speeds)
     rtts = [rtt for r in results for rtt in r.rtts]

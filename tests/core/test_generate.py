@@ -104,7 +104,7 @@ def test_generate_single_success_noscale(dotsbws_success_result, caplog,
     v = 'version={}'.format(version)
     assert stdout_lines[1] == v
 
-    bw = round(median([dl['amount'] / dl['duration']
+    bw = round(median([dl['amount'] / dl['duration'] / 1024
                        for dl in result.downloads]))
     rtt = median([round(r * 1000) for r in result.rtts])
     bw_line = 'node_id=${} bw={} nick={} rtt={} time={}'.format(
@@ -166,8 +166,8 @@ def test_generate_single_relay_success_noscale(
     v = 'version={}'.format(version)
     assert stdout_lines[1] == v
 
-    speeds = [dl['amount'] / dl['duration'] for r in results
-              for dl in r.downloads]
+    speeds = [dl['amount'] / dl['duration'] / 1024
+              for r in results for dl in r.downloads]
     speed = round(median(speeds))
     rtt = round(median([round(r * 1000) for r in result.rtts]))
     bw_line = 'node_id=${} bw={} nick={} rtt={} time={}'.format(
@@ -233,8 +233,8 @@ def test_generate_two_relays_success_noscale(
     r1_time = round(max([r.time for r in r1_results]))
     r1_name = r1_results[0].nickname
     r1_fingerprint = r1_results[0].fingerprint
-    r1_speeds = [dl['amount'] / dl['duration'] for r in r1_results
-                 for dl in r.downloads]
+    r1_speeds = [dl['amount'] / dl['duration'] / 1024
+                 for r in r1_results for dl in r.downloads]
     r1_speed = round(median(r1_speeds))
     r1_rtt = round(median([round(rtt * 1000) for r in r1_results
                            for rtt in r.rtts]))
@@ -246,8 +246,8 @@ def test_generate_two_relays_success_noscale(
     r2_time = round(max([r.time for r in r2_results]))
     r2_name = r2_results[0].nickname
     r2_fingerprint = r2_results[0].fingerprint
-    r2_speeds = [dl['amount'] / dl['duration'] for r in r2_results
-                 for dl in r.downloads]
+    r2_speeds = [dl['amount'] / dl['duration'] / 1024
+                 for r in r2_results for dl in r.downloads]
     r2_speed = round(median(r2_speeds))
     r2_rtt = round(median([round(rtt * 1000) for r in r2_results
                            for rtt in r.rtts]))

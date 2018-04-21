@@ -14,8 +14,9 @@ log = logging.getLogger(__name__)
 class V3BWLine:
     def __init__(self, fp, bw, nick, rtts, last_time):
         self.fp = fp
-        self.bw = max(round(bw), 1)
         self.nick = nick
+        # convert to KiB and make sure the answer is at least 1
+        self.bw = max(round(bw / 1024), 1)
         # convert to ms
         rtts = [round(r * 1000) for r in rtts]
         self.rtt = round(median(rtts))
@@ -34,7 +35,7 @@ def result_data_to_v3bw_line(data, fingerprint):
         assert isinstance(res, ResultSuccess)
     results = data[fingerprint]
     nick = results[0].nickname
-    speeds = [dl['amount'] / dl['duration'] / 1024
+    speeds = [dl['amount'] / dl['duration']
               for r in results for dl in r.downloads]
     speed = median(speeds)
     rtts = [rtt for r in results for rtt in r.rtts]

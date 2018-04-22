@@ -121,6 +121,7 @@ def main(args, conf):
     data_lines = sorted(data_lines, key=lambda d: d.bw, reverse=True)
     data_lines = scale_lines(args, data_lines)
     log_stats(data_lines)
+    log.info('Writing v3bw file to %s', args.output)
     with open(args.output, 'wt') as fd:
         fd.write('{}\n'.format(int(time_now())))
         fd.write('version={}\n'.format(version))

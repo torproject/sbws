@@ -95,7 +95,7 @@ def gen_parser(sub):
 def log_stats(data_lines):
     assert len(data_lines) > 0
     total_bw = sum([l.bw for l in data_lines])
-    bw_per_line = total_bw / len(data_lines) / 1024
+    bw_per_line = total_bw / len(data_lines)
     log.info('Mean bandwidth per line: {:.2f} "KiB"'.format(bw_per_line))
 
 

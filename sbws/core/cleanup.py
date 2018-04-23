@@ -37,9 +37,14 @@ def _get_older_files_than(dname, num_days_ago, extensions):
     # in all dirs in the dname recursively
     all_fnames = set()
     for ext in extensions:
-        pattern = os.path.join(dname, '**', '*-*-*{}'.format(ext))
-        for fname in glob(pattern, recursive=True):
-            all_fnames.add(fname)
+        # Cannot use ** and recursive=True in glob() because we support 3.4
+        # So instead settle on finding files in the datadir and one
+        # subdirectory below the datadir that fit the form of YYYY-MM-DD*.txt
+        patterns = [os.path.join(dname, '*-*-*{}'.format(ext)),
+                    os.path.join(dname, '*', '*-*-*{}'.format(ext))]
+        for pattern in patterns:
+            for fname in glob(pattern):
+                all_fnames.add(fname)
     # Figure out what files are too new
     new_fnames = set()
     today = date.fromtimestamp(time_now())
@@ -47,10 +52,17 @@ def _get_older_files_than(dname, num_days_ago, extensions):
     working_day = oldest_day
     while working_day <= today:
         for ext in extensions:
-            pattern = os.path.join(
-                dname, '**', '{}*{}'.format(working_day, ext))
-            for fname in glob(pattern, recursive=True):
-                new_fnames.add(fname)
+            # Cannot use ** and recursive=True in glob() because we support 3.4
+            # So instead settle on finding files in the datadir and one
+            # subdirectory below the datadir that fit the form of
+            # YYYY-MM-DD*.txt
+            patterns = [
+                os.path.join(dname, '{}*{}'.format(working_day, ext)),
+                os.path.join(dname, '*', '{}*{}'.format(working_day, ext))
+            ]
+            for pattern in patterns:
+                for fname in glob(pattern):
+                    new_fnames.add(fname)
         working_day += timedelta(days=1)
     # Then return the files that are in all_fnames but not in new_fnames, as
     # these will the be ones that are too old

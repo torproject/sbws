@@ -76,7 +76,8 @@ license. See [`LICENSE.md`](/LICENSE.md) for more information.
 
 ## Documentation
 
-The sbws documentation can be found at
+The sbws documentation can be found at [Read the Docs](https://sbws.rtfd.io)
+and
 [this onion service](http://d7pxflytfsmz6uh3x7i2jxzzwea6nbpmtsz5tmfkcin5edapaig5vpyd.onion/)
 ([v2](http://sdmb3rfvp3wadu6y.onion/)).
 

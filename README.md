@@ -100,7 +100,9 @@ In this directory you will find
 
 - `config.ini` The configuration file you should be editing if you want to
   modify sbws's behavior.
-- `datadir` Once your sbws client has started gathering results, it will dump
+- `config.log.ini` The configuration file you should edit if you want to modify
+  how sbws logs.
+- `datadir` Once your sbws scanner has started gathering results, it will dump
   them into this directory. Other sbws commands (such as generate and stats)
   read results from the files in this directory.
 

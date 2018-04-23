@@ -22,10 +22,6 @@ MIN_TO_RETURN = 50
 #
 # Alternatively, we could rewrite best_priority() to not suck so much.
 PERCENT_TO_RETURN = 0.05  # 5%
-# How much we reduce freshness for results that were non-successful. A larger
-# penality reduces freshness more, therefore the relay's priority will be
-# better, therefore we'll measure it again sooner.
-ERROR_PENALTY = 0.5
 
 
 class RelayPrioritizer:
@@ -83,9 +79,13 @@ class RelayPrioritizer:
                     # Reduce the freshness for results containing errors so
                     # that they are not de-prioritized as much. This way, we
                     # will come back to them sooner to try again.
-                    log.debug('Cutting freshness for a %s result for %s',
-                              result.type.value, relay.nickname)
-                    freshness *= (1 - ERROR_PENALTY)
+                    assert result.freshness_reduction_factor >= 0.0
+                    assert result.freshness_reduction_factor <= 1.0
+                    log.debug('Cutting freshness for a %s result by %d%% for '
+                              '%s', result.type.value,
+                              result.freshness_reduction_factor * 100,
+                              relay.nickname)
+                    freshness *= result.freshness_reduction_factor
                 priority += freshness
             relay.priority = priority
         # Sort the relays by their priority, with the smallest (best) priority

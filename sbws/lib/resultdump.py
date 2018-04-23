@@ -239,6 +239,23 @@ class ResultError(Result):
         return _ResultType.Error
 
     @property
+    def freshness_reduction_factor(self):
+        '''
+        When the RelayPrioritizer encounters this Result, how much should it
+        adjust its freshness? (See RelayPrioritizer.best_priority() for more
+        information about "freshness")
+
+        A higher factor makes the freshness lower (making the Result seem
+        older). A lower freshness leads to the relay having better priority,
+        and better priority means it will be measured again sooner.
+
+        The value 0.5 was chosen somewhat arbitrarily, but a few weeks of live
+        network testing verifies that sbws is still able to perform useful
+        measurements in a reasonable amount of time.
+        '''
+        return 0.5
+
+    @property
     def msg(self):
         return self._msg
 
@@ -307,6 +324,19 @@ class ResultErrorAuth(ResultError):
     @property
     def type(self):
         return _ResultType.ErrorAuth
+
+    @property
+    def freshness_reduction_factor(self):
+        '''
+        Override the default ResultError.freshness_reduction_factor because a
+        ResultErrorAuth is most likely not the measured relay's fault, so we
+        shouldn't hurt its priority as much. A higher reduction factor means a
+        Result's effective freshness is reduced more, which makes the relay's
+        priority better.
+
+        The value 0.9 was chosen somewhat arbitrarily.
+        '''
+        return 0.9
 
     @staticmethod
     def from_dict(d):

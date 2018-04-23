@@ -61,10 +61,8 @@ class RelayPrioritizer:
         measurement.
         '''
         fn_tstart = Decimal(time_now())
-        if self.measure_authorities:
-            relays = copy.deepcopy(self.relay_list.relays)
-        else:
-            relays = copy.deepcopy(self.relay_list.relays)
+        relays = copy.deepcopy(self.relay_list.relays)
+        if not self.measure_authorities:
             relays = [r for r in relays
                       if r not in self.relay_list.authorities]
         rd = self.result_dump

@@ -86,9 +86,15 @@ def load_recent_results_in_datadir(fresh_days, datadir, success_only=False):
     oldest_day = today - timedelta(days=data_period)
     working_day = oldest_day
     while working_day <= today:
-        pattern = os.path.join(datadir, '**', '{}*.txt'.format(working_day))
-        for fname in glob(pattern, recursive=True):
-            results.extend(load_result_file(fname, success_only=success_only))
+        # Cannot use ** and recursive=True in glob() because we support 3.4
+        # So instead settle on finding files in the datadir and one
+        # subdirectory below the datadir that fit the form of YYYY-MM-DD*.txt
+        patterns = [os.path.join(datadir, '{}*.txt'.format(working_day)),
+                    os.path.join(datadir, '*', '{}*.txt'.format(working_day))]
+        for pattern in patterns:
+            for fname in glob(pattern):
+                results.extend(load_result_file(
+                    fname, success_only=success_only))
         working_day += timedelta(days=1)
     results = trim_results(fresh_days, results)
     if len(results) == 0:

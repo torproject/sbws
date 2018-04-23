@@ -76,9 +76,9 @@ license. See [`LICENSE.md`](/LICENSE.md) for more information.
 
 ## Documentation
 
-See more documentation in [/docs/source/](/docs/source/)
-
-**XXX: replace the above sentence with a link to the documentation website**
+The sbws documentation can be found at
+[this onion service](http://d7pxflytfsmz6uh3x7i2jxzzwea6nbpmtsz5tmfkcin5edapaig5vpyd.onion/)
+([v2](http://sdmb3rfvp3wadu6y.onion/)).
 
 ### Build HTML documentation
 

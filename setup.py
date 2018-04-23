@@ -20,8 +20,8 @@ def get_package_data():
     #         other_files.append(os.path.join(r, f))
     # return other_files
     return [
-        'passwords.txt.example',
         'config.default.ini',
+        'config.default.log.ini',
         'config.example.ini',
     ]
 

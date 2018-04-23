@@ -8,8 +8,10 @@ import os
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
-        long_description = f.read()
+# Causes the lint Travis builds to fail for some reason, so just going to
+# remove the long description for now.
+# with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
+#         long_description = f.read()
 
 
 def get_package_data():
@@ -42,7 +44,7 @@ setup(
     name='sbws',
     version=find_version(),
     description='Simple Bandwidth Scanner',
-    long_description=long_description,
+    # long_description=long_description,
     author='Matt Traudt',
     author_email='pastly@torproject.org',
     license='CC0',
@@ -61,7 +63,7 @@ setup(
     },
     data_files=get_data_files(),
     keywords='',
-    python_requires='>=3.5',
+    python_requires='>=3.4',
     # test_suite='test',
     entry_points={
         'console_scripts': [

@@ -85,7 +85,7 @@ class RelayPrioritizer:
                               '%s', result.type.value,
                               result.freshness_reduction_factor * 100,
                               relay.nickname)
-                    freshness *= result.freshness_reduction_factor
+                    freshness *= max(1.0-result.freshness_reduction_factor, 0)
                 priority += freshness
             relay.priority = priority
         # Sort the relays by their priority, with the smallest (best) priority

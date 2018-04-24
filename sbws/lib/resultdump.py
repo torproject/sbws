@@ -283,6 +283,21 @@ class ResultErrorCircuit(ResultError):
     def type(self):
         return _ResultType.ErrorCircuit
 
+    @property
+    def freshness_reduction_factor(self):
+        '''
+        There are a few instances when it isn't the relay's fault that the
+        circuit failed to get built. Maybe someday we'll try detecting whose
+        fault it most likely was and subclassing ResultErrorCircuit. But for
+        now we don't. So reduce the freshness slightly more than ResultError
+        does by default so priority isn't hurt quite as much.
+
+        A (hopefully very very rare) example of when a circuit would fail to
+        get built is when the sbws client machine suddenly loses Internet
+        access.
+        '''
+        return 0.6
+
     @staticmethod
     def from_dict(d):
         assert isinstance(d, dict)

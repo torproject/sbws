@@ -41,8 +41,9 @@ def _get_older_files_than(dname, num_days_ago, extensions):
         # Cannot use ** and recursive=True in glob() because we support 3.4
         # So instead settle on finding files in the datadir and one
         # subdirectory below the datadir that fit the form of YYYY-MM-DD*.txt
-        patterns = [os.path.join(dname, '*-*-*{}'.format(ext)),
-                    os.path.join(dname, '*', '*-*-*{}'.format(ext))]
+        day_part = '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'
+        patterns = [os.path.join(dname, '{}*{}'.format(day_part, ext)),
+                    os.path.join(dname, '*', '{}*{}'.format(day_part, ext))]
         for pattern in patterns:
             for fname in glob(pattern):
                 all_fnames.add(fname)

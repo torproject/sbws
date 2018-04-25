@@ -73,7 +73,6 @@ setup(
     install_requires=[
         'stem',
         'pysocks',
-        'filelock',
     ],
     extras_require={
         'dev': ['flake8'],

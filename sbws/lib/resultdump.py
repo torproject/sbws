@@ -1,5 +1,4 @@
 from sbws.globals import time_now
-from sbws.globals import lock_directory
 import os
 import json
 import logging
@@ -14,6 +13,7 @@ from datetime import timedelta
 from enum import Enum
 from stem.descriptor.router_status_entry import RouterStatusEntryV3
 from sbws import res_proto_ver
+from sbws.util.filelock import DirectoryLock
 
 log = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ def load_result_file(fname, success_only=False):
     assert os.path.isfile(fname)
     d = []
     num_ignored = 0
-    with lock_directory(os.path.dirname(fname)):
+    with DirectoryLock(os.path.dirname(fname)):
         with open(fname, 'rt') as fd:
             for line in fd:
                 r = Result.from_dict(json.loads(line.strip()))
@@ -114,7 +114,7 @@ def write_result_to_datadir(result, datadir):
     ext = '.txt'
     result_fname = os.path.join(
         datadir, '{}{}'.format(dt, ext))
-    with lock_directory(datadir):
+    with DirectoryLock(datadir):
         with open(result_fname, 'at') as fd:
             fd.write('{}\n'.format(str(result)))
 

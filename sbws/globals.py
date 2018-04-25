@@ -1,7 +1,6 @@
 import os
 import time
 import logging
-from filelock import FileLock
 
 log = logging.getLogger(__name__)
 
@@ -51,22 +50,6 @@ def time_now():
     :returns: Unix timestamp as a float
     '''
     return time.time()
-
-
-def lock_directory(dname):
-    '''
-    Holds a lock on a file in **dname** so that other sbws processes/threads
-    won't try to read/write while we are reading/writing in this directory.
-
-    >>> with lock_directory(dname):
-    >>>     # do things while you have the lock
-    >>> # no longer have lock
-
-    :param str dname: Name of directory we want to obtain a lock for
-    :retrurns: the FileLock context manager for you to use in a with statement
-    '''
-    assert os.path.isdir(dname)
-    return FileLock(os.path.join(dname, 'lockfile'))
 
 
 def touch_file(fname, times=None):

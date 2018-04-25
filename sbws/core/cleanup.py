@@ -1,4 +1,4 @@
-from sbws.globals import (fail_hard, is_initted, time_now, lock_directory)
+from sbws.globals import (fail_hard, is_initted, time_now)
 from argparse import ArgumentDefaultsHelpFormatter
 from datetime import date
 from datetime import timedelta
@@ -7,6 +7,7 @@ import os
 import gzip
 import shutil
 import logging
+from sbws.util.filelock import DirectoryLock
 
 log = logging.getLogger(__name__)
 
@@ -75,7 +76,7 @@ def _remove_rotten_files(datadir, rotten_days, dry_run=True):
     # Hold the lock for basically the entire time just in case someone else
     # moves files between when we get the list of files and when we try to
     # delete them.
-    with lock_directory(datadir):
+    with DirectoryLock(datadir):
         fnames = _get_older_files_than(datadir, rotten_days,
                                        ['.txt', '.txt.gz'])
         for fname in fnames:
@@ -90,7 +91,7 @@ def _compress_stale_files(datadir, stale_days, dry_run=True):
     # Hold the lock for basically the entire time just in case someone else
     # moves files between when we get the list of files and when we try to
     # compress them.
-    with lock_directory(datadir):
+    with DirectoryLock(datadir):
         fnames = _get_older_files_than(datadir, stale_days, ['.txt'])
         for fname in fnames:
             log.info('Compressing %s', fname)

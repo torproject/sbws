@@ -1,13 +1,14 @@
-from sbws.globals import (fail_hard, is_initted, time_now)
+from sbws.util.filelock import DirectoryLock
+from sbws.globals import (fail_hard, is_initted)
 from argparse import ArgumentDefaultsHelpFormatter
-from datetime import date
+from datetime import datetime
 from datetime import timedelta
-from glob import glob
+import re
 import os
 import gzip
 import shutil
 import logging
-from sbws.util.filelock import DirectoryLock
+import time
 
 log = logging.getLogger(__name__)
 
@@ -34,41 +35,29 @@ def _get_older_files_than(dname, num_days_ago, extensions):
     for ext in extensions:
         assert isinstance(ext, str)
         assert ext[0] == '.'
-    # First get all files that *probably* start with the format YYYY-MM-DD*.txt
-    # in all dirs in the dname recursively
-    all_fnames = set()
-    for ext in extensions:
-        # Cannot use ** and recursive=True in glob() because we support 3.4
-        # So instead settle on finding files in the datadir and one
-        # subdirectory below the datadir that fit the form of YYYY-MM-DD*.txt
-        day_part = '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'
-        patterns = [os.path.join(dname, '{}*{}'.format(day_part, ext)),
-                    os.path.join(dname, '*', '{}*{}'.format(day_part, ext))]
-        for pattern in patterns:
-            for fname in glob(pattern):
-                all_fnames.add(fname)
-    # Figure out what files are too new
-    new_fnames = set()
-    today = date.fromtimestamp(time_now())
+    # Determine oldest allowed date
+    today = datetime.utcfromtimestamp(time.time())
     oldest_day = today - timedelta(days=num_days_ago)
-    working_day = oldest_day
-    while working_day <= today:
-        for ext in extensions:
-            # Cannot use ** and recursive=True in glob() because we support 3.4
-            # So instead settle on finding files in the datadir and one
-            # subdirectory below the datadir that fit the form of
-            # YYYY-MM-DD*.txt
-            patterns = [
-                os.path.join(dname, '{}*{}'.format(working_day, ext)),
-                os.path.join(dname, '*', '{}*{}'.format(working_day, ext))
-            ]
-            for pattern in patterns:
-                for fname in glob(pattern):
-                    new_fnames.add(fname)
-        working_day += timedelta(days=1)
-    # Then return the files that are in all_fnames but not in new_fnames, as
-    # these will the be ones that are too old
-    return sorted([f for f in all_fnames if f not in new_fnames])
+    # Compile a regex that can extract a date from a file name that looks like
+    # /path/to/foo/YYYY-MM-DD*.extension
+    extensions = [re.escape(e) for e in extensions]
+    day_part = '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'
+    regex = re.compile(r'^.*/({}).*({})$'
+                       .format(day_part, '|'.join(extensions)))
+    # Walk through all files in the given dname, find files that match the
+    # regex, and yield the ones that contain a date in the file name that is
+    # too old.
+    for root, dirs, files in os.walk(dname):
+        for f in files:
+            fname = os.path.join(root, f)
+            match = regex.match(fname)
+            if not match:
+                log.debug('Ignoring %s because it doesn\'t look like '
+                          'YYYY-MM-DD', fname)
+                continue
+            d = datetime(*[int(n) for n in match.group(1).split('-')])
+            if d < oldest_day:
+                yield fname
 
 
 def _remove_rotten_files(datadir, rotten_days, dry_run=True):
@@ -78,9 +67,8 @@ def _remove_rotten_files(datadir, rotten_days, dry_run=True):
     # moves files between when we get the list of files and when we try to
     # delete them.
     with DirectoryLock(datadir):
-        fnames = _get_older_files_than(datadir, rotten_days,
-                                       ['.txt', '.txt.gz'])
-        for fname in fnames:
+        for fname in _get_older_files_than(datadir, rotten_days,
+                                           ['.txt', '.txt.gz']):
             log.info('Deleting %s', fname)
             if not dry_run:
                 os.remove(fname)
@@ -93,8 +81,7 @@ def _compress_stale_files(datadir, stale_days, dry_run=True):
     # moves files between when we get the list of files and when we try to
     # compress them.
     with DirectoryLock(datadir):
-        fnames = _get_older_files_than(datadir, stale_days, ['.txt'])
-        for fname in fnames:
+        for fname in _get_older_files_than(datadir, stale_days, ['.txt']):
             log.info('Compressing %s', fname)
             if dry_run:
                 continue

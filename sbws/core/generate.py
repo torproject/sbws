@@ -125,6 +125,6 @@ def main(args, conf):
     log_stats(data_lines)
     log.info('Writing v3bw file to %s', args.output)
     with open(args.output, 'wt') as fd:
-        fd.write(header)
+        fd.write(str(header))
         for line in data_lines:
             fd.write('{}\n'.format(str(line)))

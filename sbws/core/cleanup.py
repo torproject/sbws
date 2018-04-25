@@ -115,7 +115,7 @@ def main(args, conf):
 
     datadir = conf['paths']['datadir']
     if not os.path.isdir(datadir):
-        fail_hard(datadir, 'does not exist')
+        fail_hard('%s does not exist', datadir)
 
     fresh_days = conf.getint('general', 'data_period')
     stale_days = conf.getint('cleanup', 'stale_days')

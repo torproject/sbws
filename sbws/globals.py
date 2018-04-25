@@ -23,6 +23,7 @@ SOCKET_TIMEOUT = 60  # seconds
 
 SPEC_VERSION = '1.1.0'
 
+
 def is_initted(d):
     if not os.path.isdir(d):
         log.debug('%s not initialized: %s doesn\'t exist', d, d)

@@ -1,4 +1,3 @@
-from sbws import version
 import sbws.core.generate
 from sbws.util.config import get_config
 from sbws.lib.resultdump import load_recent_results_in_datadir

@@ -1,5 +1,4 @@
-from sbws import version
-from sbws.globals import (fail_hard, is_initted, time_now)
+from sbws.globals import (fail_hard, is_initted)
 from sbws.lib.v3bwfile import V3BwHeader
 from sbws.lib.resultdump import ResultSuccess
 from sbws.lib.resultdump import load_recent_results_in_datadir

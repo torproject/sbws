@@ -21,6 +21,8 @@ MIN_REQ_BYTES = 1
 MAX_REQ_BYTES = 1 * 1024 * 1024 * 1024  # 1 GiB
 SOCKET_TIMEOUT = 60  # seconds
 
+SPEC_VERSION = '1.1.0'
+
 
 def is_initted(d):
     if not os.path.isdir(d):

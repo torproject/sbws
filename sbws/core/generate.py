@@ -1,4 +1,3 @@
-from sbws import version
 from sbws.globals import (fail_hard, is_initted)
 from sbws.lib.v3bwfile import V3BwHeader
 from sbws.lib.resultdump import ResultSuccess
@@ -7,7 +6,6 @@ from sbws.lib.resultdump import group_results_by_relay
 from argparse import ArgumentDefaultsHelpFormatter
 from statistics import median
 import os
-import time
 import logging
 
 log = logging.getLogger(__name__)

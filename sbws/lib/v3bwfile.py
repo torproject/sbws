@@ -2,9 +2,10 @@
 """Classes and functions that create the bandwidth measurements document
 (v3bw) used by bandwidth authorities."""
 
+import time
 import logging
 from sbws import version
-from sbws.globals import time_now, SPEC_VERSION
+from sbws.globals import SPEC_VERSION
 
 log = logging.getLogger(__name__)
 
@@ -22,7 +23,7 @@ class V3BwHeader(object):
     """
     def __init__(self, timestamp=None, version=SPEC_VERSION, software='sbws',
                  software_version=version):
-        self.timestamp = timestamp or int(time_now())
+        self.timestamp = timestamp or int(time.time())
         self.version = version
         self.software = software
         self.software_version = software_version

@@ -137,16 +137,12 @@ these if protocol is http.
   If provided and file doesn't exist, it is a fatal configuration error. If
   provided and the server doesn't accept it, the destination is unusable.
   (optional)
-- ``server_cert_fingerprint``: a TLS certificate fingerprint that the server
-  must use.  It is a fatal configuration error to specify this but not enable
-  ``verify_server_cert``. If not given, the server must use a trusted
-  certificate. (optional)
-- ``verify_server_cert``: whether to verify the server certificate or not.
-  Default yes. If enabled and ``server_cert_fingerprint`` is not given, it must
-  be trusted (as determined by the local machine's configuration outside of
-  sbws). If enabled and ``server_cert_fingerprint`` is given, the certificate
-  from the server must have the specified fingerprint. If enabled but neither
-  of those things are true, the server is unusable. (optional)
+- ``verify_server_cert``: either a boolean or a path to a file. If yes (the
+  default), the server's certificate must be trusted (as determined by the
+  local machine's configuration outside of sbws). If no, do no verification of
+  the certificate at all. If a path to a file and the file does not exist, it
+  is a fatal configuration error. Otherwise, the certificate the server users
+  must be present in the file pointed to by this option. (optional)
 
 Example: CDN
 '''''''''''''
@@ -167,22 +163,21 @@ scanners to download files.
 
 
 Example: Private Local Destination
-'''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''
 
 Here, an authority has decided he doesn't want to trust anyone but themself.
 They are running 2 relays on the same machine as a webserver that only they
 will use.
 
-HTTPS is not technically required to protect credentials flowing over the
-Internet. In fact, the webserver isn't even reachable from the Internet!
+This authority chooses to use a client TLS certificate to identify their
+scanner(s), so their webserver must use HTTPS.
 
-However, the authority wants to make sure only their sbws scanner(s) can
-connect to this webserver, so they technically set up HTTPS. On their webserver
-they generate a self-signed certificate. On the sbws scanner side, they *could*
-choose to specify the fingerprint of this TLS certificate with
-``server_cert_fingerprint``, but instead trust themself to keep their
-infrastructure secure and forego verification of the server certificate
-entirely.
+On their webserver they generate a self-signed certificate.
+On the sbws scanner side, they *could* choose to assume everything will be okay
+and his server will not change certificates. But they're paranoid, so they get
+a copy of the server's certificate and store it in a local file.
+
+.. todo:: What file format?
 
 ::
 
@@ -190,8 +185,8 @@ entirely.
     relays = AAAA...AAAA, BBBB...BBBB
     relay_section_method = uniform_random
     url = https://33.33.33.33:4433/sbws.bin
-    client_cert = ${paths:sbws_home}/secure_bwauth_client.cert
-    verify_server_cert = off
+    client_cert = ${paths:sbws_home}/secure_bwauth_scanner.cert
+    verify_server_cert = ${paths:sbws_home/secure_bwauth_server.cert
 
 Example: "Borrow" bandwidth from unsuspecting mirrors
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''

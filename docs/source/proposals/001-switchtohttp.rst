@@ -186,7 +186,7 @@ a copy of the server's certificate and store it in a local file.
     relay_section_method = uniform_random
     url = https://33.33.33.33:4433/sbws.bin
     client_cert = ${paths:sbws_home}/secure_bwauth_scanner.cert
-    verify_server_cert = ${paths:sbws_home/secure_bwauth_server.cert
+    verify_server_cert = ${paths:sbws_home}/secure_bwauth_server.cert
 
 Example: "Borrow" bandwidth from unsuspecting mirrors
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''

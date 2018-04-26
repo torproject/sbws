@@ -119,14 +119,10 @@ Available keys in a ``[destinations.foo]`` section:
   destination should be considered unusable. (optional)
 - ``relay_section_method``: one of ``uniform_random`` or
   ``bw_weighted_random``, defaulting to whichever is a sane default (optional)
-- ``server_host``: an IPv4 address, IPv6 address, or hostname. If a hostname is
-  given, it must not be resolved once at startup; instead, it should be
-  left up to the exit relay to resolve. (required)
-- ``server_port``: a port (optional, with sane default depending on protocol)
-- ``protocol``: one of ``http`` or ``https`` (required)
-- ``file_path``: path to the resource to download from the webserver. If not
-  specified, defaults to something. It is a fatal configuration error to leave off
-  the leading ``/``. (optional)
+- ``url``: an HTTP or HTTPS URL for the bandwidth file to download. The URL's
+  hostname must not be resolved locally; instead, it should be left up to the
+  exit relay to resolve. If the URL does not contain a path, it defaults to
+  ``/sbws.bin``. (required)
 - ``weight``: when choosing between which destination to use for the next
   measurement, give this destination the specified weight. If not given,
   defaults to 100. Note how if no destinations have a weight value, they are
@@ -158,6 +154,8 @@ Example: CDN
 Relays are not specified because we want to choose from all exits in the
 network.
 
+This CDN provides ``/sbws.bin`` so we are allowed to leave off the file part.
+
 HTTPS for the protocol, and no further HTTPS options because this CDN has a
 widely-trusted certificate and doesn't care about only allowing our sbws
 scanners to download files.
@@ -165,8 +163,8 @@ scanners to download files.
 ::
 
     [destinations.cloudflare]
-    server_host = sbwsrocks.cdn.cloudflare.com
-    protocol = https
+    url = https://sbwsrocks.cdn.cloudflare.com/
+
 
 Example: Private Local Destination
 '''''''''''''''''''''''''''''''''''
@@ -191,9 +189,7 @@ entirely.
     [destionations.secure_bwauth]
     relays = AAAA...AAAA, BBBB...BBBB
     relay_section_method = uniform_random
-    server_host = 33.33.33.33
-    server_port = 4433
-    protocol = https
+    url = https://33.33.33.33:4433/sbws.bin
     client_cert = ${paths:sbws_home}/secure_bwauth_client.cert
     verify_server_cert = off
 
@@ -214,6 +210,4 @@ and add it to the config.
 ::
 
     [destination.unsuspecting_linux]
-    server_host = mirror-rotation.exaplelinux.net
-    protocol = http
-    file_path = /archive/isos/1.2.3/examplelinux-amd64-gnome-destkop.iso
+    url = http://examplelinux.net/archive/isos/1.2.3/examplelinux-amd64-gnome-destkop.iso

@@ -10,7 +10,7 @@ from ..lib.relayprioritizer import RelayPrioritizer
 from ..lib.helperrelay import HelperRelayList
 from ..util.simpleauth import authenticate_to_server
 from ..util.sockio import (make_socket, close_socket)
-from sbws.globals import (fail_hard, is_initted, time_now)
+from sbws.globals import (fail_hard, is_initted)
 from sbws.globals import (MIN_REQ_BYTES, MAX_REQ_BYTES)
 import sbws.util.stem as stem_utils
 from argparse import ArgumentDefaultsHelpFormatter
@@ -45,7 +45,7 @@ def timed_recv_from_server(sock, conf, yet_to_read):
     ''' Return the time in seconds it took to read <yet_to_read> bytes from
     the server. Return None if error '''
     assert yet_to_read > 0
-    start_time = time_now()
+    start_time = time.time()
     while yet_to_read > 0:
         limit = min(conf.getint('scanner', 'max_recv_per_read'), yet_to_read)
         try:
@@ -56,7 +56,7 @@ def timed_recv_from_server(sock, conf, yet_to_read):
         if read_this_time == 0:
             return
         yet_to_read -= read_this_time
-    end_time = time_now()
+    end_time = time.time()
     return end_time - start_time
 
 
@@ -66,7 +66,7 @@ def measure_rtt_to_server(sock, conf):
     RTTs (in seconds). '''
     rtts = []
     for _ in range(0, conf.getint('scanner', 'num_rtts')):
-        start_time = time_now()
+        start_time = time.time()
         if not tell_server_amount(sock, MIN_REQ_BYTES):
             log.info('Unable to ping server on %d', sock.fileno())
             return
@@ -75,7 +75,7 @@ def measure_rtt_to_server(sock, conf):
         except (socket.timeout, ConnectionResetError, BrokenPipeError) as e:
             log.info(e)
             return
-        end_time = time_now()
+        end_time = time.time()
         if amount_read == 0:
             log.info('No pong from server on %d', sock.fileno())
             return

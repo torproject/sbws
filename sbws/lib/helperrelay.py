@@ -1,6 +1,5 @@
 from ..util.simpleauth import authenticate_to_server
 from ..util.sockio import (make_socket, close_socket)
-from sbws.globals import time_now
 from sbws.lib.circuitbuilder import GapsCircuitBuilder as CB
 import sbws.util.stem as stem_utils
 from stem.descriptor.router_status_entry import RouterStatusEntryV3
@@ -86,7 +85,7 @@ class HelperRelayList:
 
     def _should_perform_reachability_test(self):
         return self._last_reachability_test + self._reachability_test_every <\
-            time_now()
+            time.time()
 
     def _build_circuit_with_relay(self, relay):
         assert isinstance(relay, RouterStatusEntryV3)
@@ -140,7 +139,7 @@ class HelperRelayList:
             self._circuit_builder.close_circuit(circ_id)
             log.debug('Helper %s is usable. Keeping it.', relay.nickname)
             helpers.add(helper)
-        self._last_reachability_test = time_now()
+        self._last_reachability_test = time.time()
         self._usable_helpers = list(helpers)
         log.info('After performing reachability tests, we have %d/%d usable '
                  'helpers: %s', len(self._usable_helpers),

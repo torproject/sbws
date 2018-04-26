@@ -65,12 +65,12 @@ def _generate_random_string(length):
     another thing that hurts its randomness.
     '''
     assert length > 0
-    # start = time_now()
+    # start = time.time()
     repeats = int(length / len(_generate_random_string.alphabet)) + 1
     rng.shuffle(_generate_random_string.alphabet)
     s = ''.join(_generate_random_string.alphabet)
     s = s * repeats
-    # stop = time_now()
+    # stop = time.time()
     # _generate_random_string.acc += stop - start
     # if stop >= 60 + _generate_random_string.last_log:
     #     log.info('Spent', _generate_random_string.acc,
@@ -85,7 +85,7 @@ _generate_random_string.alphabet = list('abcdefghijklmnopqrstuvwxyz'
                                         'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
                                         '0123456789')
 # _generate_random_string.acc = 0
-# _generate_random_string.last_log = time_now()
+# _generate_random_string.last_log = time.time()
 
 
 def write_to_scanner(sock, conf, amount):

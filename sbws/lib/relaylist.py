@@ -1,7 +1,7 @@
-from sbws.globals import time_now
 import sbws.util.stem as stem_utils
 from stem import Flag
 import random
+import time
 
 
 class RelayList:
@@ -22,7 +22,7 @@ class RelayList:
 
     @property
     def relays(self):
-        if time_now() >= self._last_refresh + self.REFRESH_INTERVAL:
+        if time.time() >= self._last_refresh + self.REFRESH_INTERVAL:
             self._refresh()
         return self._relays
 
@@ -84,4 +84,4 @@ class RelayList:
 
     def _refresh(self):
         self._relays = self._init_relays()
-        self._last_refresh = time_now()
+        self._last_refresh = time.time()

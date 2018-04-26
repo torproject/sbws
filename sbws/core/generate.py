@@ -1,11 +1,12 @@
 from sbws import version
-from sbws.globals import (fail_hard, is_initted, time_now)
+from sbws.globals import (fail_hard, is_initted)
 from sbws.lib.resultdump import ResultSuccess
 from sbws.lib.resultdump import load_recent_results_in_datadir
 from sbws.lib.resultdump import group_results_by_relay
 from argparse import ArgumentDefaultsHelpFormatter
 from statistics import median
 import os
+import time
 import logging
 
 log = logging.getLogger(__name__)
@@ -123,7 +124,7 @@ def main(args, conf):
     log_stats(data_lines)
     log.info('Writing v3bw file to %s', args.output)
     with open(args.output, 'wt') as fd:
-        fd.write('{}\n'.format(int(time_now())))
+        fd.write('{}\n'.format(int(time.time())))
         fd.write('version={}\n'.format(version))
         for line in data_lines:
             fd.write('{}\n'.format(str(line)))

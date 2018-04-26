@@ -42,16 +42,6 @@ def fail_hard(*a, **kw):
     exit(1)
 
 
-def time_now():
-    '''
-    Return the current time in seconds since 1970. This function exists to
-    make testing easier
-
-    :returns: Unix timestamp as a float
-    '''
-    return time.time()
-
-
 def touch_file(fname, times=None):
     '''
     If **fname** exists, update its last access and modified times to now. If

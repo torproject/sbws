@@ -36,6 +36,17 @@ commits that show up in ``git blame`` 10 years from now make more sense.
 Simple Bandwidth Scanner is moving towards 100% test coverage. Please help us
 reach that goal, or at least not move us away from it.
 
+Coding Guidelines
+=================
+
+**Strongly prefer Unix timestamps** over ``datetime`` structures and always
+work in UTC for as long as possible. When reading/writing/manipulating results
+from some period of time in the past, always err on the side of caution. For
+example, open an extra file into the past just in case it happens to include
+result lines that have timestamps that are still considered valid (of course,
+ignore results in the file that are no longer valid).
+
+
 .. _commit-msg:
 
 Example commit message

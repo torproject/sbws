@@ -6,7 +6,7 @@ from sbws.lib.resultdump import load_recent_results_in_datadir
 from sbws.lib.resultdump import group_results_by_relay
 from argparse import ArgumentDefaultsHelpFormatter
 import os
-from datetime import date
+from datetime import datetime
 from datetime import timedelta
 from statistics import mean
 import logging
@@ -80,8 +80,8 @@ def print_stats(args, data):
         fastest_transfers[0]
     first_time = min([r.time for r in results])
     last_time = max([r.time for r in results])
-    first = date.fromtimestamp(first_time)
-    last = date.fromtimestamp(last_time)
+    first = datetime.utcfromtimestamp(first_time)
+    last = datetime.utcfromtimestamp(last_time)
     duration = timedelta(seconds=last_time-first_time)
     # remove microseconds for prettier printing
     duration = duration - timedelta(microseconds=duration.microseconds)

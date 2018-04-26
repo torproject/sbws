@@ -1,6 +1,6 @@
-from sbws.globals import time_now
 import os
 import json
+import time
 import logging
 from glob import glob
 from threading import Thread
@@ -8,7 +8,7 @@ from threading import Event
 from threading import RLock
 from queue import Queue
 from queue import Empty
-from datetime import date
+from datetime import datetime
 from datetime import timedelta
 from enum import Enum
 from stem.descriptor.router_status_entry import RouterStatusEntryV3
@@ -65,7 +65,7 @@ def trim_results(fresh_days, results):
     assert isinstance(fresh_days, int)
     assert isinstance(results, list)
     data_period = fresh_days * 24*60*60
-    oldest_allowed = time_now() - data_period
+    oldest_allowed = time.time() - data_period
     out_results = []
     for result in results:
         if result.time >= oldest_allowed:
@@ -81,7 +81,7 @@ def load_recent_results_in_datadir(fresh_days, datadir, success_only=False):
     assert isinstance(fresh_days, int)
     assert os.path.isdir(datadir)
     results = []
-    today = date.fromtimestamp(time_now())
+    today = datetime.utcfromtimestamp(time.time())
     data_period = fresh_days + 2
     oldest_day = today - timedelta(days=data_period)
     working_day = oldest_day
@@ -89,8 +89,9 @@ def load_recent_results_in_datadir(fresh_days, datadir, success_only=False):
         # Cannot use ** and recursive=True in glob() because we support 3.4
         # So instead settle on finding files in the datadir and one
         # subdirectory below the datadir that fit the form of YYYY-MM-DD*.txt
-        patterns = [os.path.join(datadir, '{}*.txt'.format(working_day)),
-                    os.path.join(datadir, '*', '{}*.txt'.format(working_day))]
+        d = working_day.date()
+        patterns = [os.path.join(datadir, '{}*.txt'.format(d)),
+                    os.path.join(datadir, '*', '{}*.txt'.format(d))]
         for pattern in patterns:
             for fname in glob(pattern):
                 results.extend(load_result_file(
@@ -110,11 +111,12 @@ def write_result_to_datadir(result, datadir):
     ''' Can be called from any thread '''
     assert isinstance(result, Result)
     assert os.path.isdir(datadir)
-    dt = date.fromtimestamp(result.time)
+    dt = datetime.utcfromtimestamp(result.time)
     ext = '.txt'
     result_fname = os.path.join(
-        datadir, '{}{}'.format(dt, ext))
+        datadir, '{}{}'.format(dt.date(), ext))
     with DirectoryLock(datadir):
+        log.debug('Writing a result to %s', result_fname)
         with open(result_fname, 'at') as fd:
             fd.write('{}\n'.format(str(result)))
 
@@ -149,7 +151,7 @@ class Result:
         self._circ = circ
         self._server_host = server_host
         self._scanner = scanner_nick
-        self._time = time_now() if t is None else t
+        self._time = time.time() if t is None else t
 
     @property
     def type(self):

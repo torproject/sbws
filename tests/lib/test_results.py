@@ -10,13 +10,13 @@ from sbws.lib.resultdump import _ResultType
 from tests.globals import monotonic_time
 
 
-@patch('sbws.lib.resultdump.time_now')
-def test_Result(time_now):
+@patch('time.time')
+def test_Result(time_mock):
     '''
     A standard Result should not be convertible to a string because Result.type
     is not implemented.
     '''
-    time_now.side_effect = monotonic_time()
+    time_mock.side_effect = monotonic_time()
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
     circ = [fp1, fp2]
@@ -58,10 +58,10 @@ def test_Result_from_dict_bad_type():
         assert None, 'Should have failed'
 
 
-@patch('sbws.lib.resultdump.time_now')
-def test_ResultSuccess(time_now):
+@patch('time.time')
+def test_ResultSuccess(time_mock):
     t = 2000
-    time_now.side_effect = monotonic_time(start=t)
+    time_mock.side_effect = monotonic_time(start=t)
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
     circ = [fp1, fp2]
@@ -89,10 +89,10 @@ def test_ResultSuccess(time_now):
     assert str(r1) == str(r2)
 
 
-@patch('sbws.lib.resultdump.time_now')
-def test_ResultSuccess_from_dict(time_now):
+@patch('time.time')
+def test_ResultSuccess_from_dict(time_mock):
     t = 2000
-    time_now.side_effect = monotonic_time(start=t)
+    time_mock.side_effect = monotonic_time(start=t)
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
     circ = [fp1, fp2]
@@ -116,10 +116,10 @@ def test_ResultSuccess_from_dict(time_now):
     assert str(r1) == str(r2)
 
 
-@patch('sbws.lib.resultdump.time_now')
-def test_ResultError(time_now):
+@patch('time.time')
+def test_ResultError(time_mock):
     t = 2000
-    time_now.side_effect = monotonic_time(start=t)
+    time_mock.side_effect = monotonic_time(start=t)
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
     circ = [fp1, fp2]
@@ -144,10 +144,10 @@ def test_ResultError(time_now):
     assert str(r1) == str(r2)
 
 
-@patch('sbws.lib.resultdump.time_now')
-def test_ResultError_from_dict(time_now):
+@patch('time.time')
+def test_ResultError_from_dict(time_mock):
     t = 2000
-    time_now.side_effect = monotonic_time(start=t)
+    time_mock.side_effect = monotonic_time(start=t)
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
     circ = [fp1, fp2]
@@ -170,10 +170,10 @@ def test_ResultError_from_dict(time_now):
     assert str(r1) == str(r2)
 
 
-@patch('sbws.lib.resultdump.time_now')
-def test_ResultErrorCircuit(time_now):
+@patch('time.time')
+def test_ResultErrorCircuit(time_mock):
     t = 2000
-    time_now.side_effect = monotonic_time(start=t)
+    time_mock.side_effect = monotonic_time(start=t)
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
     circ = [fp1, fp2]
@@ -199,10 +199,10 @@ def test_ResultErrorCircuit(time_now):
     assert str(r1) == str(r2)
 
 
-@patch('sbws.lib.resultdump.time_now')
-def test_ResultErrorCircuit_from_dict(time_now):
+@patch('time.time')
+def test_ResultErrorCircuit_from_dict(time_mock):
     t = 2000
-    time_now.side_effect = monotonic_time(start=t)
+    time_mock.side_effect = monotonic_time(start=t)
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
     circ = [fp1, fp2]
@@ -225,10 +225,10 @@ def test_ResultErrorCircuit_from_dict(time_now):
     assert str(r1) == str(r2)
 
 
-@patch('sbws.lib.resultdump.time_now')
-def test_ResultErrorStream(time_now):
+@patch('time.time')
+def test_ResultErrorStream(time_mock):
     t = 2000
-    time_now.side_effect = monotonic_time(start=t)
+    time_mock.side_effect = monotonic_time(start=t)
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
     circ = [fp1, fp2]
@@ -254,10 +254,10 @@ def test_ResultErrorStream(time_now):
     assert str(r1) == str(r2)
 
 
-@patch('sbws.lib.resultdump.time_now')
-def test_ResultErrorStream_from_dict(time_now):
+@patch('time.time')
+def test_ResultErrorStream_from_dict(time_mock):
     t = 2000
-    time_now.side_effect = monotonic_time(start=t)
+    time_mock.side_effect = monotonic_time(start=t)
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
     circ = [fp1, fp2]
@@ -280,10 +280,10 @@ def test_ResultErrorStream_from_dict(time_now):
     assert str(r1) == str(r2)
 
 
-@patch('sbws.lib.resultdump.time_now')
-def test_ResultErrorAuth(time_now):
+@patch('time.time')
+def test_ResultErrorAuth(time_mock):
     t = 2000
-    time_now.side_effect = monotonic_time(start=t)
+    time_mock.side_effect = monotonic_time(start=t)
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
     circ = [fp1, fp2]
@@ -309,10 +309,10 @@ def test_ResultErrorAuth(time_now):
     assert str(r1) == str(r2)
 
 
-@patch('sbws.lib.resultdump.time_now')
-def test_ResultErrorAuth_from_dict(time_now):
+@patch('time.time')
+def test_ResultErrorAuth_from_dict(time_mock):
     t = 2000
-    time_now.side_effect = monotonic_time(start=t)
+    time_mock.side_effect = monotonic_time(start=t)
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
     circ = [fp1, fp2]

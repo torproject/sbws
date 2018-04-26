@@ -6,7 +6,9 @@ from sbws.lib.resultdump import Result
 from sbws.lib.resultdump import write_result_to_datadir
 import sbws.core.init
 import sbws.core.stats
-from datetime import date
+from tests.globals import monotonic_time
+from unittest.mock import patch
+from datetime import datetime
 import os
 import time
 import logging
@@ -39,16 +41,16 @@ def add_single_fresh_result(dname):
     write_result_to_datadir(r, dd)
 
 
-def add_two_fresh_results(dname):
+def add_two_fresh_results(dname, t):
     r1 = ResultError(
         Result.Relay('DEADBEEF1111', 'CowSayWhat', '127.0.0.1'),
         ['DEADBEEF1111', 'BEADDEEF2222'],
-        '127.0.1.1', 'SBWSscanner', t=time.time())
+        '127.0.1.1', 'SBWSscanner', t=t)
     r2 = ResultSuccess(
         [1, 2, 3], [{'amount': 100, 'duration': 1}],
         Result.Relay('DEADBEEF1111', 'CowSayWhat', '127.0.0.1'),
         ['DEADBEEF1111', 'BEADDEEF2222'],
-        '127.0.1.1', 'SBWSscanner', t=time.time())
+        '127.0.1.1', 'SBWSscanner', t=t)
     dd = os.path.join(str(dname), 'datadir')
     os.makedirs(dd)
     write_result_to_datadir(r1, dd)
@@ -130,21 +132,24 @@ def test_stats_fresh_result(tmpdir, capsys, caplog):
     lines = [l.getMessage() for l in caplog.records]
     needed_log_lines = [
         'Read 1 lines from {}/{}/{}.txt'.format(
-            tmpdir, 'datadir', date.fromtimestamp(time.time())),
+            tmpdir, 'datadir', datetime.utcfromtimestamp(time.time()).date()),
         'Keeping 1/1 results',
     ]
     for needed_line in needed_log_lines:
         assert needed_line in lines
 
 
-def test_stats_fresh_results(tmpdir, capsys, caplog):
+@patch('time.time')
+def test_stats_fresh_results(time_mock, tmpdir, capsys, caplog):
     '''
     An initialized .sbws directory with a fresh error and fresh success should
     have some exciting stats and exit cleanly
     '''
     caplog.set_level(logging.DEBUG)
     init_directory(tmpdir)
-    add_two_fresh_results(tmpdir)
+    start = 1524769441
+    time_mock.side_effect = monotonic_time(start=start)
+    add_two_fresh_results(tmpdir, start-1)
     p = create_parser()
     args = p.parse_args(
         '-d {} --log-level DEBUG stats --error-types'.format(tmpdir).split())
@@ -163,7 +168,7 @@ def test_stats_fresh_results(tmpdir, capsys, caplog):
     lines = [l.getMessage() for l in caplog.records]
     needed_log_lines = [
         'Read 2 lines from {}/{}/{}.txt'.format(
-            tmpdir, 'datadir', date.fromtimestamp(time.time())),
+            tmpdir, 'datadir', datetime.utcfromtimestamp(time.time()).date()),
         'Keeping 2/2 results',
         'Found a _ResultType.Error for the first time',
         'Found a _ResultType.Success for the first time',

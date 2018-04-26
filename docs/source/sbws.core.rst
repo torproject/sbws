@@ -4,10 +4,10 @@ sbws.core package
 Submodules
 ----------
 
-sbws.core.scanner module
----------------------------
+sbws.core.cleanup module
+-----------------------------
 
-.. automodule:: sbws.core.scanner
+.. automodule:: sbws.core.cleanup
     :members:
     :undoc-members:
     :show-inheritance:
@@ -24,6 +24,14 @@ sbws.core.init module
 -------------------------
 
 .. automodule:: sbws.core.init
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+sbws.core.scanner module
+---------------------------
+
+.. automodule:: sbws.core.scanner
     :members:
     :undoc-members:
     :show-inheritance:

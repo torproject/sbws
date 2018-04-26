@@ -12,6 +12,14 @@ sbws.util.config module
     :undoc-members:
     :show-inheritance:
 
+sbws.util.filelock module
+---------------------------
+
+.. automodule:: sbws.util.filelock
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 sbws.util.parser module
 ---------------------------
 
@@ -40,6 +48,14 @@ sbws.util.stem module
 ---------------------
 
 .. automodule:: sbws.util.stem
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+sbws.util.userquery module
+---------------------
+
+.. automodule:: sbws.util.userquery
     :members:
     :undoc-members:
     :show-inheritance:

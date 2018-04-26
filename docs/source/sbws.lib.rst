@@ -20,14 +20,6 @@ sbws.lib.helperrelay module
     :undoc-members:
     :show-inheritance:
 
-sbws.lib.pastlylogger module
-----------------------------
-
-.. automodule:: sbws.lib.pastlylogger
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 sbws.lib.relaylist module
 -------------------------
 

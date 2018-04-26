@@ -7,9 +7,11 @@
 Welcome to Simple Bandwidth Scanner's documentation!
 ====================================================
 
+Contents
+--------
+
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
    specification
    config
@@ -22,6 +24,15 @@ Welcome to Simple Bandwidth Scanner's documentation!
    faq
    glossary
    sbws
+
+Proposals
+---------
+
+.. toctree::
+   :glob:
+   :maxdepth: 1
+
+   proposals/*
 
 Indices and tables
 ==================

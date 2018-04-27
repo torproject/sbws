@@ -32,6 +32,16 @@ def test_v3bwheader_scanner_started_str():
                           'software_version={}\n'.format(timestamp, version)
 
 
+def test_v3bwheader_earlier_result_str():
+    """Test header str with earlier_result"""
+    timestamp = 1524661857
+    earlier_result_ts = 1523887747.2904038
+    header = V3BwHeader(timestamp, earlier_result_ts=earlier_result_ts)
+    assert str(header) == '{}\nearlier_result=1523887747.2904038 ' \
+        'software=sbws software_version=0.1.0 ' \
+        'timestamp=1524661857 version=1.1.0\n'.format(timestamp)
+
+
 def test_v3bwfile():
     """Test generate v3bw file (including relay_lines)."""
     pass

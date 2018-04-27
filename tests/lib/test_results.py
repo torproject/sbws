@@ -1,5 +1,5 @@
 from unittest.mock import patch
-from sbws import RESULT_VERSION
+from sbws.globals import RESULT_VERSION
 from sbws.lib.resultdump import Result
 from sbws.lib.resultdump import ResultSuccess
 from sbws.lib.resultdump import ResultError

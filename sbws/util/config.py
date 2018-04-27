@@ -4,7 +4,7 @@ import logging
 import logging.config
 from string import Template
 from tempfile import NamedTemporaryFile
-from sbws import PKG_DIR
+from sbws.globals import PKG_DIR
 
 _ALPHANUM = 'abcdefghijklmnopqrstuvwxyz'
 _ALPHANUM += _ALPHANUM.upper()

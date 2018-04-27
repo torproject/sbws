@@ -1,7 +1,7 @@
 from sbws.util.simpleauth import authenticate_scanner
 from sbws.util.simpleauth import authenticate_to_server
 from sbws.util.simpleauth import (MAGIC_BYTES, PW_LEN, SUCCESS_BYTES)
-from sbws import WIRE_VERSION
+from sbws.globals import WIRE_VERSION
 from configparser import ConfigParser
 import socket
 import logging

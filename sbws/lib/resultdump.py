@@ -12,7 +12,7 @@ from datetime import datetime
 from datetime import timedelta
 from enum import Enum
 from stem.descriptor.router_status_entry import RouterStatusEntryV3
-from sbws import RESULT_VERSION
+from sbws.globals import RESULT_VERSION
 from sbws.util.filelock import DirectoryLock
 
 log = logging.getLogger(__name__)

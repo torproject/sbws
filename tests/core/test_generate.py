@@ -99,12 +99,6 @@ def test_generate_single_success_noscale(dotsbws_success_result, caplog,
     stdout_lines = captured.out.strip().split('\n')
     assert len(stdout_lines) == 1 + NUM_LINES_HEADER
 
-    # XXX: after mocking time, make sure first line is the current timestamp
-    # assert stdout_lines[0] is current timestamp
-    # FIXME: this is now down in V3BwHeader
-    # v = 'version={}'.format(version)
-    # assert stdout_lines[1] == v
-
     bw = round(median([dl['amount'] / dl['duration'] / 1024
                        for dl in result.downloads]))
     rtt = median([round(r * 1000) for r in result.rtts])
@@ -131,12 +125,6 @@ def test_generate_single_success_scale(dotsbws_success_result, parser,
     stdout_lines = captured.out.strip().split('\n')
     assert len(stdout_lines) == 1 + NUM_LINES_HEADER
 
-    # XXX: after mocking time, make sure first line is the current timestamp
-    # assert stdout_lines[0] is current timestamp
-    # FIXME: this is now down in V3BwHeader
-    # v = 'version={}'.format(version)
-    # assert stdout_lines[1] == v
-
     bw = 7500
     rtt = median([round(r * 1000) for r in result.rtts])
     bw_line = 'node_id=${} bw={} nick={} rtt={} time={}'.format(
@@ -160,12 +148,6 @@ def test_generate_single_relay_success_noscale(
     captured = capfd.readouterr()
     stdout_lines = captured.out.strip().split('\n')
     assert len(stdout_lines) == 1 + NUM_LINES_HEADER
-
-    # XXX: after mocking time, make sure first line is the current timestamp
-    # assert stdout_lines[0] is current timestamp
-    # FIXME: this is now down in V3BwHeader
-    # v = 'version={}'.format(version)
-    # assert stdout_lines[1] == v
 
     speeds = [dl['amount'] / dl['duration'] / 1024
               for r in results for dl in r.downloads]
@@ -194,12 +176,6 @@ def test_generate_single_relay_success_scale(
     stdout_lines = captured.out.strip().split('\n')
     assert len(stdout_lines) == 1 + NUM_LINES_HEADER
 
-    # XXX: after mocking time, make sure first line is the current timestamp
-    # assert stdout_lines[0] is current timestamp
-    # FIXME: this is now down in V3BwHeader
-    # v = 'version={}'.format(version)
-    # assert stdout_lines[1] == v
-
     speed = 7500
     rtt = round(median([round(r * 1000) for r in result.rtts]))
     bw_line = 'node_id=${} bw={} nick={} rtt={} time={}'.format(
@@ -223,12 +199,6 @@ def test_generate_two_relays_success_noscale(
     captured = capfd.readouterr()
     stdout_lines = captured.out.strip().split('\n')
     assert len(stdout_lines) == 2 + NUM_LINES_HEADER
-
-    # XXX: after mocking time, make sure first line is the current timestamp
-    # assert stdout_lines[0] is current timestamp
-    # FIXME: this is now down in V3BwHeader
-    # v = 'version={}'.format(version)
-    # assert stdout_lines[1] == v
 
     r1_results = [r for r in results if r.fingerprint == 'A' * 40]
     r1_time = round(max([r.time for r in r1_results]))

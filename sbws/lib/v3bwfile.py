@@ -30,6 +30,6 @@ class V3BwHeader(object):
 
     def __str__(self):
         """Return header string following spec version 1.1.0."""
-        frmt = '{timestamp} version={version} software={software} ' \
+        frmt = '{timestamp}\nversion={version} software={software} ' \
                'software_version={software_version}\n'
         return frmt.format(**self.__dict__)

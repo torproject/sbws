@@ -112,6 +112,7 @@ def main(args, conf):
     fresh_days = conf.getint('general', 'data_period')
     results = load_recent_results_in_datadir(
         fresh_days, datadir, success_only=True)
+    earlier_result_ts = min([r.time for r in results])
     if len(results) < 1:
         log.warning('No recent results, so not generating anything. (Have you '
                     'ran sbws scanner recently?)')

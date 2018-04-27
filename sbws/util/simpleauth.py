@@ -1,7 +1,7 @@
 from ..util.sockio import read_line
 import socket
 import logging
-from sbws import wire_proto_ver
+from sbws import WIRE_VERSION
 
 MAGIC_BYTES = b'SBWS'
 SUCCESS_BYTES = b'.'
@@ -35,9 +35,9 @@ def authenticate_scanner(sock, conf_section):
         return None
 
     line = read_line(sock, max_len=4)
-    if line != str(wire_proto_ver):
+    if line != str(WIRE_VERSION):
         log.warning('Scanner gave protocol version %s but we support %d', line,
-                    wire_proto_ver)
+                    WIRE_VERSION)
         return None
 
     try:
@@ -79,7 +79,7 @@ def authenticate_to_server(sock, pw):
     assert len(pw) == PW_LEN
     try:
         sock.send(MAGIC_BYTES)
-        sock.send(bytes('{}\n'.format(wire_proto_ver), 'utf-8'))
+        sock.send(bytes('{}\n'.format(WIRE_VERSION), 'utf-8'))
         sock.send(bytes(pw, 'utf-8'))
         msg = sock.recv(len(SUCCESS_BYTES))
     except (socket.timeout, ConnectionResetError, BrokenPipeError) as e:
@@ -89,7 +89,7 @@ def authenticate_to_server(sock, pw):
         log.warning('Didn\'t get success code from server. Most likely the '
                     'password we are giving it is wrong. It\'s also possible '
                     'the server doesn\'t support wire protocol version %d.',
-                    wire_proto_ver)
+                    WIRE_VERSION)
         return False
     return True
 

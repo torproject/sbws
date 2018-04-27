@@ -1,4 +1,4 @@
-from sbws.globals import SOCKET_TIMEOUT
+from sbws import SOCKET_TIMEOUT
 import socket
 import socks
 import logging

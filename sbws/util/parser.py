@@ -5,7 +5,7 @@ import sbws.core.init
 import sbws.core.pwgen
 import sbws.core.server
 import sbws.core.stats
-from sbws import version
+from sbws import SBWS_VERSION
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import os
@@ -20,7 +20,7 @@ def create_parser():
     p = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
     p.add_argument(
         '--version', action='version', help='sbws version',
-        version='%(prog)s {}'.format(version))
+        version='%(prog)s {}'.format(SBWS_VERSION))
     p.add_argument('--log-level',
                    choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
                    help='Override the sbws log level')

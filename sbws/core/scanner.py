@@ -11,7 +11,7 @@ from ..lib.helperrelay import HelperRelayList
 from ..util.simpleauth import authenticate_to_server
 from ..util.sockio import (make_socket, close_socket)
 from sbws.globals import (fail_hard, is_initted)
-from sbws.globals import (MIN_REQ_BYTES, MAX_REQ_BYTES)
+from sbws import MIN_REQ_BYTES, MAX_REQ_BYTES
 import sbws.util.stem as stem_utils
 from argparse import ArgumentDefaultsHelpFormatter
 from multiprocessing.dummy import Pool

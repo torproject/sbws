@@ -12,7 +12,7 @@ from datetime import datetime
 from datetime import timedelta
 from enum import Enum
 from stem.descriptor.router_status_entry import RouterStatusEntryV3
-from sbws import res_proto_ver
+from sbws import RESULT_VERSION
 from sbws.util.filelock import DirectoryLock
 
 log = logging.getLogger(__name__)
@@ -187,7 +187,7 @@ class Result:
 
     @property
     def version(self):
-        return res_proto_ver
+        return RESULT_VERSION
 
     def to_dict(self):
         return {
@@ -210,7 +210,7 @@ class Result:
         NotImplementedError. If we can't parse the dict for some other reason,
         return None. '''
         assert 'version' in d
-        if d['version'] != res_proto_ver:
+        if d['version'] != RESULT_VERSION:
             return None
         assert 'type' in d
         if d['type'] == _ResultType.Success.value:

@@ -4,7 +4,7 @@ import logging
 import logging.config
 from string import Template
 from tempfile import NamedTemporaryFile
-from sbws.globals import G_PKG_DIR
+from sbws import PKG_DIR
 
 _ALPHANUM = 'abcdefghijklmnopqrstuvwxyz'
 _ALPHANUM += _ALPHANUM.upper()
@@ -25,7 +25,7 @@ def _read_config_file(conf, fname):
 
 def _get_default_config():
     conf = ConfigParser(interpolation=ExtendedInterpolation())
-    fname = os.path.join(G_PKG_DIR, 'config.default.ini')
+    fname = os.path.join(PKG_DIR, 'config.default.ini')
     assert os.path.isfile(fname)
     conf = _read_config_file(conf, fname)
     return conf
@@ -60,7 +60,7 @@ def _get_default_logging_config(args, conf=None):
         conf = ConfigParser(interpolation=ExtendedInterpolation())
     else:
         assert isinstance(conf, ConfigParser)
-    fname = os.path.join(G_PKG_DIR, 'config.log.default.ini')
+    fname = os.path.join(PKG_DIR, 'config.log.default.ini')
     assert os.path.isfile(fname)
     conf = _read_config_file(conf, fname)
     return conf
@@ -76,7 +76,7 @@ def get_config(args):
 
 def get_user_example_config():
     conf = ConfigParser(interpolation=ExtendedInterpolation())
-    fname = os.path.join(G_PKG_DIR, 'config.example.ini')
+    fname = os.path.join(PKG_DIR, 'config.example.ini')
     assert os.path.isfile(fname)
     conf = _read_config_file(conf, fname)
     return conf

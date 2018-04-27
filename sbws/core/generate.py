@@ -123,7 +123,8 @@ def main(args, conf):
     fresh_days = conf.getint('general', 'data_period')
     results = load_recent_results_in_datadir(
         fresh_days, datadir, success_only=True)
-    earlier_result_ts = min([r.time for r in results])
+    if results:
+        earlier_result_ts = min([r.time for r in results])
     if len(results) < 1:
         log.warning('No recent results, so not generating anything. (Have you '
                     'ran sbws scanner recently?)')
@@ -132,8 +133,11 @@ def main(args, conf):
     data_lines = sorted(data_lines, key=lambda d: d.bw, reverse=True)
     data_lines = scale_lines(args, data_lines)
     scanner_started_ts = read_started_ts(conf)
-    header = V3BwHeader(earlier_result_ts=earlier_result_ts,
-                        scanner_started_ts=scanner_started_ts)
+    if results:
+        header = V3BwHeader(earlier_result_ts=earlier_result_ts,
+                            scanner_started_ts=scanner_started_ts)
+    else:
+        header = V3BwHeader(scanner_started_ts=scanner_started_ts)
     log_stats(data_lines)
     output = conf['paths']['v3bw_fname']
     if args.output:

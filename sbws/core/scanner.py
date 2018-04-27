@@ -278,7 +278,20 @@ def result_putter_error(target):
     return closure
 
 
+def write_start_ts(conf):
+    """Write timestamp in Unix Epoch seconds.microsecs when scanner started.
+
+    :param ConfigParser conf: configuration
+    """
+    scanner_started_ts = str(time.time())
+    log.info('Scanner started at {}'.format(scanner_started_ts))
+    with open(os.path.join(conf['paths']['datadir'],
+                           conf['scanner']['started_filepath']), 'wt') as fd:
+        fd.write(scanner_started_ts)
+
+
 def run_speedtest(args, conf):
+    write_start_ts(conf)
     controller, _ = stem_utils.init_controller(
         path=conf['tor']['control_socket'])
     if not controller:

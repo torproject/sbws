@@ -1,5 +1,5 @@
 import os
-SBWS_VERSION = '0.1.0'
+__version__ = '0.1.0'
 RESULT_VERSION = 1
 WIRE_VERSION = 1
 SPEC_VERSION = '1.1.0'

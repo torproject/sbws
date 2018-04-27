@@ -7,7 +7,7 @@ def test_v3bwheader_str():
     """Test header str"""
     timestamp = 1524661857
     header = V3BwHeader(timestamp)
-    assert str(header) == '{} version=1.1.0 software=sbws ' \
+    assert str(header) == '{}\nversion=1.1.0 software=sbws ' \
                           'software_version=0.1.0\n'.format(timestamp)
 
 

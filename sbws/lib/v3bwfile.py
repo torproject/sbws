@@ -29,6 +29,9 @@ class V3BwHeader(object):
         self.software_version = software_version
         if kwargs.get('earlier_result_ts'):
             self.earlier_result = kwargs['earlier_result_ts']
+        if kwargs.get('scanner_started_ts'):
+            self.scanner_started = kwargs['scanner_started_ts']
+
 
     def __str__(self):
         """Return header string following spec version 1.1.0."""

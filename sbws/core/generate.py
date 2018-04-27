@@ -99,6 +99,17 @@ def log_stats(data_lines):
     log.info('Mean bandwidth per line: %f "KiB"', bw_per_line)
 
 
+def read_started_ts(conf):
+    """Write timestamp in Unix Epoch seconds.microsecs when scanner started.
+
+    :param ConfigParser conf: configuration
+    """
+    with open(os.path.join(conf['paths']['datadir'],
+                           conf['scanner']['started_filepath']), 'wt') as fd:
+        scanner_started_ts = fd.read()
+    return scanner_started_ts
+
+
 def main(args, conf):
     if not is_initted(args.directory):
         fail_hard('Sbws isn\'t initialized.  Try sbws init')
@@ -120,7 +131,9 @@ def main(args, conf):
     data_lines = [result_data_to_v3bw_line(results, fp) for fp in results]
     data_lines = sorted(data_lines, key=lambda d: d.bw, reverse=True)
     data_lines = scale_lines(args, data_lines)
-    header = V3BwHeader()
+    scanner_started_ts = read_started_ts(conf)
+    header = V3BwHeader(earlier_result_ts=earlier_result_ts,
+                        scanner_started_ts=scanner_started_ts)
     log_stats(data_lines)
     output = conf['paths']['v3bw_fname']
     if args.output:

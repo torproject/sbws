@@ -4,8 +4,7 @@
 
 import time
 import logging
-from sbws import version
-from sbws.globals import SPEC_VERSION
+from sbws import SBWS_VERSION, SPEC_VERSION
 
 log = logging.getLogger(__name__)
 
@@ -22,7 +21,7 @@ class V3BwHeader(object):
     :param str software_version: the version of the software
     """
     def __init__(self, timestamp=None, version=SPEC_VERSION, software='sbws',
-                 software_version=version):
+                 software_version=SBWS_VERSION):
         self.timestamp = timestamp or int(time.time())
         self.version = version
         self.software = software

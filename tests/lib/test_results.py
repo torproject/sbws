@@ -1,5 +1,5 @@
 from unittest.mock import patch
-from sbws import res_proto_ver
+from sbws import RESULT_VERSION
 from sbws.lib.resultdump import Result
 from sbws.lib.resultdump import ResultSuccess
 from sbws.lib.resultdump import ResultError
@@ -39,7 +39,7 @@ def test_Result_from_dict_bad_version():
     The first thing that is checked is the version field, and a wrong one
     should return None
     '''
-    d = {'version': res_proto_ver + 1}
+    d = {'version': RESULT_VERSION + 1}
     r = Result.from_dict(d)
     assert r is None
 
@@ -49,7 +49,7 @@ def test_Result_from_dict_bad_type():
     If the result type string doesn't match any of the known types, then it
     should throw NotImplementedError
     '''
-    d = {'version': res_proto_ver, 'type': 'NotARealType'}
+    d = {'version': RESULT_VERSION, 'type': 'NotARealType'}
     try:
         Result.from_dict(d)
     except NotImplementedError as e:
@@ -85,7 +85,7 @@ def test_ResultSuccess(time_mock):
     assert r1.address == relay_ip
     assert r1.circ == circ
     assert r1.server_host == server_host
-    assert r1.version == res_proto_ver
+    assert r1.version == RESULT_VERSION
     assert str(r1) == str(r2)
 
 
@@ -108,7 +108,7 @@ def test_ResultSuccess_from_dict(time_mock):
         'rtts': rtts, 'downloads': downloads, 'fingerprint': fp1,
         'nickname': nick, 'address': relay_ip, 'circ': circ,
         'server_host': server_host, 'scanner': scanner_nick,
-        'version': res_proto_ver, 'type': _ResultType.Success, 'time': t,
+        'version': RESULT_VERSION, 'type': _ResultType.Success, 'time': t,
     }
     r2 = Result.from_dict(d)
     assert isinstance(r1, ResultSuccess)
@@ -140,7 +140,7 @@ def test_ResultError(time_mock):
     assert r1.address == relay_ip
     assert r1.circ == circ
     assert r1.server_host == server_host
-    assert r1.version == res_proto_ver
+    assert r1.version == RESULT_VERSION
     assert str(r1) == str(r2)
 
 
@@ -162,7 +162,7 @@ def test_ResultError_from_dict(time_mock):
         'msg': msg, 'fingerprint': fp1,
         'nickname': nick, 'address': relay_ip, 'circ': circ,
         'server_host': server_host, 'scanner': scanner_nick,
-        'version': res_proto_ver, 'type': _ResultType.Error, 'time': t,
+        'version': RESULT_VERSION, 'type': _ResultType.Error, 'time': t,
     }
     r2 = Result.from_dict(d)
     assert isinstance(r1, ResultError)
@@ -195,7 +195,7 @@ def test_ResultErrorCircuit(time_mock):
     assert r1.address == relay_ip
     assert r1.circ == circ
     assert r1.server_host == server_host
-    assert r1.version == res_proto_ver
+    assert r1.version == RESULT_VERSION
     assert str(r1) == str(r2)
 
 
@@ -217,7 +217,7 @@ def test_ResultErrorCircuit_from_dict(time_mock):
         'msg': msg, 'fingerprint': fp1,
         'nickname': nick, 'address': relay_ip, 'circ': circ,
         'server_host': server_host, 'scanner': scanner_nick,
-        'version': res_proto_ver, 'type': _ResultType.ErrorCircuit, 'time': t,
+        'version': RESULT_VERSION, 'type': _ResultType.ErrorCircuit, 'time': t,
     }
     r2 = Result.from_dict(d)
     assert isinstance(r1, ResultErrorCircuit)
@@ -250,7 +250,7 @@ def test_ResultErrorStream(time_mock):
     assert r1.address == relay_ip
     assert r1.circ == circ
     assert r1.server_host == server_host
-    assert r1.version == res_proto_ver
+    assert r1.version == RESULT_VERSION
     assert str(r1) == str(r2)
 
 
@@ -272,7 +272,7 @@ def test_ResultErrorStream_from_dict(time_mock):
         'msg': msg, 'fingerprint': fp1,
         'nickname': nick, 'address': relay_ip, 'circ': circ,
         'server_host': server_host, 'scanner': scanner_nick,
-        'version': res_proto_ver, 'type': _ResultType.ErrorStream, 'time': t,
+        'version': RESULT_VERSION, 'type': _ResultType.ErrorStream, 'time': t,
     }
     r2 = Result.from_dict(d)
     assert isinstance(r1, ResultErrorStream)
@@ -305,7 +305,7 @@ def test_ResultErrorAuth(time_mock):
     assert r1.address == relay_ip
     assert r1.circ == circ
     assert r1.server_host == server_host
-    assert r1.version == res_proto_ver
+    assert r1.version == RESULT_VERSION
     assert str(r1) == str(r2)
 
 
@@ -327,7 +327,7 @@ def test_ResultErrorAuth_from_dict(time_mock):
         'msg': msg, 'fingerprint': fp1,
         'nickname': nick, 'address': relay_ip, 'circ': circ,
         'server_host': server_host, 'scanner': scanner_nick,
-        'version': res_proto_ver, 'type': _ResultType.ErrorAuth, 'time': t,
+        'version': RESULT_VERSION, 'type': _ResultType.ErrorAuth, 'time': t,
     }
     r2 = Result.from_dict(d)
     assert isinstance(r1, ResultErrorAuth)

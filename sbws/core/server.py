@@ -1,7 +1,7 @@
 from ..util.simpleauth import authenticate_scanner
 from ..util.sockio import read_line
 from sbws.globals import (fail_hard, is_initted)
-from sbws.globals import (MIN_REQ_BYTES, MAX_REQ_BYTES, SOCKET_TIMEOUT)
+from sbws import MIN_REQ_BYTES, MAX_REQ_BYTES, SOCKET_TIMEOUT
 from argparse import ArgumentDefaultsHelpFormatter
 from functools import lru_cache
 from threading import Thread

@@ -1,7 +1,7 @@
 from ..util.sockio import read_line
 import socket
 import logging
-from sbws import WIRE_VERSION
+from sbws.globals import WIRE_VERSION
 
 MAGIC_BYTES = b'SBWS'
 SUCCESS_BYTES = b'.'

@@ -4,7 +4,8 @@
 
 import time
 import logging
-from sbws import __version__, SPEC_VERSION
+from sbws import __version__
+from sbws.globals import SPEC_VERSION
 
 log = logging.getLogger(__name__)
 

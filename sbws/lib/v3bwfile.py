@@ -22,14 +22,19 @@ class V3BwHeader(object):
     :param str software_version: the version of the software
     """
     def __init__(self, timestamp=None, version=SPEC_VERSION, software='sbws',
-                 software_version=__version__):
+                 software_version=__version__, **kwargs):
         self.timestamp = timestamp or int(time.time())
         self.version = version
         self.software = software
         self.software_version = software_version
+        if kwargs.get('earlier_result_ts'):
+            self.earlier_result = kwargs['earlier_result_ts']
 
     def __str__(self):
         """Return header string following spec version 1.1.0."""
-        frmt = '{timestamp}\nversion={version}\nsoftware={software}\n' \
-               'software_version={software_version}\n'
-        return frmt.format(**self.__dict__)
+        # sorting the list to generate determinist headers
+        kv_headers = ' '.join(sorted(['='.join([k, str(v)])
+                                      for k, v in self.__dict__.items()]))
+        header = '\n'.join([str(self.timestamp), kv_headers, ''])
+        log.debug('header %s', header)
+        return header

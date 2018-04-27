@@ -105,7 +105,7 @@ def read_started_ts(conf):
     :param ConfigParser conf: configuration
     """
     with open(os.path.join(conf['paths']['datadir'],
-                           conf['scanner']['started_filepath']), 'wt') as fd:
+                           conf['scanner']['started_filepath']), 'r') as fd:
         scanner_started_ts = fd.read()
     return scanner_started_ts
 

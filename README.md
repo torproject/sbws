@@ -1,5 +1,7 @@
 # Readme
 
+[![Build Status](https://travis-ci.org/pastly/simple-bw-scanner.svg?branch=master)](https://travis-ci.org/pastly/simple-bw-scanner)
+
 It doesn't get simpler than this, folks.
 
 Run `sbws server` on the same machine as a relay with an exit policy that

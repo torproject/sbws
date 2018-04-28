@@ -35,7 +35,7 @@ def get_data_files():
 def find_version():
     with open(os.path.join("sbws", "__init__.py")) as fp:
         for line in fp:
-            if "SBWS_VERSION" in line.strip():
+            if "__version__" in line.strip():
                 version = line.split("=", 1)[1].strip().strip("'")
                 return version
 

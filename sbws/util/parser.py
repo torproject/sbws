@@ -20,7 +20,7 @@ def create_parser():
     p = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
     p.add_argument(
         '--version', action='version', help='sbws version',
-        version='%(prog)s {}'.format(__version__))
+        version='{}'.format(__version__))
     p.add_argument('--log-level',
                    choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
                    help='Override the sbws log level')

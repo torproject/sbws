@@ -2,7 +2,6 @@ import sbws.core.cleanup
 import sbws.core.scanner
 import sbws.core.generate
 import sbws.core.init
-import sbws.core.pwgen
 import sbws.core.stats
 from sbws.util.config import get_config
 from sbws.util.config import validate_config
@@ -41,8 +40,6 @@ def main():
                      'a': def_args, 'kw': def_kwargs},
         'init': {'f': sbws.core.init.main,
                  'a': def_args, 'kw': def_kwargs},
-        'pwgen': {'f': sbws.core.pwgen.main,
-                  'a': def_args, 'kw': def_kwargs},
         'stats': {'f': sbws.core.stats.main,
                   'a': def_args, 'kw': def_kwargs},
     }

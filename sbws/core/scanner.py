@@ -28,23 +28,22 @@ end_event = Event()
 log = logging.getLogger(__name__)
 
 
-def timed_recv_from_server(sock, conf, yet_to_read):
-    ''' Return the time in seconds it took to read <yet_to_read> bytes from
-    the server. Return None if error '''
-    assert yet_to_read > 0
+def timed_recv_from_server(session, dest, byte_range):
+    ''' Request the **byte_range** from the URL at **dest**. If successful,
+    return True and the time it took to download. Otherwise return False and an
+    error string. '''
+    headers = {'Range': byte_range}
     start_time = time.time()
-    while yet_to_read > 0:
-        limit = min(conf.getint('scanner', 'max_recv_per_read'), yet_to_read)
-        try:
-            read_this_time = len(sock.recv(limit))
-        except (socket.timeout, ConnectionResetError, BrokenPipeError) as e:
-            log.info(e)
-            return
-        if read_this_time == 0:
-            return
-        yet_to_read -= read_this_time
+    # TODO:
+    # - What other exceptions can this throw?
+    # - Do we have to read the content, or did requests already do so?
+    # - Add timeout
+    try:
+        session.get(dest.url, headers=headers)
+    except requests.exceptions.ConnectionError as e:
+        return False, e
     end_time = time.time()
-    return end_time - start_time
+    return True, end_time - start_time
 
 
 def get_random_range_string(content_length, size):
@@ -81,21 +80,18 @@ def measure_rtt_to_server(session, conf, dest, content_length):
     log.debug('Measuring RTT to %s', dest.url)
     for _ in range(0, conf.getint('scanner', 'num_rtts')):
         random_range = get_random_range_string(content_length, size)
-        headers = {'Range': random_range}
-        start_time = time.time()
-        # TODO:
-        # - What other exceptions can this throw?
-        # - Do we have to read the content, or did requests already do so?
-        # - Add timeout
-        try:
-            session.get(dest.url, headers=headers)
-        except requests.exceptions.ConnectionError as e:
-            log.warning(
-                'While measuring RTT to %s we hit an exception (does the '
-                'webserver support Range requests?): %s', dest.url, e)
+        success, data = timed_recv_from_server(session, dest, random_range)
+        if not success:
+            # data is an error string
+            assert isinstance(data, str)
+            log.warning('While measuring the RTT to %s we hit an exception '
+                        '(does the webserver support Range requests?): %s',
+                        dest.url, data)
             return None
-        end_time = time.time()
-        rtts.append(end_time - start_time)
+        assert success
+        # data is an RTT
+        assert isinstance(data, float) or isinstance(data, int)
+        rtts.append(data)
     return rtts
 
 

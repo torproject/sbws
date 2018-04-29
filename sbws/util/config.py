@@ -208,6 +208,13 @@ def _validate_destinations(conf):
     err_tmpl = Template('$sec/$key ($val): $e')
     dest_sections = []
     for key in section.keys():
+        if key == 'default_path':
+            value = section[key]
+            valid, error_msg = _validate_string(section, key, starts_with='/')
+            if not valid:
+                errors.append(err_tmpl.substitute(
+                    sec=sec, key=key, val=value, e=error_msg))
+            continue
         value = section[key]
         valid, error_msg = _validate_boolean(section, key)
         if not valid:
@@ -429,7 +436,8 @@ def _validate_nickname(section, key):
                             alphabet=alphabet)
 
 
-def _validate_string(section, key, min_len=None, max_len=None, alphabet=None):
+def _validate_string(section, key, min_len=None, max_len=None, alphabet=None,
+                     starts_with=None):
     s = section[key]
     if min_len is not None and len(s) < min_len:
         return False, '{} is below minimum allowed length {}'.format(
@@ -442,4 +450,7 @@ def _validate_string(section, key, min_len=None, max_len=None, alphabet=None):
             if c not in alphabet:
                 return False, 'Letter {} at position {} is not in allowed '\
                     'characters "{}"'.format(c, i, alphabet)
+    if starts_with is not None:
+        if not s.startswith(starts_with):
+            return False, '{} does not start with {}'.format(s, starts_with)
     return True, ''

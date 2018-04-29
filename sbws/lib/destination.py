@@ -6,11 +6,15 @@ log = logging.getLogger(__name__)
 
 
 class Destination:
-    def __init__(self, url):
+    def __init__(self, url, default_path):
         u = urlparse(url)
         # these things should have been verified in verify_config
         assert u.scheme in ['http', 'https']
         assert u.netloc
+        if not u.path:
+            assert default_path[0] == '/'
+            u = urlparse('{}://{}{}{}{}{}'.format(
+                *u[0:2], default_path, *u[2:]))
         self._url = u
 
     @property
@@ -18,10 +22,10 @@ class Destination:
         return self._url.geturl()
 
     @staticmethod
-    def from_config(conf_section):
+    def from_config(conf_section, default_path):
         assert 'url' in conf_section
         url = conf_section['url']
-        return Destination(url)
+        return Destination(url, default_path)
 
 
 class DestinationList:
@@ -35,15 +39,19 @@ class DestinationList:
     def from_config(conf):
         assert 'destinations' in conf
         section = conf['destinations']
+        default_path = section['default_path']
         dests = []
         for key in section.keys():
+            if key == 'default_path':
+                continue
             if not section.getboolean(key):
                 log.debug('%s is disabled; not loading it', key)
                 continue
             dest_sec = 'destinations.{}'.format(key)
             assert dest_sec in conf  # validate_config should require this
             log.debug('Loading info for destination %s', key)
-            dests.append(Destination.from_config(conf[dest_sec]))
+            dests.append(Destination.from_config(
+                conf[dest_sec], default_path))
         if len(dests) < 1:
             return None, 'No enabled destinations in config'
         return DestinationList(dests), ''

@@ -13,6 +13,7 @@ from ..util.sockio import (make_socket, close_socket)
 from sbws.globals import (fail_hard, is_initted)
 from sbws.globals import MIN_REQ_BYTES, MAX_REQ_BYTES
 import sbws.util.stem as stem_utils
+from stem.control import EventType
 from argparse import ArgumentDefaultsHelpFormatter
 from multiprocessing.dummy import Pool
 from threading import Event
@@ -85,6 +86,14 @@ def measure_rtt_to_server(sock, conf):
 
 
 def measure_relay2(args, conf, destinations, cb, rl, relay):
+    s = requests.Session()
+    proxies = {
+        'http': 'socks5h://{}:{}'.format(conf['tor']['socks_host'],
+                                         conf.getint('tor', 'socks_port')),
+        'https': 'socks5h://{}:{}'.format(conf['tor']['socks_host'],
+                                          conf.getint('tor', 'socks_port')),
+    }
+    headers = {'Range': 'bytes=0-0'}
     dest = destinations.next()
     if not dest:
         log.warning('Unable to get destination to measure %s %s',
@@ -97,7 +106,17 @@ def measure_relay2(args, conf, destinations, cb, rl, relay):
         log.debug('Could not build circuit involving %s', relay.nickname)
         # TODO: Return ResultError of some sort
         return None
-    circ_fps = cb.get_circuit_path(circ_id)
+    # circ_fps = cb.get_circuit_path(circ_id)
+    listener = stem_utils.attach_stream_to_circuit_listener(cb.controller,
+                                                            circ_id)
+    stem_utils.add_event_listener(cb.controller, listener, EventType.STREAM)
+    r = s.get(dest.url, proxies=proxies, headers=headers)
+    log.debug('%s %s %s %s', dest.url, r.status_code, r.text,
+              r.headers['connection'])
+    stem_utils.remove_event_listener(cb.controller, listener)
+    r = s.get(dest.url, proxies=proxies, headers=headers)
+    log.debug('%s %s %s %s', dest.url, r.status_code, r.text,
+              r.headers['connection'])
 
 
 def measure_relay(args, conf, helpers, cb, rl, relay):

@@ -2,14 +2,14 @@
 
 from ..lib.circuitbuilder import FooCircuitBuilder as CB
 from ..lib.resultdump import ResultDump
-from ..lib.resultdump import ResultSuccess
-from ..lib.resultdump import ResultErrorCircuit
-from ..lib.resultdump import ResultErrorAuth
+# from ..lib.resultdump import ResultSuccess
+# from ..lib.resultdump import ResultErrorCircuit
+# from ..lib.resultdump import ResultErrorAuth
 from ..lib.relaylist import RelayList
 from ..lib.relayprioritizer import RelayPrioritizer
 from ..lib.destination import DestinationList
-from ..util.simpleauth import authenticate_to_server
-from ..util.sockio import (make_socket, close_socket)
+# from ..util.simpleauth import authenticate_to_server
+# from ..util.sockio import (make_socket, close_socket)
 from sbws.globals import (fail_hard, is_initted)
 from sbws.globals import MIN_REQ_BYTES, MAX_REQ_BYTES
 import sbws.util.stem as stem_utils
@@ -22,6 +22,7 @@ import time
 import os
 import logging
 import requests
+import random
 
 end_event = Event()
 log = logging.getLogger(__name__)
@@ -62,25 +63,54 @@ def timed_recv_from_server(sock, conf, yet_to_read):
     return end_time - start_time
 
 
-def measure_rtt_to_server(sock, conf):
-    ''' Make multiple end-to-end RTT measurements. If something goes wrong and
-    not all of them can be made, return None. Otherwise return a list of the
-    RTTs (in seconds). '''
+def get_random_range_string(content_length, size):
+    '''
+    Return a random range of bytes of length **size**. **content_length** is
+    the size of the file we will be requesting a range of bytes from.
+
+    For example, for content_length of 100 and size 10, this function will
+    return one of the following: '0-9', '1-10', '2-11', [...] '89-98', '90-99'
+    '''
+    assert size <= content_length
+    # start can be anywhere in the content_length as long as it is **size**
+    # bytes away from the end or more. Because range is [start, end) (doesn't
+    # include the end value), add 1 to the end.
+    start = random.choice(range(0, content_length - size + 1))
+    # Unlike range, the byte range in an http header is [start, end] (does
+    # include the end value), so we subtract one
+    end = start + size - 1
+    # start and end are indexes, while content_length is a length, therefore,
+    # the largest index end should ever be should be less than the total length
+    # of the content. For example, if content_length is 10, end could be
+    # anywhere from 0 to 9.
+    assert end < content_length
+    return 'bytes={}-{}'.format(start, end)
+
+
+def measure_rtt_to_server(session, conf, dest, content_length):
+    ''' Make multiple end-to-end RTT measurements by making small HTTP requests
+    over a circuit + stream that should already exist, persist, and not need
+    rebuilding. If something goes wrong and not all of the RTT measurements can
+    be made, return None. Otherwise return a list of the RTTs (in seconds). '''
     rtts = []
+    size = conf.getint('scanner', 'min_download_size')
+    log.debug('Measuring RTT to %s', dest.url)
     for _ in range(0, conf.getint('scanner', 'num_rtts')):
+        random_range = get_random_range_string(content_length, size)
+        headers = {'Range': random_range}
         start_time = time.time()
-        if not tell_server_amount(sock, MIN_REQ_BYTES):
-            log.info('Unable to ping server on %d', sock.fileno())
-            return
+        # TODO:
+        # - What other exceptions can this throw?
+        # - Do we have to read the content, or did requests already do so?
+        # - Add timeout
         try:
-            amount_read = len(sock.recv(1))
-        except (socket.timeout, ConnectionResetError, BrokenPipeError) as e:
-            log.info(e)
-            return
+            session.get(dest.url, headers=headers)
+        except requests.exceptions.ConnectionError as e:
+            log.error('While measuring RTT to %s we hit an exception (does '
+                      'the webserver support Range requests?): %s', dest.url,
+                      e)
+            return None
         end_time = time.time()
-        if amount_read == 0:
-            log.info('No pong from server on %d', sock.fileno())
-            return
         rtts.append(end_time - start_time)
     return rtts
 
@@ -88,23 +118,30 @@ def measure_rtt_to_server(sock, conf):
 def connect_to_destination_over_circuit(dest, circ_id, session, cont, conf):
     '''
     Connect to **dest* over the given **circ_id** using the given Requests
-    **session**. Make sure everything seems in order. Return True and an empty
-    string if we connected and everything looks fine. Otherwise return False
-    and a string stating what the issue is.
+    **session**. Make sure everything seems in order. Return True and a
+    dictionary of helpful information if we connected and everything looks
+    fine.  Otherwise return False and a string stating what the issue is.
 
     :param dest Destination: the place to which we should connect
     :param circ_id str: the circuit we should connect over
     :param session Session: the Requests library session object to use to make
         the connection.
     :param cont Controller: them Stem library controller controlling Tor
-    :returns: True, '' if everything is in order and measurements should
-        commence.  False and an error string otherwise.
+    :returns: True and a dictionary if everything is in order and measurements
+        should commence.  False and an error string otherwise.
     '''
     error_prefix = 'When sending HTTP HEAD to {}, '.format(dest.url)
     with stem_utils.stream_building_lock:
         listener = stem_utils.attach_stream_to_circuit_listener(cont, circ_id)
         stem_utils.add_event_listener(cont, listener, EventType.STREAM)
-        head = session.head(dest.url)
+        try:
+            # TODO:
+            # - What other exceptions can this throw?
+            # - Add timeout
+            head = session.head(dest.url)
+        except requests.exceptions.ConnectionError as e:
+            return False, 'Could not connect to {} over circ {}: {}'.format(
+                dest.url, circ_id, e)
         stem_utils.remove_event_listener(cont, listener)
     if head.status_code != requests.codes.ok:
         return False, error_prefix + 'we expected HTTP code '\
@@ -118,10 +155,10 @@ def connect_to_destination_over_circuit(dest, circ_id, session, cont, conf):
         return False, error_prefix + 'our maximum configured download size '\
             'is {} but the content is only {}'.format(max_dl, content_length)
     log.debug('Connected to %s over circuit %s', dest.url, circ_id)
-    return True, ''
+    return True, {'content_length': content_length}
 
 
-def measure_relay2(args, conf, destinations, cb, rl, relay):
+def measure_relay(args, conf, destinations, cb, rl, relay):
     s = requests.Session()
     s.proxies = {
         'http': 'socks5h://{}:{}'.format(conf['tor']['socks_host'],
@@ -141,132 +178,24 @@ def measure_relay2(args, conf, destinations, cb, rl, relay):
         return None
     log.debug('Built circ %s for relay %s %s', circ_id, relay.nickname,
               relay.fingerprint[0:8])
-    success, error_str = connect_to_destination_over_circuit(
+    success, details = connect_to_destination_over_circuit(
         dest, circ_id, s, cb.controller, conf)
     if not success:
         log.warning('When measuring %s %s: %s', relay.nickname,
-                    relay.fingerprint[0:8], error_str)
+                    relay.fingerprint[0:8], details)
         cb.close_circuit(circ_id)
         # TODO: Return ResultError of some sort???
         return None
     assert success
+    assert 'content_length' in details
+    rtts = measure_rtt_to_server(s, conf, dest, details['content_length'])
+    log.debug(rtts)
     cb.close_circuit(circ_id)
-
-
-def measure_relay(args, conf, helpers, cb, rl, relay):
-    ''' Runs in a worker thread. Measures the given relay. If all measurements
-    are successful, returns a ResultSuccess that should get handed off to the
-    ResultDump. If the measurement was not a success, returns a ResultError
-    type. If the measurement was not successful, but we known it isn't the
-    target relay's fault, return None. Only Result* types get recorded in the
-    ResultDump.
-
-    In more detail:
-    1. build a two hops circuit from the relay we are measuring to the helper
-       relay
-    2. listen for stream creations, connect to the server, and (in the
-       background during connect) attach the resulting steam to the circuit
-       we built
-    3. measure the end-to-end RTT many times
-    4. measure throughput on the built circuit, repeat the following until we
-       have reached <num_downloads>
-       4.1. tell the files server the desired amount of bytes to get
-       4.2. get the bytes and the time it took
-       4.3. calculate the expected amount of bytes according to:
-        - If it hardly took any time at all, greatly increase the amount of
-          bytes to read
-        - If it went a little too fast, adjust the amount of bytes to read
-          so that they'll probably take the target amount of time to download
-        - If it took a reaonsable amount of time to download, then record the
-          result and read the same amount of bytes next time
-        - If it took too long, adjust the amount of bytes to read so that
-          they'll probably take the target amount of time to download
-       4.4. write down the results
-
-    '''
-    our_nick = conf['scanner']['nickname']
-    helper = helpers.next(blacklist=[relay.fingerprint])
-    if not helper:
-        log.warning('Unable to get helper to measure %s', relay.nickname)
-        return None
-    circ_id = cb.build_circuit([relay.fingerprint, helper.fingerprint])
-    if not circ_id:
-        log.debug('Could not build circuit involving %s', relay.nickname)
-        return ResultErrorCircuit(
-            relay, [relay.fingerprint, helper.fingerprint], helper.server_host,
-            our_nick)
-    circ_fps = cb.get_circuit_path(circ_id)
-    s = make_socket(conf['tor']['socks_host'],
-                    conf.getint('tor', 'socks_port'))
-    connected = stem_utils.connect_over_circuit(
-        cb.controller, circ_id, s, helper.server_host, helper.server_port)
-    if not connected:
-        log.info('Unable to connect to %s:%d', helper.server_host,
-                 helper.server_port)
-        close_socket(s)
-        cb.close_circuit(circ_id)
-        return
-    if not authenticate_to_server(s, helper.password):
-        log.info('Unable to authenticate to the server')
-        res = ResultErrorAuth(
-            relay, circ_fps, helper.server_host, our_nick)
-        close_socket(s)
-        cb.close_circuit(circ_id)
-        return res
-    log.debug('Authed to server successfully')
-    # FIRST: measure the end-to-end RTT many times
-    rtts = measure_rtt_to_server(s, conf)
-    if rtts is None:
-        close_socket(s)
-        cb.close_circuit(circ_id)
-        return
-    # SECOND: measure throughput on this circuit. Start with what should be a
-    # small amount
-    results = []
-    expected_amount = conf.getint('scanner', 'initial_read_request')
-    num_downloads = conf.getint('scanner', 'num_downloads')
-    download_times = {
-        'toofast': conf.getfloat('scanner', 'download_toofast'),
-        'min': conf.getfloat('scanner', 'download_min'),
-        'target': conf.getfloat('scanner', 'download_target'),
-        'max': conf.getfloat('scanner', 'download_max'),
-    }
-    while len(results) < num_downloads:
-        if expected_amount == MAX_REQ_BYTES:
-            log.warning('We are requesting the maximum number of bytes we are '
-                        'allowed to ask for from a server in order to measure '
-                        '%s via helper %s and we don\'t expect this to happen '
-                        'very often', relay.nickname, helper.fingerprint[0:8])
-        # Tell the server to send us the current expected_amount.
-        if not tell_server_amount(s, expected_amount):
-            close_socket(s)
-            cb.close_circuit(circ_id)
-            return
-        # Then read that many bytes from the server and get the time it took to
-        # do so
-        result_time = timed_recv_from_server(s, conf, expected_amount)
-        if result_time is None:
-            close_socket(s)
-            cb.close_circuit(circ_id)
-            return
-        # Determine if we should keep the result we got based on how long it
-        # took the download. Then keep it if we should.
-        if _should_keep_result(
-                expected_amount == MAX_REQ_BYTES, result_time, download_times):
-            results.append({
-                'duration': result_time, 'amount': expected_amount
-            })
-        # Recalculate the amount we next will ask for the server to send us
-        expected_amount = _next_expected_amount(
-            expected_amount, result_time, download_times)
-    cb.close_circuit(circ_id)
-    return ResultSuccess(rtts, results, relay, circ_fps, helper.server_host,
-                         our_nick)
 
 
 def dispatch_worker_thread(*a, **kw):
     try:
-        return measure_relay2(*a, **kw)
+        return measure_relay(*a, **kw)
     except Exception as err:
         log.exception('Unhandled exception in worker thread')
         raise err

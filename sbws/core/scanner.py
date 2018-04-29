@@ -129,7 +129,7 @@ def connect_to_destination_over_circuit(dest, circ_id, session, cont, conf):
         stem_utils.remove_event_listener(cont, listener)
     if head.status_code != requests.codes.ok:
         return False, error_prefix + 'we expected HTTP code '\
-            '{} not {}'.format(dest.url, requests.codes.ok, head.status_code)
+            '{} not {}'.format(requests.codes.ok, head.status_code)
     if 'content-length' not in head.headers:
         return False, error_prefix + 'we except the header Content-Length '\
                 'to exist in the response'

@@ -23,8 +23,8 @@ function get_v3ident {
 
 
 next_ip="1"
-scanner_tor_http_proxy_ip=""
-scanner_tor_http_proxy_nick=""
+scanner_tor_socks_proxy_ip=""
+scanner_tor_socks_proxy_nick=""
 
 echo -n '' > $auth_torrc_section
 rm -fr auth?/ relay?/ exit?/ config*.ini datadir/ *.log
@@ -33,8 +33,8 @@ do
 	mkdir -pv $A/keys
 	chmod 700 $A
 	ip=${ip_space}${next_ip}
-	[ "$scanner_tor_http_proxy_ip" == "" ] && scanner_tor_http_proxy_ip="$ip"
-	[ "$scanner_tor_http_proxy_nick" == "" ] && scanner_tor_http_proxy_nick="$A"
+	[ "$scanner_tor_socks_proxy_ip" == "" ] && scanner_tor_socks_proxy_ip="$ip"
+	[ "$scanner_tor_socks_proxy_nick" == "" ] && scanner_tor_socks_proxy_nick="$A"
 	echo -n '' | tor-gencert --create-identity-key --passphrase-fd 0 -m 24 -a $ip:$dirport
 	echo "
 		DataDirectory $A
@@ -45,8 +45,7 @@ do
 		AuthoritativeDirectory 1
 		V3AuthoritativeDirectory 1
 		Address $ip
-		HTTPTunnelPort $ip:$httpproxyport
-		SocksPort 0
+		SocksPort $ip:$socksport
 		ControlPort $ip:$controlport
 		ControlSocket $(pwd)/$A/control_socket
 		CookieAuthentication 1
@@ -76,8 +75,7 @@ do
 		ShutdownWaitLength 2
 		ExitRelay 0
 		Address $ip
-		HTTPTunnelPort $ip:$httpproxyport
-		SocksPort 0
+		SocksPort $ip:$socksport
 		ControlPort $ip:$controlport
 		ControlSocket $(pwd)/$A/control_socket
 		CookieAuthentication 1
@@ -104,8 +102,7 @@ do
 		ExitPolicy accept *:*
 		ExitPolicy reject *:*
 		Address $ip
-		HTTPTunnelPort $ip:$httpproxyport
-		SocksPort 0
+		SocksPort $ip:$socksport
 		ControlPort $ip:$controlport
 		ControlSocket $(pwd)/$A/control_socket
 		CookieAuthentication 1
@@ -153,9 +150,9 @@ sbws_home = $(pwd)
 
 [tor]
 control_type = socket
-control_location = \${paths:sbws_home}/$scanner_tor_http_proxy_nick/control_socket
-http_proxy_host = $scanner_tor_http_proxy_ip
-http_proxy_port = $httpproxyport
+control_location = \${paths:sbws_home}/$scanner_tor_socks_proxy_nick/control_socket
+socks_host = $scanner_tor_socks_proxy_ip
+socks_port = $socksport
 
 [scanner]
 nickname = SbwsTestnetScanner
@@ -176,10 +173,27 @@ scanner1 = 9Xa9Ulp9bD5GGLuFm6XYZBtc2VhWQlJgpRRF9SpmfoujrFwdRwBizpqcSMHix6Jc
 scanner2 = gNeJoOiB7eya7QrpjtxlwSQO42eXazawJIEh5BbKJ1pZ0RFxT45Rbqv28wWyD4pk
 scanner3 = Onqr54A6xavBV5yxd4KCNPIl5mR6UdnAb21XX8t3kbEvTd28o6HQxFA2Gim8kxil
 
-[destinations]
-freebird = on
+[helpers]
+exit1 = on
+exit2 = on
+exit3 = on
 
-[destinations.freebird]
-url = http://freebird.system33.pw/alphabet.txt
+[helpers.exit1]
+relay = $(get_fingerprint exit1)
+server_host = $sbws_server_host
+server_port = $sbws_server_port
+password = gNeJoOiB7eya7QrpjtxlwSQO42eXazawJIEh5BbKJ1pZ0RFxT45Rbqv28wWyD4pk
+
+[helpers.exit2]
+relay = $(get_fingerprint exit2)
+server_host = $sbws_server_host
+server_port = $sbws_server_port
+password = 9Xa9Ulp9bD5GGLuFm6XYZBtc2VhWQlJgpRRF9SpmfoujrFwdRwBizpqcSMHix6Jc
+
+[helpers.exit3]
+relay = $(get_fingerprint exit3)
+server_host = $sbws_server_host
+server_port = $sbws_server_port
+password = Onqr54A6xavBV5yxd4KCNPIl5mR6UdnAb21XX8t3kbEvTd28o6HQxFA2Gim8kxil
 " > config.ini
 touch config.log.ini

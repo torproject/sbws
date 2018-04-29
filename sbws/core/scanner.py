@@ -85,38 +85,72 @@ def measure_rtt_to_server(sock, conf):
     return rtts
 
 
+def connect_to_destination_over_circuit(dest, circ_id, session, cont, conf):
+    '''
+    Connect to **dest* over the given **circ_id** using the given Requests
+    **session**. Make sure everything seems in order. Return True and an empty
+    string if we connected and everything looks fine. Otherwise return False
+    and a string stating what the issue is.
+
+    :param dest Destination: the place to which we should connect
+    :param circ_id str: the circuit we should connect over
+    :param session Session: the Requests library session object to use to make
+        the connection.
+    :param cont Controller: them Stem library controller controlling Tor
+    :returns: True, '' if everything is in order and measurements should
+        commence.  False and an error string otherwise.
+    '''
+    error_prefix = 'When sending HTTP HEAD to {}, '.format(dest.url)
+    with stem_utils.stream_building_lock:
+        listener = stem_utils.attach_stream_to_circuit_listener(cont, circ_id)
+        stem_utils.add_event_listener(cont, listener, EventType.STREAM)
+        head = session.head(dest.url)
+        stem_utils.remove_event_listener(cont, listener)
+    if head.status_code != requests.codes.ok:
+        return False, error_prefix + 'we expected HTTP code '\
+            '{} not {}'.format(dest.url, requests.codes.ok, head.status_code)
+    if 'content-length' not in head.headers:
+        return False, error_prefix + 'we except the header Content-Length '\
+                'to exist in the response'
+    max_dl = conf.getint('scanner', 'max_download_size')
+    content_length = int(head.headers['content-length'])
+    if max_dl > content_length:
+        return False, error_prefix + 'our maximum configured download size '\
+            'is {} but the content is only {}'.format(max_dl, content_length)
+    log.debug('Connected to %s over circuit %s', dest.url, circ_id)
+    return True, ''
+
+
 def measure_relay2(args, conf, destinations, cb, rl, relay):
     s = requests.Session()
-    proxies = {
+    s.proxies = {
         'http': 'socks5h://{}:{}'.format(conf['tor']['socks_host'],
                                          conf.getint('tor', 'socks_port')),
         'https': 'socks5h://{}:{}'.format(conf['tor']['socks_host'],
                                           conf.getint('tor', 'socks_port')),
     }
-    headers = {'Range': 'bytes=0-0'}
     dest = destinations.next()
     if not dest:
         log.warning('Unable to get destination to measure %s %s',
                     relay.nickname, relay.fingerprint[0:8])
         return None
     circ_id = cb.build_circuit([relay.fingerprint])
-    log.debug('Built circ %s for relay %s %s', circ_id, relay.nickname,
-              relay.fingerprint[0:8])
     if not circ_id:
-        log.debug('Could not build circuit involving %s', relay.nickname)
+        log.warning('Could not build circuit involving %s', relay.nickname)
         # TODO: Return ResultError of some sort
         return None
-    # circ_fps = cb.get_circuit_path(circ_id)
-    listener = stem_utils.attach_stream_to_circuit_listener(cb.controller,
-                                                            circ_id)
-    stem_utils.add_event_listener(cb.controller, listener, EventType.STREAM)
-    r = s.get(dest.url, proxies=proxies, headers=headers)
-    log.debug('%s %s %s %s', dest.url, r.status_code, r.text,
-              r.headers['connection'])
-    stem_utils.remove_event_listener(cb.controller, listener)
-    r = s.get(dest.url, proxies=proxies, headers=headers)
-    log.debug('%s %s %s %s', dest.url, r.status_code, r.text,
-              r.headers['connection'])
+    log.debug('Built circ %s for relay %s %s', circ_id, relay.nickname,
+              relay.fingerprint[0:8])
+    success, error_str = connect_to_destination_over_circuit(
+        dest, circ_id, s, cb.controller, conf)
+    if not success:
+        log.warning('When measuring %s %s: %s', relay.nickname,
+                    relay.fingerprint[0:8], error_str)
+        cb.close_circuit(circ_id)
+        # TODO: Return ResultError of some sort???
+        return None
+    assert success
+    cb.close_circuit(circ_id)
 
 
 def measure_relay(args, conf, helpers, cb, rl, relay):

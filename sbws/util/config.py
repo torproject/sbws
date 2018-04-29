@@ -184,10 +184,10 @@ def _validate_tor(conf):
         'control_type': {'valid': ['port', 'socket']},
     }
     hosts = {
-        'http_proxy_host': {},
+        'socks_host': {},
     }
     ports = {
-        'http_proxy_port': {},
+        'socks_port': {},
     }
     unvalidated_keys = ['control_location']
     all_valid_keys = list(enums.keys()) + list(hosts.keys()) + \

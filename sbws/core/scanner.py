@@ -169,7 +169,12 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     assert success
     assert 'content_length' in details
     rtts = measure_rtt_to_server(s, conf, dest, details['content_length'])
-    log.debug(rtts)
+    if rtts is None:
+        log.warning('Unable to measure RTT to %s via relay %s %s',
+                    dest.url, relay.nickname, relay.fingerprint[0:8])
+        cb.close_circuit(circ_id)
+        # TODO: Return ResultError of some sort???
+        return None
     cb.close_circuit(circ_id)
 
 

@@ -339,6 +339,12 @@ def main(args, conf):
     if conf.getint('scanner', 'measurement_threads') < 1:
         fail_hard('Number of measurement threads must be larger than 1')
 
+    min_dl = conf.getint('scanner', 'min_download_size')
+    max_dl = conf.getint('scanner', 'max_download_size')
+    if max_dl < min_dl:
+        fail_hard('Max download size %d cannot be smaller than min %d',
+                  max_dl, min_dl)
+
     if conf['tor']['control_type'] not in ['port', 'socket']:
         fail_hard('Must specify either control port or socket. '
                   'Not "%s"', conf['tor']['control_type'])

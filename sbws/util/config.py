@@ -152,6 +152,8 @@ def _validate_scanner(conf):
         'num_downloads': {'minimum': 1, 'maximum': 100},
         'initial_read_request': {'minimum': 1, 'maximum': None},
         'measurement_threads': {'minimum': 1, 'maximum': None},
+        'min_download_size': {'minimum': 1, 'maximum': None},
+        'max_download_size': {'minimum': 1, 'maximum': None},
     }
     floats = {
         'download_toofast': {'minimum': 0.001, 'maximum': None},

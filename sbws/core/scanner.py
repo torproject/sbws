@@ -17,7 +17,6 @@ from stem.control import EventType
 from argparse import ArgumentDefaultsHelpFormatter
 from multiprocessing.dummy import Pool
 from threading import Event
-import socket
 import time
 import os
 import logging
@@ -33,6 +32,8 @@ def timed_recv_from_server(session, dest, byte_range):
     return True and the time it took to download. Otherwise return False and an
     error string. '''
     headers = {'Range': byte_range}
+    log.debug('Timing how long it takes to receive %s from %s',
+              byte_range, dest.url)
     start_time = time.time()
     # TODO:
     # - What other exceptions can this throw?
@@ -138,6 +139,42 @@ def connect_to_destination_over_circuit(dest, circ_id, session, cont, conf):
     return True, {'content_length': content_length}
 
 
+def measure_bandwidth_to_server(session, conf, dest, content_length):
+    results = []
+    num_downloads = conf.getint('scanner', 'num_downloads')
+    expected_amount = conf.getint('scanner', 'initial_read_request')
+    min_dl = conf.getint('scanner', 'min_download_size')
+    max_dl = conf.getint('scanner', 'max_download_size')
+    download_times = {
+        'toofast': conf.getfloat('scanner', 'download_toofast'),
+        'min': conf.getfloat('scanner', 'download_min'),
+        'target': conf.getfloat('scanner', 'download_target'),
+        'max': conf.getfloat('scanner', 'download_max'),
+    }
+    while len(results) < num_downloads:
+        assert expected_amount >= min_dl
+        assert expected_amount <= max_dl
+        random_range = get_random_range_string(content_length, expected_amount)
+        success, data = timed_recv_from_server(session, dest, random_range)
+        if not success:
+            # data is an error string
+            assert isinstance(data, str)
+            log.warning('While measuring the bandwidth to %s we hit an '
+                        'exception (does the webserver support Range '
+                        'requests?): %s', dest.url, data)
+            return None
+        assert success
+        # data is a download time
+        assert isinstance(data, float) or isinstance(data, int)
+        if _should_keep_result(
+                expected_amount == max_dl, data, download_times):
+            results.append({
+                'duration': data, 'amount': expected_amount})
+        expected_amount = _next_expected_amount(
+            expected_amount, data, download_times)
+    return results
+
+
 def measure_relay(args, conf, destinations, cb, rl, relay):
     s = requests.Session()
     s.proxies = {
@@ -175,6 +212,8 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         cb.close_circuit(circ_id)
         # TODO: Return ResultError of some sort???
         return None
+    bw_results = measure_bandwidth_to_server(
+        s, conf, dest, details['content_length'])
     cb.close_circuit(circ_id)
 
 

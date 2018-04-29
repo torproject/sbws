@@ -1,13 +1,12 @@
 ''' Measure the relays. '''
 
-from ..lib.circuitbuilder import GapsCircuitBuilder as CB
+from ..lib.circuitbuilder import FooCircuitBuilder as CB
 from ..lib.resultdump import ResultDump
 from ..lib.resultdump import ResultSuccess
 from ..lib.resultdump import ResultErrorCircuit
 from ..lib.resultdump import ResultErrorAuth
 from ..lib.relaylist import RelayList
 from ..lib.relayprioritizer import RelayPrioritizer
-from ..lib.helperrelay import HelperRelayList
 from ..lib.destination import DestinationList
 from ..util.simpleauth import authenticate_to_server
 from ..util.sockio import (make_socket, close_socket)
@@ -86,7 +85,19 @@ def measure_rtt_to_server(sock, conf):
 
 
 def measure_relay2(args, conf, destinations, cb, rl, relay):
-    pass
+    dest = destinations.next()
+    if not dest:
+        log.warning('Unable to get destination to measure %s %s',
+                    relay.nickname, relay.fingerprint[0:8])
+        return None
+    circ_id = cb.build_circuit([relay.fingerprint])
+    log.debug('Built circ %s for relay %s %s', circ_id, relay.nickname,
+              relay.fingerprint[0:8])
+    if not circ_id:
+        log.debug('Could not build circuit involving %s', relay.nickname)
+        # TODO: Return ResultError of some sort
+        return None
+    circ_fps = cb.get_circuit_path(circ_id)
 
 
 def measure_relay(args, conf, helpers, cb, rl, relay):
@@ -271,8 +282,6 @@ def run_speedtest2(args, conf):
     rl = RelayList(args, conf, controller=controller)
     rd = ResultDump(args, conf, end_event)
     rp = RelayPrioritizer(args, conf, rl, rd)
-    helpers, error_msg = HelperRelayList.from_config(
-        args, conf, controller=controller)
     destinations, error_msg = DestinationList.from_config(conf)
     if not destinations:
         fail_hard(error_msg)

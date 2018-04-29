@@ -137,7 +137,7 @@ def _validate_paths(conf):
     errors = []
     sec = 'paths'
     err_tmpl = Template('$sec/$key ($val): $e')
-    unvalidated_keys = ['passwords', 'datadir', 'sbws_home']
+    unvalidated_keys = ['datadir', 'sbws_home', 'v3bw_fname']
     all_valid_keys = unvalidated_keys
     errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))
     return errors

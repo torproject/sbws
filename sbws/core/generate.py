@@ -76,8 +76,9 @@ def gen_parser(sub):
         'bandwidth votes on.'
     p = sub.add_parser('generate', description=d,
                        formatter_class=ArgumentDefaultsHelpFormatter)
-    p.add_argument('--output', default='/dev/stdout', type=str,
-                   help='Where to write v3bw file')
+    p.add_argument('--output', default=None, type=str,
+                   help='If specified, write the v3bw here instead of what is'
+                   'specified in the configuration')
     # The reason for --scale-constant defaulting to 7500 is because at one
     # time, torflow happened to generate output that averaged to 7500 bw units
     # per relay. We wanted the ability to try to be like torflow. See
@@ -122,8 +123,11 @@ def main(args, conf):
     data_lines = scale_lines(args, data_lines)
     header = V3BwHeader()
     log_stats(data_lines)
-    log.info('Writing v3bw file to %s', args.output)
-    with open(args.output, 'wt') as fd:
+    output = conf['paths']['v3bw_fname']
+    if args.output:
+        output = args.output
+    log.info('Writing v3bw file to %s', output)
+    with open(output, 'wt') as fd:
         fd.write(str(header))
         for line in data_lines:
             fd.write('{}\n'.format(str(line)))

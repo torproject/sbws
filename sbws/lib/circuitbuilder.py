@@ -233,4 +233,47 @@ class GapsCircuitBuilder(CircuitBuilder):
         return self._build_circuit_impl(path)
 
 
-# pylama:ignore=E265
+# TODO: rename me (#134)
+class FooCircuitBuilder(CircuitBuilder):
+    '''
+    Foo
+    '''
+    def __init__(self, *a, **kw):
+        super().__init__(*a, **kw)
+
+    @property
+    def exits(self):
+        return self.relay_list.exits
+
+    def _normalize_path(self, path):
+        '''
+        Change fingerprints/nicks to relay descriptor.  Return the new path, or
+        None if error.
+        '''
+        new_path = []
+        for fp in path:
+            assert isinstance(fp, str)
+            relay = stem_utils.fp_or_nick_to_relay(self.controller, fp)
+            if not relay:
+                log.debug('Failed to get descriptor for relay %s', fp)
+                return None
+            new_path.append(relay)
+        return new_path
+
+    def build_circuit(self, path_prefix):
+        '''
+        **path_prefix** is a list of relays at the start of a circuit. Relays
+        can be specified by fingerprint or nickname, and fingerprint is highly
+        recommended.. An Exit relay will be appended to the end of the path
+        prefix; therefore, **path_prefix** must not be the maximum circuit
+        length already
+        '''
+        if not valid_circuit_length(len(path_prefix)+1):
+            raise PathLengthException()
+        path_prefix = self._normalize_path(path_prefix)
+        if path_prefix is None:
+            return None
+        path = path_prefix + [random.choice(self.exits)]
+        assert valid_circuit_length(path)
+        path = [r.fingerprint for r in path]
+        return self._build_circuit_impl(path)

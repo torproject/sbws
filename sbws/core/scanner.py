@@ -28,22 +28,6 @@ end_event = Event()
 log = logging.getLogger(__name__)
 
 
-def tell_server_amount(sock, expected_amount):
-    ''' Returns True on success; else False '''
-    assert expected_amount >= MIN_REQ_BYTES
-    assert expected_amount <= MAX_REQ_BYTES
-    # expectd_amount should come in as an int, but we send it to the server as
-    # a string (ignore the difference between bytes and str in python. You know
-    # what I mean).
-    amount = '{}\n'.format(expected_amount)
-    try:
-        sock.send(bytes(amount, 'utf-8'))
-    except (socket.timeout, ConnectionResetError, BrokenPipeError) as e:
-        log.info(e)
-        return False
-    return True
-
-
 def timed_recv_from_server(sock, conf, yet_to_read):
     ''' Return the time in seconds it took to read <yet_to_read> bytes from
     the server. Return None if error '''

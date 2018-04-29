@@ -90,9 +90,9 @@ def measure_rtt_to_server(session, conf, dest, content_length):
         try:
             session.get(dest.url, headers=headers)
         except requests.exceptions.ConnectionError as e:
-            log.error('While measuring RTT to %s we hit an exception (does '
-                      'the webserver support Range requests?): %s', dest.url,
-                      e)
+            log.warning(
+                'While measuring RTT to %s we hit an exception (does the '
+                'webserver support Range requests?): %s', dest.url, e)
             return None
         end_time = time.time()
         rtts.append(end_time - start_time)

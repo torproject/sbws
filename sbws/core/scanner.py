@@ -8,6 +8,7 @@ from ..lib.resultdump import ResultErrorAuth
 from ..lib.relaylist import RelayList
 from ..lib.relayprioritizer import RelayPrioritizer
 from ..lib.helperrelay import HelperRelayList
+from ..lib.destination import DestinationList
 from ..util.simpleauth import authenticate_to_server
 from ..util.sockio import (make_socket, close_socket)
 from sbws.globals import (fail_hard, is_initted)
@@ -20,6 +21,7 @@ import socket
 import time
 import os
 import logging
+import requests
 
 end_event = Event()
 log = logging.getLogger(__name__)
@@ -81,6 +83,10 @@ def measure_rtt_to_server(sock, conf):
             return
         rtts.append(end_time - start_time)
     return rtts
+
+
+def measure_relay2(args, conf, destinations, cb, rl, relay):
+    pass
 
 
 def measure_relay(args, conf, helpers, cb, rl, relay):
@@ -196,7 +202,7 @@ def measure_relay(args, conf, helpers, cb, rl, relay):
 
 def dispatch_worker_thread(*a, **kw):
     try:
-        return measure_relay(*a, **kw)
+        return measure_relay2(*a, **kw)
     except Exception as err:
         log.exception('Unhandled exception in worker thread')
         raise err
@@ -256,8 +262,7 @@ def result_putter_error(target):
     return closure
 
 
-def run_speedtest(args, conf):
-    controller = None
+def run_speedtest2(args, conf):
     controller, error_msg = stem_utils.init_controller_with_config(conf)
     if not controller:
         fail_hard(error_msg)
@@ -268,18 +273,21 @@ def run_speedtest(args, conf):
     rp = RelayPrioritizer(args, conf, rl, rd)
     helpers, error_msg = HelperRelayList.from_config(
         args, conf, controller=controller)
-    if not helpers:
+    destinations, error_msg = DestinationList.from_config(conf)
+    if not destinations:
         fail_hard(error_msg)
     max_pending_results = conf.getint('scanner', 'measurement_threads')
     pool = Pool(max_pending_results)
     pending_results = []
     while True:
         for target in rp.best_priority():
-            log.debug('Measuring %s', target.nickname)
+            log.debug('Measuring %s %s', target.nickname,
+                      target.fingerprint[0:8])
             callback = result_putter(rd)
             callback_err = result_putter_error(target)
             async_result = pool.apply_async(
-                dispatch_worker_thread, [args, conf, helpers, cb, rl, target],
+                dispatch_worker_thread,
+                [args, conf, destinations, cb, rl, target],
                 {}, callback, callback_err)
             pending_results.append(async_result)
             while len(pending_results) >= max_pending_results:
@@ -314,7 +322,7 @@ def main(args, conf):
     os.makedirs(conf['paths']['datadir'], exist_ok=True)
 
     try:
-        run_speedtest(args, conf)
+        run_speedtest2(args, conf)
     except KeyboardInterrupt as e:
         raise e
     finally:

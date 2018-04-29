@@ -2,6 +2,7 @@ from configparser import (ConfigParser, ExtendedInterpolation)
 import os
 import logging
 import logging.config
+from urllib.parse import urlparse
 from string import Template
 from tempfile import NamedTemporaryFile
 from sbws.globals import PKG_DIR
@@ -100,7 +101,7 @@ def validate_config(conf):
     errors.extend(_validate_scanner(conf))
     errors.extend(_validate_tor(conf))
     errors.extend(_validate_paths(conf))
-    errors.extend(_validate_helpers(conf))
+    errors.extend(_validate_destinations(conf))
     return len(errors) < 1, errors
 
 
@@ -198,20 +199,14 @@ def _validate_tor(conf):
     return errors
 
 
-def _validate_helpers(conf):
+def _validate_destinations(conf):
     errors = []
-    sec = 'helpers'
+    sec = 'destinations'
     section = conf[sec]
     err_tmpl = Template('$sec/$key ($val): $e')
-    additional_helper_sections = []
+    dest_sections = []
     for key in section.keys():
         value = section[key]
-        if key == 'reachability_test_every':
-            valid, error_msg = _validate_int(section, key, minimum=1)
-            if not valid:
-                errors.append(err_tmpl.substitute(
-                    sec=sec, key=key, val=value, e=error_msg))
-            continue
         valid, error_msg = _validate_boolean(section, key)
         if not valid:
             errors.append(err_tmpl.substitute(
@@ -219,33 +214,19 @@ def _validate_helpers(conf):
             continue
         assert valid
         if section.getboolean(key):
-            additional_helper_sections.append('{}.{}'.format(sec, key))
-    fps = {
-        'relay': {},
+            dest_sections.append('{}.{}'.format(sec, key))
+    urls = {
+        'url': {},
     }
-    hosts = {
-        'server_host': {},
-    }
-    ports = {
-        'server_port': {},
-    }
-    passwords = {
-        'password': {},
-    }
-    all_valid_keys = list(fps.keys()) + list(hosts.keys()) + \
-        list(ports.keys()) + list(passwords.keys())
-    for sec in additional_helper_sections:
+    all_valid_keys = list(urls.keys())
+    for sec in dest_sections:
         if sec not in conf:
-            errors.append('{} is an enabled helper but is not a section in '
-                          'the config'.format(sec))
+            errors.append('{} is an enabled destination but is not a '
+                          'section in the config'.format(sec))
             continue
         errors.extend(_validate_section_keys(conf, sec, all_valid_keys,
                                              err_tmpl))
-        errors.extend(_validate_section_fingerprints(conf, sec, fps, err_tmpl))
-        errors.extend(_validate_section_hosts(conf, sec, hosts, err_tmpl))
-        errors.extend(_validate_section_ports(conf, sec, ports, err_tmpl))
-        errors.extend(_validate_section_passwords(conf, sec, passwords,
-                                                  err_tmpl))
+        errors.extend(_validate_section_urls(conf, sec, urls, err_tmpl))
     return errors
 
 
@@ -354,6 +335,29 @@ def _validate_section_passwords(conf, sec, passwords, tmpl):
                 sec=sec, key=key, val=section[key],
                 e='Not a valid password ({})'.format(error)))
     return errors
+
+
+def _validate_section_urls(conf, sec, urls, tmpl):
+    errors = []
+    section = conf[sec]
+    for key in urls:
+        valid, error = _validate_url(section, key)
+        if not valid:
+            errors.append(tmpl.substitute(
+                sec=sec, key=key, val=section[key],
+                e='Not a valid url ({})'.format(error)))
+    return errors
+
+
+def _validate_url(section, key):
+    value = section[key]
+    if not value.startswith(('http://', 'https://')):
+        return False, 'Must start with http:// or https://'
+    url = urlparse(value)
+    assert url.scheme in ['http', 'https']
+    if not url.netloc:
+        return False, 'Does not appear to contain a hostname'
+    return True, ''
 
 
 def _validate_int(section, key, minimum=None, maximum=None):

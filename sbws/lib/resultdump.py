@@ -427,6 +427,15 @@ class ResultDump:
             self.data.append(result)
             self.data = trim_results(self.fresh_days, self.data)
 
+    def handle_result(self, result):
+        ''' Call from ResultDump thread '''
+        assert isinstance(result, Result)
+        fp = result.fingerprint
+        nick = result.nickname
+        self.store_result(result)
+        write_result_to_datadir(result, self.datadir)
+        log.debug('%s %s finished measurement', fp, nick)
+
     def enter(self):
         ''' Main loop for the ResultDump thread '''
         with self.data_lock:
@@ -437,20 +446,20 @@ class ResultDump:
                 event = self.queue.get(timeout=1)
             except Empty:
                 continue
-            result = event
-            if result is None:
+            data = event
+            if data is None:
                 log.debug('Got None in ResultDump')
                 continue
-            elif not isinstance(result, Result):
+            elif isinstance(data, list):
+                for r in data:
+                    assert isinstance(r, Result)
+                    self.handle_result(r)
+            elif isinstance(data, Result):
+                self.handle_result(data)
+            else:
                 log.warning('The only thing we should ever receive in the '
-                            'result thread is a Result type. Ignoring %s',
-                            type(result))
-                continue
-            fp = result.fingerprint
-            nick = result.nickname
-            self.store_result(result)
-            write_result_to_datadir(result, self.datadir)
-            log.debug('%s %s finished measurement', fp, nick)
+                            'result thread is a Result or list of Results. '
+                            'Ignoring %s', type(data))
 
     def results_for_relay(self, relay):
         assert isinstance(relay, RouterStatusEntryV3)

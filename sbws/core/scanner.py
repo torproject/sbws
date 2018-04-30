@@ -183,11 +183,13 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         'https': 'socks5h://{}:{}'.format(conf['tor']['socks_host'],
                                           conf.getint('tor', 'socks_port')),
     }
+    # Pick a destionation
     dest = destinations.next()
     if not dest:
         log.warning('Unable to get destination to measure %s %s',
                     relay.nickname, relay.fingerprint[0:8])
         return None
+    # Pick an exit
     exits = rl.exits_can_exit_to(dest.hostname, dest.port)
     exits = [e for e in exits if e.fingerprint != relay.fingerprint]
     exits = stem_utils.only_relays_with_bandwidth(
@@ -199,7 +201,7 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         # TODO: Return ResultError of some sort
         return None
     exit = random.choice(exits)
-    # exits = stem_utils.only_relays_with_bandwidth()
+    # Build the circuit
     circ_id = cb.build_circuit([relay.fingerprint, exit.fingerprint])
     if not circ_id:
         log.warning('Could not build circuit involving %s', relay.nickname)
@@ -207,6 +209,8 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         return None
     log.debug('Built circ %s for relay %s %s', circ_id, relay.nickname,
               relay.fingerprint[0:8])
+    # Make a connection to the destionation webserver and make sure it can
+    # still help us measure
     success, details = connect_to_destination_over_circuit(
         dest, circ_id, s, cb.controller, conf)
     if not success:
@@ -217,6 +221,7 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         return None
     assert success
     assert 'content_length' in details
+    # FIRST: measure RTT
     rtts = measure_rtt_to_server(s, conf, dest, details['content_length'])
     if rtts is None:
         log.warning('Unable to measure RTT to %s via relay %s %s',
@@ -224,11 +229,13 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         cb.close_circuit(circ_id)
         # TODO: Return ResultError of some sort???
         return None
+    # SECOND: measure bandwidth
     bw_results = measure_bandwidth_to_server(
         s, conf, dest, details['content_length'])
     circ_fps = cb.get_circuit_path(circ_id)
     our_nick = conf['scanner']['nickname']
     cb.close_circuit(circ_id)
+    # Finally: store result
     return [
         ResultSuccess(rtts, bw_results, relay, circ_fps, dest.url, our_nick),
         ResultSuccess(rtts, bw_results, exit, circ_fps, dest.url, our_nick),

@@ -21,6 +21,24 @@ class Destination:
     def url(self):
         return self._url.geturl()
 
+    @property
+    def hostname(self):
+        return self._url.hostname
+
+    @property
+    def port(self):
+        p = self._url.port
+        scheme = self._url.scheme
+        if p is None:
+            if scheme == 'http':
+                p = 80
+            elif scheme == 'https':
+                p = 443
+            else:
+                assert None, 'Unreachable. Unknown scheme {}'.format(scheme)
+        assert p is not None
+        return p
+
     @staticmethod
     def from_config(conf_section, default_path):
         assert 'url' in conf_section

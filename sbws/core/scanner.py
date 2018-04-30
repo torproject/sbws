@@ -1,6 +1,6 @@
 ''' Measure the relays. '''
 
-from ..lib.circuitbuilder import FooCircuitBuilder as CB
+from ..lib.circuitbuilder import GapsCircuitBuilder as CB
 from ..lib.resultdump import ResultDump
 from ..lib.resultdump import ResultSuccess
 # from ..lib.resultdump import ResultErrorCircuit
@@ -188,7 +188,19 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         log.warning('Unable to get destination to measure %s %s',
                     relay.nickname, relay.fingerprint[0:8])
         return None
-    circ_id = cb.build_circuit([relay.fingerprint])
+    exits = rl.exits_can_exit_to(dest.hostname, dest.port)
+    exits = [e for e in exits if e.fingerprint != relay.fingerprint]
+    exits = stem_utils.only_relays_with_bandwidth(
+        cb.controller, exits, min_bw=round(relay.bandwidth*1.25),
+        max_bw=max(round(relay.bandwidth*2.00), 100))
+    if len(exits) < 1:
+        log.warning('No available exits to help measure %s %s', relay.nickname,
+                    relay.fingerprint[0:8])
+        # TODO: Return ResultError of some sort
+        return None
+    exit = random.choice(exits)
+    # exits = stem_utils.only_relays_with_bandwidth()
+    circ_id = cb.build_circuit([relay.fingerprint, exit.fingerprint])
     if not circ_id:
         log.warning('Could not build circuit involving %s', relay.nickname)
         # TODO: Return ResultError of some sort
@@ -217,7 +229,10 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     circ_fps = cb.get_circuit_path(circ_id)
     our_nick = conf['scanner']['nickname']
     cb.close_circuit(circ_id)
-    return ResultSuccess(rtts, bw_results, relay, circ_fps, dest.url, our_nick)
+    return [
+        ResultSuccess(rtts, bw_results, relay, circ_fps, dest.url, our_nick),
+        ResultSuccess(rtts, bw_results, exit, circ_fps, dest.url, our_nick),
+    ]
 
 
 def dispatch_worker_thread(*a, **kw):

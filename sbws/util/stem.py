@@ -1,6 +1,7 @@
 from stem.control import (Controller, EventType)
 from stem import (SocketError, InvalidRequest, UnsatisfiableRequest)
 from stem.connection import IncorrectSocketType
+from stem.descriptor.router_status_entry import RouterStatusEntryV3
 from configparser import ConfigParser
 from threading import RLock
 import logging
@@ -18,6 +19,7 @@ __all__ = [
     'init_controller_with_config',
     'is_controller_okay',
     'fp_or_nick_to_relay',
+    'only_relays_with_bandwidth',
 ]
 
 
@@ -139,3 +141,24 @@ def _init_controller_socket(socket):
         return None
     # TODO: Allow for auth via more than just CookieAuthentication
     return c
+
+
+def only_relays_with_bandwidth(controller, relays, min_bw=None, max_bw=None):
+    '''
+    Given a list of relays, only return those that optionally have above
+    **min_bw** and optionally have below **max_bw**, inclusively. If neither
+    min_bw nor max_bw are given, essentially just returns the input list of
+    relays.
+    '''
+    assert is_controller_okay(controller)
+    assert min_bw is None or min_bw >= 0
+    assert max_bw is None or max_bw >= 0
+    ret = []
+    for relay in relays:
+        assert isinstance(relay, RouterStatusEntryV3)
+        if min_bw is not None and relay.bandwidth < min_bw:
+            continue
+        if max_bw is not None and relay.bandwidth > max_bw:
+            continue
+        ret.append(relay)
+    return ret

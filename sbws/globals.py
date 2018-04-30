@@ -3,7 +3,7 @@ import logging
 
 log = logging.getLogger(__name__)
 
-RESULT_VERSION = 1
+RESULT_VERSION = 2
 WIRE_VERSION = 1
 SPEC_VERSION = '1.1.0'
 

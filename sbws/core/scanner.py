@@ -2,7 +2,7 @@
 
 from ..lib.circuitbuilder import FooCircuitBuilder as CB
 from ..lib.resultdump import ResultDump
-# from ..lib.resultdump import ResultSuccess
+from ..lib.resultdump import ResultSuccess
 # from ..lib.resultdump import ResultErrorCircuit
 # from ..lib.resultdump import ResultErrorAuth
 from ..lib.relaylist import RelayList
@@ -214,7 +214,10 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         return None
     bw_results = measure_bandwidth_to_server(
         s, conf, dest, details['content_length'])
+    circ_fps = cb.get_circuit_path(circ_id)
+    our_nick = conf['scanner']['nickname']
     cb.close_circuit(circ_id)
+    return ResultSuccess(rtts, bw_results, relay, circ_fps, dest.url, our_nick)
 
 
 def dispatch_worker_thread(*a, **kw):

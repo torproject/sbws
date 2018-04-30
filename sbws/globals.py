@@ -1,5 +1,6 @@
 import os
 import logging
+import socket
 
 log = logging.getLogger(__name__)
 
@@ -59,3 +60,17 @@ def touch_file(fname, times=None):
     log.debug('Touching %s', fname)
     with open(fname, 'a') as fd:
         os.utime(fd.fileno(), times=times)
+
+
+def resolve(hostname, ipv4_only=False, ipv6_only=False):
+    assert not (ipv4_only and ipv6_only)
+    ret = set()
+    for result in socket.getaddrinfo(hostname, 0):
+        fam, _, _, _, addr = result
+        if fam == socket.AddressFamily.AF_INET6 and not ipv4_only:
+            ret.add(addr[0])
+        elif fam == socket.AddressFamily.AF_INET and not ipv6_only:
+            ret.add(addr[0])
+        else:
+            assert None, 'Unknown address family {}'.format(fam)
+    return list(ret)

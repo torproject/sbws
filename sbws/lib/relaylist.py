@@ -1,7 +1,10 @@
 import sbws.util.stem as stem_utils
 from stem import Flag
+from stem.util.connection import is_valid_ipv4_address
+from stem.util.connection import is_valid_ipv6_address
 import random
 import time
+from sbws.globals import resolve
 
 
 class RelayList:
@@ -64,6 +67,30 @@ class RelayList:
         relays = self.relays
         # return [r for r in relays if r.measured is not None]
         return [r for r in relays if not r.is_unmeasured]
+
+    def exits_can_exit_to(self, host, port):
+        '''
+        Return exits that can MOST LIKELY exit to the given host:port. **host**
+        can be a hostname, but be warned that we will resolve it locally and
+        use the first (arbitrary/unknown order) result when checking exit
+        policies, which is different than what other parts of the code may do
+        (leaving it up to the exit to resolve the name).
+
+        An exit can only MOST LIKELY not just because of the above DNS
+        disconnect, but also because fundamentally our Tor client is most
+        likely using microdescriptors which do not have full information about
+        exit policies.
+        '''
+        if not is_valid_ipv4_address(host) and not is_valid_ipv6_address(host):
+            # It certainly isn't perfect trying to guess if an exit can connect
+            # to an ipv4/6 address based on the DNS result we got locally. But
+            # it's the best we can do.
+            #
+            # Also, only use the first ipv4/6 we get even if there is more than
+            # one.
+            host = resolve(host)[0]
+        assert is_valid_ipv4_address(host) or is_valid_ipv6_address(host)
+        return [e for e in self.exits if e.exit_policy.can_exit_to(host, port)]
 
     def random_relay(self):
         relays = self.relays

@@ -9,3 +9,4 @@ prune tests/testnets/*/datadir
 prune tests/testnets/*/exit?
 recursive-exclude tests/testnets/* config*.ini
 recursive-exclude tests/testnets/* *.log
+prune **/__pycache__

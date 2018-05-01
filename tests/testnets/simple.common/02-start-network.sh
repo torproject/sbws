@@ -8,7 +8,7 @@ function cleanup {
 trap cleanup EXIT
 
 
-for A in {auth,relay,exit}*
+for A in {auth,relay,exit,client}*
 do
 	tor -f $A/torrc --quiet &
 done

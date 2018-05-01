@@ -24,12 +24,13 @@ pushd $net
 ./01-gen-configs.sh
 ./02-start-network.sh
 sleep 5
-echo 'Waiting until network is ready ...'
-time ./03-network-in-ready-state.py auth* relay* exit*
+num_relays=$(ls -ld {auth,relay,exit}* | wc -l)
+echo "Waiting until network of $num_relays relays is ready ..."
+time ./03-network-in-ready-state.py auth* relay* exit* --size $num_relays
 echo 'All ready!'
 
-sbws -d . server > debug.server.log &
-sleep 1
+#sbws -d . server > debug.server.log &
+#sleep 1
 sbws -d . scanner > debug.scanner.log &
 
 run_time="45"

@@ -27,7 +27,7 @@ scanner_tor_socks_proxy_ip=""
 scanner_tor_socks_proxy_nick=""
 
 echo -n '' > $auth_torrc_section
-rm -fr auth?/ relay?/ exit?/ config*.ini datadir/ *.log
+rm -fr auth?/ relay?/ exit?/ client?/ config*.ini datadir/ *.log
 for A in auth1 auth2 auth3
 do
 	mkdir -pv $A/keys
@@ -114,6 +114,26 @@ do
 	next_ip=$((next_ip+1))
 done
 
+for A in client1
+do
+	mkdir -pv $A
+	chmod 700 $A
+	ip=${ip_space}${next_ip}
+	echo "
+		DataDirectory $A
+		PidFile $A/tor.pid
+		Log notice file $A/notice.log
+		ShutdownWaitLength 2
+		Address $ip
+		SocksPort $ip:$socksport
+		ControlPort $ip:$controlport
+		ControlSocket $(pwd)/$A/control_socket
+		CookieAuthentication 1
+	" > $A/torrc
+	next_ip=$((next_ip+1))
+
+done
+
 for torrc in ./auth*/torrc
 do
 	echo "
@@ -126,7 +146,7 @@ do
 	" >> $torrc
 done
 
-for torrc in ./{auth,relay,exit}*/torrc
+for torrc in ./{auth,relay,exit,client}*/torrc
 do
 	cat $auth_torrc_section >> $torrc
 	echo "
@@ -173,27 +193,11 @@ scanner1 = 9Xa9Ulp9bD5GGLuFm6XYZBtc2VhWQlJgpRRF9SpmfoujrFwdRwBizpqcSMHix6Jc
 scanner2 = gNeJoOiB7eya7QrpjtxlwSQO42eXazawJIEh5BbKJ1pZ0RFxT45Rbqv28wWyD4pk
 scanner3 = Onqr54A6xavBV5yxd4KCNPIl5mR6UdnAb21XX8t3kbEvTd28o6HQxFA2Gim8kxil
 
-[helpers]
-exit1 = on
-exit2 = on
-exit3 = on
+[destinations]
+debian_cd_mirror_will_break = on
 
-[helpers.exit1]
-relay = $(get_fingerprint exit1)
-server_host = $sbws_server_host
-server_port = $sbws_server_port
-password = gNeJoOiB7eya7QrpjtxlwSQO42eXazawJIEh5BbKJ1pZ0RFxT45Rbqv28wWyD4pk
-
-[helpers.exit2]
-relay = $(get_fingerprint exit2)
-server_host = $sbws_server_host
-server_port = $sbws_server_port
-password = 9Xa9Ulp9bD5GGLuFm6XYZBtc2VhWQlJgpRRF9SpmfoujrFwdRwBizpqcSMHix6Jc
-
-[helpers.exit3]
-relay = $(get_fingerprint exit3)
-server_host = $sbws_server_host
-server_port = $sbws_server_port
-password = Onqr54A6xavBV5yxd4KCNPIl5mR6UdnAb21XX8t3kbEvTd28o6HQxFA2Gim8kxil
+[destinations.debian_cd_mirror_will_break]
+url = https://saimei.ftp.acc.umu.se/debian-cd/9.4.0/amd64/iso-dvd/debian-9.4.0-amd64-DVD-1.iso
+#url = https://cdimage.debian.org/debian-cd/9.4.0/amd64/iso-dvd/debian-9.4.0-amd64-DVD-1.iso
 " > config.ini
 touch config.log.ini

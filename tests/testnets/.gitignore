@@ -1,6 +1,7 @@
 auth?/
 relay?/
 exit?/
+client?/
 datadir
 config*.ini
 *.log

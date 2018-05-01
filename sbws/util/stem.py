@@ -7,6 +7,7 @@ from threading import RLock
 import logging
 import os
 from sbws.util.sockio import socket_connect
+from sbws.globals import fail_hard
 
 log = logging.getLogger(__name__)
 
@@ -171,6 +172,28 @@ def launch_tor(conf):
         'LearnCircuitBuildTimeout': '0',
         'CircuitBuildTimeout': '10',
     })
+    for line in section['extra_lines'].split('\n'):
+        line = line.strip()
+        if len(line) < 1:
+            continue
+        items = line.split()
+        if len(items) < 2:
+            fail_hard('All torrc lines must have 2 or more words. "%s" has '
+                      'fewer', line)
+        key, *value = items
+        value = ' '.join(value)
+        log.info('Adding "%s %s" to torrc with which we are launching Tor',
+                 key, value)
+        if key in c:
+            v = c[key]
+            if isinstance(v, str):
+                c.update({key: [v, value]})
+            else:
+                assert isinstance(v, list)
+                v.append(value)
+                c.update({key: v})
+        else:
+            c.update({key: value})
     proc = stem.process.launch_tor_with_config(
         c, init_msg_handler=log.debug, take_ownership=True)
     return _init_controller_socket(section['control_socket'])

@@ -33,12 +33,28 @@ for sbws. (Note that the reverse is **not** true: a major sbws version change
 does not require the integer versions for the wire protocol or result format to
 change)
 
+**Note**: In semantic versioning, "3.4.1-dev" comes **before** "3.4.1". With
+this in mind and assuming the current version is "3.4.1-dev": in the last few
+commits leading up to a new release, the version will be updated to
+
+- "3.4.1" if only bug fixes
+- "3.5.0" if bug fixes and/or backwards-compatible additions/changes
+- "4.0.0" if bug fixes and/or backwards-compatible additions/changes and/or
+  backwards-**in**compatible additions/changes
+
+Say the version is updated to "3.5.0". The commit **immediately** after the
+tagged release should update the version to "3.5.1-dev".
+
 **Note**: Before version 1.0.0, we will make an effort to follow semver with a
 prepended "0.". For example, "0.2.3" to "0.3.0" probably had a major breaking
 change. However, we don't promise this will be followed well. Only trust the
 semantic meaning of version numbers when they have reached 1.0.0. Don't worry,
 we'll be 1.0.0 before we expect a full deployment on the real Tor network.
 (Oh god please don't make me eat my words).
+
+To the best of my knowledge, everything said in this section except our
+conventions regarding version bump commit timing is standard semantic
+versioning and spelled out in the [link above][semantic versioning].
 
 ### The public API for sbws
 

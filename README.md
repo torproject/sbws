@@ -81,7 +81,7 @@ a backward incompatible way.
 ### License
 
 This project is released to the public domain under the CC0 1.0 Universal
-license. See [`LICENSE.md`](/LICENSE.md) for more information.
+license. See LICENSE for more information.
 
 ## Documentation
 

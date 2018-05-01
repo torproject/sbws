@@ -33,6 +33,13 @@ for sbws. (Note that the reverse is **not** true: a major sbws version change
 does not require the integer versions for the wire protocol or result format to
 change)
 
+**Note**: Before version 1.0.0, we will make an effort to follow semver with a
+prepended "0.". For example, "0.2.3" to "0.3.0" probably had a major breaking
+change. However, we don't promise this will be followed well. Only trust the
+semantic meaning of version numbers when they have reached 1.0.0. Don't worry,
+we'll be 1.0.0 before we expect a full deployment on the real Tor network.
+(Oh god please don't make me eat my words).
+
 ### The public API for sbws
 
 As required by semantic versioning, the public API for sbws will not change

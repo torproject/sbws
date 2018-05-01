@@ -32,8 +32,6 @@ def timed_recv_from_server(session, dest, byte_range):
     return True and the time it took to download. Otherwise return False and an
     error string. '''
     headers = {'Range': byte_range}
-    log.debug('Timing how long it takes to receive %s from %s',
-              byte_range, dest.url)
     start_time = time.time()
     # TODO:
     # - What other exceptions can this throw?
@@ -121,8 +119,8 @@ def connect_to_destination_over_circuit(dest, circ_id, session, cont, conf):
             # - Add timeout
             head = session.head(dest.url)
         except requests.exceptions.ConnectionError as e:
-            return False, 'Could not connect to {} over circ {}: {}'.format(
-                dest.url, circ_id, e)
+            return False, 'Could not connect to {} over circ {} {}: {}'.format(
+                dest.url, circ_id, stem_utils.circuit_str(cont, circ_id), e)
         stem_utils.remove_event_listener(cont, listener)
     if head.status_code != requests.codes.ok:
         return False, error_prefix + 'we expected HTTP code '\
@@ -207,7 +205,8 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         log.warning('Could not build circuit involving %s', relay.nickname)
         # TODO: Return ResultError of some sort
         return None
-    log.debug('Built circ %s for relay %s %s', circ_id, relay.nickname,
+    log.debug('Built circ %s %s for relay %s %s', circ_id,
+              stem_utils.circuit_str(cb.controller, circ_id), relay.nickname,
               relay.fingerprint[0:8])
     # Make a connection to the destionation webserver and make sure it can
     # still help us measure

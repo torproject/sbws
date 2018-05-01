@@ -20,6 +20,7 @@ __all__ = [
     'is_controller_okay',
     'fp_or_nick_to_relay',
     'only_relays_with_bandwidth',
+    'circuit_str',
 ]
 
 
@@ -41,7 +42,8 @@ def attach_stream_to_circuit_listener(controller, circ_id):
 
     def closure_stream_event_listener(st):
         if st.status == 'NEW' and st.purpose == 'USER':
-            log.debug('Attaching stream %s to circ %s', st.id, circ_id)
+            log.debug('Attaching stream %s to circ %s %s', st.id, circ_id,
+                      circuit_str(controller, circ_id))
             try:
                 controller.attach_stream(st.id, circ_id)
             except (UnsatisfiableRequest, InvalidRequest) as e:
@@ -162,3 +164,13 @@ def only_relays_with_bandwidth(controller, relays, min_bw=None, max_bw=None):
             continue
         ret.append(relay)
     return ret
+
+
+def circuit_str(controller, circ_id):
+    assert is_controller_okay(controller)
+    assert isinstance(circ_id, str)
+    int(circ_id)
+    circ = controller.get_circuit(circ_id)
+    return '[' +\
+        ' -> '.join(['{} ({})'.format(n, fp[0:8]) for fp, n in circ.path]) +\
+        ']'

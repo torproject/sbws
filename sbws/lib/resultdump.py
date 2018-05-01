@@ -434,7 +434,7 @@ class ResultDump:
         nick = result.nickname
         self.store_result(result)
         write_result_to_datadir(result, self.datadir)
-        log.debug('%s %s finished measurement', fp, nick)
+        log.debug('%s %s finished measurement', nick, fp[0:8])
 
     def enter(self):
         ''' Main loop for the ResultDump thread '''

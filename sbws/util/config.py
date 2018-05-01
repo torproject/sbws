@@ -137,7 +137,8 @@ def _validate_paths(conf):
     errors = []
     sec = 'paths'
     err_tmpl = Template('$sec/$key ($val): $e')
-    unvalidated_keys = ['datadir', 'sbws_home', 'v3bw_fname']
+    unvalidated_keys = [
+        'datadir', 'sbws_home', 'v3bw_fname', 'tor_control_socket']
     all_valid_keys = unvalidated_keys
     errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))
     return errors
@@ -217,22 +218,9 @@ def _validate_tor(conf):
     errors = []
     sec = 'tor'
     err_tmpl = Template('$sec/$key ($val): $e')
-    enums = {
-        'control_type': {'valid': ['port', 'socket']},
-    }
-    hosts = {
-        'socks_host': {},
-    }
-    ports = {
-        'socks_port': {},
-    }
-    unvalidated_keys = ['control_location']
-    all_valid_keys = list(enums.keys()) + list(hosts.keys()) + \
-        list(ports.keys()) + unvalidated_keys
+    unvalidated_keys = ['datadir', 'control_socket', 'control_cookie', 'log']
+    all_valid_keys = unvalidated_keys
     errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))
-    errors.extend(_validate_section_enums(conf, sec, enums, err_tmpl))
-    errors.extend(_validate_section_hosts(conf, sec, hosts, err_tmpl))
-    errors.extend(_validate_section_ports(conf, sec, ports, err_tmpl))
     return errors
 
 

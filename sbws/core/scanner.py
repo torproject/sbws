@@ -257,11 +257,7 @@ def result_putter_error(target):
 
 
 def run_speedtest(args, conf):
-    controller = None
-    controller, error_msg = stem_utils.init_controller_with_config(conf)
-    if not controller:
-        fail_hard(error_msg)
-    assert controller
+    controller = stem_utils.launch_tor(conf)
     cb = CB(args, conf, controller=controller)
     rl = RelayList(args, conf, controller=controller)
     rd = ResultDump(args, conf, end_event)
@@ -303,14 +299,6 @@ def main(args, conf):
     if conf.getint('scanner', 'measurement_threads') < 1:
         fail_hard('Number of measurement threads must be larger than 1')
 
-    if conf['tor']['control_type'] not in ['port', 'socket']:
-        fail_hard('Must specify either control port or socket. '
-                  'Not "%s"', conf['tor']['control_type'])
-    if conf['tor']['control_type'] == 'port':
-        try:
-            conf.getint('tor', 'control_location')
-        except ValueError as e:
-            fail_hard('Couldn\'t read control port from config: %s', e)
     os.makedirs(conf['paths']['datadir'], exist_ok=True)
 
     try:

@@ -1,9 +1,11 @@
 from stem.control import (Controller, EventType)
 from stem import (SocketError, InvalidRequest, UnsatisfiableRequest)
 from stem.connection import IncorrectSocketType
+import stem.process
 from configparser import ConfigParser
 from threading import RLock
 import logging
+import os
 from sbws.util.sockio import socket_connect
 
 log = logging.getLogger(__name__)
@@ -139,3 +141,36 @@ def _init_controller_socket(socket):
         return None
     # TODO: Allow for auth via more than just CookieAuthentication
     return c
+
+
+def launch_tor(conf):
+    assert isinstance(conf, ConfigParser)
+    section = conf['tor']
+    os.makedirs(section['datadir'], mode=0o700, exist_ok=True)
+    # Bare minimum things, more or less
+    c = {
+        'SocksPort': 'auto',
+        'DataDirectory': section['datadir'],
+        'PidFile': os.path.join(section['datadir'], 'tor.pid'),
+        'ControlSocket': section['control_socket'],
+        'CookieAuthentication': '1',
+        'Log': [
+            'NOTICE file {}'.format(section['log']),
+        ],
+    }
+    # Things needed to have all the descriptor information we need
+    c.update({
+        'FetchDirInfoEarly': '1',
+        'FetchDirInfoExtraEarly': '1',
+        'FetchUselessDescriptors': '1',
+        'UseMicrodescriptors': '0',
+        'DownloadExtraInfo': '1',
+    })
+    # Things needed to make circuits fail a little faster
+    c.update({
+        'LearnCircuitBuildTimeout': '0',
+        'CircuitBuildTimeout': '10',
+    })
+    proc = stem.process.launch_tor_with_config(
+        c, init_msg_handler=log.debug, take_ownership=True)
+    return _init_controller_socket(section['control_socket'])

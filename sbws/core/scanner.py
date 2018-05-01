@@ -30,7 +30,7 @@ log = logging.getLogger(__name__)
 def timed_recv_from_server(session, dest, byte_range):
     ''' Request the **byte_range** from the URL at **dest**. If successful,
     return True and the time it took to download. Otherwise return False and an
-    error string. '''
+    exception. '''
     headers = {'Range': byte_range}
     start_time = time.time()
     # TODO:
@@ -81,8 +81,7 @@ def measure_rtt_to_server(session, conf, dest, content_length):
         random_range = get_random_range_string(content_length, size)
         success, data = timed_recv_from_server(session, dest, random_range)
         if not success:
-            # data is an error string
-            assert isinstance(data, str)
+            # data is an exception
             log.warning('While measuring the RTT to %s we hit an exception '
                         '(does the webserver support Range requests?): %s',
                         dest.url, data)
@@ -155,8 +154,7 @@ def measure_bandwidth_to_server(session, conf, dest, content_length):
         random_range = get_random_range_string(content_length, expected_amount)
         success, data = timed_recv_from_server(session, dest, random_range)
         if not success:
-            # data is an error string
-            assert isinstance(data, str)
+            # data is an exception
             log.warning('While measuring the bandwidth to %s we hit an '
                         'exception (does the webserver support Range '
                         'requests?): %s', dest.url, data)

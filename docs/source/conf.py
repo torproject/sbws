@@ -106,7 +106,7 @@ html_static_path = ['_static']
 #
 # html_sidebars = {}
 
-html_last_updated_fmt = ''
+# html_last_updated_fmt = ''
 
 # -- Options for HTMLHelp output ---------------------------------------------
 

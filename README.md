@@ -21,7 +21,7 @@ This project follows [semantic versioning][] and thus every major version has
 the potential for breaking changes. You can find information about what those
 are at the following places.
 
-- In [`CHANGELOG.md`](/CHANGELOG.md)
+- In the CHANGELOG
 
 [semantic versioning]: https://semver.org/
 

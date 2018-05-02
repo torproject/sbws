@@ -25,6 +25,21 @@ SOCKET_TIMEOUT = 60  # seconds
 MIN_REQ_BYTES = 1
 MAX_REQ_BYTES = 1 * 1024 * 1024 * 1024  # 1 GiB
 
+# This is a dictionary of torrc options we always want to set when launching
+# Tor and that do not depend on any runtime configuration
+TORRC_STARTING_POINT = {
+    # We will find out via the ControlPort and not setting something static
+    # means a lower chance of conflict
+    'SocksPort': 'auto',
+    # Easier than password authentication
+    'CookieAuthentication': '1',
+    # Things needed to make circuits fail a little faster
+    'LearnCircuitBuildTimeout': '0',
+    'CircuitBuildTimeout': '10',
+    # To avoid path bias warnings
+    'UseEntryGuards': '0',
+}
+
 
 def is_initted(d):
     if not os.path.isdir(d):

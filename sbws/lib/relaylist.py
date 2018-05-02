@@ -11,12 +11,8 @@ class RelayList:
     '''
     REFRESH_INTERVAL = 300  # seconds
 
-    def __init__(self, args, conf, controller=None):
-        if controller is None:
-            c, error_msg = stem_utils.init_controller_with_config(conf)
-            assert c, error_msg
-        else:
-            self._controller = controller
+    def __init__(self, args, conf, controller):
+        self._controller = controller
         self.rng = random.SystemRandom()
         self._refresh()
 

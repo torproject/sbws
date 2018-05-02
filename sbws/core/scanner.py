@@ -257,12 +257,11 @@ def result_putter_error(target):
 
 def run_speedtest(args, conf):
     controller = stem_utils.launch_tor(conf)
-    cb = CB(args, conf, controller=controller)
-    rl = RelayList(args, conf, controller=controller)
+    cb = CB(args, conf, controller)
+    rl = RelayList(args, conf, controller)
     rd = ResultDump(args, conf, end_event)
     rp = RelayPrioritizer(args, conf, rl, rd)
-    helpers, error_msg = HelperRelayList.from_config(
-        args, conf, controller=controller)
+    helpers, error_msg = HelperRelayList.from_config(args, conf, controller)
     if not helpers:
         fail_hard(error_msg)
     max_pending_results = conf.getint('scanner', 'measurement_threads')

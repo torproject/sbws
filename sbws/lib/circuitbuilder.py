@@ -38,16 +38,10 @@ class CircuitBuilder:
     them, but CircuitBuilder will keep track of existing circuits and close
     them when it is deleted.
     '''
-    def __init__(self, args, conf, controller=None,
-                 close_circuits_on_exit=True):
-        if controller is None:
-            c, error_msg = stem_utils.init_controller_with_config(conf)
-            assert c, error_msg
-            self.controller = c
-        else:
-            self.controller = controller
+    def __init__(self, args, conf, controller, close_circuits_on_exit=True):
+        self.controller = controller
         self.rng = random.SystemRandom()
-        self.relay_list = RelayList(args, conf, controller=self.controller)
+        self.relay_list = RelayList(args, conf, self.controller)
         self.built_circuits = set()
         self.close_circuits_on_exit = close_circuits_on_exit
 

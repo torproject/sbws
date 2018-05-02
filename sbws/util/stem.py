@@ -164,6 +164,10 @@ def launch_tor(conf):
         'LearnCircuitBuildTimeout': '0',
         'CircuitBuildTimeout': '10',
     })
+    # Things to avoid path bias warnings
+    c.update({
+        'UseEntryGuards': '0',
+    })
     for line in section['extra_lines'].split('\n'):
         line = line.strip()
         if len(line) < 1:

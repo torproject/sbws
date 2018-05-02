@@ -27,7 +27,7 @@ scanner_tor_socks_proxy_ip=""
 scanner_tor_socks_proxy_nick=""
 
 echo -n '' > $auth_torrc_section
-rm -fr auth?/ relay?/ exit?/ config*.ini datadir/ *.log
+rm -fr auth?/ relay?/ exit?/ config*.ini datadir/ tor/ *.log
 for A in auth1 auth2 auth3
 do
 	mkdir -pv $A/keys
@@ -148,6 +148,10 @@ sbws_home = $(pwd)
 
 [tor]
 extra_lines =
+    TestingTorNetwork 1
+    NumCPUs 1
+    LogTimeGranularity 1
+    SafeLogging 0
 $(cat $auth_torrc_section | while read LINE; do printf "    $LINE\n"; done)
 
 [scanner]

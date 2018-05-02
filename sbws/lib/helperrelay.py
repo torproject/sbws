@@ -51,8 +51,7 @@ class HelperRelayList:
         assert len(helpers) > 0
         for helper in helpers:
             assert isinstance(helper, HelperRelay)
-        self._socks_proxy = (conf['tor']['socks_host'],
-                             conf.getint('tor', 'socks_port'))
+        self._socks_proxy = stem_utils.get_socks_info(controller)
         self._all_helpers = helpers
         self._usable_helpers = set()
         self._circuit_builder = CB(args, conf, controller)

@@ -159,14 +159,6 @@ def launch_tor(conf):
             'NOTICE file {}'.format(section['log']),
         ],
     }
-    # Things needed to have all the descriptor information we need
-    c.update({
-        'FetchDirInfoEarly': '1',
-        'FetchDirInfoExtraEarly': '1',
-        'FetchUselessDescriptors': '1',
-        'UseMicrodescriptors': '0',
-        'DownloadExtraInfo': '1',
-    })
     # Things needed to make circuits fail a little faster
     c.update({
         'LearnCircuitBuildTimeout': '0',

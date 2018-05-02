@@ -137,7 +137,6 @@ do
 	" >> $torrc
 done
 
-rm $auth_torrc_section
 
 # Get a random port between 2000 and 62000 while handling the fact that $RANDOM
 # doesn't go up that high
@@ -149,10 +148,8 @@ datadir = \${sbws_home}/datadir
 sbws_home = $(pwd)
 
 [tor]
-control_type = socket
-control_location = \${paths:sbws_home}/$scanner_tor_socks_proxy_nick/control_socket
-socks_host = $scanner_tor_socks_proxy_ip
-socks_port = $socksport
+extra_lines =
+$(cat $auth_torrc_section | while read LINE; do printf "    $LINE\n"; done)
 
 [scanner]
 nickname = SbwsTestnetScanner
@@ -172,6 +169,7 @@ bind_port = $sbws_server_port
 scanner1 = 9Xa9Ulp9bD5GGLuFm6XYZBtc2VhWQlJgpRRF9SpmfoujrFwdRwBizpqcSMHix6Jc
 scanner2 = gNeJoOiB7eya7QrpjtxlwSQO42eXazawJIEh5BbKJ1pZ0RFxT45Rbqv28wWyD4pk
 scanner3 = Onqr54A6xavBV5yxd4KCNPIl5mR6UdnAb21XX8t3kbEvTd28o6HQxFA2Gim8kxil
+
 
 [helpers]
 exit1 = on
@@ -197,3 +195,4 @@ server_port = $sbws_server_port
 password = Onqr54A6xavBV5yxd4KCNPIl5mR6UdnAb21XX8t3kbEvTd28o6HQxFA2Gim8kxil
 " > config.ini
 touch config.log.ini
+rm $auth_torrc_section

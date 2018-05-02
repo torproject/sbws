@@ -151,9 +151,9 @@ def launch_tor(conf):
     section = conf['tor']
     os.makedirs(section['datadir'], mode=0o700, exist_ok=True)
     # Bare minimum things, more or less
-    c = copy.deepcopy(TORRC_STARTING_POINT)
+    torrc = copy.deepcopy(TORRC_STARTING_POINT)
     # Very important and/or common settings that we don't know until runtime
-    c.update({
+    torrc.update({
         'DataDirectory': section['datadir'],
         'PidFile': os.path.join(section['datadir'], 'tor.pid'),
         'ControlSocket': section['control_socket'],
@@ -193,25 +193,25 @@ def launch_tor(conf):
         log.info('Adding "%s %s" to torrc with which we are launching Tor',
                  key, value)
         # It's really easy to add to the torrc if the key doesn't exist
-        if key not in c:
-            c.update({key: value})
+        if key not in torrc:
+            torrc.update({key: value})
         # But if it does, we have to make a list of values. For example, say
         # the user wants to add a SocksPort and we already have
         # 'SocksPort auto' in the torrc. We'll go from
-        #     c['SocksPort'] == 'auto'
+        #     torrc['SocksPort'] == 'auto'
         # to
-        #     c['SocksPort'] == ['auto', '9050']
+        #     torrc['SocksPort'] == ['auto', '9050']
         else:
-            v = c[key]
-            if isinstance(v, str):
-                c.update({key: [v, value]})
+            existing_val = torrc[key]
+            if isinstance(existing_val, str):
+                torrc.update({key: [existing_val, value]})
             else:
-                assert isinstance(v, list)
-                v.append(value)
-                c.update({key: v})
+                assert isinstance(existing_val, list)
+                existing_val.append(value)
+                torrc.update({key: existing_val})
     # Finally launch Tor
     stem.process.launch_tor_with_config(
-        c, init_msg_handler=log.debug, take_ownership=True)
+        torrc, init_msg_handler=log.debug, take_ownership=True)
     # And return a controller to it
     return _init_controller_socket(section['control_socket'])
 

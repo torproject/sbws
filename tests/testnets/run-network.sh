@@ -36,7 +36,7 @@ run_time="45"
 echo "Running for $run_time seconds ..."
 sleep $run_time
 
-sbws -d . generate | tee generate.log
+sbws -d . generate --output /dev/stdout | tee generate.log
 sbws -d . stats | tee stats.log
 
 ./04-stop-network.sh

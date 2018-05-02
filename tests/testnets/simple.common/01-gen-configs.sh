@@ -145,6 +145,7 @@ sbws_server_port=$(( ((RANDOM<<15)|RANDOM) % 60000 + 2000 ))
 
 echo "
 [paths]
+v3bw_fname = \${sbws_home}/v3bw.txt
 datadir = \${sbws_home}/datadir
 sbws_home = $(pwd)
 

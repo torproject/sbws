@@ -1,6 +1,7 @@
 auth?/
 relay?/
 exit?/
-datadir
+datadir/
+tor/
 config*.ini
 *.log

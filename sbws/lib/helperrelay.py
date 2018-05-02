@@ -41,13 +41,8 @@ class HelperRelay:
 
 
 class HelperRelayList:
-    def __init__(self, args, conf, helpers, controller=None):
-        if controller is None:
-            c, error_msg = stem_utils.init_controller_with_config(conf)
-            assert c, error_msg
-            self.controller = c
-        else:
-            self.controller = controller
+    def __init__(self, args, conf, helpers, controller):
+        self.controller = controller
         assert len(helpers) > 0
         for helper in helpers:
             assert isinstance(helper, HelperRelay)
@@ -61,7 +56,7 @@ class HelperRelayList:
         self._reachability_lock = RLock()
 
     @staticmethod
-    def from_config(args, conf, controller=None):
+    def from_config(args, conf, controller):
         ''' Returns a new HelperRelayList and an empty string if everything
         goes okay loading HelperRelays from the given config file. Otherwise,
         returns None and an error string '''
@@ -80,7 +75,7 @@ class HelperRelayList:
             helpers.append(HelperRelay(conf[helper_sec]))
         if len(helpers) < 1:
             return None, 'No enabled helpers in config'
-        return HelperRelayList(args, conf, helpers, controller=controller), ''
+        return HelperRelayList(args, conf, helpers, controller), ''
 
     def _should_perform_reachability_test(self):
         return self._last_reachability_test + self._reachability_test_every <\

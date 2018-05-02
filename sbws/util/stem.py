@@ -8,6 +8,7 @@ import logging
 import os
 from sbws.util.sockio import socket_connect
 from sbws.globals import fail_hard
+from sbws.globals import TORRC_STARTING_POINT
 
 log = logging.getLogger(__name__)
 
@@ -149,29 +150,39 @@ def launch_tor(conf):
     section = conf['tor']
     os.makedirs(section['datadir'], mode=0o700, exist_ok=True)
     # Bare minimum things, more or less
-    c = {
-        'SocksPort': 'auto',
+    c = TORRC_STARTING_POINT
+    # Very important and/or common settings that we don't know until runtime
+    c.update({
         'DataDirectory': section['datadir'],
         'PidFile': os.path.join(section['datadir'], 'tor.pid'),
         'ControlSocket': section['control_socket'],
-        'CookieAuthentication': '1',
         'Log': [
             'NOTICE file {}'.format(section['log']),
         ],
-    }
-    # Things needed to make circuits fail a little faster
-    c.update({
-        'LearnCircuitBuildTimeout': '0',
-        'CircuitBuildTimeout': '10',
     })
-    # Things to avoid path bias warnings
-    c.update({
-        'UseEntryGuards': '0',
-    })
+    # This block of code reads additional torrc lines from the user's
+    # config.ini so they can add arbitrary additional options.
+    #
+    # The user can't replace our options, only add to them. For example,
+    # there's no way to remove 'SocksPort auto' (if it is still in
+    # TORRC_STARTING_POINT). If you add a SocksPort in your config.ini, you'll
+    # open two socks ports.
+    #
+    # As an example, maybe the user hates their HDD and wants to fill it with
+    # debug logs, and wants to tell Tor to use only 1 CPU core.
+    #
+    #     [tor]
+    #     extra_lines =
+    #         Log debug file /tmp/tor-debug.log
+    #         NumCPUs 1
     for line in section['extra_lines'].split('\n'):
+        # Remove leading and trailing whitespace, if any
         line = line.strip()
+        # Ignore blank lines
         if len(line) < 1:
             continue
+        # The way stem handles configuring Tor with a dictionary is the first
+        # word is a key and the remaining words are the value.
         items = line.split()
         if len(items) < 2:
             fail_hard('All torrc lines must have 2 or more words. "%s" has '
@@ -180,7 +191,16 @@ def launch_tor(conf):
         value = ' '.join(value)
         log.info('Adding "%s %s" to torrc with which we are launching Tor',
                  key, value)
-        if key in c:
+        # It's really easy to add to the torrc if the key doesn't exist
+        if key not in c:
+            c.update({key: value})
+        # But if it does, we have to make a list of values. For example, say
+        # the user wants to add a SocksPort and we already have
+        # 'SocksPort auto' in the torrc. We'll go from
+        #     c['SocksPort'] == 'auto'
+        # to
+        #     c['SocksPort'] == ['auto', '9050']
+        else:
             v = c[key]
             if isinstance(v, str):
                 c.update({key: [v, value]})
@@ -188,10 +208,10 @@ def launch_tor(conf):
                 assert isinstance(v, list)
                 v.append(value)
                 c.update({key: v})
-        else:
-            c.update({key: value})
+    # Finally launch Tor
     stem.process.launch_tor_with_config(
         c, init_msg_handler=log.debug, take_ownership=True)
+    # And return a controller to it
     return _init_controller_socket(section['control_socket'])
 
 

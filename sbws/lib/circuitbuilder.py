@@ -69,9 +69,9 @@ class CircuitBuilder:
         return [relay[0] for relay in circ.path]
 
     def close_circuit(self, circ_id):
-        # TODO: might want to just check instead of assert.
         c = self.controller
-        assert stem_utils.is_controller_okay(c)
+        if not stem_utils.is_controller_okay(c):
+            return
         if c.get_circuit(circ_id, default=None):
             c.close_circuit(circ_id)
             self.built_circuits.discard(circ_id)

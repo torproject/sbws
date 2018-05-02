@@ -35,6 +35,8 @@ def main(args, conf):
             'Is it okay to overwrite {}?'.format(fname), default=None):
         fail_hard('Cannot continue')
     c = get_user_example_config()
+    if 'paths' not in c:
+        c['paths'] = {}
     c['paths']['sbws_home'] = args.directory
     log.info('Creating %s based on example config', fname)
     with open(fname, 'wt') as fd:

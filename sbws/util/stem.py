@@ -194,7 +194,7 @@ def launch_tor(conf):
                 c.update({key: v})
         else:
             c.update({key: value})
-    proc = stem.process.launch_tor_with_config(
+    stem.process.launch_tor_with_config(
         c, init_msg_handler=log.debug, take_ownership=True)
     return _init_controller_socket(section['control_socket'])
 

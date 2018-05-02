@@ -126,8 +126,7 @@ def measure_relay(args, conf, helpers, cb, rl, relay):
             relay, [relay.fingerprint, helper.fingerprint], helper.server_host,
             our_nick)
     circ_fps = cb.get_circuit_path(circ_id)
-    s = make_socket(conf['tor']['socks_host'],
-                    conf.getint('tor', 'socks_port'))
+    s = make_socket(*stem_utils.get_socks_info(cb.controller))
     connected = stem_utils.connect_over_circuit(
         cb.controller, circ_id, s, helper.server_host, helper.server_port)
     if not connected:

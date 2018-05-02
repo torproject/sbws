@@ -1,4 +1,4 @@
-from stem.control import (Controller, EventType)
+from stem.control import (Controller, EventType, Listener)
 from stem import (SocketError, InvalidRequest, UnsatisfiableRequest)
 from stem.connection import IncorrectSocketType
 import stem.process
@@ -197,3 +197,11 @@ def launch_tor(conf):
     proc = stem.process.launch_tor_with_config(
         c, init_msg_handler=log.debug, take_ownership=True)
     return _init_controller_socket(section['control_socket'])
+
+
+def get_socks_info(controller):
+    ''' Returns the first SocksPort Tor is configured to listen on, in the form
+    of an (address, port) tuple '''
+    assert is_controller_okay(controller)
+    socks_ports = controller.get_listeners(Listener.SOCKS)
+    return socks_ports[0]

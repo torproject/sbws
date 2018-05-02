@@ -4,6 +4,7 @@ from stem.connection import IncorrectSocketType
 import stem.process
 from configparser import ConfigParser
 from threading import RLock
+import copy
 import logging
 import os
 from sbws.util.sockio import socket_connect
@@ -150,7 +151,7 @@ def launch_tor(conf):
     section = conf['tor']
     os.makedirs(section['datadir'], mode=0o700, exist_ok=True)
     # Bare minimum things, more or less
-    c = TORRC_STARTING_POINT
+    c = copy.deepcopy(TORRC_STARTING_POINT)
     # Very important and/or common settings that we don't know until runtime
     c.update({
         'DataDirectory': section['datadir'],

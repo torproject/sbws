@@ -11,7 +11,6 @@ from ..lib.destination import DestinationList
 # from ..util.simpleauth import authenticate_to_server
 # from ..util.sockio import (make_socket, close_socket)
 from sbws.globals import (fail_hard, is_initted)
-from sbws.globals import MIN_REQ_BYTES, MAX_REQ_BYTES
 import sbws.util.stem as stem_utils
 from stem.control import EventType
 from argparse import ArgumentDefaultsHelpFormatter
@@ -167,7 +166,7 @@ def measure_bandwidth_to_server(session, conf, dest, content_length):
             results.append({
                 'duration': data, 'amount': expected_amount})
         expected_amount = _next_expected_amount(
-            expected_amount, data, download_times)
+            expected_amount, data, download_times, min_dl, max_dl)
     return results
 
 
@@ -266,7 +265,8 @@ def _should_keep_result(did_request_maximum, result_time, download_times):
     return False
 
 
-def _next_expected_amount(expected_amount, result_time, download_times):
+def _next_expected_amount(expected_amount, result_time, download_times,
+                          min_dl, max_dl):
     if result_time < download_times['toofast']:
         # Way too fast, greatly increase the amount we ask for
         expected_amount = int(expected_amount * 5)
@@ -277,8 +277,8 @@ def _next_expected_amount(expected_amount, result_time, download_times):
         expected_amount = int(
             expected_amount * download_times['target'] / result_time)
     # Make sure we don't request too much or too little
-    expected_amount = max(MIN_REQ_BYTES, expected_amount)
-    expected_amount = min(MAX_REQ_BYTES, expected_amount)
+    expected_amount = max(min_dl, expected_amount)
+    expected_amount = min(max_dl, expected_amount)
     return expected_amount
 
 

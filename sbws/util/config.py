@@ -205,6 +205,13 @@ def _validate_destinations(conf):
                 errors.append(err_tmpl.substitute(
                     sec=sec, key=key, val=value, e=error_msg))
             continue
+        if key == 'usability_test_interval':
+            value = section[key]
+            valid, error_msg = _validate_int(section, key, minimum=1)
+            if not valid:
+                errors.append(err_tmpl.substitute(
+                    sec=sec, key=key, val=value, e=error_msg))
+            continue
         value = section[key]
         valid, error_msg = _validate_boolean(section, key)
         if not valid:

@@ -306,7 +306,8 @@ def run_speedtest(args, conf):
     rl = RelayList(args, conf, controller)
     rd = ResultDump(args, conf, end_event)
     rp = RelayPrioritizer(args, conf, rl, rd)
-    destinations, error_msg = DestinationList.from_config(conf)
+    destinations, error_msg = DestinationList.from_config(
+        conf, cb, rl, controller)
     if not destinations:
         fail_hard(error_msg)
     max_pending_results = conf.getint('scanner', 'measurement_threads')

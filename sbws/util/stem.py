@@ -2,6 +2,7 @@ from stem.control import (Controller, EventType, Listener)
 from stem import (SocketError, InvalidRequest, UnsatisfiableRequest)
 from stem.connection import IncorrectSocketType
 import stem.process
+from stem.descriptor.router_status_entry import RouterStatusEntryV3
 from configparser import ConfigParser
 from threading import RLock
 import copy
@@ -23,6 +24,8 @@ __all__ = [
     'init_controller_with_config',
     'is_controller_okay',
     'fp_or_nick_to_relay',
+    'only_relays_with_bandwidth',
+    'circuit_str',
 ]
 
 
@@ -44,7 +47,8 @@ def attach_stream_to_circuit_listener(controller, circ_id):
 
     def closure_stream_event_listener(st):
         if st.status == 'NEW' and st.purpose == 'USER':
-            log.debug('Attaching stream %s to circ %s', st.id, circ_id)
+            log.debug('Attaching stream %s to circ %s %s', st.id, circ_id,
+                      circuit_str(controller, circ_id))
             try:
                 controller.attach_stream(st.id, circ_id)
             except (UnsatisfiableRequest, InvalidRequest) as e:
@@ -221,3 +225,34 @@ def get_socks_info(controller):
     assert is_controller_okay(controller)
     socks_ports = controller.get_listeners(Listener.SOCKS)
     return socks_ports[0]
+
+
+def only_relays_with_bandwidth(controller, relays, min_bw=None, max_bw=None):
+    '''
+    Given a list of relays, only return those that optionally have above
+    **min_bw** and optionally have below **max_bw**, inclusively. If neither
+    min_bw nor max_bw are given, essentially just returns the input list of
+    relays.
+    '''
+    assert is_controller_okay(controller)
+    assert min_bw is None or min_bw >= 0
+    assert max_bw is None or max_bw >= 0
+    ret = []
+    for relay in relays:
+        assert isinstance(relay, RouterStatusEntryV3)
+        if min_bw is not None and relay.bandwidth < min_bw:
+            continue
+        if max_bw is not None and relay.bandwidth > max_bw:
+            continue
+        ret.append(relay)
+    return ret
+
+
+def circuit_str(controller, circ_id):
+    assert is_controller_okay(controller)
+    assert isinstance(circ_id, str)
+    int(circ_id)
+    circ = controller.get_circuit(circ_id)
+    return '[' +\
+        ' -> '.join(['{} ({})'.format(n, fp[0:8]) for fp, n in circ.path]) +\
+        ']'

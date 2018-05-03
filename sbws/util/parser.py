@@ -2,8 +2,6 @@ import sbws.core.cleanup
 import sbws.core.scanner
 import sbws.core.generate
 import sbws.core.init
-import sbws.core.pwgen
-import sbws.core.server
 import sbws.core.stats
 from sbws import __version__
 
@@ -31,7 +29,5 @@ def create_parser():
     sbws.core.scanner.gen_parser(sub)
     sbws.core.generate.gen_parser(sub)
     sbws.core.init.gen_parser(sub)
-    sbws.core.pwgen.gen_parser(sub)
-    sbws.core.server.gen_parser(sub)
     sbws.core.stats.gen_parser(sub)
     return p

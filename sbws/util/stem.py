@@ -216,7 +216,11 @@ def launch_tor(conf):
     stem.process.launch_tor_with_config(
         torrc, init_msg_handler=log.debug, take_ownership=True)
     # And return a controller to it
-    return _init_controller_socket(section['control_socket'])
+    cont = _init_controller_socket(section['control_socket'])
+    assert is_controller_okay(cont)
+    log.info('Started and connected to Tor %s via %s', cont.get_version(),
+             section['control_socket'])
+    return cont
 
 
 def get_socks_info(controller):

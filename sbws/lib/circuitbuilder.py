@@ -99,68 +99,6 @@ class CircuitBuilder:
         self.built_circuits.clear()
 
 
-class RandomCircuitBuilder(CircuitBuilder):
-    ''' Builds circuits with each relay having equal probability of being
-    selected for any position. There's no promise that the last hop will be
-    an exit. '''
-    def __init__(self, *a, **kw):
-        super().__init__(*a, **kw)
-
-    def build_circuit(self, length=3):
-        ''' builds circuit of <length> and returns its (str) ID '''
-        if not valid_circuit_length(length):
-            raise PathLengthException()
-        fps = [r.fingerprint for r in self.rng.sample(self.relays, length)]
-        return self._build_circuit_impl(fps)
-
-
-class GuardedCircuitBuilder(CircuitBuilder):
-    ''' Like RandomCircuitBuilder, but the first hop will always be one of
-    the specified relays chosen uniformally at random. There's no promise that
-    the last hop will be an exit. '''
-    def __init__(self, guards, *a, **kw):
-        ''' <guards> is a list of relays. A relay can be specified either by
-        fingerprint or nickname. Fingerprint is highly recommended. '''
-        super().__init__(*a, **kw)
-        self.guards = [stem_utils.fp_or_nick_to_relay(self.controller, g)
-                       for g in guards]
-        if len(self.guards) > len([g for g in self.guards if g]):
-            self.guards = [g for g in self.guards if g]
-            log.warning('Warning: couldn\'t find descriptors for all '
-                        'guards. Only using: %s',
-                        ', '.join([g.nickname for g in self.guards]))
-            assert len(self.guards) > 0
-
-    def build_circuit(self, length=3):
-        ''' builds circuit of <length> and returns its (str) ID. The length
-        includes the guard in the first hop position '''
-        if not valid_circuit_length(length):
-            raise PathLengthException()
-        fps = [self.rng.choice(self.guards).fingerprint] + \
-            [r.fingerprint for r in self.rng.sample(self.relays, length-1)]
-        return self._build_circuit_impl(fps)
-
-
-class ExitCircuitBuilder(CircuitBuilder):
-    ''' Like RandomCircuitBuilder, but the last hop will always be an exit
-    chosen uniformally at random. There's no promise that it supports exiting
-    to a specific IP/port. '''
-    def __init__(self, *a, **kw):
-        super().__init__(*a, **kw)
-
-    @property
-    def exits(self):
-        return self.relay_list.exits
-
-    def build_circuit(self, length=3):
-        ''' builds circuit of <length> and returns its (str) ID. '''
-        if not valid_circuit_length(length):
-            raise PathLengthException()
-        fps = [r.fingerprint for r in self.rng.sample(self.relays, length-1)] \
-            + [self.rng.choice(self.exits).fingerprint]
-        return self._build_circuit_impl(fps)
-
-
 class GapsCircuitBuilder(CircuitBuilder):
     ''' The build_circuit member function takes a list. Falsey values in the
     list will be replaced with relays chosen uniformally at random; Truthy

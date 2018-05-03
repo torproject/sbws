@@ -164,15 +164,6 @@ download_max = 5
 num_rtts = 5
 num_downloads = 3
 
-[server]
-bind_ip = $sbws_server_host
-bind_port = $sbws_server_port
-
-[server.passwords]
-scanner1 = 9Xa9Ulp9bD5GGLuFm6XYZBtc2VhWQlJgpRRF9SpmfoujrFwdRwBizpqcSMHix6Jc
-scanner2 = gNeJoOiB7eya7QrpjtxlwSQO42eXazawJIEh5BbKJ1pZ0RFxT45Rbqv28wWyD4pk
-scanner3 = Onqr54A6xavBV5yxd4KCNPIl5mR6UdnAb21XX8t3kbEvTd28o6HQxFA2Gim8kxil
-
 [destinations]
 debian_cd_mirror_will_break = on
 

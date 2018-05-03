@@ -77,6 +77,7 @@ class RelayList:
         likely using microdescriptors which do not have full information about
         exit policies.
         '''
+        c = self._controller
         if not is_valid_ipv4_address(host) and not is_valid_ipv6_address(host):
             # It certainly isn't perfect trying to guess if an exit can connect
             # to an ipv4/6 address based on the DNS result we got locally. But
@@ -86,7 +87,13 @@ class RelayList:
             # one.
             host = resolve(host)[0]
         assert is_valid_ipv4_address(host) or is_valid_ipv6_address(host)
-        return [e for e in self.exits if e.exit_policy.can_exit_to(host, port)]
+        exits = []
+        for exit in self.exits:
+            policy = exit.exit_policy if exit.exit_policy \
+                else c.get_microdescriptor(relay=exit.fingerprint).exit_policy
+            if policy is not None and policy.can_exit_to(host, port):
+                exits.append(exit)
+        return exits
 
     def random_relay(self):
         relays = self.relays

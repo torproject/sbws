@@ -218,6 +218,9 @@ def launch_tor(conf):
     # And return a controller to it
     cont = _init_controller_socket(section['control_socket'])
     assert is_controller_okay(cont)
+    # Because we build things by hand and can't set these before Tor bootstraps
+    cont.set_conf('__DisablePredictedCircuits', '1')
+    cont.set_conf('__LeaveStreamsUnattached', '1')
     log.info('Started and connected to Tor %s via %s', cont.get_version(),
              section['control_socket'])
     return cont

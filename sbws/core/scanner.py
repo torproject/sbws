@@ -2,9 +2,8 @@
 
 from ..lib.circuitbuilder import GapsCircuitBuilder as CB
 from ..lib.resultdump import ResultDump
-from ..lib.resultdump import ResultSuccess
-# from ..lib.resultdump import ResultErrorCircuit
-# from ..lib.resultdump import ResultErrorAuth
+from ..lib.resultdump import ResultSuccess, ResultErrorCircuit
+from ..lib.resultdump import ResultErrorStream
 from ..lib.relaylist import RelayList
 from ..lib.relayprioritizer import RelayPrioritizer
 from ..lib.destination import DestinationList
@@ -152,11 +151,16 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         return None
     exit = random.choice(exits)
     # Build the circuit
-    circ_id = cb.build_circuit([relay.fingerprint, exit.fingerprint])
+    our_nick = conf['scanner']['nickname']
+    circ_fps = [relay.fingerprint, exit.fingerprint]
+    circ_id = cb.build_circuit(circ_fps)
     if not circ_id:
         log.warning('Could not build circuit involving %s', relay.nickname)
-        # TODO: Return ResultError of some sort
-        return None
+        msg = 'Unable to complete circuit'
+        return [
+            ResultErrorCircuit(relay, circ_fps, dest.url, our_nick, msg=msg),
+            ResultErrorCircuit(exit, circ_fps, dest.url, our_nick, msg=msg),
+        ]
     log.debug('Built circ %s %s for relay %s %s', circ_id,
               stem_utils.circuit_str(cb.controller, circ_id), relay.nickname,
               relay.fingerprint[0:8])
@@ -168,8 +172,12 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
                     'stopped being usable: %s', relay.nickname,
                     relay.fingerprint[0:8], usable_data)
         cb.close_circuit(circ_id)
-        # TODO: Return ResultError of some sort???
-        return None
+        # TODO: Return a different/new type of ResultError?
+        msg = 'The destination seemed to have stopped being usable'
+        return [
+            ResultErrorStream(relay, circ_fps, dest.url, our_nick, msg=msg),
+            ResultErrorStream(exit, circ_fps, dest.url, our_nick, msg=msg),
+        ]
     assert is_usable
     assert 'content_length' in usable_data
     # FIRST: measure RTT
@@ -178,13 +186,25 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         log.warning('Unable to measure RTT to %s via relay %s %s',
                     dest.url, relay.nickname, relay.fingerprint[0:8])
         cb.close_circuit(circ_id)
-        # TODO: Return ResultError of some sort???
-        return None
+        # TODO: Return a different/new type of ResultError?
+        msg = 'Something bad happened while measuring RTTs'
+        return [
+            ResultErrorStream(relay, circ_fps, dest.url, our_nick, msg=msg),
+            ResultErrorStream(exit, circ_fps, dest.url, our_nick, msg=msg),
+        ]
     # SECOND: measure bandwidth
     bw_results = measure_bandwidth_to_server(
         s, conf, dest, usable_data['content_length'])
-    circ_fps = cb.get_circuit_path(circ_id)
-    our_nick = conf['scanner']['nickname']
+    if bw_results is None:
+        log.warning('Unable to measure bandwidth to %s via relay %s %s',
+                    dest.url, relay.nickname, relay.fingerprint[0:8])
+        cb.close_circuit(circ_id)
+        # TODO: Return a different/new type of ResultError?
+        msg = 'Something bad happened while measuring bandwidth'
+        return [
+            ResultErrorStream(relay, circ_fps, dest.url, our_nick, msg=msg),
+            ResultErrorStream(exit, circ_fps, dest.url, our_nick, msg=msg),
+        ]
     cb.close_circuit(circ_id)
     # Finally: store result
     return [

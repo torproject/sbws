@@ -12,7 +12,6 @@ from ..lib.destination import DestinationList
 # from ..util.sockio import (make_socket, close_socket)
 from sbws.globals import (fail_hard, is_initted)
 import sbws.util.stem as stem_utils
-from stem.control import EventType
 from argparse import ArgumentDefaultsHelpFormatter
 from multiprocessing.dummy import Pool
 from threading import Event
@@ -92,49 +91,6 @@ def measure_rtt_to_server(session, conf, dest, content_length):
     return rtts
 
 
-def connect_to_destination_over_circuit(dest, circ_id, session, cont, conf):
-    '''
-    Connect to **dest* over the given **circ_id** using the given Requests
-    **session**. Make sure everything seems in order. Return True and a
-    dictionary of helpful information if we connected and everything looks
-    fine.  Otherwise return False and a string stating what the issue is.
-
-    :param dest Destination: the place to which we should connect
-    :param circ_id str: the circuit we should connect over
-    :param session Session: the Requests library session object to use to make
-        the connection.
-    :param cont Controller: them Stem library controller controlling Tor
-    :returns: True and a dictionary if everything is in order and measurements
-        should commence.  False and an error string otherwise.
-    '''
-    error_prefix = 'When sending HTTP HEAD to {}, '.format(dest.url)
-    with stem_utils.stream_building_lock:
-        listener = stem_utils.attach_stream_to_circuit_listener(cont, circ_id)
-        stem_utils.add_event_listener(cont, listener, EventType.STREAM)
-        try:
-            # TODO:
-            # - What other exceptions can this throw?
-            # - Add timeout
-            head = session.head(dest.url)
-        except requests.exceptions.ConnectionError as e:
-            return False, 'Could not connect to {} over circ {} {}: {}'.format(
-                dest.url, circ_id, stem_utils.circuit_str(cont, circ_id), e)
-        stem_utils.remove_event_listener(cont, listener)
-    if head.status_code != requests.codes.ok:
-        return False, error_prefix + 'we expected HTTP code '\
-            '{} not {}'.format(requests.codes.ok, head.status_code)
-    if 'content-length' not in head.headers:
-        return False, error_prefix + 'we except the header Content-Length '\
-                'to exist in the response'
-    max_dl = conf.getint('scanner', 'max_download_size')
-    content_length = int(head.headers['content-length'])
-    if max_dl > content_length:
-        return False, error_prefix + 'our maximum configured download size '\
-            'is {} but the content is only {}'.format(max_dl, content_length)
-    log.debug('Connected to %s over circuit %s', dest.url, circ_id)
-    return True, {'content_length': content_length}
-
-
 def measure_bandwidth_to_server(session, conf, dest, content_length):
     results = []
     num_downloads = conf.getint('scanner', 'num_downloads')
@@ -206,18 +162,18 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
               relay.fingerprint[0:8])
     # Make a connection to the destionation webserver and make sure it can
     # still help us measure
-    success, details = connect_to_destination_over_circuit(
-        dest, circ_id, s, cb.controller, conf)
-    if not success:
-        log.warning('When measuring %s %s: %s', relay.nickname,
-                    relay.fingerprint[0:8], details)
+    is_usable, usable_data = dest.is_usable(circ_id, s, cb.controller)
+    if not is_usable:
+        log.warning('When measuring %s %s the destination seemed to have '
+                    'stopped being usable: %s', relay.nickname,
+                    relay.fingerprint[0:8], usable_data)
         cb.close_circuit(circ_id)
         # TODO: Return ResultError of some sort???
         return None
-    assert success
-    assert 'content_length' in details
+    assert is_usable
+    assert 'content_length' in usable_data
     # FIRST: measure RTT
-    rtts = measure_rtt_to_server(s, conf, dest, details['content_length'])
+    rtts = measure_rtt_to_server(s, conf, dest, usable_data['content_length'])
     if rtts is None:
         log.warning('Unable to measure RTT to %s via relay %s %s',
                     dest.url, relay.nickname, relay.fingerprint[0:8])
@@ -226,7 +182,7 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         return None
     # SECOND: measure bandwidth
     bw_results = measure_bandwidth_to_server(
-        s, conf, dest, details['content_length'])
+        s, conf, dest, usable_data['content_length'])
     circ_fps = cb.get_circuit_path(circ_id)
     our_nick = conf['scanner']['nickname']
     cb.close_circuit(circ_id)

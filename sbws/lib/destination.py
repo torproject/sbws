@@ -215,6 +215,9 @@ class DestinationList:
             while True:
                 if self._should_perform_usability_test():
                     self._perform_usability_test()
+                    log.debug('%s/%s of our configured destinations are '
+                              'usable at this time', len(self._usable_dests),
+                              len(self._all_dests))
                 if len(self._usable_dests) > 0:
                     break
                 time_till_next_check = self._usability_test_interval + 0.0001

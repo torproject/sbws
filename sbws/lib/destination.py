@@ -13,9 +13,31 @@ log = logging.getLogger(__name__)
 def connect_to_destination_over_circuit(dest, circ_id, session, cont, max_dl):
     '''
     Connect to **dest* over the given **circ_id** using the given Requests
-    **session**. Make sure everything seems in order. Return True and a
-    dictionary of helpful information if we connected and everything looks
-    fine.  Otherwise return False and a string stating what the issue is.
+    **session**. Make sure the destination seems usable. Return True and a
+    dictionary of helpful information if we connected and the destination is
+    usable.  Otherwise return False and a string stating what the issue is.
+
+    This function has two effects, and which one is the "side effect" depends
+    on your goal.
+
+    1. It creates a stream to the destination. It persists in the requests
+    library **session** object so future requests use the same stream.
+    Therefore, the primary effect of this function could be to open a
+    connection to the destination that measurements can be made over the given
+    **circ_id**, which makes the usability checks a side effect (yet important
+    sanity check).
+
+    2. It determines if a destination is usable. Therefore, the primary effect
+    of this function could be to perform the usability checks and return the
+    results of those checks, which makes the persistent stream a side effect
+    that we don't care about.
+
+    As of the time of writing, you'll find that sbws/core/scanner.py uses this
+    function in order to obtain that stream over which to perform measurements.
+    You will also find in sbws/lib/destination.py (this file) this function
+    being used to determine if a Destination is usable. The first relies on the
+    persistent stream side effect, the second ignores it (and in fact throws it
+    away when it closes the circuit).
 
     :param dest Destination: the place to which we should connect
     :param circ_id str: the circuit we should connect over

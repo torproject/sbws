@@ -256,7 +256,12 @@ def circuit_str(controller, circ_id):
     assert is_controller_okay(controller)
     assert isinstance(circ_id, str)
     int(circ_id)
-    circ = controller.get_circuit(circ_id)
+    try:
+        circ = controller.get_circuit(circ_id)
+    except ValueError as e:
+        log.warning('Circuit %s no longer seems to exist so can\'t return '
+                    'a valid circuit string for it: %s', circ_id, e)
+        return None
     return '[' +\
         ' -> '.join(['{} ({})'.format(n, fp[0:8]) for fp, n in circ.path]) +\
         ']'

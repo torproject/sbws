@@ -60,7 +60,8 @@ def connect_to_destination_over_circuit(dest, circ_id, session, cont, max_dl):
         except requests.exceptions.ConnectionError as e:
             return False, 'Could not connect to {} over circ {} {}: {}'.format(
                 dest.url, circ_id, stem_utils.circuit_str(cont, circ_id), e)
-        stem_utils.remove_event_listener(cont, listener)
+        finally:
+            stem_utils.remove_event_listener(cont, listener)
     if head.status_code != requests.codes.ok:
         return False, error_prefix + 'we expected HTTP code '\
             '{} not {}'.format(requests.codes.ok, head.status_code)

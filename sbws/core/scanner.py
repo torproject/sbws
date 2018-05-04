@@ -28,7 +28,7 @@ def timed_recv_from_server(session, dest, byte_range):
     ''' Request the **byte_range** from the URL at **dest**. If successful,
     return True and the time it took to download. Otherwise return False and an
     exception. '''
-    headers = {'Range': byte_range}
+    headers = {'Range': byte_range, 'Accept-Encoding': 'identity'}
     start_time = time.time()
     # TODO:
     # - What other exceptions can this throw?

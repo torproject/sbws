@@ -226,5 +226,5 @@ class DestinationList:
                     time_till_next_check)
                 time.sleep(time_till_next_check)
 
-        random.shuffle(self._all_dests)
-        return self._all_dests[0]
+        random.shuffle(self._usable_dests)
+        return self._usable_dests[0]

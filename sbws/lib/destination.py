@@ -55,6 +55,7 @@ def connect_to_destination_over_circuit(dest, circ_id, session, cont, max_dl):
 
 class Destination:
     def __init__(self, url, default_path, max_dl):
+        self._max_dl = max_dl
         u = urlparse(url)
         # these things should have been verified in verify_config
         assert u.scheme in ['http', 'https']
@@ -64,7 +65,6 @@ class Destination:
             u = urlparse('{}://{}{}{}{}{}'.format(
                 *u[0:2], default_path, *u[2:]))
         self._url = u
-        self._max_dl = max_dl
 
     def is_usable(self, circ_id, session, cont):
         ''' Use **connect_to_destination_over_circuit** to determine if this

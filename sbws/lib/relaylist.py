@@ -1,10 +1,14 @@
 import sbws.util.stem as stem_utils
 from stem import Flag
+from stem import DescriptorUnavailable
 from stem.util.connection import is_valid_ipv4_address
 from stem.util.connection import is_valid_ipv6_address
 import random
 import time
+import logging
 from sbws.globals import resolve
+
+log = logging.getLogger(__name__)
 
 
 class RelayList:
@@ -89,10 +93,27 @@ class RelayList:
         assert is_valid_ipv4_address(host) or is_valid_ipv6_address(host)
         exits = []
         for exit in self.exits:
-            policy = exit.exit_policy if exit.exit_policy \
-                else c.get_microdescriptor(relay=exit.fingerprint).exit_policy
-            if policy is not None and policy.can_exit_to(host, port):
-                exits.append(exit)
+            # If we have the exit policy already, easy
+            if exit.exit_policy:
+                policy = exit.exit_policy
+            else:
+                # Otherwise ask Tor for the microdescriptor and assume the exit
+                # won't work if the desc isn't available
+                try:
+                    fp = exit.fingerprint
+                    policy = c.get_microdescriptor(fp).exit_policy
+                except DescriptorUnavailable as e:
+                    log.debug(e)
+                    continue
+            # There's a weird KeyError we sometimes hit when checking
+            # policy.can_exit_to()... so catch that and log about it. Maybe
+            # someday it can be fixed?
+            try:
+                if policy is not None and policy.can_exit_to(port=port):
+                    exits.append(exit)
+            except KeyError as e:
+                log.exception('Got that KeyError in stem again...: %s', e)
+                continue
         return exits
 
     def random_relay(self):

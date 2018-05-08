@@ -1,5 +1,6 @@
-from stem import (CircuitExtensionFailed, InvalidRequest, ProtocolError)
-from stem.control import (CircStatus, EventType)
+from stem import CircuitExtensionFailed, InvalidRequest, ProtocolError
+from stem import InvalidArguments
+from stem.control import CircStatus, EventType
 import random
 import time
 import sbws.util.stem as stem_utils
@@ -175,7 +176,10 @@ class CircuitBuilder:
             return
         for circ_id in self.built_circuits:
             if c.get_circuit(circ_id, default=None):
-                c.close_circuit(circ_id)
+                try:
+                    c.close_circuit(circ_id)
+                except InvalidArguments:
+                    pass
         self.built_circuits.clear()
 
 

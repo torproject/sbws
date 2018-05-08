@@ -10,20 +10,6 @@ import logging
 log = logging.getLogger(__name__)
 
 
-# We want to at least return the MIN_TO_RETURN best priority relays ...
-MIN_TO_RETURN = 50
-# But ideally, we return PERCENT_TO_RETURN of the relays because it will be
-# larger and we won't have to recalculate priority so much. In a network of
-# ~6500 relays and with a ResultDump containing 1 result per relay, the
-# best_priority() function takes ~11 seconds to complete on my home desktop.
-# Using this parameter allows us to balance between calling best_priority()
-# more often (but wasting more CPU), and calling it less often (but taking
-# longer to get back to relays with non-successful results).
-#
-# Alternatively, we could rewrite best_priority() to not suck so much.
-PERCENT_TO_RETURN = 0.05  # 5%
-
-
 class RelayPrioritizer:
     def __init__(self, args, conf, relay_list, result_dump):
         assert isinstance(relay_list, RelayList)
@@ -33,6 +19,9 @@ class RelayPrioritizer:
         self.result_dump = result_dump
         self.measure_authorities = conf.getboolean(
             'scanner', 'measure_authorities')
+        self.min_to_return = conf.getint('relayprioritizer', 'min_relays')
+        self.fraction_to_return = conf.getfloat(
+            'relayprioritizer', 'fraction_relays')
 
     def best_priority(self):
         ''' Return a generator containing the best priority relays.
@@ -91,7 +80,8 @@ class RelayPrioritizer:
         # Sort the relays by their priority, with the smallest (best) priority
         # relays at the front
         relays = sorted(relays, key=lambda r: r.priority)
-        cutoff = max(int(len(relays) * PERCENT_TO_RETURN), MIN_TO_RETURN)
+        cutoff = max(int(len(relays) * self.fraction_to_return),
+                     self.min_to_return)
         fn_tstop = Decimal(time.time())
         fn_tdelta = (fn_tstop - fn_tstart) * 1000
         log.info('Spent %f msecs calculating relay best priority', fn_tdelta)

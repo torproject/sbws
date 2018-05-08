@@ -102,6 +102,7 @@ def validate_config(conf):
     errors.extend(_validate_tor(conf))
     errors.extend(_validate_paths(conf))
     errors.extend(_validate_destinations(conf))
+    errors.extend(_validate_relayprioritizer(conf))
     return len(errors) < 1, errors
 
 
@@ -188,6 +189,23 @@ def _validate_tor(conf):
         'extra_lines']
     all_valid_keys = unvalidated_keys
     errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))
+    return errors
+
+
+def _validate_relayprioritizer(conf):
+    errors = []
+    sec = 'relayprioritizer'
+    err_tmpl = Template('$sec/$key ($val): $e')
+    ints = {
+        'min_relays': {'minimum': 1, 'maximum': None},
+    }
+    floats = {
+        'fraction_relays': {'minimum': 0.0, 'maximum': 1.0},
+    }
+    all_valid_keys = list(ints.keys()) + list(floats.keys())
+    errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))
+    errors.extend(_validate_section_ints(conf, sec, ints, err_tmpl))
+    errors.extend(_validate_section_floats(conf, sec, floats, err_tmpl))
     return errors
 
 

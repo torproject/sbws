@@ -70,7 +70,7 @@ def trim_results(fresh_days, results):
     for result in results:
         if result.time >= oldest_allowed:
             out_results.append(result)
-    log.info('Keeping %d/%d results', len(out_results), len(results))
+    log.debug('Keeping %d/%d results', len(out_results), len(results))
     return out_results
 
 
@@ -434,8 +434,8 @@ class ResultDump:
         nick = result.nickname
         self.store_result(result)
         write_result_to_datadir(result, self.datadir)
-        log.debug('%s %s finished measurement with %s', nick, fp[0:8],
-                  type(result).__name__)
+        log.info('%s %s finished measurement with %s', nick, fp[0:8],
+                 type(result).__name__)
 
     def enter(self):
         ''' Main loop for the ResultDump thread '''

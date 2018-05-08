@@ -21,6 +21,7 @@ import logging
 import requests
 import random
 
+rng = random.SystemRandom()
 end_event = Event()
 log = logging.getLogger(__name__)
 
@@ -55,7 +56,7 @@ def get_random_range_string(content_length, size):
     # start can be anywhere in the content_length as long as it is **size**
     # bytes away from the end or more. Because range is [start, end) (doesn't
     # include the end value), add 1 to the end.
-    start = random.choice(range(0, content_length - size + 1))
+    start = rng.choice(range(0, content_length - size + 1))
     # Unlike range, the byte range in an http header is [start, end] (does
     # include the end value), so we subtract one
     end = start + size - 1
@@ -145,7 +146,7 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
                     relay.fingerprint[0:8])
         # TODO: Return ResultError of some sort
         return None
-    exit = random.choice(exits)
+    exit = rng.choice(exits)
     # Build the circuit
     our_nick = conf['scanner']['nickname']
     circ_fps = [relay.fingerprint, exit.fingerprint]

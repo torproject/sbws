@@ -131,6 +131,7 @@ class DestinationList:
         assert len(dests) > 0
         for dest in dests:
             assert isinstance(dest, Destination)
+        self._rng = random.SystemRandom()
         self._cont = controller
         self._cb = circuit_builder
         self._rl = relay_list
@@ -163,7 +164,7 @@ class DestinationList:
             circ_id = None
             for _ in range(0, 3):
                 # Pick a random exit
-                exit = random.choice(exits)
+                exit = self._rng.choice(exits)
                 circ_id = self._cb.build_circuit([None, exit.fingerprint])
                 if circ_id:
                     break
@@ -230,5 +231,5 @@ class DestinationList:
                     time_till_next_check)
                 time.sleep(time_till_next_check)
 
-        random.shuffle(self._usable_dests)
+        self._rng.shuffle(self._usable_dests)
         return self._usable_dests[0]

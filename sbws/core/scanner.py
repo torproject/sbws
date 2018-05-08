@@ -11,6 +11,7 @@ from ..lib.destination import DestinationList
 # from ..util.sockio import (make_socket, close_socket)
 from sbws.globals import (fail_hard, is_initted)
 import sbws.util.stem as stem_utils
+import sbws.util.requests as requests_utils
 from argparse import ArgumentDefaultsHelpFormatter
 from multiprocessing.dummy import Pool
 from threading import Event
@@ -126,12 +127,7 @@ def measure_bandwidth_to_server(session, conf, dest, content_length):
 
 
 def measure_relay(args, conf, destinations, cb, rl, relay):
-    s = requests.Session()
-    socks_info = stem_utils.get_socks_info(cb.controller)
-    s.proxies = {
-        'http': 'socks5h://{}:{}'.format(*socks_info),
-        'https': 'socks5h://{}:{}'.format(*socks_info),
-    }
+    s = requests_utils.make_session(cb.controller)
     # Pick a destionation
     dest = destinations.next()
     if not dest:

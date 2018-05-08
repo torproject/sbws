@@ -6,6 +6,7 @@ import requests
 from urllib.parse import urlparse
 from stem.control import EventType
 import sbws.util.stem as stem_utils
+import sbws.util.requests as requests_utils
 
 log = logging.getLogger(__name__)
 
@@ -148,7 +149,7 @@ class DestinationList:
         self._usability_lock.acquire()
         log.debug('Perform usability tests')
         cont = self._cont
-        session = requests.Session()
+        session = requests_utils.make_session(cont)
         usable_dests = []
         for dest in self._all_dests:
             possible_exits = self._rl.exits_can_exit_to(

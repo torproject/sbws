@@ -1,6 +1,7 @@
 import requests
 import sbws.util.stem as stem_utils
 
+
 def make_session(controller):
     s = requests.Session()
     socks_info = stem_utils.get_socks_info(controller)

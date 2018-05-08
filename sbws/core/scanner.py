@@ -148,6 +148,9 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         return None
     exit = rng.choice(exits)
     # Build the circuit
+    log.debug('We selected exit %s %s (cw=%d) to help measure %s %s (cw=%d)',
+              exit.nickname, exit.fingerprint[0:8], exit.bandwidth,
+              relay.nickname, relay.fingerprint[0:8], relay.bandwidth)
     our_nick = conf['scanner']['nickname']
     circ_fps = [relay.fingerprint, exit.fingerprint]
     circ_id = cb.build_circuit(circ_fps)

@@ -1,7 +1,10 @@
 from stem import (CircuitExtensionFailed, InvalidRequest, ProtocolError)
+from stem.control import (CircStatus, EventType)
 import random
+import time
 import sbws.util.stem as stem_utils
 from .relaylist import RelayList
+import queue
 import logging
 
 log = logging.getLogger(__name__)
@@ -75,16 +78,93 @@ class CircuitBuilder:
             raise PathLengthException()
         c = self.controller
         assert stem_utils.is_controller_okay(c)
-        log.debug('Building %s', [p[0:8] for p in path])
+        fp_path = '[' + ' -> '.join([p[0:8] for p in path]) + ']'
+        log.debug('Building %s', fp_path)
+        ignore_events = [CircStatus.LAUNCHED, CircStatus.EXTENDED]
+        event_queue = queue.Queue(maxsize=3)
+
+        def event_listener(event):
+            event_queue.put(event)
+
+        stem_utils.add_event_listener(c, event_listener, EventType.CIRC)
         for _ in range(0, 3):
+            circ_built = False
+            # The time we started trying to build the circuit. An offset of
+            # this is when we know we should give up
+            start_time = time.time()
             try:
-                circ_id = c.new_circuit(path, await_build=True)
+                # To work around ORCONNs not timing out for a long time, we
+                # need to NOT let stem block on the circuit to be built, but do
+                # the blocking ourselves.
+                circ_id = c.new_circuit(path, await_build=False)
+                while True:
+                    try:
+                        # If the timeout is hit, this will throw queue.Empty.
+                        # Otherwise it will return the event
+                        circ = event_queue.get(block=True, timeout=1)
+                    except queue.Empty:
+                        circ = None
+                        # This is the common place to allow ourselves to give
+                        # up. We will usually not get an event at roughly the
+                        # same time we want to give up
+                        if start_time + 10 < time.time():
+                            log.warning(
+                                'Could not build circ %s %s fast enough. '
+                                'Giving up on it.', circ_id, fp_path)
+                            break
+                        else:
+                            # If it isn't time to give up, we need to skip the
+                            # remaining part of this loop because we don't have
+                            # a **circ** event.
+                            continue
+                    # We have a **circ** event! Make sure it is for the circuit
+                    # we are waiting on
+                    if circ.id != circ_id:
+                        pass
+                    # Make sure it isn't an uninterseting event
+                    elif circ.status in ignore_events:
+                        pass
+                    # This is the good case! We are finally done
+                    elif circ.status == CircStatus.BUILT:
+                        circ_built = True
+                        break
+                    # This is a bad case. We are done, but the circuit doesn't
+                    # exist
+                    elif circ.status == CircStatus.FAILED:
+                        break
+                    # This is a bad case. We are done, but the circuit doesn't
+                    # exist
+                    elif circ.status == CircStatus.CLOSED:
+                        break
+                    # This is a case we weren't expecting
+                    else:
+                        log.warning(
+                            'We weren\'t expecting to get a circ status '
+                            'of %s when waiting for circ %s %s to build. '
+                            'Ignoring.',
+                            circ.status, circ_id, fp_path)
+                        pass
+                    # If we made it this far, we always want to check if we
+                    # should give up and return the build status that we've
+                    # determined
+                    if start_time + 10 < time.time():
+                        log.warning(
+                            'We\'ve waited long enough for circ %s %s. %s',
+                            circ_id, fp_path, 'It became built at the last '
+                            'second.' if circ_built else 'It was never '
+                            'built.')
+                        break
             except (InvalidRequest, CircuitExtensionFailed,
                     ProtocolError) as e:
                 log.warning(e)
                 continue
-            self.built_circuits.add(circ_id)
-            return circ_id
+            if circ_built:
+                stem_utils.remove_event_listener(c, event_listener)
+                self.built_circuits.add(circ_id)
+                return circ_id
+            else:
+                self.close_circuit(circ_id)
+        stem_utils.remove_event_listener(c, event_listener)
         return None
 
     def __del__(self):

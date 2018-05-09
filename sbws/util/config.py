@@ -149,7 +149,6 @@ def _validate_scanner(conf):
     sec = 'scanner'
     err_tmpl = Template('$sec/$key ($val): $e')
     ints = {
-        'max_recv_per_read': {'minimum': 1, 'maximum': None},
         'num_rtts': {'minimum': 1, 'maximum': 100},
         'num_downloads': {'minimum': 1, 'maximum': 100},
         'initial_read_request': {'minimum': 1, 'maximum': None},
@@ -179,8 +178,7 @@ def _validate_tor(conf):
     sec = 'tor'
     err_tmpl = Template('$sec/$key ($val): $e')
     unvalidated_keys = [
-        'datadir', 'control_socket', 'control_cookie', 'log',
-        'extra_lines']
+        'datadir', 'control_socket', 'log', 'extra_lines']
     all_valid_keys = unvalidated_keys
     errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))
     return errors

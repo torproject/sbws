@@ -71,7 +71,10 @@ class CircuitBuilder:
         if not stem_utils.is_controller_okay(c):
             return
         if c.get_circuit(circ_id, default=None):
-            c.close_circuit(circ_id)
+            try:
+                c.close_circuit(circ_id)
+            except InvalidArguments:
+                pass
             self.built_circuits.discard(circ_id)
 
     def _build_circuit_impl(self, path):

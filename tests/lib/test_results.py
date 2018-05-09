@@ -20,12 +20,12 @@ def test_Result(time_mock):
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
     circ = [fp1, fp2]
-    server_host = '::1'
+    dest_url = 'http://example.com/sbws.bin'
     scanner_nick = 'sbwsscanner'
     nick = 'Mooooooo'
     relay_ip = '169.254.100.1'
     relay = Result.Relay(fp1, nick, relay_ip)
-    r = Result(relay, circ, server_host, scanner_nick)
+    r = Result(relay, circ, dest_url, scanner_nick)
     try:
         str(r)
     except NotImplementedError:
@@ -65,15 +65,15 @@ def test_ResultSuccess(time_mock):
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
     circ = [fp1, fp2]
-    server_host = '::1'
+    dest_url = 'http://example.com/sbws.bin'
     scanner_nick = 'sbwsscanner'
     nick = 'Mooooooo'
     relay_ip = '169.254.100.1'
     relay = Result.Relay(fp1, nick, relay_ip)
     rtts = [5, 25]
     downloads = [{'duration': 4, 'amount': 40}]
-    r1 = ResultSuccess(rtts, downloads, relay, circ, server_host, scanner_nick)
-    r2 = ResultSuccess(rtts, downloads, relay, circ, server_host, scanner_nick,
+    r1 = ResultSuccess(rtts, downloads, relay, circ, dest_url, scanner_nick)
+    r2 = ResultSuccess(rtts, downloads, relay, circ, dest_url, scanner_nick,
                        t=t)
     assert r1.downloads == downloads
     assert r1.rtts == rtts
@@ -84,7 +84,7 @@ def test_ResultSuccess(time_mock):
     assert r1.type == _ResultType.Success
     assert r1.address == relay_ip
     assert r1.circ == circ
-    assert r1.server_host == server_host
+    assert r1.dest_url == dest_url
     assert r1.version == RESULT_VERSION
     assert str(r1) == str(r2)
 
@@ -96,18 +96,18 @@ def test_ResultSuccess_from_dict(time_mock):
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
     circ = [fp1, fp2]
-    server_host = '::1'
+    dest_url = 'http://example.com/sbws.bin'
     scanner_nick = 'sbwsscanner'
     nick = 'Mooooooo'
     relay_ip = '169.254.100.1'
     relay = Result.Relay(fp1, nick, relay_ip)
     rtts = [5, 25]
     downloads = [{'duration': 4, 'amount': 40}]
-    r1 = ResultSuccess(rtts, downloads, relay, circ, server_host, scanner_nick)
+    r1 = ResultSuccess(rtts, downloads, relay, circ, dest_url, scanner_nick)
     d = {
         'rtts': rtts, 'downloads': downloads, 'fingerprint': fp1,
         'nickname': nick, 'address': relay_ip, 'circ': circ,
-        'server_host': server_host, 'scanner': scanner_nick,
+        'dest_url': dest_url, 'scanner': scanner_nick,
         'version': RESULT_VERSION, 'type': _ResultType.Success, 'time': t,
     }
     r2 = Result.from_dict(d)
@@ -123,14 +123,14 @@ def test_ResultError(time_mock):
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
     circ = [fp1, fp2]
-    server_host = '::1'
+    dest_url = 'http://example.com/sbws.bin'
     scanner_nick = 'sbwsscanner'
     nick = 'Mooooooo'
     relay_ip = '169.254.100.1'
     relay = Result.Relay(fp1, nick, relay_ip)
     msg = 'aaaaayyyyyy bb'
-    r1 = ResultError(relay, circ, server_host, scanner_nick, msg=msg)
-    r2 = ResultError(relay, circ, server_host, scanner_nick, msg=msg, t=t)
+    r1 = ResultError(relay, circ, dest_url, scanner_nick, msg=msg)
+    r2 = ResultError(relay, circ, dest_url, scanner_nick, msg=msg, t=t)
     assert r1.msg == msg
     assert r1.nickname == nick
     assert r1.time == t
@@ -139,7 +139,7 @@ def test_ResultError(time_mock):
     assert r1.type == _ResultType.Error
     assert r1.address == relay_ip
     assert r1.circ == circ
-    assert r1.server_host == server_host
+    assert r1.dest_url == dest_url
     assert r1.version == RESULT_VERSION
     assert str(r1) == str(r2)
 
@@ -151,17 +151,17 @@ def test_ResultError_from_dict(time_mock):
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
     circ = [fp1, fp2]
-    server_host = '::1'
+    dest_url = 'http://example.com/sbws.bin'
     scanner_nick = 'sbwsscanner'
     nick = 'Mooooooo'
     relay_ip = '169.254.100.1'
     relay = Result.Relay(fp1, nick, relay_ip)
     msg = 'aaaaayyyyyy bb'
-    r1 = ResultError(relay, circ, server_host, scanner_nick, msg=msg)
+    r1 = ResultError(relay, circ, dest_url, scanner_nick, msg=msg)
     d = {
         'msg': msg, 'fingerprint': fp1,
         'nickname': nick, 'address': relay_ip, 'circ': circ,
-        'server_host': server_host, 'scanner': scanner_nick,
+        'dest_url': dest_url, 'scanner': scanner_nick,
         'version': RESULT_VERSION, 'type': _ResultType.Error, 'time': t,
     }
     r2 = Result.from_dict(d)
@@ -177,14 +177,14 @@ def test_ResultErrorCircuit(time_mock):
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
     circ = [fp1, fp2]
-    server_host = '::1'
+    dest_url = 'http://example.com/sbws.bin'
     scanner_nick = 'sbwsscanner'
     nick = 'Mooooooo'
     relay_ip = '169.254.100.1'
     relay = Result.Relay(fp1, nick, relay_ip)
     msg = 'aaaaayyyyyy bb'
-    r1 = ResultErrorCircuit(relay, circ, server_host, scanner_nick, msg=msg)
-    r2 = ResultErrorCircuit(relay, circ, server_host, scanner_nick, msg=msg,
+    r1 = ResultErrorCircuit(relay, circ, dest_url, scanner_nick, msg=msg)
+    r2 = ResultErrorCircuit(relay, circ, dest_url, scanner_nick, msg=msg,
                             t=t)
     assert r1.msg == msg
     assert r1.nickname == nick
@@ -194,7 +194,7 @@ def test_ResultErrorCircuit(time_mock):
     assert r1.type == _ResultType.ErrorCircuit
     assert r1.address == relay_ip
     assert r1.circ == circ
-    assert r1.server_host == server_host
+    assert r1.dest_url == dest_url
     assert r1.version == RESULT_VERSION
     assert str(r1) == str(r2)
 
@@ -206,17 +206,17 @@ def test_ResultErrorCircuit_from_dict(time_mock):
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
     circ = [fp1, fp2]
-    server_host = '::1'
+    dest_url = 'http://example.com/sbws.bin'
     scanner_nick = 'sbwsscanner'
     nick = 'Mooooooo'
     relay_ip = '169.254.100.1'
     relay = Result.Relay(fp1, nick, relay_ip)
     msg = 'aaaaayyyyyy bb'
-    r1 = ResultErrorCircuit(relay, circ, server_host, scanner_nick, msg=msg)
+    r1 = ResultErrorCircuit(relay, circ, dest_url, scanner_nick, msg=msg)
     d = {
         'msg': msg, 'fingerprint': fp1,
         'nickname': nick, 'address': relay_ip, 'circ': circ,
-        'server_host': server_host, 'scanner': scanner_nick,
+        'dest_url': dest_url, 'scanner': scanner_nick,
         'version': RESULT_VERSION, 'type': _ResultType.ErrorCircuit, 'time': t,
     }
     r2 = Result.from_dict(d)
@@ -232,14 +232,14 @@ def test_ResultErrorStream(time_mock):
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
     circ = [fp1, fp2]
-    server_host = '::1'
+    dest_url = 'http://example.com/sbws.bin'
     scanner_nick = 'sbwsscanner'
     nick = 'Mooooooo'
     relay_ip = '169.254.100.1'
     relay = Result.Relay(fp1, nick, relay_ip)
     msg = 'aaaaayyyyyy bb'
-    r1 = ResultErrorStream(relay, circ, server_host, scanner_nick, msg=msg)
-    r2 = ResultErrorStream(relay, circ, server_host, scanner_nick, msg=msg,
+    r1 = ResultErrorStream(relay, circ, dest_url, scanner_nick, msg=msg)
+    r2 = ResultErrorStream(relay, circ, dest_url, scanner_nick, msg=msg,
                            t=t)
     assert r1.msg == msg
     assert r1.nickname == nick
@@ -249,7 +249,7 @@ def test_ResultErrorStream(time_mock):
     assert r1.type == _ResultType.ErrorStream
     assert r1.address == relay_ip
     assert r1.circ == circ
-    assert r1.server_host == server_host
+    assert r1.dest_url == dest_url
     assert r1.version == RESULT_VERSION
     assert str(r1) == str(r2)
 
@@ -261,17 +261,17 @@ def test_ResultErrorStream_from_dict(time_mock):
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
     circ = [fp1, fp2]
-    server_host = '::1'
+    dest_url = 'http://example.com/sbws.bin'
     scanner_nick = 'sbwsscanner'
     nick = 'Mooooooo'
     relay_ip = '169.254.100.1'
     relay = Result.Relay(fp1, nick, relay_ip)
     msg = 'aaaaayyyyyy bb'
-    r1 = ResultErrorStream(relay, circ, server_host, scanner_nick, msg=msg)
+    r1 = ResultErrorStream(relay, circ, dest_url, scanner_nick, msg=msg)
     d = {
         'msg': msg, 'fingerprint': fp1,
         'nickname': nick, 'address': relay_ip, 'circ': circ,
-        'server_host': server_host, 'scanner': scanner_nick,
+        'dest_url': dest_url, 'scanner': scanner_nick,
         'version': RESULT_VERSION, 'type': _ResultType.ErrorStream, 'time': t,
     }
     r2 = Result.from_dict(d)
@@ -287,14 +287,14 @@ def test_ResultErrorAuth(time_mock):
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
     circ = [fp1, fp2]
-    server_host = '::1'
+    dest_url = 'http://example.com/sbws.bin'
     scanner_nick = 'sbwsscanner'
     nick = 'Mooooooo'
     relay_ip = '169.254.100.1'
     relay = Result.Relay(fp1, nick, relay_ip)
     msg = 'aaaaayyyyyy bb'
-    r1 = ResultErrorAuth(relay, circ, server_host, scanner_nick, msg=msg)
-    r2 = ResultErrorAuth(relay, circ, server_host, scanner_nick, msg=msg,
+    r1 = ResultErrorAuth(relay, circ, dest_url, scanner_nick, msg=msg)
+    r2 = ResultErrorAuth(relay, circ, dest_url, scanner_nick, msg=msg,
                          t=t)
     assert r1.msg == msg
     assert r1.nickname == nick
@@ -304,7 +304,7 @@ def test_ResultErrorAuth(time_mock):
     assert r1.type == _ResultType.ErrorAuth
     assert r1.address == relay_ip
     assert r1.circ == circ
-    assert r1.server_host == server_host
+    assert r1.dest_url == dest_url
     assert r1.version == RESULT_VERSION
     assert str(r1) == str(r2)
 
@@ -316,17 +316,17 @@ def test_ResultErrorAuth_from_dict(time_mock):
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
     circ = [fp1, fp2]
-    server_host = '::1'
+    dest_url = 'http://example.com/sbws.bin'
     scanner_nick = 'sbwsscanner'
     nick = 'Mooooooo'
     relay_ip = '169.254.100.1'
     relay = Result.Relay(fp1, nick, relay_ip)
     msg = 'aaaaayyyyyy bb'
-    r1 = ResultErrorAuth(relay, circ, server_host, scanner_nick, msg=msg)
+    r1 = ResultErrorAuth(relay, circ, dest_url, scanner_nick, msg=msg)
     d = {
         'msg': msg, 'fingerprint': fp1,
         'nickname': nick, 'address': relay_ip, 'circ': circ,
-        'server_host': server_host, 'scanner': scanner_nick,
+        'dest_url': dest_url, 'scanner': scanner_nick,
         'version': RESULT_VERSION, 'type': _ResultType.ErrorAuth, 'time': t,
     }
     r2 = Result.from_dict(d)

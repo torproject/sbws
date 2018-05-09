@@ -18,7 +18,7 @@ class RelayPrioritizer:
         self.relay_list = relay_list
         self.result_dump = result_dump
         self.measure_authorities = conf.getboolean(
-            'scanner', 'measure_authorities')
+            'relayprioritizer', 'measure_authorities')
         self.min_to_return = conf.getint('relayprioritizer', 'min_relays')
         self.fraction_to_return = conf.getfloat(
             'relayprioritizer', 'fraction_relays')

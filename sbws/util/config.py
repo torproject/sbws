@@ -163,16 +163,10 @@ def _validate_scanner(conf):
         'download_target': {'minimum': 0.001, 'maximum': None},
         'download_max': {'minimum': 0.001, 'maximum': None},
     }
-    bools = {
-        'measure_authorities': {},
-    }
-    all_valid_keys = list(ints.keys()) + list(floats.keys()) + \
-        list(bools.keys()) + ['nickname']
+    all_valid_keys = list(ints.keys()) + list(floats.keys()) + ['nickname']
     errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))
     errors.extend(_validate_section_ints(conf, sec, ints, err_tmpl))
     errors.extend(_validate_section_floats(conf, sec, floats, err_tmpl))
-    # XXX: validate hosts func doesn't do anything currently
-    errors.extend(_validate_section_bools(conf, sec, bools, err_tmpl))
     valid, error_msg = _validate_nickname(conf[sec], 'nickname')
     if not valid:
         errors.append(err_tmpl.substitute(
@@ -202,10 +196,15 @@ def _validate_relayprioritizer(conf):
     floats = {
         'fraction_relays': {'minimum': 0.0, 'maximum': 1.0},
     }
-    all_valid_keys = list(ints.keys()) + list(floats.keys())
+    bools = {
+        'measure_authorities': {},
+    }
+    all_valid_keys = list(ints.keys()) + list(floats.keys()) +\
+        list(bools.keys())
     errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))
     errors.extend(_validate_section_ints(conf, sec, ints, err_tmpl))
     errors.extend(_validate_section_floats(conf, sec, floats, err_tmpl))
+    errors.extend(_validate_section_bools(conf, sec, bools, err_tmpl))
     return errors
 
 

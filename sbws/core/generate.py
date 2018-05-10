@@ -106,8 +106,8 @@ def read_started_ts(conf):
     """
     with open(os.path.join(conf['paths']['datadir'],
                            conf['scanner']['started_filepath']), 'r') as fd:
-        scanner_started_ts = fd.read()
-    return scanner_started_ts
+        generator_started = fd.read()
+    return generator_started
 
 
 def main(args, conf):
@@ -132,12 +132,12 @@ def main(args, conf):
     data_lines = [result_data_to_v3bw_line(results, fp) for fp in results]
     data_lines = sorted(data_lines, key=lambda d: d.bw, reverse=True)
     data_lines = scale_lines(args, data_lines)
-    scanner_started_ts = read_started_ts(conf)
+    generator_started = read_started_ts(conf)
     if results:
         header = V3BwHeader(earliest_bandwidth=earliest_bandwidth,
-                            scanner_started_ts=scanner_started_ts)
+                            generator_started=generator_started)
     else:
-        header = V3BwHeader(scanner_started_ts=scanner_started_ts)
+        header = V3BwHeader(generator_started=generator_started)
     log_stats(data_lines)
     output = conf['paths']['v3bw_fname']
     if args.output:

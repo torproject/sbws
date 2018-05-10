@@ -29,8 +29,8 @@ class V3BwHeader(object):
         self.software_version = software_version
         if kwargs.get('earliest_bandwidth'):
             self.earliest_bandwidth = kwargs['earliest_bandwidth']
-        if kwargs.get('scanner_started_ts'):
-            self.scanner_started = kwargs['scanner_started_ts']
+        if kwargs.get('generator_started'):
+            self.scanner_started = kwargs['generator_started']
 
 
     def __str__(self):

@@ -25,8 +25,8 @@ def test_v3bwheader_earliest_bandwidth_str():
 def test_v3bwheader_scanner_started_str():
     """Test header str with scanner_started"""
     timestamp = 1524661857
-    scanner_started_ts = 1523887747.2904038
-    header = V3BwHeader(timestamp, scanner_started_ts=scanner_started_ts)
+    generator_started = 1523887747.2904038
+    header = V3BwHeader(timestamp, generator_started=generator_started)
     assert str(header) == '{}\nscanner_started=1523887747.2904038' \
                           '{}\nversion=1.1.0\nsoftware=sbws\n' \
                           'software_version={}\n'.format(timestamp, version)
@@ -41,15 +41,6 @@ def test_v3bwheader_earliest_bandwidth_str():
         'software=sbws software_version=0.1.0 ' \
         'timestamp=1524661857 version=1.1.0\n'.format(timestamp)
 
-
-def test_v3bwheader_scanner_started_str():
-    """Test header str with scanner_started"""
-    timestamp = 1524661857
-    scanner_started_ts = 1523887747.2904038
-    header = V3BwHeader(timestamp, scanner_started_ts=scanner_started_ts)
-    assert str(header) == '{}\nscanner_started=1523887747.2904038 ' \
-        'software=sbws software_version=0.1.0 ' \
-        'timestamp=1524661857 version=1.1.0\n'.format(timestamp)
 
 def test_v3bwfile():
     """Test generate v3bw file (including relay_lines)."""

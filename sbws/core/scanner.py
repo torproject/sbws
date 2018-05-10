@@ -283,11 +283,11 @@ def write_start_ts(conf):
 
     :param ConfigParser conf: configuration
     """
-    scanner_started_ts = str(time.time())
-    log.info('Scanner started at {}'.format(scanner_started_ts))
+    generator_started = str(time.time())
+    log.info('Scanner started at {}'.format(generator_started))
     with open(os.path.join(conf['paths']['datadir'],
                            conf['scanner']['started_filepath']), 'wt') as fd:
-        fd.write(scanner_started_ts)
+        fd.write(generator_started)
 
 
 def run_speedtest(args, conf):

@@ -105,8 +105,7 @@ def read_started_ts(conf):
 
     :param ConfigParser conf: configuration
     """
-    filepath = os.path.join(conf['paths']['datadir'],
-                            conf['scanner']['started_filepath'])
+    filepath = conf['paths']['started_filepath']
     with FileLock(filepath):
         with open(filepath, 'r') as fd:
             generator_started = fd.read()

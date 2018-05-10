@@ -5,8 +5,8 @@ Sbws has four config files it reads: two general, and two specific to logging.
 They all get combined internally to the same ``conf`` structure, so technically
 you can put any option in any file, but you need to pay attention to the order
 in which they are read. Options specified in multiple files will take the
-values set in the last-read file. It's best to only put options in the files
-you are meant to put them in.
+values set in the last-read file. **It's best to only put options in the files
+you are meant to put them in.**
 
 It first reads the config file containing the default values for almost all
 options. If you installed sbws in a virtual environment located at /tmp/venv,
@@ -37,10 +37,7 @@ After running ``sbws init``, your ``~/.sbws/config.ini`` might look like this. Y
 .. literalinclude:: config.ini
     :caption: Example ~/.sbws/config.ini
 
-**No other configuration files are read.** The only files that are read are the
-``config.default.ini`` file located in a place the user shouldn't touch, and
-the ``config.ini`` in their ``.sbws`` directory.
-
+**No other configuration files are read.**
 
 .. _default-config:
 

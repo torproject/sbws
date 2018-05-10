@@ -9,7 +9,7 @@ def test_v3bwheader_str():
     timestamp = 1524661857
     header = V3BwHeader(timestamp)
     assert str(header) == '{}\nversion=1.1.0\nsoftware=sbws\n' \
-                          'software_version=0.1.0\n'.format(timestamp)
+                          'software_version={}\n'.format(timestamp, version)
 
 
 def test_v3bwfile():

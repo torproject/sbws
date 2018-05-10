@@ -1,4 +1,6 @@
-from sbws.globals import (fail_hard, is_initted)
+from datetime import datetime
+
+from sbws.globals import (fail_hard, is_initted, TIMESTAMP_DT_FRMT)
 from sbws.lib.v3bwfile import V3BwHeader
 from sbws.lib.resultdump import ResultSuccess
 from sbws.lib.resultdump import load_recent_results_in_datadir
@@ -101,9 +103,11 @@ def log_stats(data_lines):
 
 
 def read_started_ts(conf):
-    """Write timestamp in Unix Epoch seconds.microsecs when scanner started.
+    """Read ISO formated timestamp which represents the date and time
+    when scanner started.
 
     :param ConfigParser conf: configuration
+    :returns: str, ISO formated timestamp
     """
     filepath = conf['paths']['started_filepath']
     with FileLock(filepath):
@@ -126,7 +130,11 @@ def main(args, conf):
     results = load_recent_results_in_datadir(
         fresh_days, datadir, success_only=True)
     if results:
-        earliest_bandwidth = min([r.time for r in results])
+        # Using naive datetime object without timezone, assumed utc
+        # Not using .isoformat() since that does not include 'T'
+        earliest_bandwidth = datetime.utcfromtimestamp(
+                                min([r.time for r in results])) \
+                                .strftime(TIMESTAMP_DT_FRMT)
     if len(results) < 1:
         log.warning('No recent results, so not generating anything. (Have you '
                     'ran sbws scanner recently?)')

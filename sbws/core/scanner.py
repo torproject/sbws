@@ -1,5 +1,7 @@
 ''' Measure the relays. '''
 
+from datetime import datetime
+
 from ..lib.circuitbuilder import GapsCircuitBuilder as CB
 from ..lib.resultdump import ResultDump
 from ..lib.resultdump import ResultSuccess, ResultErrorCircuit
@@ -10,7 +12,7 @@ from ..lib.destination import DestinationList
 from ..util.filelock import FileLock
 # from ..util.simpleauth import authenticate_to_server
 # from ..util.sockio import (make_socket, close_socket)
-from sbws.globals import (fail_hard, is_initted)
+from sbws.globals import (fail_hard, is_initted, TIMESTAMP_DT_FRMT)
 import sbws.util.stem as stem_utils
 import sbws.util.requests as requests_utils
 from argparse import ArgumentDefaultsHelpFormatter
@@ -280,11 +282,15 @@ def result_putter_error(target):
 
 
 def write_start_ts(conf):
-    """Write timestamp in Unix Epoch seconds.microsecs when scanner started.
+    """Write ISO formated timestamp which represents the date and time
+    when scanner started.
 
     :param ConfigParser conf: configuration
     """
-    generator_started = str(time.time())
+    # Using naive object, without timezone, since all datetimes are assumed
+    # to be always in UTC.
+    # Not using .isoformat() since that does not include 'T'
+    generator_started = datetime.utcnow().strftime(TIMESTAMP_DT_FRMT)
     log.info('Scanner started at {}'.format(generator_started))
     filepath = conf['paths']['started_filepath']
     with FileLock(filepath):

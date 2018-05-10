@@ -20,18 +20,6 @@ Glossary
         this process are used by :term:`sbws generate` to generate
         :term:`v3bw files <v3bw file>`.
 
-   sbws server
-        The sbws command that runs as part of a :term:`helper`. :term:`sbws
-        scanners <sbws scanner>` connect to sbws servers to perform measurements.
-
-   helper
-        The combination of a :term:`helper relay` and :term:`sbws server`,
-        ideally running on the same machine.
-
-   helper relay
-        The Tor relay that allows exiting to a nearby :term:`sbws server`. It
-        does not need to be a relay with the Exit flag.
-
    sbws generate
         The sbws command that a :term:`bandwidth authority` runs periodically
         to generate a new :term:`v3bw file` from results gathered by

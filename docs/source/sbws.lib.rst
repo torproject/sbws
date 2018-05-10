@@ -5,23 +5,15 @@ Submodules
 ----------
 
 sbws.lib.circuitbuilder module
-------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: sbws.lib.circuitbuilder
     :members:
     :undoc-members:
     :show-inheritance:
 
-sbws.lib.helperrelay module
-----------------------------
-
-.. automodule:: sbws.lib.helperrelay
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 sbws.lib.relaylist module
--------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: sbws.lib.relaylist
     :members:
@@ -29,7 +21,7 @@ sbws.lib.relaylist module
     :show-inheritance:
 
 sbws.lib.relayprioritizer module
---------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: sbws.lib.relayprioritizer
     :members:
@@ -37,7 +29,7 @@ sbws.lib.relayprioritizer module
     :show-inheritance:
 
 sbws.lib.resultdump module
---------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: sbws.lib.resultdump
     :members:

@@ -5,7 +5,7 @@ Submodules
 ----------
 
 sbws.core.cleanup module
------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: sbws.core.cleanup
     :members:
@@ -13,7 +13,7 @@ sbws.core.cleanup module
     :show-inheritance:
 
 sbws.core.generate module
------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: sbws.core.generate
     :members:
@@ -21,7 +21,7 @@ sbws.core.generate module
     :show-inheritance:
 
 sbws.core.init module
--------------------------
+~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: sbws.core.init
     :members:
@@ -29,24 +29,15 @@ sbws.core.init module
     :show-inheritance:
 
 sbws.core.scanner module
----------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: sbws.core.scanner
     :members:
     :undoc-members:
     :show-inheritance:
 
-sbws.core.server module
----------------------------
-
-.. automodule:: sbws.core.server
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
 sbws.core.stats module
----------------------------
+~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: sbws.core.stats
     :members:

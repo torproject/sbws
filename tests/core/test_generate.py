@@ -7,7 +7,7 @@ import logging
 
 log = logging.getLogger(__name__)
 
-NUM_LINES_HEADER = 1
+NUM_LINES_HEADER = 4
 
 
 def test_generate_no_dotsbws(tmpdir, caplog, parser):

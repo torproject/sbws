@@ -5,7 +5,7 @@ Submodules
 ----------
 
 sbws.util.config module
----------------------------
+~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: sbws.util.config
     :members:
@@ -13,7 +13,7 @@ sbws.util.config module
     :show-inheritance:
 
 sbws.util.filelock module
----------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: sbws.util.filelock
     :members:
@@ -21,7 +21,7 @@ sbws.util.filelock module
     :show-inheritance:
 
 sbws.util.parser module
----------------------------
+~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: sbws.util.parser
     :members:
@@ -29,7 +29,7 @@ sbws.util.parser module
     :show-inheritance:
 
 sbws.util.simpleauth module
----------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: sbws.util.simpleauth
     :members:
@@ -37,7 +37,7 @@ sbws.util.simpleauth module
     :show-inheritance:
 
 sbws.util.sockio module
----------------------------
+~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: sbws.util.sockio
     :members:
@@ -45,7 +45,7 @@ sbws.util.sockio module
     :show-inheritance:
 
 sbws.util.stem module
----------------------
+~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: sbws.util.stem
     :members:
@@ -53,7 +53,7 @@ sbws.util.stem module
     :show-inheritance:
 
 sbws.util.userquery module
----------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: sbws.util.userquery
     :members:

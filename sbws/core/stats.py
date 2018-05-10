@@ -3,7 +3,6 @@ from sbws.lib.resultdump import Result
 from sbws.lib.resultdump import ResultError
 from sbws.lib.resultdump import ResultSuccess
 from sbws.lib.resultdump import load_recent_results_in_datadir
-from sbws.lib.resultdump import group_results_by_relay
 from argparse import ArgumentDefaultsHelpFormatter
 import os
 from datetime import datetime
@@ -133,5 +132,4 @@ def main(args, conf):
     if len(results) < 1:
         log.warning('No fresh results')
         return
-    data = group_results_by_relay(results)
-    print_stats(args, data)
+    print_stats(args, results)

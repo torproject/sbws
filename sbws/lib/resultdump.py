@@ -18,29 +18,26 @@ from sbws.util.filelock import DirectoryLock
 log = logging.getLogger(__name__)
 
 
-def group_results_by_relay(results, starting_dict=None):
-    ''' Given a list of Results, sort them by the relay fingerprint that they
-    measured and return the resulting dict. Optionally start with the given
-    dict instead of an empty one. '''
-    data = starting_dict if starting_dict else {}
-    assert isinstance(data, dict)
-    assert isinstance(results, list)
-    for result in results:
-        assert isinstance(result, Result)
-        fp = result.fingerprint
-        if fp not in data:
-            data[fp] = []
-        data[fp].append(result)
-    return data
+def merge_result_dicts(d1, d2):
+    '''
+    Given two dictionaries that contain Result data, merge them.  Result
+    dictionaries have keys of relay fingerprints and values of lists of results
+    for those relays.
+    '''
+    for key in d2:
+        if key not in d1:
+            d1[key] = []
+        d1[key].extend(d2[key])
+    return d1
 
 
 def load_result_file(fname, success_only=False):
     ''' Reads in all lines from the given file, and parses them into Result
     structures (or subclasses of Result). Optionally only keeps ResultSuccess.
-    Returns all kept Results as a list. This function does not care about the
-    age of the results '''
+    Returns all kept Results as a result dictionary. This function does not
+    care about the age of the results '''
     assert os.path.isfile(fname)
-    d = []
+    d = {}
     num_ignored = 0
     with DirectoryLock(os.path.dirname(fname)):
         with open(fname, 'rt') as fd:
@@ -51,26 +48,35 @@ def load_result_file(fname, success_only=False):
                     continue
                 if success_only and isinstance(r, ResultError):
                     continue
-                d.append(r)
-    log.debug('Read %d lines from %s', len(d), fname)
+                fp = r.fingerprint
+                if fp not in d:
+                    d[fp] = []
+                d[fp].append(r)
+    num_lines = sum([len(d[fp]) for fp in d])
+    log.debug('Read %d lines from %s', num_lines, fname)
     if num_ignored > 0:
         log.warning('Had to ignore %d results due to not knowing how to '
                     'parse them.', num_ignored)
     return d
 
 
-def trim_results(fresh_days, results):
-    ''' Given a result list, remove all Results that are no longer valid and
-    return the new list '''
+def trim_results(fresh_days, result_dict):
+    ''' Given a result dictionary, remove all Results that are no longer valid
+    and return the new dictionary '''
     assert isinstance(fresh_days, int)
-    assert isinstance(results, list)
+    assert isinstance(result_dict, dict)
     data_period = fresh_days * 24*60*60
     oldest_allowed = time.time() - data_period
-    out_results = []
-    for result in results:
-        if result.time >= oldest_allowed:
-            out_results.append(result)
-    log.debug('Keeping %d/%d results', len(out_results), len(results))
+    out_results = {}
+    for fp in result_dict:
+        for result in result_dict[fp]:
+            if result.time >= oldest_allowed:
+                if fp not in out_results:
+                    out_results[fp] = []
+                out_results[fp].append(result)
+    num_in = sum([len(result_dict[fp]) for fp in result_dict])
+    num_out = sum([len(out_results[fp]) for fp in out_results])
+    log.debug('Keeping %d/%d results', num_out, num_in)
     return out_results
 
 
@@ -80,7 +86,7 @@ def load_recent_results_in_datadir(fresh_days, datadir, success_only=False):
     Results as a list '''
     assert isinstance(fresh_days, int)
     assert os.path.isdir(datadir)
-    results = []
+    results = {}
     today = datetime.utcfromtimestamp(time.time())
     data_period = fresh_days + 2
     oldest_day = today - timedelta(days=data_period)
@@ -94,11 +100,13 @@ def load_recent_results_in_datadir(fresh_days, datadir, success_only=False):
                     os.path.join(datadir, '*', '{}*.txt'.format(d))]
         for pattern in patterns:
             for fname in glob(pattern):
-                results.extend(load_result_file(
-                    fname, success_only=success_only))
+                new_results = load_result_file(
+                    fname, success_only=success_only)
+                results = merge_result_dicts(results, new_results)
         working_day += timedelta(days=1)
     results = trim_results(fresh_days, results)
-    if len(results) == 0:
+    num_res = sum([len(results[fp]) for fp in results])
+    if num_res == 0:
         log.warning('Results files that are valid not found. '
                     'Probably sbws scanner was not run first or '
                     'it ran more than %d days ago or '
@@ -424,7 +432,10 @@ class ResultDump:
         ''' Call from ResultDump thread '''
         assert isinstance(result, Result)
         with self.data_lock:
-            self.data.append(result)
+            fp = result.fingerprint
+            if fp not in self.data:
+                self.data[fp] = []
+            self.data[fp].append(result)
             self.data = trim_results(self.fresh_days, self.data)
 
     def handle_result(self, result):
@@ -464,5 +475,8 @@ class ResultDump:
 
     def results_for_relay(self, relay):
         assert isinstance(relay, RouterStatusEntryV3)
+        fp = relay.fingerprint
         with self.data_lock:
-            return [r for r in self.data if r.fingerprint == relay.fingerprint]
+            if fp not in self.data:
+                return []
+            return self.data[fp]

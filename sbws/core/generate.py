@@ -2,7 +2,6 @@ from sbws.globals import (fail_hard, is_initted)
 from sbws.lib.v3bwfile import V3BwHeader
 from sbws.lib.resultdump import ResultSuccess
 from sbws.lib.resultdump import load_recent_results_in_datadir
-from sbws.lib.resultdump import group_results_by_relay
 from argparse import ArgumentDefaultsHelpFormatter
 from statistics import median
 import os
@@ -117,8 +116,7 @@ def main(args, conf):
         log.warning('No recent results, so not generating anything. (Have you '
                     'ran sbws scanner recently?)')
         return
-    data = group_results_by_relay(results)
-    data_lines = [result_data_to_v3bw_line(data, fp) for fp in data]
+    data_lines = [result_data_to_v3bw_line(results, fp) for fp in results]
     data_lines = sorted(data_lines, key=lambda d: d.bw, reverse=True)
     data_lines = scale_lines(args, data_lines)
     header = V3BwHeader()

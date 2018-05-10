@@ -439,10 +439,15 @@ class ResultDump:
             self.data = trim_results(self.fresh_days, self.data)
 
     def handle_result(self, result):
-        ''' Call from ResultDump thread '''
+        ''' Call from ResultDump thread. If we are shutting down, ignores
+        ResultError* types '''
         assert isinstance(result, Result)
         fp = result.fingerprint
         nick = result.nickname
+        if isinstance(result, ResultError) and self.end_event.is_set():
+            log.debug('Ignoring %s for %s %s because we are shutting down',
+                      type(result).__name__, nick, fp)
+            return
         self.store_result(result)
         write_result_to_datadir(result, self.datadir)
         log.info('%s %s finished measurement with %s', nick, fp[0:8],

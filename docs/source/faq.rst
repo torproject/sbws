@@ -7,11 +7,9 @@ Frequently Asked Questions (FAQ)
 .. note:: You may also enjoy the :doc:`glossary`.
 
 How many hops are the circuits used to perform the measurements?
-------------------------------------------------------------------
+----------------------------------------------------------------
 
-.. todo:: see :ref:`XX`
-
-Two hops: the relay to be measured and the :term:`helper relay`.
+Two hops.
 
 How are relays selected to be measured?
 ---------------------------------------
@@ -22,54 +20,39 @@ recent results. In this way, relays that have just joined the network or have
 just come back online after a many-day period of being offline will be measured
 before relays that have been online constantly.
 
-Is it the sbws scanner or server that gives the v3bw file to the directory authority?
--------------------------------------------------------------------------------------
+How do sbws scanner results end up in the consensus?
+----------------------------------------------------
 
-Technically, neither.
+The :term:`sbws scanner` runs continuously to gather fresh data.
 
-In the suggested setup, the machine running :term:`sbws scanner` continuously
-will also periodically run :term:`sbws generate` to produce a :term:`v3bw file`
-for the :term:`bandwidth authority` to read.
+The :term `sbws generate` command takes the fresh data and generates a
+:term:`v3bw file`.
 
-.. todo:: see :ref:`XX`
+The Tor :term:`directory authority` parses the v3bw file and includes bandwidth
+information in its vote.
 
+The authorities take the low-median of the bandwidths for each relay from all
+of the :term:`bandwidth authorities <bandwidth authority>` and use that in the
+consensus.
 
-Is it the sbws scanner or server that I need to run close to a fast relay?
--------------------------------------------------------------------------
+Does sbws need any open ports?
+------------------------------
 
-The :term:`sbws server`.
+No.
 
-Why doesn't sbws just use a web/file server instead of custom software?
------------------------------------------------------------------------
+How much bandwidth will the sbws scanner use?
+---------------------------------------------
 
-To lower protocol overhead and to allow :term:`sbws scanners <sbws scanner>` to
-request a wide range of bytes.
+.. todo:: answer this
 
-Sbws essentially has no overhead, with only about 70 bytes used in a handshake
-at the beginning of each connection. A connection can be used to perform
-multiple measurements of one relay.
+How much bandwidth will the webserver use?
+------------------------------------------
 
-At the time of writing, sbws scanners are allowed to request from the
-:term:`server <sbws server>` between 1 byte and 1,073,741,824 bytes (1 GiB).
-That's a lot of possibilities and a ton of storage space.
+.. todo:: answer this
 
-.. todo::
+Should I run my own webserver? Use a CDN? Something else?
+---------------------------------------------------------
 
-    Look more into the viability of using an HTTP(S) server using HTTP basic
-    authentication and range requests to control how many bytes to download.
-    Determine if many requests (and therefore measurements) can be made over a
-    single stream. Determine how much overhead HTTP adds and make a judgement
-    call on whether it is worth it.
+It's up to you. Sbws is very flexible.
 
-Why is there authentication between sbws scanner and sbws server?
------------------------------------------------------------------
-
-So random people on the Internet cannot discover an :term:`sbws server` and ask
-it to repeatedly send large amounts of data or otherwise abuse it.
-
-What ports does sbws use by default?
-------------------------------------
-
-- **31648/tcp**: The :term:`sbws server` listens on this port by default. It
-  does not need to be reachable from the Internet, but only from the
-  :term:`helper relay` near it.
+.. todo:: better answer.

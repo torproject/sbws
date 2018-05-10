@@ -2,6 +2,7 @@ from sbws.globals import (fail_hard, is_initted)
 from sbws.lib.v3bwfile import V3BwHeader
 from sbws.lib.resultdump import ResultSuccess
 from sbws.lib.resultdump import load_recent_results_in_datadir
+from sbws.util.filelock import FileLock
 from argparse import ArgumentDefaultsHelpFormatter
 from statistics import median
 import os
@@ -104,9 +105,11 @@ def read_started_ts(conf):
 
     :param ConfigParser conf: configuration
     """
-    with open(os.path.join(conf['paths']['datadir'],
-                           conf['scanner']['started_filepath']), 'r') as fd:
-        generator_started = fd.read()
+    filepath = os.path.join(conf['paths']['datadir'],
+                            conf['scanner']['started_filepath'])
+    with FileLock(filepath):
+        with open(filepath, 'r') as fd:
+            generator_started = fd.read()
     return generator_started
 
 

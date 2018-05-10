@@ -7,6 +7,7 @@ from ..lib.resultdump import ResultErrorStream
 from ..lib.relaylist import RelayList
 from ..lib.relayprioritizer import RelayPrioritizer
 from ..lib.destination import DestinationList
+from ..util.filelock import FileLock
 # from ..util.simpleauth import authenticate_to_server
 # from ..util.sockio import (make_socket, close_socket)
 from sbws.globals import (fail_hard, is_initted)
@@ -285,9 +286,11 @@ def write_start_ts(conf):
     """
     generator_started = str(time.time())
     log.info('Scanner started at {}'.format(generator_started))
-    with open(os.path.join(conf['paths']['datadir'],
-                           conf['scanner']['started_filepath']), 'wt') as fd:
-        fd.write(generator_started)
+    filepath = os.path.join(conf['paths']['datadir'],
+                            conf['scanner']['started_filepath'])
+    with FileLock(filepath):
+        with open(filepath, 'w') as fd:
+            fd.write(generator_started)
 
 
 def run_speedtest(args, conf):

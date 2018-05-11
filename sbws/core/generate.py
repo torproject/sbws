@@ -110,9 +110,13 @@ def read_started_ts(conf):
     :returns: str, ISO formated timestamp
     """
     filepath = conf['paths']['started_filepath']
-    with FileLock(filepath):
-        with open(filepath, 'r') as fd:
-            generator_started = fd.read()
+    try:
+        with FileLock(filepath):
+            with open(filepath, 'r') as fd:
+                generator_started = fd.read()
+    except FileNotFoundError as e:
+        log.warn('File %s not found.%s', filepath, e)
+        return ''
     return generator_started
 
 

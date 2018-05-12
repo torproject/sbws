@@ -59,6 +59,9 @@ def remove_event_listener(controller, func):
 
 
 def init_controller(port=None, path=None, set_custom_stream_settings=True):
+    # NOTE: we do not currently support a control port even though the rest of
+    # this function will pretend like port could be set.
+    assert port is None
     # make sure only one is set
     assert port is not None or path is not None
     assert not (port is not None and path is not None)

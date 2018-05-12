@@ -58,15 +58,6 @@ def remove_event_listener(controller, func):
     controller.remove_event_listener(func)
 
 
-def connect_over_circuit(controller, circ_id, sock, host, port):
-    with stream_building_lock:
-        listener = attach_stream_to_circuit_listener(controller, circ_id)
-        add_event_listener(controller, listener, EventType.STREAM)
-        connected = socket_connect(sock, host, port)
-        remove_event_listener(controller, listener)
-    return connected
-
-
 def init_controller(port=None, path=None, set_custom_stream_settings=True):
     # make sure only one is set
     assert port is not None or path is not None
@@ -87,25 +78,6 @@ def init_controller(port=None, path=None, set_custom_stream_settings=True):
     if set_custom_stream_settings:
         c.set_conf('__DisablePredictedCircuits', '1')
         c.set_conf('__LeaveStreamsUnattached', '1')
-    return c, ''
-
-
-def init_controller_with_config(conf):
-    assert isinstance(conf, ConfigParser)
-    if conf['tor']['control_type'] not in ['port', 'socket']:
-        return None, 'control_type in config must be either port or socket'
-    if conf['tor']['control_type'] == 'port':
-        try:
-            port = conf.getint('tor', 'control_location')
-        except ValueError:
-            return None, 'control_location must be int if control_type = port'
-        c, error_msg = init_controller(port=port)
-        if not c:
-            return None, error_msg
-        return c, ''
-    c, error_msg = init_controller(path=conf['tor']['control_location'])
-    if not c:
-        return None, error_msg
     return c, ''
 
 

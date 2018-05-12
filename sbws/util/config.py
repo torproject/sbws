@@ -127,9 +127,13 @@ def _validate_general(conf):
     ints = {
         'data_period': {'minimum': 1, 'maximum': None},
     }
-    all_valid_keys = list(ints.keys())
+    floats = {
+        'http_timeout': {'minimum': 0.0, 'maximum': None},
+    }
+    all_valid_keys = list(ints.keys()) + list(floats.keys())
     errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))
     errors.extend(_validate_section_ints(conf, sec, ints, err_tmpl))
+    errors.extend(_validate_section_floats(conf, sec, floats, err_tmpl))
     return errors
 
 

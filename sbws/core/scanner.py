@@ -37,8 +37,10 @@ def timed_recv_from_server(session, dest, byte_range):
     # - Do we have to read the content, or did requests already do so?
     # - Add timeout
     try:
-        session.get(dest.url, headers=headers)
+        requests_utils.get(session, dest.url, headers=headers)
     except requests.exceptions.ConnectionError as e:
+        return False, e
+    except requests.exceptions.ReadTimeout as e:
         return False, e
     end_time = time.time()
     return True, end_time - start_time
@@ -128,7 +130,8 @@ def measure_bandwidth_to_server(session, conf, dest, content_length):
 
 
 def measure_relay(args, conf, destinations, cb, rl, relay):
-    s = requests_utils.make_session(cb.controller)
+    s = requests_utils.make_session(
+        cb.controller, conf.getfloat('general', 'http_timeout'))
     # Pick a destionation
     dest = destinations.next()
     if not dest:

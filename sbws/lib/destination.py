@@ -56,8 +56,7 @@ def connect_to_destination_over_circuit(dest, circ_id, session, cont, max_dl):
         try:
             # TODO:
             # - What other exceptions can this throw?
-            # - Add timeout
-            head = session.head(dest.url)
+            head = requests_utils.head(session, dest.url)
         except requests.exceptions.ConnectionError as e:
             return False, 'Could not connect to {} over circ {} {}: {}'.format(
                 dest.url, circ_id, stem_utils.circuit_str(cont, circ_id), e)
@@ -140,6 +139,8 @@ class DestinationList:
         self._last_usability_test = 0
         self._usability_test_interval = \
             conf.getint('destinations', 'usability_test_interval')
+        self._usability_test_timeout = \
+            conf.getfloat('general', 'http_timeout')
         self._usability_lock = RLock()
 
     def _should_perform_usability_test(self):
@@ -150,7 +151,8 @@ class DestinationList:
         self._usability_lock.acquire()
         log.debug('Perform usability tests')
         cont = self._cont
-        session = requests_utils.make_session(cont)
+        timeout = self._usability_test_timeout
+        session = requests_utils.make_session(cont, timeout)
         usable_dests = []
         for dest in self._all_dests:
             possible_exits = self._rl.exits_can_exit_to(

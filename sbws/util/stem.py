@@ -16,19 +16,6 @@ log = logging.getLogger(__name__)
 
 stream_building_lock = RLock()
 
-__all__ = [
-    'add_event_listener',
-    'remove_event_listener',
-    'attach_stream_to_circuit_listener',
-    'init_controller',
-    'init_controller_with_config',
-    'is_controller_okay',
-    'fp_or_nick_to_relay',
-    'only_relays_with_bandwidth',
-    'circuit_str',
-]
-
-
 def fp_or_nick_to_relay(controller, fp_nick):
     ''' Takes a string that could be either a relay's fingerprint or nickname.
     Return the relay's descriptor if found. Otherwise return None.

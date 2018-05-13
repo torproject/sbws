@@ -57,7 +57,8 @@ def connect_to_destination_over_circuit(dest, circ_id, session, cont, max_dl):
             # TODO:
             # - What other exceptions can this throw?
             head = requests_utils.head(session, dest.url)
-        except requests.exceptions.ConnectionError as e:
+        except (requests.exceptions.ConnectionError,
+                requests.exceptions.ReadTimeout) as e:
             return False, 'Could not connect to {} over circ {} {}: {}'.format(
                 dest.url, circ_id, stem_utils.circuit_str(cont, circ_id), e)
         finally:

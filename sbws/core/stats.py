@@ -1,6 +1,8 @@
 from sbws.globals import (fail_hard, is_initted)
 from sbws.lib.resultdump import Result
 from sbws.lib.resultdump import ResultError
+from sbws.lib.resultdump import ResultErrorCircuit
+from sbws.lib.resultdump import ResultErrorStream
 from sbws.lib.resultdump import ResultSuccess
 from sbws.lib.resultdump import load_recent_results_in_datadir
 from argparse import ArgumentDefaultsHelpFormatter
@@ -33,12 +35,44 @@ def _print_stats_error_types(data):
             number, counts['total'], 100*number/counts['total'], count_type))
 
 
+def _result_type_per_relay(data, result_type):
+    out = {}
+    for fp in data:
+        out[fp] = len([r for r in data[fp] if isinstance(r, result_type)])
+    return out
+
+
+def _get_box_plot_values(l):
+    ''' Reutrn the min, q1, med, q1, and max of the input list or iterable.
+    This function is NOT perfect, and I think that's fine for basic statistical
+    needs. Instead of median, it will return low or high median. Same for q1
+    and q3. '''
+    if not isinstance(l, list):
+        l = list(l)
+    l.sort()
+    length = len(l)
+    median_idx = round(length / 2)
+    q1_idx = round(length / 4)
+    q3_idx = median_idx + q1_idx
+    return [l[0], l[q1_idx], l[median_idx], l[q3_idx], l[length-1]]
+
+
+def _print_results_type_box_plot(data, result_type):
+    per_relay = _result_type_per_relay(data, result_type)
+    bp = _get_box_plot_values(per_relay.values())
+    print('For {}: min={} q1={} med={} q3={} max={}'.format(result_type.__name__, *bp))
+
+
 def _print_averages(data):
     mean_success = mean([
         len([r for r in data[fp] if isinstance(r, ResultSuccess)])
         for fp in data])
-    print('Average {:.2f} successful measurements per '
+    print('Mean {:.2f} successful measurements per '
           'relay'.format(mean_success))
+    _print_results_type_box_plot(data, Result)
+    _print_results_type_box_plot(data, ResultSuccess)
+    _print_results_type_box_plot(data, ResultErrorCircuit)
+    _print_results_type_box_plot(data, ResultErrorStream)
 
 
 def _results_into_bandwidths(results, limit=5):
@@ -80,10 +114,10 @@ def print_stats(args, data):
     first_time = min([r.time for r in results])
     last_time = max([r.time for r in results])
     first = datetime.utcfromtimestamp(first_time)
+    first = first - timedelta(microseconds=first.microsecond)
     last = datetime.utcfromtimestamp(last_time)
-    duration = timedelta(seconds=last_time-first_time)
-    # remove microseconds for prettier printing
-    duration = duration - timedelta(microseconds=duration.microseconds)
+    last = last - timedelta(microseconds=last.microsecond)
+    duration = last - first
     print(len(data), 'relays have recent results')
     _print_averages(data)
     print(len(results), 'total results, and {:.1f}% are successes'.format(

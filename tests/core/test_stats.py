@@ -124,7 +124,7 @@ def test_stats_fresh_result(tmpdir, capsys, caplog):
     lines = captured.out.strip().split('\n')
     needed_output_lines = [
         '1 relays have recent results',
-        'Average 0.00 successful measurements per relay',
+        'Mean 0.00 successful measurements per relay',
         '0 success results and 1 error results',
     ]
     for needed_line in needed_output_lines:
@@ -158,7 +158,7 @@ def test_stats_fresh_results(time_mock, tmpdir, capsys, caplog):
     needed_output_lines = [
         '1 relays have recent results',
         '1 success results and 1 error results',
-        'Average 1.00 successful measurements per relay',
+        'Mean 1.00 successful measurements per relay',
         '1/2 (50.00%) results were error-misc',
     ]
     captured = capsys.readouterr()

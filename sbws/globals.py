@@ -20,9 +20,6 @@ TORRC_STARTING_POINT = {
     'SocksPort': 'auto',
     # Easier than password authentication
     'CookieAuthentication': '1',
-    # Things needed to make circuits fail a little faster
-    'LearnCircuitBuildTimeout': '0',
-    'CircuitBuildTimeout': '10',
     # To avoid path bias warnings
     'UseEntryGuards': '0',
 }

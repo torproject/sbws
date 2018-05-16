@@ -126,6 +126,11 @@ def launch_tor(conf):
         'Log': [
             'NOTICE file {}'.format(section['log']),
         ],
+        # Things needed to make circuits fail a little faster. We get the
+        # circuit_timeout as a string instead of an int on purpose: stem only
+        # accepts strings.
+        'LearnCircuitBuildTimeout': '0',
+        'CircuitBuildTimeout': conf['general']['circuit_timeout'],
     })
     # This block of code reads additional torrc lines from the user's
     # config.ini so they can add arbitrary additional options.

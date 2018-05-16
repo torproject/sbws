@@ -126,6 +126,7 @@ def _validate_general(conf):
     err_tmpl = Template('$sec/$key ($val): $e')
     ints = {
         'data_period': {'minimum': 1, 'maximum': None},
+        'circuit_timeout': {'minimum': 1, 'maximum': None},
     }
     floats = {
         'http_timeout': {'minimum': 0.0, 'maximum': None},

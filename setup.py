@@ -71,8 +71,11 @@ setup(
         ]
     },
     install_requires=[
-        'stem',
+        'stem==1.6.0.dev0',
         'requests',
+    ],
+    dependency_links=[
+        "git+https://git.torproject.org/stem.git#egg=stem-1.6.0.dev0",
     ],
     extras_require={
         'dev': ['flake8'],

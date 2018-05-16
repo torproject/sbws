@@ -114,17 +114,16 @@ def _init_controller_socket(socket):
 
 def launch_tor(conf):
     assert isinstance(conf, ConfigParser)
-    section = conf['tor']
-    os.makedirs(section['datadir'], mode=0o700, exist_ok=True)
+    os.makedirs(conf['tor']['datadir'], mode=0o700, exist_ok=True)
     # Bare minimum things, more or less
     torrc = copy.deepcopy(TORRC_STARTING_POINT)
     # Very important and/or common settings that we don't know until runtime
     torrc.update({
-        'DataDirectory': section['datadir'],
-        'PidFile': os.path.join(section['datadir'], 'tor.pid'),
-        'ControlSocket': section['control_socket'],
+        'DataDirectory': conf['tor']['datadir'],
+        'PidFile': os.path.join(conf['tor']['datadir'], 'tor.pid'),
+        'ControlSocket': conf['tor']['control_socket'],
         'Log': [
-            'NOTICE file {}'.format(section['log']),
+            'NOTICE file {}'.format(conf['tor']['log']),
         ],
         # Things needed to make circuits fail a little faster. We get the
         # circuit_timeout as a string instead of an int on purpose: stem only
@@ -147,7 +146,7 @@ def launch_tor(conf):
     #     extra_lines =
     #         Log debug file /tmp/tor-debug.log
     #         NumCPUs 1
-    for line in section['extra_lines'].split('\n'):
+    for line in conf['tor']['extra_lines'].split('\n'):
         # Remove leading and trailing whitespace, if any
         line = line.strip()
         # Ignore blank lines
@@ -183,13 +182,13 @@ def launch_tor(conf):
     stem.process.launch_tor_with_config(
         torrc, init_msg_handler=log.debug, take_ownership=True)
     # And return a controller to it
-    cont = _init_controller_socket(section['control_socket'])
+    cont = _init_controller_socket(conf['tor']['control_socket'])
     assert is_controller_okay(cont)
     # Because we build things by hand and can't set these before Tor bootstraps
     cont.set_conf('__DisablePredictedCircuits', '1')
     cont.set_conf('__LeaveStreamsUnattached', '1')
     log.info('Started and connected to Tor %s via %s', cont.get_version(),
-             section['control_socket'])
+             conf['tor']['control_socket'])
     return cont
 
 

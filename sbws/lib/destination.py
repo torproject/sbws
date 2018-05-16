@@ -86,8 +86,8 @@ class Destination:
         assert u.netloc
         if not u.path:
             assert default_path[0] == '/'
-            u = urlparse('{}://{}{}{}{}{}'.format(
-                *u[0:2], default_path, *u[2:]))
+            parts = u[0:2] + default_path + u[2:]
+            u = urlparse('{}://{}{}{}{}{}'.format(*parts))
         self._url = u
 
     def is_usable(self, circ_id, session, cont):

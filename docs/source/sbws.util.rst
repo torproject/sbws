@@ -28,22 +28,6 @@ sbws.util.parser module
     :undoc-members:
     :show-inheritance:
 
-sbws.util.simpleauth module
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. automodule:: sbws.util.simpleauth
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-sbws.util.sockio module
-~~~~~~~~~~~~~~~~~~~~~~~
-
-.. automodule:: sbws.util.sockio
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 sbws.util.stem module
 ~~~~~~~~~~~~~~~~~~~~~
 

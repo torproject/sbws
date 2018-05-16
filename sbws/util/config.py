@@ -168,7 +168,8 @@ def _validate_scanner(conf):
         'download_target': {'minimum': 0.001, 'maximum': None},
         'download_max': {'minimum': 0.001, 'maximum': None},
     }
-    all_valid_keys = list(ints.keys()) + list(floats.keys()) + ['nickname', 'started_filepath']
+    all_valid_keys = list(ints.keys()) + list(floats.keys()) + \
+        ['nickname', 'started_filepath']
     errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))
     errors.extend(_validate_section_ints(conf, sec, ints, err_tmpl))
     errors.extend(_validate_section_floats(conf, sec, floats, err_tmpl))

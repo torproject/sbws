@@ -137,7 +137,8 @@ def main(args, conf):
         # Using naive datetime object without timezone, assumed utc
         # Not using .isoformat() since that does not include 'T'
         earliest_bandwidth = datetime.utcfromtimestamp(
-                                min([r.time for r in results])) \
+                                min([r.time for fp in results
+                                     for r in results[fp]])) \
                                 .strftime(TIMESTAMP_DT_FRMT)
     if len(results) < 1:
         log.warning('No recent results, so not generating anything. (Have you '

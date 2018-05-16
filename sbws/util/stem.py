@@ -1,4 +1,4 @@
-from stem.control import (Controller, EventType, Listener)
+from stem.control import (Controller, Listener)
 from stem import (SocketError, InvalidRequest, UnsatisfiableRequest)
 from stem.connection import IncorrectSocketType
 import stem.process
@@ -8,13 +8,12 @@ from threading import RLock
 import copy
 import logging
 import os
-from sbws.util.sockio import socket_connect
 from sbws.globals import fail_hard
 from sbws.globals import TORRC_STARTING_POINT
 
 log = logging.getLogger(__name__)
-
 stream_building_lock = RLock()
+
 
 def fp_or_nick_to_relay(controller, fp_nick):
     ''' Takes a string that could be either a relay's fingerprint or nickname.

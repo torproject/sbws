@@ -42,25 +42,27 @@ def _result_type_per_relay(data, result_type):
     return out
 
 
-def _get_box_plot_values(l):
+def _get_box_plot_values(iterable):
     ''' Reutrn the min, q1, med, q1, and max of the input list or iterable.
     This function is NOT perfect, and I think that's fine for basic statistical
     needs. Instead of median, it will return low or high median. Same for q1
     and q3. '''
-    if not isinstance(l, list):
-        l = list(l)
-    l.sort()
-    length = len(l)
+    if not isinstance(iterable, list):
+        iterable = list(iterable)
+    iterable.sort()
+    length = len(iterable)
     median_idx = round(length / 2)
     q1_idx = round(length / 4)
     q3_idx = median_idx + q1_idx
-    return [l[0], l[q1_idx], l[median_idx], l[q3_idx], l[length-1]]
+    return [iterable[0], iterable[q1_idx], iterable[median_idx],
+            iterable[q3_idx], iterable[length-1]]
 
 
 def _print_results_type_box_plot(data, result_type):
     per_relay = _result_type_per_relay(data, result_type)
     bp = _get_box_plot_values(per_relay.values())
-    print('For {}: min={} q1={} med={} q3={} max={}'.format(result_type.__name__, *bp))
+    print('For {}: min={} q1={} med={} q3={} max={}'.format(
+        result_type.__name__, *bp))
 
 
 def _print_averages(data):

@@ -1,11 +1,8 @@
 from stem import CircuitExtensionFailed, InvalidRequest, ProtocolError, Timeout
 from stem import InvalidArguments
-from stem.control import CircStatus, EventType
 import random
-import time
 import sbws.util.stem as stem_utils
 from .relaylist import RelayList
-import queue
 import logging
 
 log = logging.getLogger(__name__)

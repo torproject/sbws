@@ -58,6 +58,7 @@ setup(
         'Development Status :: 4 - Beta',
     ],
     packages=find_packages(),
+    include_package_data=True,
     package_data={
         'sbws': get_package_data(),
     },

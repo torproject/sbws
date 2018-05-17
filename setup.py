@@ -23,7 +23,7 @@ def get_package_data():
     # return other_files
     return [
         'config.default.ini',
-        'config.default.log.ini',
+        'config.log.default.ini',
         'config.example.ini',
     ]
 

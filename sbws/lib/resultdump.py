@@ -38,10 +38,12 @@ def load_result_file(fname, success_only=False):
     care about the age of the results '''
     assert os.path.isfile(fname)
     d = {}
+    num_total = 0
     num_ignored = 0
     with DirectoryLock(os.path.dirname(fname)):
         with open(fname, 'rt') as fd:
             for line in fd:
+                num_total += 1
                 r = Result.from_dict(json.loads(line.strip()))
                 if r is None:
                     num_ignored += 1
@@ -52,8 +54,8 @@ def load_result_file(fname, success_only=False):
                 if fp not in d:
                     d[fp] = []
                 d[fp].append(r)
-    num_lines = sum([len(d[fp]) for fp in d])
-    log.debug('Read %d lines from %s', num_lines, fname)
+    num_kept = sum([len(d[fp]) for fp in d])
+    log.debug('Keeping %d/%d read lines from %s', num_kept, num_total, fname)
     if num_ignored > 0:
         log.warning('Had to ignore %d results due to not knowing how to '
                     'parse them.', num_ignored)
@@ -76,7 +78,7 @@ def trim_results(fresh_days, result_dict):
                 out_results[fp].append(result)
     num_in = sum([len(result_dict[fp]) for fp in result_dict])
     num_out = sum([len(out_results[fp]) for fp in out_results])
-    log.debug('Keeping %d/%d results', num_out, num_in)
+    log.debug('Keeping %d/%d results after removing old ones', num_out, num_in)
     return out_results
 
 

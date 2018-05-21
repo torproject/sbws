@@ -3,6 +3,7 @@
 (v3bw) used by bandwidth authorities."""
 
 import logging
+from statistics import median
 
 from sbws import __version__
 from sbws.globals import SPEC_VERSION
@@ -186,3 +187,20 @@ class V3BwHeader(object):
         kwargs['generator_started'] = generator_started
         h = cls(timestamp, **kwargs)
         return h
+
+
+class V3BWLine:
+    def __init__(self, fp, bw, nick, rtts, last_time):
+        self.fp = fp
+        self.nick = nick
+        # convert to KiB and make sure the answer is at least 1
+        self.bw = max(round(bw / 1024), 1)
+        # convert to ms
+        rtts = [round(r * 1000) for r in rtts]
+        self.rtt = round(median(rtts))
+        self.time = last_time
+
+    def __str__(self):
+        frmt = 'node_id=${fp} bw={sp} nick={n} rtt={rtt} time={t}'
+        return frmt.format(fp=self.fp, sp=self.bw, n=self.nick, rtt=self.rtt,
+                           t=self.time)

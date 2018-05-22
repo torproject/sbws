@@ -24,8 +24,6 @@ TORRC_STARTING_POINT = {
     'UseEntryGuards': '0',
 }
 
-TIMESTAMP_DT_FRMT = "%d-%m-%Y %H:%M:%S"
-
 
 def is_initted(d):
     if not os.path.isdir(d):

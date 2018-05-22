@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sbws.globals import (fail_hard, is_initted, TIMESTAMP_DT_FRMT)
+from sbws.globals import (fail_hard, is_initted)
 from sbws.lib.v3bwfile import V3BwHeader
 from sbws.lib.resultdump import ResultSuccess
 from sbws.lib.resultdump import load_recent_results_in_datadir
@@ -135,11 +135,13 @@ def main(args, conf):
         fresh_days, datadir, success_only=True)
     if results:
         # Using naive datetime object without timezone, assumed utc
-        # Not using .isoformat() since that does not include 'T'
+        timestamp = datetime.utcfromtimestamp(max([r.time for fp in results
+                                                   for r in results[fp]]))
+        lastest_bandwidth = timestamp.replace(microsecond=0).isoformat()
         earliest_bandwidth = datetime.utcfromtimestamp(
                                 min([r.time for fp in results
                                      for r in results[fp]])) \
-                                .strftime(TIMESTAMP_DT_FRMT)
+            .replace(microsecond=0).isoformat()
     if len(results) < 1:
         log.warning('No recent results, so not generating anything. (Have you '
                     'ran sbws scanner recently?)')
@@ -149,7 +151,9 @@ def main(args, conf):
     data_lines = scale_lines(args, data_lines)
     generator_started = read_started_ts(conf)
     if results:
-        header = V3BwHeader(earliest_bandwidth=earliest_bandwidth,
+        header = V3BwHeader(timestamp=timestamp,
+                            lastest_bandwidth=lastest_bandwidth,
+                            earliest_bandwidth=earliest_bandwidth,
                             generator_started=generator_started)
     else:
         header = V3BwHeader(generator_started=generator_started)

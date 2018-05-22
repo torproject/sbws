@@ -12,7 +12,7 @@ from ..lib.destination import DestinationList
 from ..util.filelock import FileLock
 # from ..util.simpleauth import authenticate_to_server
 # from ..util.sockio import (make_socket, close_socket)
-from sbws.globals import (fail_hard, is_initted, TIMESTAMP_DT_FRMT)
+from sbws.globals import (fail_hard, is_initted)
 import sbws.util.stem as stem_utils
 import sbws.util.requests as requests_utils
 from argparse import ArgumentDefaultsHelpFormatter
@@ -285,8 +285,7 @@ def write_start_ts(conf):
     """
     # Using naive object, without timezone, since all datetimes are assumed
     # to be always in UTC.
-    # Not using .isoformat() since that does not include 'T'
-    generator_started = datetime.utcnow().strftime(TIMESTAMP_DT_FRMT)
+    generator_started = datetime.utcnow().replace(microsecond=0).isoformat()
     log.info('Scanner started at {}'.format(generator_started))
     filepath = conf['paths']['started_filepath']
     with FileLock(filepath):

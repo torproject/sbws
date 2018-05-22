@@ -2,7 +2,7 @@
 """Classes and functions that create the bandwidth measurements document
 (v3bw) used by bandwidth authorities."""
 
-import time
+from datetime import datetime
 import logging
 from sbws import __version__
 from sbws.globals import SPEC_VERSION
@@ -16,7 +16,8 @@ K_SEP_V200 = ' '
 KV_SEP_V200 = ' '
 ORDERED_KV = ['version', 'software', 'software_version']
 ORDERED_K = ['timestamp', 'version', 'software', 'software_version']
-ALLOWED_K = ORDERED_KV + ['earliest_bandwidth', 'generator_started']
+ALLOWED_K = ORDERED_KV + ['lastest_bandwidth', 'file_created',
+                          'earliest_bandwidth', 'generator_started']
 TERMINATOR = '===='
 LINE_TERMINATOR = TERMINATOR + LINE_SEP
 
@@ -26,22 +27,30 @@ class V3BwHeader(object):
     Create a bandwidth measurements (V3bw) header
     following bandwidth measurements document spec version 1.1.0.
 
-    :param int timestamp: timestamp in Unix Epoch seconds when the document
-                          is created
+    :param int timestamp: timestamp in Unix Epoch seconds of the most recent
+        generator result.
     :param str version: the spec version
     :param str software: the name of the software that generates this
     :param str software_version: the version of the software
     :param dict kwargs: extra headers. Currently supported:
+        - lastest_bandwidth: str, ISO 8601 timestamp in UTC time zone
+          when the latest bandwidth was obtained
         - earliest_bandwidth: str, ISO timestamp when the first bandwidth was
           obtained
         - generator_started: str, ISO timestamp when the generator started
     """
     def __init__(self, timestamp=None, version=SPEC_VERSION, software='sbws',
                  software_version=__version__, **kwargs):
-        self.timestamp = timestamp or int(time.time())
+        # FIXME: which value should timestamp have when is not given?
+        self.timestamp = timestamp
         self.version = version
         self.software = software
         self.software_version = software_version
+        self.file_created = kwargs.get('file_created',
+                                       datetime.utcnow().replace(microsecond=0)
+                                       .isoformat())
+        if kwargs.get('lastest_bandwidth'):
+            self.lastest_bandwidth = kwargs['lastest_bandwidth']
         if kwargs.get('earliest_bandwidth'):
             self.earliest_bandwidth = kwargs['earliest_bandwidth']
         if kwargs.get('generator_started'):

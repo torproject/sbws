@@ -11,8 +11,8 @@ software_l = K_SEP_V110.join(['software', 'sbws'])
 software_version_l = K_SEP_V110.join(['software_version', version])
 file_created = '2018-04-25T13:10:57'
 file_created_l = K_SEP_V110.join(['file_created', file_created])
-header_ls = [timestamp_l, version_l, software_l, software_version_l,
-             file_created_l, TERMINATOR]
+header_ls = [timestamp_l, version_l, file_created_l, software_l,
+             software_version_l, TERMINATOR]
 header_str = LINE_SEP.join(header_ls) + LINE_SEP
 lastest_bandwidth = '2018-04-17T14:09:07'
 lastest_bandwidth_l = K_SEP_V110.join(['lastest_bandwidth', lastest_bandwidth])
@@ -22,9 +22,10 @@ earliest_bandwidth_l = K_SEP_V110.join(['earliest_bandwidth',
 generator_started = '2018-04-16T14:09:05'
 generator_started_l = K_SEP_V110.join(['generator_started',
                                        generator_started])
-header_extra_ls = [timestamp_l, version_l, software_l, software_version_l,
+header_extra_ls = [timestamp_l, version_l,
                    earliest_bandwidth_l, file_created_l, generator_started_l,
-                   lastest_bandwidth_l, TERMINATOR]
+                   lastest_bandwidth_l,
+                   software_l, software_version_l, TERMINATOR]
 header_extra_str = LINE_SEP.join(header_extra_ls) + LINE_SEP
 
 

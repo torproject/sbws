@@ -14,10 +14,11 @@ K_SEP_V110 = '='
 KV_SEP_V110 = '\n'
 K_SEP_V200 = ' '
 KV_SEP_V200 = ' '
-ORDERED_KV = ['version', 'software', 'software_version']
-ORDERED_K = ['timestamp', 'version', 'software', 'software_version']
-ALLOWED_K = ORDERED_KV + ['lastest_bandwidth', 'file_created',
-                          'earliest_bandwidth', 'generator_started']
+ORDERED_KV = ['version']
+ORDERED_K = ['timestamp', 'version']
+ALLOWED_K = ORDERED_KV + ['software', 'software_version', 'lastest_bandwidth',
+                          'file_created', 'earliest_bandwidth',
+                          'generator_started']
 TERMINATOR = '===='
 LINE_TERMINATOR = TERMINATOR + LINE_SEP
 

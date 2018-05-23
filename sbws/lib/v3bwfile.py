@@ -168,11 +168,11 @@ class V3BwHeader(object):
 
     @staticmethod
     def lastest_bandwidth_from_results(results):
-        return max([r.time for fp in results for r in results[fp]])
+        return round(max([r.time for fp in results for r in results[fp]]))
 
     @staticmethod
     def earliest_bandwidth_from_results(results):
-        return min([r.time for fp in results for r in results[fp]])
+        return round(min([r.time for fp in results for r in results[fp]]))
 
     @classmethod
     def from_results(cls, conf, results):

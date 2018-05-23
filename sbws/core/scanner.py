@@ -1,7 +1,5 @@
 ''' Measure the relays. '''
 
-from datetime import datetime
-
 from ..lib.circuitbuilder import GapsCircuitBuilder as CB
 from ..lib.resultdump import ResultDump
 from ..lib.resultdump import ResultSuccess, ResultErrorCircuit
@@ -10,6 +8,7 @@ from ..lib.relaylist import RelayList
 from ..lib.relayprioritizer import RelayPrioritizer
 from ..lib.destination import DestinationList
 from ..util.filelock import FileLock
+from ..util.timestamp import now_isodt_str
 # from ..util.simpleauth import authenticate_to_server
 # from ..util.sockio import (make_socket, close_socket)
 from sbws.globals import (fail_hard, is_initted)
@@ -283,9 +282,7 @@ def write_start_ts(conf):
 
     :param ConfigParser conf: configuration
     """
-    # Using naive object, without timezone, since all datetimes are assumed
-    # to be always in UTC.
-    generator_started = datetime.utcnow().replace(microsecond=0).isoformat()
+    generator_started = now_isodt_str()
     log.info('Scanner started at {}'.format(generator_started))
     filepath = conf['paths']['started_filepath']
     with FileLock(filepath):

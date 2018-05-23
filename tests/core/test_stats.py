@@ -131,9 +131,9 @@ def test_stats_fresh_result(tmpdir, capsys, caplog):
         assert needed_line in lines
     lines = [l.getMessage() for l in caplog.records]
     needed_log_lines = [
-        'Read 1 lines from {}/{}/{}.txt'.format(
+        'Keeping 1/1 read lines from {}/{}/{}.txt'.format(
             tmpdir, 'datadir', datetime.utcfromtimestamp(time.time()).date()),
-        'Keeping 1/1 results',
+        'Keeping 1/1 results after removing old ones',
     ]
     for needed_line in needed_log_lines:
         assert needed_line in lines
@@ -167,9 +167,9 @@ def test_stats_fresh_results(time_mock, tmpdir, capsys, caplog):
         assert needed_line in lines
     lines = [l.getMessage() for l in caplog.records]
     needed_log_lines = [
-        'Read 2 lines from {}/{}/{}.txt'.format(
+        'Keeping 2/2 read lines from {}/{}/{}.txt'.format(
             tmpdir, 'datadir', datetime.utcfromtimestamp(time.time()).date()),
-        'Keeping 2/2 results',
+        'Keeping 2/2 results after removing old ones',
         'Found a _ResultType.Error for the first time',
         'Found a _ResultType.Success for the first time',
     ]

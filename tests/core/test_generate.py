@@ -78,7 +78,7 @@ def test_generate_single_error(dotsbws_error_result, caplog, parser):
     sbws.core.generate.main(args, conf)
     dd = conf['paths']['datadir']
     for record in caplog.records:
-        if 'Read 0 lines from {}'.format(dd) in record.getMessage():
+        if 'Keeping 0/1 read lines from {}'.format(dd) in record.getMessage():
             break
     else:
         assert None, 'Unable to find log line indicating 0 success results '\

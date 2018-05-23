@@ -1,27 +1,28 @@
 # -*- coding: utf-8 -*-
 """Test generation of bandwidth measurements document (v3bw)"""
 from sbws.globals import SPEC_VERSION
-from sbws.lib.v3bwfile import V3BwHeader, TERMINATOR, LINE_SEP, K_SEP_V110
+from sbws.lib.v3bwfile import V3BwHeader, TERMINATOR, LINE_SEP, KEYVALUE_SEP_V110
 from sbws import __version__ as version
 
 timestamp = 1523974147
 timestamp_l = str(timestamp)
-version_l = K_SEP_V110.join(['version', SPEC_VERSION])
-software_l = K_SEP_V110.join(['software', 'sbws'])
-software_version_l = K_SEP_V110.join(['software_version', version])
+version_l = KEYVALUE_SEP_V110.join(['version', SPEC_VERSION])
+software_l = KEYVALUE_SEP_V110.join(['software', 'sbws'])
+software_version_l = KEYVALUE_SEP_V110.join(['software_version', version])
 file_created = '2018-04-25T13:10:57'
-file_created_l = K_SEP_V110.join(['file_created', file_created])
+file_created_l = KEYVALUE_SEP_V110.join(['file_created', file_created])
 lastest_bandwidth = '2018-04-17T14:09:07'
-lastest_bandwidth_l = K_SEP_V110.join(['lastest_bandwidth', lastest_bandwidth])
+lastest_bandwidth_l = KEYVALUE_SEP_V110.join(['lastest_bandwidth',
+                                             lastest_bandwidth])
 header_ls = [timestamp_l, version_l, file_created_l, lastest_bandwidth_l,
              software_l, software_version_l, TERMINATOR]
 header_str = LINE_SEP.join(header_ls) + LINE_SEP
 earliest_bandwidth = '2018-04-16T14:09:07'
-earliest_bandwidth_l = K_SEP_V110.join(['earliest_bandwidth',
-                                        earliest_bandwidth])
+earliest_bandwidth_l = KEYVALUE_SEP_V110.join(['earliest_bandwidth',
+                                               earliest_bandwidth])
 generator_started = '2018-04-16T14:09:05'
-generator_started_l = K_SEP_V110.join(['generator_started',
-                                       generator_started])
+generator_started_l = KEYVALUE_SEP_V110.join(['generator_started',
+                                              generator_started])
 header_extra_ls = [timestamp_l, version_l,
                    earliest_bandwidth_l, file_created_l, generator_started_l,
                    lastest_bandwidth_l,

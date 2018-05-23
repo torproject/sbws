@@ -11,11 +11,11 @@ software_l = K_SEP_V110.join(['software', 'sbws'])
 software_version_l = K_SEP_V110.join(['software_version', version])
 file_created = '2018-04-25T13:10:57'
 file_created_l = K_SEP_V110.join(['file_created', file_created])
-header_ls = [timestamp_l, version_l, file_created_l, software_l,
-             software_version_l, TERMINATOR]
-header_str = LINE_SEP.join(header_ls) + LINE_SEP
 lastest_bandwidth = '2018-04-17T14:09:07'
 lastest_bandwidth_l = K_SEP_V110.join(['lastest_bandwidth', lastest_bandwidth])
+header_ls = [timestamp_l, version_l, file_created_l, lastest_bandwidth_l,
+             software_l, software_version_l, TERMINATOR]
+header_str = LINE_SEP.join(header_ls) + LINE_SEP
 earliest_bandwidth = '2018-04-16T14:09:07'
 earliest_bandwidth_l = K_SEP_V110.join(['earliest_bandwidth',
                                         earliest_bandwidth])
@@ -31,14 +31,13 @@ header_extra_str = LINE_SEP.join(header_extra_ls) + LINE_SEP
 
 def test_v3bwheader_str():
     """Test header str"""
-    header = V3BwHeader(timestamp, file_created=file_created)
+    header = V3BwHeader(timestamp_l, file_created=file_created)
     assert header_str == str(header)
 
 
 def test_v3bwheader_extra_str():
     """Test header str with additional headers"""
-    header = V3BwHeader(timestamp,
-                        lastest_bandwidth=lastest_bandwidth,
+    header = V3BwHeader(timestamp_l,
                         file_created=file_created,
                         generator_started=generator_started,
                         earliest_bandwidth=earliest_bandwidth)
@@ -47,23 +46,21 @@ def test_v3bwheader_extra_str():
 
 def test_v3bwheader_from_lines():
     """"""
-    header_obj = V3BwHeader(timestamp,
-                            lastest_bandwidth=lastest_bandwidth,
+    header_obj = V3BwHeader(timestamp_l,
                             file_created=file_created,
                             generator_started=generator_started,
                             earliest_bandwidth=earliest_bandwidth)
-    header, _ = V3BwHeader().from_lines_v110(header_extra_ls)
+    header, _ = V3BwHeader.from_lines_v110(header_extra_ls)
     assert str(header_obj) == str(header)
 
 
 def test_v3bwheader_from_text():
     """"""
-    header_obj = V3BwHeader(timestamp,
-                            lastest_bandwidth=lastest_bandwidth,
+    header_obj = V3BwHeader(timestamp_l,
                             file_created=file_created,
                             generator_started=generator_started,
                             earliest_bandwidth=earliest_bandwidth)
-    header, _ = V3BwHeader().from_text_v110(header_extra_str)
+    header, _ = V3BwHeader.from_text_v110(header_extra_str)
     assert str(header_obj) == str(header)
 
 

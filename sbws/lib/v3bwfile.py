@@ -18,7 +18,7 @@ KEYVALUE_SEP_V200 = ' '
 EXTRA_ARG_KEYVALUES = ['software', 'software_version', 'file_created',
                        'earliest_bandwidth', 'generator_started']
 # List of all unordered KeyValues currently being used to generate the file
-UNORDERED_KEYVALUES = EXTRA_ARG_KEYVALUES + ['lastest_bandwidth']
+UNORDERED_KEYVALUES = EXTRA_ARG_KEYVALUES + ['latest_bandwidth']
 # List of all the KeyValues currently being used to generate the file
 ALL_KEYVALUES = ['version'] + UNORDERED_KEYVALUES
 TERMINATOR = '===='
@@ -71,9 +71,9 @@ class V3BwHeader(object):
         self.software = kwargs.get('software', 'sbws')
         self.software_version = kwargs.get('software_version', __version__)
         self.file_created = kwargs.get('file_created', now_isodt_str())
-        # lastest_bandwidth should not be in kwargs, since it MUST be the
+        # latest_bandwidth should not be in kwargs, since it MUST be the
         # same as timestamp
-        self.lastest_bandwidth = unixts_to_isodt_str(timestamp)
+        self.latest_bandwidth = unixts_to_isodt_str(timestamp)
         [setattr(self, k, v) for k, v in kwargs.items()
          if k in EXTRA_ARG_KEYVALUES]
 
@@ -167,7 +167,7 @@ class V3BwHeader(object):
         return read_started_ts(conf)
 
     @staticmethod
-    def lastest_bandwidth_from_results(results):
+    def latest_bandwidth_from_results(results):
         return round(max([r.time for fp in results for r in results[fp]]))
 
     @staticmethod
@@ -177,11 +177,11 @@ class V3BwHeader(object):
     @classmethod
     def from_results(cls, conf, results):
         kwargs = dict()
-        lastest_bandwidth = cls.lastest_bandwidth_from_results(results)
-        earliest_bandwidth = cls.lastest_bandwidth_from_results(results)
+        latest_bandwidth = cls.latest_bandwidth_from_results(results)
+        earliest_bandwidth = cls.latest_bandwidth_from_results(results)
         generator_started = cls.generator_started_from_file(conf)
-        timestamp = str(lastest_bandwidth)
-        kwargs['lastest_bandwidth'] = unixts_to_isodt_str(lastest_bandwidth)
+        timestamp = str(latest_bandwidth)
+        kwargs['latest_bandwidth'] = unixts_to_isodt_str(latest_bandwidth)
         kwargs['earliest_bandwidth'] = unixts_to_isodt_str(earliest_bandwidth)
         kwargs['generator_started'] = generator_started
         h = cls(timestamp, **kwargs)

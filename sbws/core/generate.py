@@ -2,7 +2,7 @@ from sbws.globals import (fail_hard, is_initted)
 from sbws.lib.v3bwfile import V3BwHeader
 from sbws.lib.resultdump import ResultSuccess
 from sbws.lib.resultdump import load_recent_results_in_datadir
-from sbws.util.timestamp import unixts_to_isodt_str, unixts_to_str
+from sbws.util.timestamp import unixts_to_isodt_str
 from argparse import ArgumentDefaultsHelpFormatter
 from statistics import median
 import os

@@ -10,15 +10,15 @@ from sbws.util.timestamp import now_isodt_str, unixts_to_isodt_str
 log = logging.getLogger(__name__)
 
 LINE_SEP = '\n'
-K_SEP_V110 = '='
-KV_SEP_V110 = '\n'
-K_SEP_V200 = ' '
-KV_SEP_V200 = ' '
-ORDERED_KV = ['version']
-ORDERED_K = ['timestamp', 'version']
-ALLOWED_K = ORDERED_KV + ['software', 'software_version', 'lastest_bandwidth',
-                          'file_created', 'earliest_bandwidth',
-                          'generator_started']
+KEYVALUE_SEP_V110 = '='
+KEYVALUE_SEP_V200 = ' '
+# List of the extra KeyValues accepted by the class
+EXTRA_ARG_KEYVALUES = ['software', 'software_version', 'file_created',
+                       'earliest_bandwidth', 'generator_started']
+# List of all unordered KeyValues currently being used to generate the file
+UNORDERED_KEYVALUES = EXTRA_ARG_KEYVALUES + ['lastest_bandwidth']
+# List of all the KeyValues currently being used to generate the file
+ALL_KEYVALUES = ['version'] + UNORDERED_KEYVALUES
 TERMINATOR = '===='
 LINE_TERMINATOR = TERMINATOR + LINE_SEP
 
@@ -39,82 +39,69 @@ class V3BwHeader(object):
         - generator_started: str, ISO 8601 timestamp in UTC time zone
           when the generator started
     """
-    def __init__(self, timestamp, version=SPEC_VERSION, software='sbws',
-                 software_version=__version__, **kwargs):
-        # FIXME: which value should timestamp have when is not given?
-        self.timestamp = timestamp
-        self.version = version
-        self.software = software
-        self.software_version = software_version
+    def __init__(self, timestamp, **kwargs):
+        self.timestamp = str(timestamp)
+        # KeyValues with default value when not given by kwargs
+        self.version = kwargs.get('version', SPEC_VERSION)
+        self.software = kwargs.get('software', 'sbws')
+        self.software_version = kwargs.get('software_version', __version__)
         self.file_created = kwargs.get('file_created', now_isodt_str())
+        # lastest_bandwidth should not be in kwargs, since it MUST be the
+        # same as timestamp
         self.lastest_bandwidth = unixts_to_isodt_str(timestamp)
-        if kwargs.get('earliest_bandwidth'):
-            self.earliest_bandwidth = kwargs['earliest_bandwidth']
-        if kwargs.get('generator_started'):
-            self.generator_started = kwargs['generator_started']
+        [setattr(self, k, v) for k, v in kwargs.items()
+         if k in EXTRA_ARG_KEYVALUES]
 
     @property
-    def kv_ordered_ls(self):
-        """Return list of headers KeyValue tuples for the KeyValues
-        that have specific order.
-        """
-        kv_ls = [(k, str(getattr(self, k, ''))) for k in ORDERED_KV]
-        log.debug('kv_ls %s', kv_ls)
-        return kv_ls
+    def keyvalue_unordered_tuple_ls(self):
+        """Return list of KeyValue tuples that do not have specific order."""
+        # sort the list to generate determinist headers
+        keyvalue_tuple_ls = sorted([(k, v) for k, v in self.__dict__.items()
+                                    if k in UNORDERED_KEYVALUES])
+        log.debug('keyvalue_tuple_ls %s', keyvalue_tuple_ls)
+        return keyvalue_tuple_ls
 
     @property
-    def k_extra_ls(self):
-        """Return list of headers Keywords that do not have specific order."""
-        k_extra = list(set(self.__dict__.keys()).difference(ORDERED_K)
-                       .intersection(ALLOWED_K))
-        log.debug('k_extra %s', k_extra)
-        return k_extra
+    def keyvalue_tuple_ls(self):
+        """Return list of all KeyValue tuples"""
+        return [('version', self.version)] + self.keyvalue_unordered_tuple_ls
 
     @property
-    def kv_extra_ls(self):
-        """Return list of headers KeyValue tuples for the KeyValues
-        that do not have specific order.
-        """
-        # sorting the list to generate determinist headers
-        kv_extra = sorted([(k, str(getattr(self, k)))
-                          for k in self.k_extra_ls])
-        log.debug('kv_extra %s', kv_extra)
-        return kv_extra
+    def keyvalue_v110str_ls(self):
+        """Return KeyValue list of strings following spec v1.1.0."""
+        keyvalues = [self.timestamp] + [KEYVALUE_SEP_V110.join([k, v])
+                                        for k, v in self.keyvalue_tuple_ls]
+        log.debug('keyvalue %s', keyvalues)
+        return keyvalues
 
     @property
-    def kv_ls(self):
-        return self.kv_ordered_ls + self.kv_extra_ls
-
-    @property
-    def kv_v110_ls(self):
-        """Return header kv list of strings following spec v1.1.0."""
-        kv = [str(self.timestamp)] + [K_SEP_V110.join([k, v])
-                                      for k, v in self.kv_ls]
-        log.debug('kv %s', kv)
-        return kv
-
     def strv110(self):
         """Return header string following spec v1.1.0."""
-        header_str = LINE_SEP.join(self.kv_v110_ls) + LINE_SEP + \
+        header_str = LINE_SEP.join(self.keyvalue_v110str_ls) + LINE_SEP + \
             LINE_TERMINATOR
         log.debug('header_str %s', header_str)
         return header_str
 
     @property
-    def kv_v200_ls(self):
-        """Return header kv following spec v2.0.0."""
-        kv = [str(self.timestamp)] + [K_SEP_V200.join([k, v])
-                                      for k, v in self.kv_ls]
-        log.debug('kv %s', kv)
-        return kv
+    def keyvalue_v200_ls(self):
+        """Return KeyValue list of strings following spec v2.0.0."""
+        keyvalue = [self.timestamp] + [KEYVALUE_SEP_V200.join([k, v])
+                                       for k, v in self.keyvalue_tuple_ls]
+        log.debug('keyvalue %s', keyvalue)
+        return keyvalue
 
     @property
     def strv200(self):
         """Return header string following spec v2.0.0."""
-        header_str = LINE_SEP.join(self.kv_v200_ls) + LINE_SEP + \
+        header_str = LINE_SEP.join(self.keyvalue_v200_ls) + LINE_SEP + \
             LINE_TERMINATOR
         log.debug('header_str %s', header_str)
         return header_str
+
+    def __str__(self):
+        if self.version == '1.1.0':
+            return self.strv110
+        return self.strv200
 
     @classmethod
     def from_lines_v110(cls, lines):
@@ -131,22 +118,17 @@ class V3BwHeader(object):
             return None
         ts = lines[0]
         # not checking order
-        kwargs = dict([l.split(K_SEP_V110)
+        kwargs = dict([l.split(KEYVALUE_SEP_V110)
                        for l in lines[:index_terminator]
-                       if l.split(K_SEP_V110)[0] in ALLOWED_K])
+                       if l.split(KEYVALUE_SEP_V110)[0] in ALL_KEYVALUES])
         h = cls(ts, **kwargs)
         return h, lines[index_terminator + 1:]
 
     @classmethod
     def from_text_v110(self, text):
         """
-        :param list lines: text to parse
+        :param str text: text to parse
         :returns: tuple of V3BwHeader object and non-header lines
         """
         assert isinstance(text, str)
         return self.from_lines_v110(text.split(LINE_SEP))
-
-    def __str__(self):
-        if self.version == '1.1.0':
-            return self.strv110()
-        return self.strv200

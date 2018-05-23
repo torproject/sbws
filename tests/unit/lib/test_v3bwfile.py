@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """Test generation of bandwidth measurements document (v3bw)"""
 from sbws.globals import SPEC_VERSION
-from sbws.lib.v3bwfile import V3BwHeader, TERMINATOR, LINE_SEP, KEYVALUE_SEP_V110
+from sbws.lib.v3bwfile import (V3BwHeader, TERMINATOR, LINE_SEP,
+                               KEYVALUE_SEP_V110)
 from sbws import __version__ as version
 
 timestamp = 1523974147

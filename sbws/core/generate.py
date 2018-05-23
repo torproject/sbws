@@ -1,10 +1,9 @@
-from datetime import datetime
-
 from sbws.globals import (fail_hard, is_initted)
 from sbws.lib.v3bwfile import V3BwHeader
 from sbws.lib.resultdump import ResultSuccess
 from sbws.lib.resultdump import load_recent_results_in_datadir
 from sbws.util.filelock import FileLock
+from sbws.util.timestamp import unixts_to_isodt_str, unixts_to_str
 from argparse import ArgumentDefaultsHelpFormatter
 from statistics import median
 import os
@@ -13,8 +12,11 @@ import logging
 log = logging.getLogger(__name__)
 
 
+# FIXME: move this to v3bwfile?
 class V3BWLine:
+    # TODO: docstrings
     def __init__(self, fp, bw, nick, rtts, last_time):
+        # TODO: asserts checking arg types
         self.fp = fp
         self.nick = nick
         # convert to KiB and make sure the answer is at least 1
@@ -22,7 +24,7 @@ class V3BWLine:
         # convert to ms
         rtts = [round(r * 1000) for r in rtts]
         self.rtt = round(median(rtts))
-        self.time = last_time
+        self.time = unixts_to_isodt_str(last_time)
 
     def __str__(self):
         frmt = 'node_id=${fp} bw={sp} nick={n} rtt={rtt} time={t}'

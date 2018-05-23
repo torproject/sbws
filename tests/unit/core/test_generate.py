@@ -1,16 +1,18 @@
+# FIXME: all functions that depend on num lines should only use bandwith lines
+# and not whole header bandwith lines, as every time we change headers,
+# tests here would break
 import pytest
 
 import sbws.core.generate
 from sbws.util.config import get_config
 from sbws.lib.resultdump import load_recent_results_in_datadir
 from sbws.lib.resultdump import ResultSuccess
+from sbws.lib.v3bwfile import NUM_LINES_HEADER_V110
+from sbws.util.timestamp import unixts_to_isodt_str
 from statistics import median
 import logging
 
 log = logging.getLogger(__name__)
-
-# TODO: this should be parsed from the results
-NUM_LINES_HEADER = 8
 
 
 def test_generate_no_dotsbws(tmpdir, caplog, parser):
@@ -71,7 +73,7 @@ def test_generate_empty_datadir(empty_dotsbws_datadir, caplog, parser):
 
 
 # FIXME
-@pytest.mark.skip(reason="freshness needs to be adjusted to timestamp meaning")
+@pytest.mark.skip(reason="changes in header broke this, please FIXME")
 def test_generate_single_error(dotsbws_error_result, caplog, parser):
     caplog.set_level(logging.DEBUG)
     dotsbws = dotsbws_error_result
@@ -111,14 +113,15 @@ def test_generate_single_success_noscale(dotsbws_success_result, caplog,
         'should be a success'
     captured = capfd.readouterr()
     stdout_lines = captured.out.strip().split('\n')
-    assert len(stdout_lines) == 1 + NUM_LINES_HEADER
+    assert len(stdout_lines) == 1 + NUM_LINES_HEADER_V110
 
     bw = round(median([dl['amount'] / dl['duration'] / 1024
                        for dl in result.downloads]))
     rtt = median([round(r * 1000) for r in result.rtts])
     bw_line = 'node_id=${} bw={} nick={} rtt={} time={}'.format(
-        result.fingerprint, bw, result.nickname, rtt, round(result.time))
-    assert stdout_lines[NUM_LINES_HEADER] == bw_line
+        result.fingerprint, bw, result.nickname, rtt,
+        unixts_to_isodt_str(round(result.time)))
+    assert stdout_lines[NUM_LINES_HEADER_V110] == bw_line
 
 
 def test_generate_single_success_scale(dotsbws_success_result, parser,
@@ -142,13 +145,14 @@ def test_generate_single_success_scale(dotsbws_success_result, parser,
         'should be a success'
     captured = capfd.readouterr()
     stdout_lines = captured.out.strip().split('\n')
-    assert len(stdout_lines) == 1 + NUM_LINES_HEADER
+    assert len(stdout_lines) == 1 + NUM_LINES_HEADER_V110
 
     bw = 7500
     rtt = median([round(r * 1000) for r in result.rtts])
     bw_line = 'node_id=${} bw={} nick={} rtt={} time={}'.format(
-        result.fingerprint, bw, result.nickname, rtt, round(result.time))
-    assert stdout_lines[NUM_LINES_HEADER] == bw_line
+        result.fingerprint, bw, result.nickname, rtt,
+        unixts_to_isodt_str(round(result.time)))
+    assert stdout_lines[NUM_LINES_HEADER_V110] == bw_line
 
 
 def test_generate_single_relay_success_noscale(
@@ -172,15 +176,16 @@ def test_generate_single_relay_success_noscale(
             'should be a success'
     captured = capfd.readouterr()
     stdout_lines = captured.out.strip().split('\n')
-    assert len(stdout_lines) == 1 + NUM_LINES_HEADER
+    assert len(stdout_lines) == 1 + NUM_LINES_HEADER_V110
 
     speeds = [dl['amount'] / dl['duration'] / 1024
               for r in results for dl in r.downloads]
     speed = round(median(speeds))
     rtt = round(median([round(r * 1000) for r in result.rtts]))
     bw_line = 'node_id=${} bw={} nick={} rtt={} time={}'.format(
-        result.fingerprint, speed, result.nickname, rtt, round(result.time))
-    assert stdout_lines[NUM_LINES_HEADER] == bw_line
+        result.fingerprint, speed, result.nickname, rtt,
+        unixts_to_isodt_str(round(result.time)))
+    assert stdout_lines[NUM_LINES_HEADER_V110] == bw_line
 
 
 def test_generate_single_relay_success_scale(
@@ -204,13 +209,14 @@ def test_generate_single_relay_success_scale(
             'should be a success'
     captured = capfd.readouterr()
     stdout_lines = captured.out.strip().split('\n')
-    assert len(stdout_lines) == 1 + NUM_LINES_HEADER
+    assert len(stdout_lines) == 1 + NUM_LINES_HEADER_V110
 
     speed = 7500
     rtt = round(median([round(r * 1000) for r in result.rtts]))
     bw_line = 'node_id=${} bw={} nick={} rtt={} time={}'.format(
-        result.fingerprint, speed, result.nickname, rtt, round(result.time))
-    assert stdout_lines[NUM_LINES_HEADER] == bw_line
+        result.fingerprint, speed, result.nickname, rtt,
+        unixts_to_isodt_str(round(result.time)))
+    assert stdout_lines[NUM_LINES_HEADER_V110] == bw_line
 
 
 def test_generate_two_relays_success_noscale(
@@ -234,10 +240,10 @@ def test_generate_two_relays_success_noscale(
             'should be a success'
     captured = capfd.readouterr()
     stdout_lines = captured.out.strip().split('\n')
-    assert len(stdout_lines) == 2 + NUM_LINES_HEADER
+    assert len(stdout_lines) == 2 + NUM_LINES_HEADER_V110
 
     r1_results = [r for r in results if r.fingerprint == 'A' * 40]
-    r1_time = round(max([r.time for r in r1_results]))
+    r1_time = unixts_to_isodt_str(round(max([r.time for r in r1_results])))
     r1_name = r1_results[0].nickname
     r1_fingerprint = r1_results[0].fingerprint
     r1_speeds = [dl['amount'] / dl['duration'] / 1024
@@ -247,10 +253,10 @@ def test_generate_two_relays_success_noscale(
                            for rtt in r.rtts]))
     bw_line = 'node_id=${} bw={} nick={} rtt={} time={}'.format(
         r1_fingerprint, r1_speed, r1_name, r1_rtt, r1_time)
-    assert stdout_lines[1 + NUM_LINES_HEADER] == bw_line
+    assert stdout_lines[1 + NUM_LINES_HEADER_V110] == bw_line
 
     r2_results = [r for r in results if r.fingerprint == 'B' * 40]
-    r2_time = round(max([r.time for r in r2_results]))
+    r2_time = unixts_to_isodt_str(round(max([r.time for r in r2_results])))
     r2_name = r2_results[0].nickname
     r2_fingerprint = r2_results[0].fingerprint
     r2_speeds = [dl['amount'] / dl['duration'] / 1024
@@ -260,4 +266,4 @@ def test_generate_two_relays_success_noscale(
                            for rtt in r.rtts]))
     bw_line = 'node_id=${} bw={} nick={} rtt={} time={}'.format(
         r2_fingerprint, r2_speed, r2_name, r2_rtt, r2_time)
-    assert stdout_lines[NUM_LINES_HEADER] == bw_line
+    assert stdout_lines[NUM_LINES_HEADER_V110] == bw_line

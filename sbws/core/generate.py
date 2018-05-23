@@ -2,7 +2,6 @@ from sbws.globals import (fail_hard, is_initted)
 from sbws.lib.v3bwfile import V3BwHeader
 from sbws.lib.resultdump import ResultSuccess
 from sbws.lib.resultdump import load_recent_results_in_datadir
-from sbws.util.filelock import FileLock
 from sbws.util.timestamp import unixts_to_isodt_str, unixts_to_str
 from argparse import ArgumentDefaultsHelpFormatter
 from statistics import median
@@ -104,24 +103,6 @@ def log_stats(data_lines):
     log.info('Mean bandwidth per line: %f "KiB"', bw_per_line)
 
 
-def read_started_ts(conf):
-    """Read ISO formated timestamp which represents the date and time
-    when scanner started.
-
-    :param ConfigParser conf: configuration
-    :returns: str, ISO formated timestamp
-    """
-    filepath = conf['paths']['started_filepath']
-    try:
-        with FileLock(filepath):
-            with open(filepath, 'r') as fd:
-                generator_started = fd.read()
-    except FileNotFoundError as e:
-        log.warn('File %s not found.%s', filepath, e)
-        return ''
-    return generator_started
-
-
 def main(args, conf):
     if not is_initted(args.directory):
         fail_hard('Sbws isn\'t initialized.  Try sbws init')
@@ -144,21 +125,11 @@ def main(args, conf):
     data_lines = [result_data_to_v3bw_line(results, fp) for fp in results]
     data_lines = sorted(data_lines, key=lambda d: d.bw, reverse=True)
     data_lines = scale_lines(args, data_lines)
+    log_stats(data_lines)
 
     # process header lines
     # FIXME: what to move to V3BwHeader?
-    generator_started = read_started_ts(conf)
-    # here it is ensured that we have results
-    lastest_bandwidth_unixts = max([r.time for fp in results
-                                    for r in results[fp]])
-    timestamp = unixts_to_str(lastest_bandwidth_unixts)
-    earliest_bandwidth_unixts = min([r.time for fp in results
-                                     for r in results[fp]])
-    earliest_bandwidth = unixts_to_isodt_str(earliest_bandwidth_unixts)
-    header = V3BwHeader(timestamp=timestamp,
-                        earliest_bandwidth=earliest_bandwidth,
-                        generator_started=generator_started)
-    log_stats(data_lines)
+    header = V3BwHeader.from_results(conf, results)
 
     # FIXME: move this to V3BwFile class?
     output = conf['paths']['v3bw_fname']

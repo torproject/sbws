@@ -3,8 +3,10 @@
 (v3bw) used by bandwidth authorities."""
 
 import logging
+
 from sbws import __version__
 from sbws.globals import SPEC_VERSION
+from sbws.util.filelock import FileLock
 from sbws.util.timestamp import now_isodt_str, unixts_to_isodt_str
 
 log = logging.getLogger(__name__)
@@ -20,7 +22,27 @@ UNORDERED_KEYVALUES = EXTRA_ARG_KEYVALUES + ['lastest_bandwidth']
 # List of all the KeyValues currently being used to generate the file
 ALL_KEYVALUES = ['version'] + UNORDERED_KEYVALUES
 TERMINATOR = '===='
+# Num header lines in v1.1.0 using all the KeyValues
+NUM_LINES_HEADER_V110 = len(ALL_KEYVALUES) + 2
 LINE_TERMINATOR = TERMINATOR + LINE_SEP
+
+
+def read_started_ts(conf):
+    """Read ISO formated timestamp which represents the date and time
+    when scanner started.
+
+    :param ConfigParser conf: configuration
+    :returns: str, ISO formated timestamp
+    """
+    filepath = conf['paths']['started_filepath']
+    try:
+        with FileLock(filepath):
+            with open(filepath, 'r') as fd:
+                generator_started = fd.read()
+    except FileNotFoundError as e:
+        log.warn('File %s not found.%s', filepath, e)
+        return ''
+    return generator_started
 
 
 class V3BwHeader(object):
@@ -40,7 +62,10 @@ class V3BwHeader(object):
           when the generator started
     """
     def __init__(self, timestamp, **kwargs):
-        self.timestamp = str(timestamp)
+        assert isinstance(timestamp, str)
+        for v in kwargs.values():
+            assert isinstance(v, str)
+        self.timestamp = timestamp
         # KeyValues with default value when not given by kwargs
         self.version = kwargs.get('version', SPEC_VERSION)
         self.software = kwargs.get('software', 'sbws')
@@ -132,3 +157,32 @@ class V3BwHeader(object):
         """
         assert isinstance(text, str)
         return self.from_lines_v110(text.split(LINE_SEP))
+
+    @property
+    def num_lines(self):
+        return len(self.__str__().split(LINE_SEP))
+
+    @staticmethod
+    def generator_started_from_file(conf):
+        return read_started_ts(conf)
+
+    @staticmethod
+    def lastest_bandwidth_from_results(results):
+        return max([r.time for fp in results for r in results[fp]])
+
+    @staticmethod
+    def earliest_bandwidth_from_results(results):
+        return min([r.time for fp in results for r in results[fp]])
+
+    @classmethod
+    def from_results(cls, conf, results):
+        kwargs = dict()
+        lastest_bandwidth = cls.lastest_bandwidth_from_results(results)
+        earliest_bandwidth = cls.lastest_bandwidth_from_results(results)
+        generator_started = cls.generator_started_from_file(conf)
+        timestamp = str(lastest_bandwidth)
+        kwargs['lastest_bandwidth'] = unixts_to_isodt_str(lastest_bandwidth)
+        kwargs['earliest_bandwidth'] = unixts_to_isodt_str(earliest_bandwidth)
+        kwargs['generator_started'] = generator_started
+        h = cls(timestamp, **kwargs)
+        return h

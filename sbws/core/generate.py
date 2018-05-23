@@ -135,31 +135,32 @@ def main(args, conf):
     fresh_days = conf.getint('general', 'data_period')
     results = load_recent_results_in_datadir(
         fresh_days, datadir, success_only=True)
-    if results:
-        # Using naive datetime object without timezone, assumed utc
-        timestamp = datetime.utcfromtimestamp(max([r.time for fp in results
-                                                   for r in results[fp]]))
-        lastest_bandwidth = timestamp.replace(microsecond=0).isoformat()
-        earliest_bandwidth = datetime.utcfromtimestamp(
-                                min([r.time for fp in results
-                                     for r in results[fp]])) \
-            .replace(microsecond=0).isoformat()
     if len(results) < 1:
         log.warning('No recent results, so not generating anything. (Have you '
                     'ran sbws scanner recently?)')
         return
+
+    # process bandwidth lines
     data_lines = [result_data_to_v3bw_line(results, fp) for fp in results]
     data_lines = sorted(data_lines, key=lambda d: d.bw, reverse=True)
     data_lines = scale_lines(args, data_lines)
+
+    # process header lines
+    # FIXME: what to move to V3BwHeader?
     generator_started = read_started_ts(conf)
-    if results:
-        header = V3BwHeader(timestamp=timestamp,
-                            lastest_bandwidth=lastest_bandwidth,
-                            earliest_bandwidth=earliest_bandwidth,
-                            generator_started=generator_started)
-    else:
-        header = V3BwHeader(generator_started=generator_started)
+    # here it is ensured that we have results
+    lastest_bandwidth_unixts = max([r.time for fp in results
+                                    for r in results[fp]])
+    timestamp = unixts_to_str(lastest_bandwidth_unixts)
+    earliest_bandwidth_unixts = min([r.time for fp in results
+                                     for r in results[fp]])
+    earliest_bandwidth = unixts_to_isodt_str(earliest_bandwidth_unixts)
+    header = V3BwHeader(timestamp=timestamp,
+                        earliest_bandwidth=earliest_bandwidth,
+                        generator_started=generator_started)
     log_stats(data_lines)
+
+    # FIXME: move this to V3BwFile class?
     output = conf['paths']['v3bw_fname']
     if args.output:
         output = args.output

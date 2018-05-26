@@ -33,7 +33,7 @@ BW_KEYVALUE_SEP_V110 = ' '
 BW_EXTRA_ARG_KEYVALUES = ['master_key_ed25519', 'nick', 'rtt', 'time',
                           'success', 'error_stream', 'error_circ',
                           'error_misc']
-BW_KEYVALUES_INT = ['bw', 'rtt', 'success', 'error_auth', 'error_stream',
+BW_KEYVALUES_INT = ['bw', 'rtt', 'success', 'error_stream',
                     'error_circ', 'error_misc']
 BW_KEYVALUES = ['node_id', 'bw'] + BW_EXTRA_ARG_KEYVALUES
 

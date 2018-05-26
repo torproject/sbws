@@ -121,8 +121,8 @@ def test_generate_single_success_noscale(dotsbws_success_result, caplog,
                        for dl in result.downloads]))
     rtt = median([round(r * 1000) for r in result.rtts])
     bw_line = V3BWLine(result.fingerprint, bw, nick=result.nickname, rtt=rtt,
-                       last_time=unixts_to_isodt_str(round(result.time)),
-                       success=1, error_circ=0, error_auth=0, error_misc=0,
+                       time=unixts_to_isodt_str(round(result.time)),
+                       success=1, error_circ=0, error_misc=0,
                        error_stream=0)
     # bw_line = V3BWLine.from_results(results)
     print(stdout_lines)
@@ -155,8 +155,8 @@ def test_generate_single_success_scale(dotsbws_success_result, parser,
     bw = 7500
     rtt = median([round(r * 1000) for r in result.rtts])
     bw_line = V3BWLine(result.fingerprint, bw, nick=result.nickname, rtt=rtt,
-                       last_time=unixts_to_isodt_str(round(result.time)),
-                       success=1, error_circ=0, error_auth=0, error_misc=0,
+                       time=unixts_to_isodt_str(round(result.time)),
+                       success=1, error_circ=0, error_misc=0,
                        error_stream=0)
     assert stdout_lines[NUM_LINES_HEADER_V110] + '\n' == str(bw_line)
 
@@ -193,8 +193,8 @@ def test_generate_single_relay_success_noscale(
         unixts_to_isodt_str(round(result.time)))
     bw_line = V3BWLine(result.fingerprint, speed, nick=result.nickname,
                        rtt=rtt,
-                       last_time=unixts_to_isodt_str(round(result.time)),
-                       success=2, error_circ=0, error_auth=0, error_misc=0,
+                       time=unixts_to_isodt_str(round(result.time)),
+                       success=2, error_circ=0, error_misc=0,
                        error_stream=0)
     assert stdout_lines[NUM_LINES_HEADER_V110] + '\n' == str(bw_line)
 
@@ -226,8 +226,8 @@ def test_generate_single_relay_success_scale(
     rtt = round(median([round(r * 1000) for r in result.rtts]))
     bw_line = V3BWLine(result.fingerprint, speed, nick=result.nickname,
                        rtt=rtt,
-                       last_time=unixts_to_isodt_str(round(result.time)),
-                       success=2, error_circ=0, error_auth=0, error_misc=0,
+                       time=unixts_to_isodt_str(round(result.time)),
+                       success=2, error_circ=0, error_misc=0,
                        error_stream=0)
     assert stdout_lines[NUM_LINES_HEADER_V110] + '\n' == str(bw_line)
 
@@ -265,8 +265,8 @@ def test_generate_two_relays_success_noscale(
     r1_rtt = round(median([round(rtt * 1000) for r in r1_results
                            for rtt in r.rtts]))
     bw_line = V3BWLine(r1_fingerprint, r1_speed, nick=r1_name, rtt=r1_rtt,
-                       last_time=r1_time,
-                       success=2, error_circ=0, error_auth=0, error_misc=0,
+                       time=r1_time,
+                       success=2, error_circ=0, error_misc=0,
                        error_stream=0)
     assert stdout_lines[1 + NUM_LINES_HEADER_V110] + '\n' == str(bw_line)
 
@@ -280,7 +280,7 @@ def test_generate_two_relays_success_noscale(
     r2_rtt = round(median([round(rtt * 1000) for r in r2_results
                            for rtt in r.rtts]))
     bw_line = V3BWLine(r2_fingerprint, r2_speed, nick=r2_name, rtt=r2_rtt,
-                       last_time=r2_time,
-                       success=2, error_circ=0, error_auth=0, error_misc=0,
+                       time=r2_time,
+                       success=2, error_circ=0, error_misc=0,
                        error_stream=0)
     assert stdout_lines[NUM_LINES_HEADER_V110] + '\n' == str(bw_line)

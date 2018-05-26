@@ -34,9 +34,10 @@ header_extra_ls = [timestamp_l, version_l,
                    software_l, software_version_l, TERMINATOR]
 header_extra_str = LINE_SEP.join(header_extra_ls) + LINE_SEP
 
-bwl_str = "bw=54 error_auth=0 error_circ=0 error_misc=0 error_stream=1 " \
-    "last_time=2018-04-17T14:09:07 nick=A " \
-    "node_id=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA success=1\n"
+bwl_str = "bw=54 error_circ=0 error_misc=0 error_stream=1 " \
+    "nick=A " \
+    "node_id=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA rtt=456 success=1 " \
+    "time=2018-04-17T14:09:07\n"
 
 v3bw_str = header_extra_str + bwl_str
 
@@ -161,5 +162,4 @@ def test_v3bwfile(datadir, tmpdir):
     bwls = [V3BWLine.from_results(results[fp]) for fp in results]
     f = V3BwFile(header, bwls)
     # f = V3BwFile.from_results(None, str(tmpdir.join("v3bw.txt")), results)
-
     assert v3bw == str(f)

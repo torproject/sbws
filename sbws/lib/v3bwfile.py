@@ -104,6 +104,7 @@ class V3BwHeader(object):
     :param str software: the name of the software that generates this
     :param str software_version: the version of the software
     :param dict kwargs: extra headers. Currently supported:
+
         - earliest_bandwidth: str, ISO 8601 timestamp in UTC time zone
           when the first bandwidth was obtained
         - generator_started: str, ISO 8601 timestamp in UTC time zone
@@ -231,20 +232,23 @@ class V3BwHeader(object):
 
 
 class V3BWLine(object):
+    """
+    Create a Bandwidth List line following the spec version 1.1.0.
+
+    :param str node_id:
+    :param int bw:
+    :param dict kwargs: extra headers. Currently supported:
+
+        - nickname, str
+        - master_key_ed25519, str
+        - rtt, int
+        - time, str
+        - sucess, int
+        - error_stream, int
+        - error_circ, int
+        - error_misc, int
+    """
     def __init__(self, node_id, bw, **kwargs):
-        """
-        :param str node_id:
-        :param int bw:
-        Currently accepted KeyValues:
-            - nickname, str
-            - master_key_ed25519, str
-            - rtt, int
-            - time, str
-            - sucess, int
-            - error_stream, int
-            - error_circ, int
-            - error_misc, int
-        """
         assert isinstance(node_id, str)
         assert isinstance(bw, int)
         self.node_id = node_id
@@ -335,11 +339,13 @@ class V3BWLine(object):
 
 
 class V3BwFile(object):
+    """
+    Create a Bandwidth List file following spec version 1.1.0
+
+    :param V3BWHeader v3bwheader: header
+    :param list v3bwlines: V3BWLines
+    """
     def __init__(self, v3bwheader, v3bwlines):
-        """
-        :param V3BWHeader v3bwheader:
-        :param list v3bwlines:
-        """
         self.header = v3bwheader
         self.bw_lines = v3bwlines
 

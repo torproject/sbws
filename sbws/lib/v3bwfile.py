@@ -7,6 +7,7 @@ from statistics import median
 
 from sbws import __version__
 from sbws.globals import SPEC_VERSION
+from sbws.lib.resultdump import ResultSuccess, _ResultType
 from sbws.util.filelock import FileLock
 from sbws.util.timestamp import now_isodt_str, unixts_to_isodt_str
 
@@ -27,6 +28,40 @@ TERMINATOR = '===='
 NUM_LINES_HEADER_V110 = len(ALL_KEYVALUES) + 2
 LINE_TERMINATOR = TERMINATOR + LINE_SEP
 
+# KeyValue separator in Bandwidth Lines
+BW_KEYVALUE_SEP_V110 = ' '
+BW_EXTRA_ARG_KEYVALUES = ['master_key_ed25519', 'nick', 'rtts', 'last_time',
+                          'success', 'error_stream', 'error_circ',
+                          'error_misc', 'error_auth']
+BW_KEYVALUES = ['node_id', 'bw'] + BW_EXTRA_ARG_KEYVALUES
+
+
+def total_bw(bw_lines):
+    return sum([l.bw for l in bw_lines])
+
+
+def avg_bw(bw_lines):
+    assert len(bw_lines) > 0
+    return total_bw(bw_lines) / len(bw_lines)
+
+
+def scale_lines(bw_lines, scale_constant):
+    avg = avg_bw(bw_lines)
+    for line in bw_lines:
+        line.bw = round(line.bw / avg * scale_constant)
+    warn_if_not_accurate_enough(bw_lines, scale_constant)
+    return bw_lines
+
+
+def warn_if_not_accurate_enough(bw_lines, scale_constant):
+    margin = 0.001
+    accuracy_ratio = avg_bw(bw_lines) / scale_constant
+    log.info('The generated lines are within {:.5}% of what they should '
+             'be'.format((1 - accuracy_ratio) * 100))
+    if accuracy_ratio < 1 - margin or accuracy_ratio > 1 + margin:
+        log.warning('There was %f%% error and only +/- %f%% is '
+                    'allowed', (1 - accuracy_ratio) * 100, margin * 100)
+
 
 def read_started_ts(conf):
     """Read ISO formated timestamp which represents the date and time
@@ -44,6 +79,15 @@ def read_started_ts(conf):
         log.warn('File %s not found.%s', filepath, e)
         return ''
     return generator_started
+
+
+def num_results_of_type(results, type_str):
+    return len([r for r in results if r.type == type_str])
+
+
+# Better way to use enums?
+def result_type_to_key(type_str):
+    return type_str.replace('-', '_')
 
 
 class V3BwHeader(object):
@@ -189,18 +233,106 @@ class V3BwHeader(object):
         return h
 
 
-class V3BWLine:
-    def __init__(self, fp, bw, nick, rtts, last_time):
-        self.fp = fp
-        self.nick = nick
-        # convert to KiB and make sure the answer is at least 1
-        self.bw = max(round(bw / 1024), 1)
-        # convert to ms
-        rtts = [round(r * 1000) for r in rtts]
-        self.rtt = round(median(rtts))
-        self.time = last_time
+class V3BWLine(object):
+    def __init__(self, node_id, bw, **kwargs):
+        """
+        :param str node_id:
+        :param int bw:
+        Currently accepted KeyValues:
+            - nickname, str
+            - master_key_ed25519, str
+            - rtt, int
+            - time, str
+            - sucess, int
+            - error_stream, int
+            - error_circ, int
+            - error_misc, int
+        """
+        assert isinstance(node_id, str)
+        assert isinstance(bw, int)
+        self.node_id = node_id
+        self.bw = bw
+        [setattr(self, k, v) for k, v in kwargs.items()
+         if k in BW_EXTRA_ARG_KEYVALUES]
+
+    @property
+    def bw_keyvalue_tuple_ls(self):
+        """Return list of KeyValue Bandwidth Line tuples."""
+        # sort the list to generate determinist headers
+        keyvalue_tuple_ls = sorted([(k, v) for k, v in self.__dict__.items()
+                                    if k in BW_KEYVALUES])
+        return keyvalue_tuple_ls
+
+    @property
+    def bw_keyvalue_v110str_ls(self):
+        """Return list of KeyValue Bandwidth Line strings following
+        spec v1.1.0.
+        """
+        bw_keyvalue_str = [KEYVALUE_SEP_V110 .join([k, str(v)])
+                           for k, v in self.bw_keyvalue_tuple_ls]
+        return bw_keyvalue_str
+
+    @property
+    def bw_strv110(self):
+        """Return Bandwidth Line string following spec v1.1.0."""
+        bw_line_str = BW_KEYVALUE_SEP_V110.join(
+                        self.bw_keyvalue_v110str_ls) + LINE_SEP
+        return bw_line_str
 
     def __str__(self):
-        frmt = 'node_id=${fp} bw={sp} nick={n} rtt={rtt} time={t}'
-        return frmt.format(fp=self.fp, sp=self.bw, n=self.nick, rtt=self.rtt,
-                           t=self.time)
+        return self.bw_strv110
+
+    @classmethod
+    def from_bw_line_v110(cls, line):
+        assert isinstance(line, str)
+        kwargs = dict([kv.split(KEYVALUE_SEP_V110)
+                       for kv in line.split(BW_KEYVALUE_SEP_V110)
+                       if kv.split(KEYVALUE_SEP_V110)[0] in BW_KEYVALUES])
+        bw_line = cls(**kwargs)
+        return bw_line
+
+    @staticmethod
+    def bw_from_results(results):
+        median_bw = median([dl['amount'] / dl['duration']
+                            for r in results for dl in r.downloads])
+        # convert to KB and ensure it's at least 1
+        bw_kb = max(round(median_bw / 1024), 1)
+        return bw_kb
+
+    @staticmethod
+    def last_time_from_results(results):
+        return unixts_to_isodt_str(round(max([r.time for r in results])))
+
+    @staticmethod
+    def rtts_from_results(results):
+        # convert from miliseconds to seconds
+        rtts = [(round(rtt * 1000)) for r in results for rtt in r.rtts]
+        rtt = round(median(rtts))
+        return rtt
+
+    @staticmethod
+    def result_types_from_results(results):
+        rt_dict = dict([(result_type_to_key(rt.value),
+                         num_results_of_type(results, rt.value))
+                        for rt in _ResultType])
+        return rt_dict
+
+    @classmethod
+    def from_results(cls, results):
+        success_results = [r for r in results if isinstance(r, ResultSuccess)]
+        log.debug('len(success_results) %s', len(success_results))
+        node_id = results[0].fingerprint
+        bw = cls.bw_from_results(success_results)
+        kwargs = dict()
+        kwargs['nick'] = results[0].nickname
+        kwargs['rtt'] = cls.rtts_from_results(success_results)
+        kwargs['last_time'] = cls.last_time_from_results(results)
+        kwargs.update(cls.result_types_from_results(results))
+        bwl = cls(node_id, bw, **kwargs)
+        return bwl
+
+    @classmethod
+    def from_data(cls, data, fingerprint):
+        assert fingerprint in data
+        return cls.from_results(data[fingerprint])
+

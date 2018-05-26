@@ -2,55 +2,11 @@ from sbws.globals import (fail_hard, is_initted)
 from sbws.lib.v3bwfile import V3BwHeader, V3BWLine
 from sbws.lib.resultdump import ResultSuccess
 from sbws.lib.resultdump import load_recent_results_in_datadir
-from sbws.util.timestamp import unixts_to_isodt_str
 from argparse import ArgumentDefaultsHelpFormatter
-from statistics import median
 import os
 import logging
 
 log = logging.getLogger(__name__)
-
-
-def result_data_to_v3bw_line(data, fingerprint):
-    assert fingerprint in data
-    results = data[fingerprint]
-    for res in results:
-        assert isinstance(res, ResultSuccess)
-    results = data[fingerprint]
-    nick = results[0].nickname
-    speeds = [dl['amount'] / dl['duration']
-              for r in results for dl in r.downloads]
-    speed = median(speeds)
-    rtts = [rtt for r in results for rtt in r.rtts]
-    last_time = round(max([r.time for r in results]))
-    return V3BWLine(fingerprint, speed, nick, rtts, last_time)
-
-
-def warn_if_not_accurate_enough(lines, constant):
-    margin = 0.001
-    accuracy_ratio = (sum([l.bw for l in lines]) / len(lines)) / constant
-    log.info('The generated lines are within {:.5}% of what they should '
-             'be'.format((1-accuracy_ratio)*100))
-    if accuracy_ratio < 1 - margin or accuracy_ratio > 1 + margin:
-        log.warning('There was %f%% error and only +/- %f%% is '
-                    'allowed', (1-accuracy_ratio)*100, margin*100)
-
-
-def scale_lines(args, v3bw_lines):
-    assert len(v3bw_lines) > 0
-    total = sum([l.bw for l in v3bw_lines])
-    # In case total is zero, it will run on ZeroDivision
-    assert total > 0
-    if args.scale:
-        scale = len(v3bw_lines) * args.scale_constant
-    else:
-        scale = total
-    ratio = scale / total
-    for line in v3bw_lines:
-        line.bw = round(line.bw * ratio)
-    if args.scale:
-        warn_if_not_accurate_enough(v3bw_lines, args.scale_constant)
-    return v3bw_lines
 
 
 def gen_parser(sub):
@@ -101,22 +57,3 @@ def main(args, conf):
                     'ran sbws scanner recently?)')
         return
 
-    # process bandwidth lines
-    data_lines = [result_data_to_v3bw_line(results, fp) for fp in results]
-    data_lines = sorted(data_lines, key=lambda d: d.bw, reverse=True)
-    data_lines = scale_lines(args, data_lines)
-    log_stats(data_lines)
-
-    # process header lines
-    # FIXME: what to move to V3BwHeader?
-    header = V3BwHeader.from_results(conf, results)
-
-    # FIXME: move this to V3BwFile class?
-    output = conf['paths']['v3bw_fname']
-    if args.output:
-        output = args.output
-    log.info('Writing v3bw file to %s', output)
-    with open(output, 'wt') as fd:
-        fd.write(str(header))
-        for line in data_lines:
-            fd.write('{}\n'.format(str(line)))

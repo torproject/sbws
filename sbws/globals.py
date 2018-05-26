@@ -25,6 +25,7 @@ TORRC_STARTING_POINT = {
 }
 
 SCALE_CONSTANT = 7500
+BW_LINE_SIZE = 510
 
 
 def is_initted(d):

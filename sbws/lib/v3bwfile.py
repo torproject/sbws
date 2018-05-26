@@ -6,7 +6,7 @@ import logging
 from statistics import median
 
 from sbws import __version__
-from sbws.globals import SPEC_VERSION
+from sbws.globals import SPEC_VERSION, BW_LINE_SIZE
 from sbws.lib.resultdump import ResultSuccess, _ResultType
 from sbws.util.filelock import FileLock
 from sbws.util.timestamp import now_isodt_str, unixts_to_isodt_str
@@ -32,7 +32,9 @@ LINE_TERMINATOR = TERMINATOR + LINE_SEP
 BW_KEYVALUE_SEP_V110 = ' '
 BW_EXTRA_ARG_KEYVALUES = ['master_key_ed25519', 'nick', 'rtts', 'last_time',
                           'success', 'error_stream', 'error_circ',
-                          'error_misc', 'error_auth']
+                          'error_misc']
+BW_KEYVALUES_INT = ['bw', 'rtts', 'success', 'error_auth', 'error_stream',
+                    'error_circ', 'error_misc']
 BW_KEYVALUES = ['node_id', 'bw'] + BW_EXTRA_ARG_KEYVALUES
 
 
@@ -278,6 +280,11 @@ class V3BWLine(object):
         """Return Bandwidth Line string following spec v1.1.0."""
         bw_line_str = BW_KEYVALUE_SEP_V110.join(
                         self.bw_keyvalue_v110str_ls) + LINE_SEP
+        if len(bw_line_str) > BW_LINE_SIZE:
+            # if this is the case, probably there are too many KeyValues,
+            # or the limit needs to be changed in Tor
+            log.warn("The bandwidth line %s is longer than %s",
+                     len(bw_line_str), BW_LINE_SIZE)
         return bw_line_str
 
     def __str__(self):
@@ -289,6 +296,9 @@ class V3BWLine(object):
         kwargs = dict([kv.split(KEYVALUE_SEP_V110)
                        for kv in line.split(BW_KEYVALUE_SEP_V110)
                        if kv.split(KEYVALUE_SEP_V110)[0] in BW_KEYVALUES])
+        for k, v in kwargs.items():
+            if k in BW_KEYVALUES_INT:
+                kwargs[k] = int(v)
         bw_line = cls(**kwargs)
         return bw_line
 

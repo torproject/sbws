@@ -131,7 +131,6 @@ class V3BwHeader(object):
         # sort the list to generate determinist headers
         keyvalue_tuple_ls = sorted([(k, v) for k, v in self.__dict__.items()
                                     if k in UNORDERED_KEYVALUES])
-        log.debug('keyvalue_tuple_ls %s', keyvalue_tuple_ls)
         return keyvalue_tuple_ls
 
     @property
@@ -144,7 +143,6 @@ class V3BwHeader(object):
         """Return KeyValue list of strings following spec v1.1.0."""
         keyvalues = [self.timestamp] + [KEYVALUE_SEP_V110.join([k, v])
                                         for k, v in self.keyvalue_tuple_ls]
-        log.debug('keyvalue %s', keyvalues)
         return keyvalues
 
     @property
@@ -152,7 +150,6 @@ class V3BwHeader(object):
         """Return header string following spec v1.1.0."""
         header_str = LINE_SEP.join(self.keyvalue_v110str_ls) + LINE_SEP + \
             LINE_TERMINATOR
-        log.debug('header_str %s', header_str)
         return header_str
 
     @property
@@ -160,7 +157,6 @@ class V3BwHeader(object):
         """Return KeyValue list of strings following spec v2.0.0."""
         keyvalue = [self.timestamp] + [KEYVALUE_SEP_V200.join([k, v])
                                        for k, v in self.keyvalue_tuple_ls]
-        log.debug('keyvalue %s', keyvalue)
         return keyvalue
 
     @property
@@ -168,7 +164,6 @@ class V3BwHeader(object):
         """Return header string following spec v2.0.0."""
         header_str = LINE_SEP.join(self.keyvalue_v200_ls) + LINE_SEP + \
             LINE_TERMINATOR
-        log.debug('header_str %s', header_str)
         return header_str
 
     def __str__(self):
@@ -190,7 +185,6 @@ class V3BwHeader(object):
             log.warn('Terminator is not in lines')
             return None
         ts = lines[0]
-        # not checking order
         kwargs = dict([l.split(KEYVALUE_SEP_V110)
                        for l in lines[:index_terminator]
                        if l.split(KEYVALUE_SEP_V110)[0] in ALL_KEYVALUES])

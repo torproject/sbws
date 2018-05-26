@@ -30,10 +30,10 @@ LINE_TERMINATOR = TERMINATOR + LINE_SEP
 
 # KeyValue separator in Bandwidth Lines
 BW_KEYVALUE_SEP_V110 = ' '
-BW_EXTRA_ARG_KEYVALUES = ['master_key_ed25519', 'nick', 'rtts', 'last_time',
+BW_EXTRA_ARG_KEYVALUES = ['master_key_ed25519', 'nick', 'rtt', 'time',
                           'success', 'error_stream', 'error_circ',
                           'error_misc']
-BW_KEYVALUES_INT = ['bw', 'rtts', 'success', 'error_auth', 'error_stream',
+BW_KEYVALUES_INT = ['bw', 'rtt', 'success', 'error_auth', 'error_stream',
                     'error_circ', 'error_misc']
 BW_KEYVALUES = ['node_id', 'bw'] + BW_EXTRA_ARG_KEYVALUES
 
@@ -315,7 +315,7 @@ class V3BWLine(object):
         return unixts_to_isodt_str(round(max([r.time for r in results])))
 
     @staticmethod
-    def rtts_from_results(results):
+    def rtt_from_results(results):
         # convert from miliseconds to seconds
         rtts = [(round(rtt * 1000)) for r in results for rtt in r.rtts]
         rtt = round(median(rtts))
@@ -336,8 +336,8 @@ class V3BWLine(object):
         bw = cls.bw_from_results(success_results)
         kwargs = dict()
         kwargs['nick'] = results[0].nickname
-        kwargs['rtt'] = cls.rtts_from_results(success_results)
-        kwargs['last_time'] = cls.last_time_from_results(results)
+        kwargs['rtt'] = cls.rtt_from_results(success_results)
+        kwargs['time'] = cls.last_time_from_results(results)
         kwargs.update(cls.result_types_from_results(results))
         bwl = cls(node_id, bw, **kwargs)
         return bwl

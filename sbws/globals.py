@@ -24,6 +24,8 @@ TORRC_STARTING_POINT = {
     'UseEntryGuards': '0',
 }
 
+SCALE_CONSTANT = 7500
+
 
 def is_initted(d):
     if not os.path.isdir(d):

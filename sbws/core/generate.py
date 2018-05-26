@@ -1,6 +1,5 @@
-from sbws.globals import (fail_hard, is_initted)
-from sbws.lib.v3bwfile import V3BwHeader, V3BWLine
-from sbws.lib.resultdump import ResultSuccess
+from sbws.globals import (fail_hard, is_initted, SCALE_CONSTANT)
+from sbws.lib.v3bwfile import V3BwFile
 from sbws.lib.resultdump import load_recent_results_in_datadir
 from argparse import ArgumentDefaultsHelpFormatter
 import os
@@ -22,7 +21,7 @@ def gen_parser(sub):
     # time, torflow happened to generate output that averaged to 7500 bw units
     # per relay. We wanted the ability to try to be like torflow. See
     # https://lists.torproject.org/pipermail/tor-dev/2018-March/013049.html
-    p.add_argument('--scale-constant', default=7500, type=int,
+    p.add_argument('--scale-constant', default=SCALE_CONSTANT, type=int,
                    help='When scaling bw weights, scale them using this const '
                    'multiplied by the number of measured relays')
     p.add_argument('--scale', action='store_true',
@@ -30,13 +29,6 @@ def gen_parser(sub):
                    'are, but scale them such that we have a budget of '
                    'scale_constant * num_measured_relays = bandwidth to give '
                    'out, and we do so proportionally')
-
-
-def log_stats(data_lines):
-    assert len(data_lines) > 0
-    total_bw = sum([l.bw for l in data_lines])
-    bw_per_line = total_bw / len(data_lines)
-    log.info('Mean bandwidth per line: %f "KiB"', bw_per_line)
 
 
 def main(args, conf):
@@ -56,4 +48,5 @@ def main(args, conf):
         log.warning('No recent results, so not generating anything. (Have you '
                     'ran sbws scanner recently?)')
         return
-
+    bw_file = V3BwFile.from_arg_results(args, conf, results)
+    log.info('Mean bandwidth per line: %f "KiB"', bw_file.avg_bw)

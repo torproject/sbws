@@ -70,7 +70,10 @@ def read_started_ts(conf):
     :param ConfigParser conf: configuration
     :returns: str, ISO formated timestamp
     """
-    filepath = conf['paths']['started_filepath']
+    try:
+        filepath = conf['paths']['started_filepath']
+    except TypeError as e:
+        return ''
     try:
         with FileLock(filepath):
             with open(filepath, 'r') as fd:
@@ -336,3 +339,56 @@ class V3BWLine(object):
         assert fingerprint in data
         return cls.from_results(data[fingerprint])
 
+
+class V3BwFile(object):
+    def __init__(self, v3bwheader, v3bwlines):
+        """
+        :param V3BWHeader v3bwheader:
+        :param list v3bwlines:
+        """
+        self.header = v3bwheader
+        self.bw_lines = v3bwlines
+
+    def __str__(self):
+        return str(self.header) + ''.join([str(bw_line)
+                                           for bw_line in self.bw_lines])
+
+    @property
+    def total_bw(self):
+        return total_bw(self.bw_lines)
+
+    @property
+    def num_lines(self):
+        return len(self.bw_lines)
+
+    @property
+    def avg_bw(self):
+        return self.total_bw / self.num_lines
+
+    @classmethod
+    def from_results(cls, conf, output, results):
+        bw_lines = [V3BWLine.from_results(results[fp]) for fp in results]
+        bw_lines = sorted(bw_lines, key=lambda d: d.bw, reverse=True)
+        header = V3BwHeader.from_results(conf, results)
+        f = cls(header, bw_lines)
+        f.write(output)
+        return f
+
+    @classmethod
+    def from_arg_results(cls, args, conf, results):
+        bw_lines = [V3BWLine.from_results(results[fp]) for fp in results]
+        bw_lines = sorted(bw_lines, key=lambda d: d.bw, reverse=True)
+        if args.scale:
+            bw_lines = scale_lines(bw_lines, args.scale_constant)
+        header = V3BwHeader.from_results(conf, results)
+        f = cls(header, bw_lines)
+        output = args.output or conf['paths']['v3bw_fname']
+        f.write(output)
+        return f
+
+    def write(self, output):
+        log.info('Writing v3bw file to %s', output)
+        with open(output, 'wt') as fd:
+            fd.write(str(self.header))
+            for line in self.bw_lines:
+                fd.write(str(line))

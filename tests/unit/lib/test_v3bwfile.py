@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """Test generation of bandwidth measurements document (v3bw)"""
 import json
-import os.path
 
 from sbws import __version__ as version
 from sbws.globals import SPEC_VERSION
 from sbws.lib.resultdump import Result, load_result_file
 from sbws.lib.v3bwfile import (V3BwHeader, V3BWLine, TERMINATOR, LINE_SEP,
-                               KEYVALUE_SEP_V110, num_results_of_type)
+                               KEYVALUE_SEP_V110, num_results_of_type,
+                               V3BwFile)
 
 timestamp = 1523974147
 timestamp_l = str(timestamp)
@@ -152,4 +152,14 @@ def test_v3bwline_from_results_file(datadir):
 
 def test_v3bwfile(datadir, tmpdir):
     """Test generate v3bw file (including relay_lines)."""
-    pass
+    v3bw = datadir.read('v3bw.txt')
+    results = load_result_file(str(datadir.join("results.txt")))
+    header = V3BwHeader(timestamp_l,
+                        file_created=file_created,
+                        generator_started=generator_started,
+                        earliest_bandwidth=earliest_bandwidth)
+    bwls = [V3BWLine.from_results(results[fp]) for fp in results]
+    f = V3BwFile(header, bwls)
+    # f = V3BwFile.from_results(None, str(tmpdir.join("v3bw.txt")), results)
+
+    assert v3bw == str(f)

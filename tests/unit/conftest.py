@@ -2,8 +2,9 @@ from sbws.lib.resultdump import ResultError
 from sbws.lib.resultdump import ResultSuccess
 from sbws.lib.resultdump import Result
 from sbws.lib.resultdump import write_result_to_datadir
-from sbws.util.config import get_config
+from sbws.util.config import get_config, _get_default_config
 from sbws.util.parser import create_parser
+import sbws.util.stem as stem_utils
 import sbws.core.init
 from tempfile import TemporaryDirectory
 import pytest
@@ -59,6 +60,19 @@ def datadir(request):
             with self.open(name, "r") as f:
                 return f.readlines()
     return D(request.fspath.dirpath("data"))
+
+
+@pytest.fixture()
+def start_tor(request, tmpdir):
+    """Star Tor or connect to existing socket in a temporal directory."""
+    conf = _get_default_config()
+    home = tmpdir.join('.sbws')
+    conf['paths']['sbws_home'] = home.strpath
+    controller, _ = stem_utils.init_controller(
+                                 path=conf['tor']['control_socket'])
+    if not controller:
+        controller = stem_utils.launch_tor(conf)
+    return controller
 
 
 @pytest.fixture(scope='session')

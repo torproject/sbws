@@ -268,18 +268,6 @@ def _validate_section_keys(conf, sec, keys, tmpl):
     return errors
 
 
-def _validate_section_enums(conf, sec, enums, tmpl):
-    errors = []
-    section = conf[sec]
-    for key in enums:
-        valid = enums[key]['valid']
-        if section[key] not in valid:
-            errors.append(tmpl.substitute(
-                sec=sec, key=key, val=section[key],
-                e='Must be one of {}'.format(valid)))
-    return errors
-
-
 def _validate_section_ints(conf, sec, ints, tmpl):
     errors = []
     section = conf[sec]

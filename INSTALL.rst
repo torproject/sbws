@@ -22,7 +22,86 @@ version is 1.5.3, which would be tagged as ``v1.5.3``.
 
 .. _release page: https://github.com/pastly/simple-bw-scanner/releases
 
-Virtualenv - Production
+Virtualenv - Development
+------------------------------------------------------------------------------
+
+Choose a directory to store code in. I might choose ``~/src``.
+
+::
+
+    cd ~/src
+
+Get stem
+~~~~~~~~~~~~~
+
+::
+
+    git clone https://git.torproject.org/stem.git
+
+Get sbws
+~~~~~~~~~~~~~~~~~
+
+::
+
+    git clone https://github.com/pastly/simple-bw-scanner.git
+    cd simple-bw-scanner
+
+
+Create and enter virtualenv
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+I like to keep mine in my simple-bw-scanner directory and assume that's where
+you'll put it.
+
+::
+
+    virtualenv -p python3 venv
+    source venv/bin/activate
+
+Install stem in virtualenv
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sbws requires on features not yet in a released version of stem (1.7.0 has not
+been released as of the time of writing). You can either install from the
+master branch, or checkout ``60f034ad8b9c3aa48e7e2ecb0a2e159b6ed5bc71`` or
+newer.
+
+::
+
+    pip install ../stem
+
+Install sbws and its remaining dependencies
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Here is where you might want to know what the latest release of sbws is (this
+document assumes it is 1.5.3). Skip
+the ``git checkout`` if you want to run the bleeding edge tip-of-master version
+of sbws.
+
+::
+
+    git checkout v1.5.3
+    pip install .
+
+Initialize sbws
+~~~~~~~~~~~~~~~~~~~
+
+This creates ``~/.sbws`` and initializes some files in it.
+
+::
+
+    sbws init
+
+If you would like to keep sbws's data directory somewhere else, use ``-d``.
+**You will have to use -d every time you run an sbws command to use this custom
+directory**.
+
+::
+
+    sbws -d /tmp/dotsbws-testing init
+
+
+[OBSOLETE DO NOT FOLLOW] Virtualenv - Production
 ------------------------------------------------------------------------------
 
 Installing
@@ -60,7 +139,7 @@ Updating
     pip install --process-dependency-links --upgrade-strategy eager --upgrade .
 
 
-Virtualenv - Development
+[OBSOLETE DO NOT FOLLOW] Virtualenv - Development
 ------------------------------------------------------------------------------
 
 These are almost exactly the same. The difference is the pip command: we

@@ -164,7 +164,6 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         msg = 'Unable to complete circuit'
         return [
             ResultErrorCircuit(relay, circ_fps, dest.url, our_nick, msg=msg),
-            ResultErrorCircuit(exit, circ_fps, dest.url, our_nick, msg=msg),
         ]
     log.debug('Built circ %s %s for relay %s %s', circ_id,
               stem_utils.circuit_str(cb.controller, circ_id), relay.nickname,
@@ -181,7 +180,6 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         msg = 'The destination seemed to have stopped being usable'
         return [
             ResultErrorStream(relay, circ_fps, dest.url, our_nick, msg=msg),
-            ResultErrorStream(exit, circ_fps, dest.url, our_nick, msg=msg),
         ]
     assert is_usable
     assert 'content_length' in usable_data
@@ -195,7 +193,6 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         msg = 'Something bad happened while measuring RTTs'
         return [
             ResultErrorStream(relay, circ_fps, dest.url, our_nick, msg=msg),
-            ResultErrorStream(exit, circ_fps, dest.url, our_nick, msg=msg),
         ]
     # SECOND: measure bandwidth
     bw_results = measure_bandwidth_to_server(
@@ -208,13 +205,11 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         msg = 'Something bad happened while measuring bandwidth'
         return [
             ResultErrorStream(relay, circ_fps, dest.url, our_nick, msg=msg),
-            ResultErrorStream(exit, circ_fps, dest.url, our_nick, msg=msg),
         ]
     cb.close_circuit(circ_id)
     # Finally: store result
     return [
         ResultSuccess(rtts, bw_results, relay, circ_fps, dest.url, our_nick),
-        ResultSuccess(rtts, bw_results, exit, circ_fps, dest.url, our_nick),
     ]
 
 

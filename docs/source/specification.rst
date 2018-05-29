@@ -3,7 +3,7 @@ Simple Bandwidth Scanner Specification
 
 :Author: Matt Traudt
 :Date: 29 March 2018
-:Last Update: 10 May 2018
+:Last Update: 29 May 2018
 :Status: Draft
 
 Conventions
@@ -38,13 +38,18 @@ was needed, but it was harder to reach consensus on what it should look like
 and what its goals where.
 
 Simple Bandwidth Scanner (sbws) is a project motivated by discussions at the
-Rome 2018 Tor Project meeting. This document describes the implementation
-contained within the accompanying ``sbws`` package.
+Rome 2018 Tor Project meeting. It aims to be a quick to implement,
+easy to maintain replacement for torflow. It should not receive many fancy
+features; instead, developer time should be spent on finding and implementing a
+better load balancing solution than bandwidth scanning, such as peerflow_.
+
+This document describes the implementation contained within the accompanying
+``sbws`` package.
 
 Anatomy of a Tor network using sbws
 -----------------------------------
 
-First and foremost, there needs to exist one or more webservers that exist
+First and foremost, there needs to be one or more webservers that exist
 somewhere on the Internet. They MUST serve up a file of at least some minimum
 size, and MUST support both HTTP GET and HEAD requests on that file. For both
 HTTP verbs, they MUST support requests with the Range header and MUST support
@@ -53,22 +58,22 @@ TLS connections, optionally with a valid certificate. Both apache and nginx fit
 these requirements.
 
 Every directory authority that wishes to also vote on relay bandwidth (AKA
-bandwidth authority) MUST run one or more sbws scanner clients (or trust
+a bandwidth authority) MUST run one or more sbws scanner clients (or trust
 someone to run one or more sbws scanner clients for them). The scanners run
 continuously, constantly building two-hop circuits to the previously described
-webservers and measuring the amount of bandwidth each relay is capable of
-handling on the measurement circuit.  Over these circuits it collects RTT data
-(by repeatedly requesting a single byte from the webserver) and available
+webservers and measuring the amount of bandwidth relays are capable of
+handling on these measurement circuit.  Over these circuits it collects RTT
+data (by repeatedly requesting a single byte from the webserver) and available
 bandwidth data (by starting small and progressively requesting larger amounts
 of data until the request takes long enough to fulfill, and then requesting
 that amount many times).
 
-Periodically the operator of an sbws scanner SHOULD run the sbws generate
-process.  This aggregates the previous few days' worth of measurement results
-into one RTT and one bandwidth per relay ever measured within the validity
-period into a single file for the tor process the bandwidth authority is
-running to read.  The bandwidth authority includes these aggregated results in its
-votes.
+Periodically the operator of an sbws scanner MUST run the sbws generate
+command in order to generate a :term:`v3bw file`. This aggregates the previous
+few days' worth of measurement results into one RTT and one bandwidth per relay
+ever measured within the validity period into a single file for the tor process
+the bandwidth authority is running to read.  The bandwidth authority includes
+these aggregated results in its votes.
 
 Sbws dependencies
 -----------------
@@ -150,7 +155,7 @@ measurements that were not successful. This makes the sum of freshnesses lower
 for that relay, and therefore the priority *better* so it can be measured again
 sooner.
 
-Simple Result Storage
+Simple result storage
 ~~~~~~~~~~~~~~~~~~~~~
 
 Internally, sbws has a hierarchy of ``Result`` classes for easy managing of
@@ -165,7 +170,7 @@ The sbws scanner only appends to these files, and it automatically starts a new
 file when the system's clock ticks past midnight UTC.
 
 To avoid any weird timezone-related issues, consumers of sbws scanner data (such
-as the generate and stats scripts) should read more files than strictly
+as the generate and stats scripts) SHOULD read more files than strictly
 necessary. For example, if the validity period is 5 days, they should read 6
 days of files. Because all results have a Unix timestamp, consumers of sbws
 data can easily determine which results are just outside the validity period as

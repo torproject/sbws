@@ -2,7 +2,7 @@ import sbws.util.config as con
 from configparser import ConfigParser
 
 
-class Section:
+class PseudoSection:
     def __init__(self, key, value, mini=None, maxi=None):
         self.key = key
         self.value = value
@@ -43,13 +43,14 @@ def test_validate_fingerprint():
 
 def test_validate_int_simple():
     bads = [
-        Section('', 'NotAInt'),
-        Section('', '-0.1'), Section('', '0.1'),
+        PseudoSection('', 'NotAInt'),
+        PseudoSection('', '-0.1'), PseudoSection('', '0.1'),
     ]
     goods = [
-        Section('', '0'), Section('', '1'), Section('', '-1'),
-        Section('', '100000000'), Section('', '-1000000000'),
-        Section('', '+0'), Section('', '-0'),
+        PseudoSection('', '0'),
+        PseudoSection('', '1'), PseudoSection('', '-1'),
+        PseudoSection('', '100000000'), PseudoSection('', '-1000000000'),
+        PseudoSection('', '+0'), PseudoSection('', '-0'),
     ]
     for sec in bads:
         valid, reason = con._validate_int(sec, sec.key)
@@ -63,13 +64,14 @@ def test_validate_int_simple():
 
 def test_validate_float_simple():
     bads = [
-        Section('', 'NotAFloat'),
+        PseudoSection('', 'NotAFloat'),
     ]
     goods = [
-        Section('', '0'), Section('', '1'), Section('', '-1'),
-        Section('', '-0.1'), Section('', '0.1'),
-        Section('', '100000000'), Section('', '-1000000000'),
-        Section('', '+0'), Section('', '-0'),
+        PseudoSection('', '0'),
+        PseudoSection('', '1'), PseudoSection('', '-1'),
+        PseudoSection('', '-0.1'), PseudoSection('', '0.1'),
+        PseudoSection('', '100000000'), PseudoSection('', '-1000000000'),
+        PseudoSection('', '+0'), PseudoSection('', '-0'),
     ]
     for sec in bads:
         valid, reason = con._validate_float(sec, sec.key)
@@ -83,12 +85,12 @@ def test_validate_float_simple():
 
 def test_validate_int_min():
     goods = [
-        Section('', '0', mini=0),
-        Section('', '1', mini=1), Section('', '-1', mini=-1),
+        PseudoSection('', '0', mini=0),
+        PseudoSection('', '1', mini=1), PseudoSection('', '-1', mini=-1),
     ]
     bads = [
-        Section('', '1', mini=2),
-        Section('', '0', mini=1),
+        PseudoSection('', '1', mini=2),
+        PseudoSection('', '0', mini=1),
     ]
     for sec in bads:
         valid, reason = con._validate_int(sec, sec.key, minimum=sec.mini)
@@ -102,12 +104,13 @@ def test_validate_int_min():
 
 def test_validate_float_min():
     goods = [
-        Section('', '0', mini=0.0),
-        Section('', '0.1', mini=0.1), Section('', '-0.1', mini=-0.1),
-        Section('', '0.1', mini=-0.1),
+        PseudoSection('', '0', mini=0.0),
+        PseudoSection('', '0.1', mini=0.1),
+        PseudoSection('', '-0.1', mini=-0.1),
+        PseudoSection('', '0.1', mini=-0.1),
     ]
     bads = [
-        Section('', '0.0999999999', mini=0.1),
+        PseudoSection('', '0.0999999999', mini=0.1),
     ]
     for sec in bads:
         valid, reason = con._validate_float(sec, sec.key, minimum=sec.mini)
@@ -121,13 +124,13 @@ def test_validate_float_min():
 
 def test_validate_int_max():
     goods = [
-        Section('', '0', maxi=0),
-        Section('', '1', maxi=1), Section('', '-1', maxi=-1),
-        Section('', '-1', maxi=1),
+        PseudoSection('', '0', maxi=0),
+        PseudoSection('', '1', maxi=1), PseudoSection('', '-1', maxi=-1),
+        PseudoSection('', '-1', maxi=1),
     ]
     bads = [
-        Section('', '2', maxi=1),
-        Section('', '1', maxi=0),
+        PseudoSection('', '2', maxi=1),
+        PseudoSection('', '1', maxi=0),
     ]
     for sec in bads:
         valid, reason = con._validate_int(sec, sec.key, maximum=sec.maxi)
@@ -141,12 +144,13 @@ def test_validate_int_max():
 
 def test_validate_float_max():
     goods = [
-        Section('', '0', maxi=0.0),
-        Section('', '0.1', maxi=0.1), Section('', '-0.1', maxi=-0.1),
-        Section('', '-0.1', maxi=0.1),
+        PseudoSection('', '0', maxi=0.0),
+        PseudoSection('', '0.1', maxi=0.1),
+        PseudoSection('', '-0.1', maxi=-0.1),
+        PseudoSection('', '-0.1', maxi=0.1),
     ]
     bads = [
-        Section('', '0.10000000001', maxi=0.1),
+        PseudoSection('', '0.10000000001', maxi=0.1),
     ]
     for sec in bads:
         valid, reason = con._validate_float(sec, sec.key, maximum=sec.maxi)

@@ -206,3 +206,25 @@ def test_validate_url():
         d = {'': val}
         valid, reason = con._validate_url(d, '')
         assert not valid, '{} should not have been a valid URL'.format(val)
+
+
+def test_nickname():
+    max_len = 32
+    goods = [
+        'aaa', 'AAA', 'aAa', 'A1a', '1aA', 'aA1',
+        '!!!', '!@#',
+        'a!A', '!Aa', 'Aa!',
+        'a' * max_len,
+    ]
+    bads = [
+        '', 'a' * (max_len + 1),
+        '"', '\'',
+    ]
+    for nick in goods:
+        d = {'n': nick}
+        valid, reason = con._validate_nickname(d, 'n')
+        assert valid, reason
+    for nick in bads:
+        d = {'n': nick}
+        valid, reason = con._validate_nickname(d, 'n')
+        assert not valid, reason

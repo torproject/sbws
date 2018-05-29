@@ -11,6 +11,8 @@ _ALPHANUM = 'abcdefghijklmnopqrstuvwxyz'
 _ALPHANUM += _ALPHANUM.upper()
 _ALPHANUM += '0123456789'
 
+_SYMBOLS_NO_QUOTES = '!@#$%^&*()-_=+\\|[]{}:;/?.,<>'
+
 _HEX = '0123456789ABCDEF'
 
 log = logging.getLogger(__name__)
@@ -417,7 +419,7 @@ def _validate_fingerprint(section, key):
 
 
 def _validate_nickname(section, key):
-    alphabet = _ALPHANUM
+    alphabet = _ALPHANUM + _SYMBOLS_NO_QUOTES
     min_len = 1
     max_len = 32
     return _validate_string(section, key, min_len=min_len, max_len=max_len,

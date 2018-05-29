@@ -186,3 +186,23 @@ def test_validate_bool():
         valid, reason = con._validate_boolean(conf['sec'], 'key')
         assert not valid, '{} should not have been a valid '\
             'bool'.format(val)
+
+
+def test_validate_url():
+    goods = [
+        'http://example.com',
+        'http://example.com/foo.bar',
+    ]
+    bads = [
+        'ftp://example.com/foo.bar',
+        'http://', 'http:///',
+    ]
+    for val in goods:
+        d = {'': val}
+        valid, reason = con._validate_url(d, '')
+        assert valid, '{} should have been a valid URL, but '\
+            'got: {}'.format(val, reason)
+    for val in bads:
+        d = {'': val}
+        valid, reason = con._validate_url(d, '')
+        assert not valid, '{} should not have been a valid URL'.format(val)

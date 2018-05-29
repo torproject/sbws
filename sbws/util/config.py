@@ -353,18 +353,6 @@ def _validate_section_fingerprints(conf, sec, fps, tmpl):
     return errors
 
 
-def _validate_section_passwords(conf, sec, passwords, tmpl):
-    errors = []
-    section = conf[sec]
-    for key in passwords:
-        valid, error = _validate_password(section, key)
-        if not valid:
-            errors.append(tmpl.substitute(
-                sec=sec, key=key, val=section[key],
-                e='Not a valid password ({})'.format(error)))
-    return errors
-
-
 def _validate_section_urls(conf, sec, urls, tmpl):
     errors = []
     section = conf[sec]
@@ -436,13 +424,6 @@ def _validate_host(section, key):
 def _validate_fingerprint(section, key):
     alphabet = _HEX
     length = 40
-    return _validate_string(section, key, min_len=length, max_len=length,
-                            alphabet=alphabet)
-
-
-def _validate_password(section, key):
-    alphabet = _ALPHANUM
-    length = 64
     return _validate_string(section, key, min_len=length, max_len=length,
                             alphabet=alphabet)
 

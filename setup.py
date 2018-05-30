@@ -73,7 +73,7 @@ setup(
     },
     install_requires=[
         'stem==1.6.0.dev0',
-        'requests',
+        'requests[socks]',
     ],
     dependency_links=[
         "git+https://git.torproject.org/stem.git#egg=stem-1.6.0.dev0",

@@ -1,7 +1,7 @@
 from sbws.util.config import get_config
 from sbws.globals import touch_file
 import sbws.core.cleanup
-from tests.globals import monotonic_time
+from tests.unit.globals import monotonic_time
 from unittest.mock import patch
 import logging
 import os

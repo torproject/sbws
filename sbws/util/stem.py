@@ -83,6 +83,18 @@ def init_controller(port=None, path=None, set_custom_stream_settings=True):
     return c, ''
 
 
+def is_bootstrapped(c):
+    if not is_controller_okay(c):
+        return False
+    line = c.get_info('status/bootstrap-phase')
+    state, _, progress, *_ = line.split()
+    progress = int(progress.split('=')[1])
+    if state == 'NOTICE' and progress == 100:
+        return True
+    log.debug('Not bootstrapped. state={} progress={}'.format(state, progress))
+    return False
+
+
 def is_controller_okay(c):
     if not c:
         return False

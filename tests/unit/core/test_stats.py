@@ -6,7 +6,7 @@ from sbws.lib.resultdump import Result
 from sbws.lib.resultdump import write_result_to_datadir
 import sbws.core.init
 import sbws.core.stats
-from tests.globals import monotonic_time
+from tests.unit.globals import monotonic_time
 from unittest.mock import patch
 from datetime import datetime
 import os

@@ -7,7 +7,7 @@ from sbws.lib.resultdump import ResultErrorAuth
 from sbws.lib.resultdump import ResultErrorCircuit
 from sbws.lib.resultdump import ResultErrorStream
 from sbws.lib.resultdump import _ResultType
-from tests.globals import monotonic_time
+from tests.unit.globals import monotonic_time
 
 
 @patch('time.time')

@@ -27,9 +27,10 @@ and
 - `scripts/maint/` scripts for **maint**aining sbws and doing administrative
   things like regenerating the website or updating the AUTHORS file.
 - `scripts/tools/` misc. scripts for users of sbws.
-- `tests/testnets/` scripts and code for running mini Tor networks locally and
-  performing integration tests with them.
-- `tests/` unit tests executed with `pytest` or `tox`.
+  performing tests with them.
+- `tests/unit/` simple little tests that don't require Tor to be running
+- `tests/integration/` more complex tests and/or tests that require Tor to be running
+- `tests/testnets/` scripts and code for running mini Tor networks locally
 
 ## Boring things
 

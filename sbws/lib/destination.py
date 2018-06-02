@@ -1,6 +1,7 @@
 import logging
 import random
 import time
+import os
 from threading import RLock
 import requests
 from urllib.parse import urlparse
@@ -9,6 +10,22 @@ import sbws.util.stem as stem_utils
 import sbws.util.requests as requests_utils
 
 log = logging.getLogger(__name__)
+
+
+def _parse_verify_option(conf_section):
+    if 'verify' not in conf_section:
+        return True
+    try:
+        return conf_section.getboolean('verify')
+    except ValueError:
+        log.warning(
+            'Currently sbws only supports verify=true/false, not a CA bundle '
+            'file. We think %s is not a bool, and thus must be a CA bundle '
+            'file. This is supposed to be allowed by the Python Requests '
+            'library, but pastly couldn\'t get it to work in his afternoon '
+            'of testing. So we will allow this, but expect Requests to throw '
+            'SSLError exceptions later. Have fun!', conf_section['verify'])
+        return conf_section['verify']
 
 
 def connect_to_destination_over_circuit(dest, circ_id, session, cont, max_dl):
@@ -56,7 +73,7 @@ def connect_to_destination_over_circuit(dest, circ_id, session, cont, max_dl):
         try:
             # TODO:
             # - What other exceptions can this throw?
-            head = requests_utils.head(session, dest.url)
+            head = requests_utils.head(session, dest.url, verify=dest.verify)
         except (requests.exceptions.ConnectionError,
                 requests.exceptions.ReadTimeout) as e:
             return False, 'Could not connect to {} over circ {} {}: {}'.format(
@@ -78,7 +95,7 @@ def connect_to_destination_over_circuit(dest, circ_id, session, cont, max_dl):
 
 
 class Destination:
-    def __init__(self, url, default_path, max_dl):
+    def __init__(self, url, default_path, max_dl, verify):
         self._max_dl = max_dl
         u = urlparse(url)
         # these things should have been verified in verify_config
@@ -89,17 +106,26 @@ class Destination:
             parts = u[0:2] + default_path + u[2:]
             u = urlparse('{}://{}{}{}{}{}'.format(*parts))
         self._url = u
+        self._verify = verify
 
     def is_usable(self, circ_id, session, cont):
         ''' Use **connect_to_destination_over_circuit** to determine if this
         destination is usable and return what it returns. Just a small wrapper.
         '''
+        if not isinstance(self.verify, bool):
+            if not os.path.isfile(self.verify):
+                return False, '{} is believed to be a CA bundle file on disk '\
+                    'but it does not exist'.format(self.verify)
         return connect_to_destination_over_circuit(
             self, circ_id, session, cont, self._max_dl)
 
     @property
     def url(self):
         return self._url.geturl()
+
+    @property
+    def verify(self):
+        return self._verify
 
     @property
     def hostname(self):
@@ -123,7 +149,8 @@ class Destination:
     def from_config(conf_section, default_path, max_dl):
         assert 'url' in conf_section
         url = conf_section['url']
-        return Destination(url, default_path, max_dl)
+        verify = _parse_verify_option(conf_section)
+        return Destination(url, default_path, max_dl, verify)
 
 
 class DestinationList:

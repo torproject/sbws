@@ -39,7 +39,8 @@ def timed_recv_from_server(session, dest, byte_range):
     # - What other exceptions can this throw?
     # - Do we have to read the content, or did requests already do so?
     try:
-        requests_utils.get(session, dest.url, headers=headers)
+        requests_utils.get(
+            session, dest.url, headers=headers, verify=dest.verify)
     except requests.exceptions.ConnectionError as e:
         return False, e
     except requests.exceptions.ReadTimeout as e:

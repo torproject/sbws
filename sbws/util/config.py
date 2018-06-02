@@ -145,10 +145,12 @@ def _validate_paths(conf):
     sec = 'paths'
     err_tmpl = Template('$sec/$key ($val): $e')
     unvalidated_keys = [
-        'datadir', 'sbws_home', 'v3bw_fname', 'tor_control_socket',
+        'datadir', 'sbws_home', 'v3bw_fname',
         'started_filepath']
     all_valid_keys = unvalidated_keys
-    errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))
+    allow_missing = ['sbws_home']
+    errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl,
+                                         allow_missing=allow_missing))
     return errors
 
 
@@ -171,7 +173,7 @@ def _validate_scanner(conf):
         'download_max': {'minimum': 0.001, 'maximum': None},
     }
     all_valid_keys = list(ints.keys()) + list(floats.keys()) + \
-        ['nickname', 'started_filepath']
+        ['nickname']
     errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))
     errors.extend(_validate_section_ints(conf, sec, ints, err_tmpl))
     errors.extend(_validate_section_floats(conf, sec, floats, err_tmpl))
@@ -260,13 +262,21 @@ def _validate_destinations(conf):
     return errors
 
 
-def _validate_section_keys(conf, sec, keys, tmpl):
+def _validate_section_keys(conf, sec, keys, tmpl, allow_missing=None):
+    if allow_missing is None:
+        allow_missing = []
     errors = []
     section = conf[sec]
+    # Find keys that exist in the user's config that are not known
     for key in section:
         if key not in keys:
             errors.append(tmpl.substitute(
                 sec=sec, key=key, val=section[key], e='Unknown key'))
+    # Find keys that don't exist in the user's config that should
+    for key in keys:
+        if key not in section and key not in allow_missing:
+            errors.append(tmpl.substitute(
+                sec=sec, key=key, val='[NOT SET]', e='Missing key'))
     return errors
 
 

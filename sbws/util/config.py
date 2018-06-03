@@ -224,13 +224,6 @@ def _validate_destinations(conf):
     err_tmpl = Template('$sec/$key ($val): $e')
     dest_sections = []
     for key in section.keys():
-        if key == 'default_path':
-            value = section[key]
-            valid, error_msg = _validate_string(section, key, starts_with='/')
-            if not valid:
-                errors.append(err_tmpl.substitute(
-                    sec=sec, key=key, val=value, e=error_msg))
-            continue
         if key == 'usability_test_interval':
             value = section[key]
             valid, error_msg = _validate_int(section, key, minimum=1)

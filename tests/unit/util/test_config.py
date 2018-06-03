@@ -190,8 +190,10 @@ def test_validate_bool():
 
 def test_validate_url():
     goods = [
-        'http://example.com',
+        'http://example.com', 'http://example.com/',
         'http://example.com/foo.bar',
+        'http://example.com/foo/bar',
+        'http://user@example.com',
     ]
     bads = [
         'ftp://example.com/foo.bar',

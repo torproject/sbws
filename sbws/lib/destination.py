@@ -95,16 +95,12 @@ def connect_to_destination_over_circuit(dest, circ_id, session, cont, max_dl):
 
 
 class Destination:
-    def __init__(self, url, default_path, max_dl, verify):
+    def __init__(self, url, max_dl, verify):
         self._max_dl = max_dl
         u = urlparse(url)
         # these things should have been verified in verify_config
         assert u.scheme in ['http', 'https']
         assert u.netloc
-        if not u.path:
-            assert default_path[0] == '/'
-            parts = u[0:2] + default_path + u[2:]
-            u = urlparse('{}://{}{}{}{}{}'.format(*parts))
         self._url = u
         self._verify = verify
 
@@ -146,11 +142,11 @@ class Destination:
         return p
 
     @staticmethod
-    def from_config(conf_section, default_path, max_dl):
+    def from_config(conf_section, max_dl):
         assert 'url' in conf_section
         url = conf_section['url']
         verify = _parse_verify_option(conf_section)
-        return Destination(url, default_path, max_dl, verify)
+        return Destination(url, max_dl, verify)
 
 
 class DestinationList:
@@ -220,10 +216,9 @@ class DestinationList:
     def from_config(conf, circuit_builder, relay_list, controller):
         assert 'destinations' in conf
         section = conf['destinations']
-        default_path = section['default_path']
         dests = []
         for key in section.keys():
-            if key in ['default_path', 'usability_test_interval']:
+            if key in ['usability_test_interval']:
                 continue
             if not section.getboolean(key):
                 log.debug('%s is disabled; not loading it', key)
@@ -232,7 +227,7 @@ class DestinationList:
             assert dest_sec in conf  # validate_config should require this
             log.debug('Loading info for destination %s', key)
             dests.append(Destination.from_config(
-                conf[dest_sec], default_path,
+                conf[dest_sec],
                 conf.getint('scanner', 'max_download_size')))
         if len(dests) < 1:
             return None, 'No enabled destinations in config'

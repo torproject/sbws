@@ -87,6 +87,10 @@ def get_user_example_config():
 
 def configure_logging(conf):
     assert isinstance(conf, ConfigParser)
+    # log_filepath is not a variable in config.log.default.ini,
+    # so adding it here. Maybe there is a better way to do this
+    conf['handler_sbwsfile']['args'] = \
+        "('{}',)".format(conf['paths']['log_filepath'])
     with NamedTemporaryFile('w+t') as fd:
         conf.write(fd)
         fd.seek(0, 0)
@@ -146,7 +150,7 @@ def _validate_paths(conf):
     err_tmpl = Template('$sec/$key ($val): $e')
     unvalidated_keys = [
         'datadir', 'sbws_home', 'v3bw_fname',
-        'started_filepath']
+        'started_filepath', 'log_filepath']
     all_valid_keys = unvalidated_keys
     allow_missing = ['sbws_home']
     errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl,

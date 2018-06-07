@@ -124,8 +124,6 @@ def test_generate_single_success_noscale(dotsbws_success_result, caplog,
                        time=unixts_to_isodt_str(round(result.time)),
                        success=1, error_circ=0, error_misc=0,
                        error_stream=0)
-    # bw_line = V3BWLine.from_results(results)
-    print(stdout_lines)
     assert stdout_lines[NUM_LINES_HEADER_V110] + '\n' == str(bw_line)
 
 

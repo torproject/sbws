@@ -86,11 +86,9 @@ def test_generate_single_error(dotsbws_error_result, caplog, parser):
     for record in caplog.records:
         if 'Keeping 0/1 read lines from {}'.format(dd) in record.getMessage():
             break
-        else:
-            # FIXME: what was intended to be here?
-            assert None is None
-            # assert None, 'Unable to find log line indicating 0 success ' \
-            #     'results in data file'
+    else:
+        assert None, 'Unable to find log line indicating 0 success ' \
+            'results in data file'
     assert 'No recent results' in caplog.records[-1].getMessage()
 
 

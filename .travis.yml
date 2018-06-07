@@ -8,7 +8,8 @@ install: pip install tox-travis
 script: tox
 
 before_install:
-    - gpg --keyserver keys.gnupg.net --recv A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
+    - gpg --version
+    - gpg --keyserver hkp://pool.sks-keyservers.net --recv A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
     - gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | sudo apt-key add
     - echo "deb https://deb.torproject.org/torproject.org trusty main" | sudo tee -a /etc/apt/sources.list
     - echo "deb-src https://deb.torproject.org/torproject.org trusty main" | sudo tee -a /etc/apt/sources.list

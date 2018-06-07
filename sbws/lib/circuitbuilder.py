@@ -147,8 +147,20 @@ class GapsCircuitBuilder(CircuitBuilder):
                 continue
             chosen_fps.append(choice)
             black_fps.append(choice)
-        return [stem_utils.fp_or_nick_to_relay(self.controller, fp)
-                for fp in chosen_fps]
+        relays = []
+        for fp in chosen_fps:
+            relay = stem_utils.fp_or_nick_to_relay(self.controller, fp)
+            if not relay:
+                log.warning(
+                    'We\'re selecting a handful of random relays and stem '
+                    'doesn\'t think one of the fingerprints we gave it goes '
+                    'to a relay. Maybe we got a new consensus since the last '
+                    'time we refreshed our list of relays. In any case, we '
+                    'could try to recover. But failing inside '
+                    '_random_sample_relays is easier. Sorry.')
+                return None
+            relays.append(relay)
+        return relays
 
     def build_circuit(self, path):
         ''' <path> is a list of relays and Falsey values. Relays can be

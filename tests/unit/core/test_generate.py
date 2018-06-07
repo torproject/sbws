@@ -1,13 +1,13 @@
 # FIXME: all functions that depend on num lines should only use bandwith lines
 # and not whole header bandwith lines, as every time we change headers,
 # tests here would break
-import pytest
+# import pytest
 
 import sbws.core.generate
 from sbws.util.config import get_config
 from sbws.lib.resultdump import load_recent_results_in_datadir
 from sbws.lib.resultdump import ResultSuccess
-from sbws.lib.v3bwfile import NUM_LINES_HEADER_V110
+from sbws.lib.v3bwfile import NUM_LINES_HEADER_V110, V3BWLine
 from sbws.util.timestamp import unixts_to_isodt_str
 from statistics import median
 import logging
@@ -71,9 +71,9 @@ def test_generate_empty_datadir(empty_dotsbws_datadir, caplog, parser):
     sbws.core.generate.main(args, conf)
     assert 'No recent results' in caplog.records[-1].getMessage()
 
+# TODO: move the following tests to test_v3bwfile?
 
-# FIXME
-@pytest.mark.skip(reason="changes in header broke this, please FIXME")
+
 def test_generate_single_error(dotsbws_error_result, caplog, parser):
     caplog.set_level(logging.DEBUG)
     dotsbws = dotsbws_error_result
@@ -87,8 +87,8 @@ def test_generate_single_error(dotsbws_error_result, caplog, parser):
         if 'Keeping 0/1 read lines from {}'.format(dd) in record.getMessage():
             break
     else:
-        assert None, 'Unable to find log line indicating 0 success results '\
-            'in data file'
+        assert None, 'Unable to find log line indicating 0 success ' \
+            'results in data file'
     assert 'No recent results' in caplog.records[-1].getMessage()
 
 
@@ -118,10 +118,11 @@ def test_generate_single_success_noscale(dotsbws_success_result, caplog,
     bw = round(median([dl['amount'] / dl['duration'] / 1024
                        for dl in result.downloads]))
     rtt = median([round(r * 1000) for r in result.rtts])
-    bw_line = 'node_id=${} bw={} nick={} rtt={} time={}'.format(
-        result.fingerprint, bw, result.nickname, rtt,
-        unixts_to_isodt_str(round(result.time)))
-    assert stdout_lines[NUM_LINES_HEADER_V110] == bw_line
+    bw_line = V3BWLine(result.fingerprint, bw, nick=result.nickname, rtt=rtt,
+                       time=unixts_to_isodt_str(round(result.time)),
+                       success=1, error_circ=0, error_misc=0,
+                       error_stream=0)
+    assert stdout_lines[NUM_LINES_HEADER_V110] + '\n' == str(bw_line)
 
 
 def test_generate_single_success_scale(dotsbws_success_result, parser,
@@ -149,10 +150,11 @@ def test_generate_single_success_scale(dotsbws_success_result, parser,
 
     bw = 7500
     rtt = median([round(r * 1000) for r in result.rtts])
-    bw_line = 'node_id=${} bw={} nick={} rtt={} time={}'.format(
-        result.fingerprint, bw, result.nickname, rtt,
-        unixts_to_isodt_str(round(result.time)))
-    assert stdout_lines[NUM_LINES_HEADER_V110] == bw_line
+    bw_line = V3BWLine(result.fingerprint, bw, nick=result.nickname, rtt=rtt,
+                       time=unixts_to_isodt_str(round(result.time)),
+                       success=1, error_circ=0, error_misc=0,
+                       error_stream=0)
+    assert stdout_lines[NUM_LINES_HEADER_V110] + '\n' == str(bw_line)
 
 
 def test_generate_single_relay_success_noscale(
@@ -185,7 +187,12 @@ def test_generate_single_relay_success_noscale(
     bw_line = 'node_id=${} bw={} nick={} rtt={} time={}'.format(
         result.fingerprint, speed, result.nickname, rtt,
         unixts_to_isodt_str(round(result.time)))
-    assert stdout_lines[NUM_LINES_HEADER_V110] == bw_line
+    bw_line = V3BWLine(result.fingerprint, speed, nick=result.nickname,
+                       rtt=rtt,
+                       time=unixts_to_isodt_str(round(result.time)),
+                       success=2, error_circ=0, error_misc=0,
+                       error_stream=0)
+    assert stdout_lines[NUM_LINES_HEADER_V110] + '\n' == str(bw_line)
 
 
 def test_generate_single_relay_success_scale(
@@ -213,10 +220,12 @@ def test_generate_single_relay_success_scale(
 
     speed = 7500
     rtt = round(median([round(r * 1000) for r in result.rtts]))
-    bw_line = 'node_id=${} bw={} nick={} rtt={} time={}'.format(
-        result.fingerprint, speed, result.nickname, rtt,
-        unixts_to_isodt_str(round(result.time)))
-    assert stdout_lines[NUM_LINES_HEADER_V110] == bw_line
+    bw_line = V3BWLine(result.fingerprint, speed, nick=result.nickname,
+                       rtt=rtt,
+                       time=unixts_to_isodt_str(round(result.time)),
+                       success=2, error_circ=0, error_misc=0,
+                       error_stream=0)
+    assert stdout_lines[NUM_LINES_HEADER_V110] + '\n' == str(bw_line)
 
 
 def test_generate_two_relays_success_noscale(
@@ -251,9 +260,11 @@ def test_generate_two_relays_success_noscale(
     r1_speed = round(median(r1_speeds))
     r1_rtt = round(median([round(rtt * 1000) for r in r1_results
                            for rtt in r.rtts]))
-    bw_line = 'node_id=${} bw={} nick={} rtt={} time={}'.format(
-        r1_fingerprint, r1_speed, r1_name, r1_rtt, r1_time)
-    assert stdout_lines[1 + NUM_LINES_HEADER_V110] == bw_line
+    bw_line = V3BWLine(r1_fingerprint, r1_speed, nick=r1_name, rtt=r1_rtt,
+                       time=r1_time,
+                       success=2, error_circ=0, error_misc=0,
+                       error_stream=0)
+    assert stdout_lines[1 + NUM_LINES_HEADER_V110] + '\n' == str(bw_line)
 
     r2_results = [r for r in results if r.fingerprint == 'B' * 40]
     r2_time = unixts_to_isodt_str(round(max([r.time for r in r2_results])))
@@ -264,6 +275,8 @@ def test_generate_two_relays_success_noscale(
     r2_speed = round(median(r2_speeds))
     r2_rtt = round(median([round(rtt * 1000) for r in r2_results
                            for rtt in r.rtts]))
-    bw_line = 'node_id=${} bw={} nick={} rtt={} time={}'.format(
-        r2_fingerprint, r2_speed, r2_name, r2_rtt, r2_time)
-    assert stdout_lines[NUM_LINES_HEADER_V110] == bw_line
+    bw_line = V3BWLine(r2_fingerprint, r2_speed, nick=r2_name, rtt=r2_rtt,
+                       time=r2_time,
+                       success=2, error_circ=0, error_misc=0,
+                       error_stream=0)
+    assert stdout_lines[NUM_LINES_HEADER_V110] + '\n' == str(bw_line)

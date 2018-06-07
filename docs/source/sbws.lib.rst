@@ -36,6 +36,13 @@ sbws.lib.resultdump module
     :undoc-members:
     :show-inheritance:
 
+sbws.lib.v3bwfile module
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: sbws.lib.v3bwfile
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 Module contents
 ---------------

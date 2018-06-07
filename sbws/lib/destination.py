@@ -203,6 +203,7 @@ class DestinationList:
             is_usable, data = dest.is_usable(circ_id, session, cont)
             if not is_usable:
                 log.warning(data)
+                self._cb.close_circuit(circ_id)
                 continue
             assert is_usable
             log.debug('%s seems usable so we will keep it', dest.url)

@@ -2,7 +2,6 @@ from stem.control import (Controller, Listener)
 from stem import (SocketError, InvalidRequest, UnsatisfiableRequest)
 from stem.connection import IncorrectSocketType
 import stem.process
-from stem.descriptor.router_status_entry import RouterStatusEntryV3
 from configparser import ConfigParser
 from threading import RLock
 import copy
@@ -223,7 +222,7 @@ def only_relays_with_bandwidth(controller, relays, min_bw=None, max_bw=None):
     assert max_bw is None or max_bw >= 0
     ret = []
     for relay in relays:
-        assert isinstance(relay, RouterStatusEntryV3)
+        assert hasattr(relay, 'bandwidth')
         if min_bw is not None and relay.bandwidth < min_bw:
             continue
         if max_bw is not None and relay.bandwidth > max_bw:

@@ -11,9 +11,9 @@ from queue import Empty
 from datetime import datetime
 from datetime import timedelta
 from enum import Enum
-from stem.descriptor.router_status_entry import RouterStatusEntryV3
 from sbws.globals import RESULT_VERSION
 from sbws.util.filelock import DirectoryLock
+from sbws.lib.relaylist import Relay
 
 log = logging.getLogger(__name__)
 
@@ -481,7 +481,7 @@ class ResultDump:
                             'Ignoring %s', type(data))
 
     def results_for_relay(self, relay):
-        assert isinstance(relay, RouterStatusEntryV3)
+        assert isinstance(relay, Relay)
         fp = relay.fingerprint
         with self.data_lock:
             if fp not in self.data:

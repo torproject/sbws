@@ -1,5 +1,5 @@
 from stem.descriptor.router_status_entry import RouterStatusEntryV3
-
+from stem.descriptor.server_descriptor import ServerDescriptor
 import sbws.util.stem as stem_utils
 from stem import Flag
 from stem import DescriptorUnavailable
@@ -13,16 +13,73 @@ from sbws.globals import resolve
 log = logging.getLogger(__name__)
 
 
-class RelayNS(RouterStatusEntryV3):
-    """Inherit from RouterStatusEntryV3 and add the attribute
-    master_key_ed25519.
+class Relay:
+    def __init__(self, fp, cont, ns=None, desc=None):
+        '''
+        Given a relay fingerprint, fetch all the information about a relay that
+        sbws currently needs and store it in this class. Acts as an abstraction
+        to hide the confusion that is Tor consensus/descriptor stuff.
 
-    :param str ed25519: the ed25519 master key base 64 encoded.
-    """
-    def __init__(self, ed25519=None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if ed25519 is not None:
-            self.master_key_ed25519 = ed25519
+        :param str fp: fingerprint of the relay.
+        :param cont: active and valid stem Tor controller connection
+        '''
+        assert isinstance(fp, str)
+        assert len(fp) == 40
+        assert stem_utils.is_controller_okay(cont)
+        if ns is not None:
+            assert isinstance(ns, RouterStatusEntryV3)
+            self._ns = ns
+        else:
+            self._ns = cont.get_network_status(fp, default=None)
+        if desc is not None:
+            assert isinstance(desc, ServerDescriptor)
+            self._desc = desc
+        else:
+            self._desc = cont.get_server_descriptor(fp, default=None)
+
+    def _from_desc(self, attr):
+        if not self._desc:
+            return None
+        assert hasattr(self._desc, attr)
+        return getattr(self._desc, attr)
+
+    def _from_ns(self, attr):
+        if not self._ns:
+            return None
+        assert hasattr(self._ns, attr)
+        return getattr(self._ns, attr)
+
+    @property
+    def nickname(self):
+        return self._from_ns('nickname')
+
+    @property
+    def fingerprint(self):
+        return self._from_ns('fingerprint')
+
+    @property
+    def flags(self):
+        return self._from_ns('flags')
+
+    @property
+    def exit_policy(self):
+        return self._from_desc('exit_policy')
+
+    @property
+    def average_bandwidth(self):
+        return self._from_desc('average_bandwidth')
+
+    @property
+    def bandwidth(self):
+        return self._from_ns('bandwidth')
+
+    @property
+    def address(self):
+        return self._from_ns('address')
+
+    @property
+    def ed25519_master_key(self):
+        return self._from_desc('ed25519_master_key').rstrip('=')
 
 
 class RelayList:
@@ -81,40 +138,6 @@ class RelayList:
         relays = self.relays
         # return [r for r in relays if r.measured is not None]
         return [r for r in relays if not r.is_unmeasured]
-
-    def relay_ed25519_master_key(self, ns):
-        """Obtain ed25519 master key of the relay represented by
-        the network status relay line.
-
-        :param RouterStatusEntryV3 ns: the network status relay
-        :returns: str, the ed25519 master key base 64 encoded without
-            trailing '='s.
-        """
-        # In theory this is never going to be the case?
-        if ns.identifier is None or ns.identifier_type != 'ed25519':
-            log.debug('Getting microdescriptor to obtain ed25519 identity.')
-            mdesc = self._controller.get_microdescriptor(ns.fingerprint, None)
-            if mdesc is not None:
-                if 'ed25519' in mdesc.identifiers.keys():
-                    ed25519 = mdesc.identifiers['ed25519'].rstrip('=')
-                    log.debug('Found ed25519 master key.')
-                    return ed25519
-                log.debug('No ed25519 master-key found')
-            log.debug('Could not get microdescriptor')
-            # In case Tor can not retrive microdescriptors,
-            # try with server descriptors.
-            log.debug('Getting server descriptor to obtain '
-                      'ed25519 master key.')
-            sdesc = self._controller.get_server_descriptor(ns.fingerprint,
-                                                           None)
-            if sdesc is not None:
-                ed25519 = sdesc.ed25519_master_key().rstrip('=')
-                log.debug('Found ed25519 master key.')
-                return ed25519
-            log.debug('Could not get server descriptor')
-            return None
-        log.debug('Relay has already ed25519 master key')
-        return ns.identifier
 
     def exits_can_exit_to(self, host, port):
         '''
@@ -179,13 +202,8 @@ class RelayList:
     def _init_relays(self):
         c = self._controller
         assert stem_utils.is_controller_okay(c)
-        relays = []
-        # for each network status relay, obtain the ed25519 master key
-        # and generate a new list of RelayNS objects
-        for ns in c.get_network_statuses():
-            ed25519 = self.relay_ed25519_master_key(ns)
-            rns = RelayNS(ed25519=ed25519, content=ns._raw_contents)
-            relays.append(rns)
+        relays = [Relay(ns.fingerprint, c, ns=ns)
+                  for ns in c.get_network_statuses()]
         return relays
 
     def _refresh(self):

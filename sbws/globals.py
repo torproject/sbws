@@ -4,7 +4,7 @@ import socket
 
 log = logging.getLogger(__name__)
 
-RESULT_VERSION = 2
+RESULT_VERSION = 3
 WIRE_VERSION = 1
 SPEC_VERSION = '1.1.0'
 

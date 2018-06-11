@@ -71,8 +71,6 @@ def test_generate_empty_datadir(empty_dotsbws_datadir, caplog, parser):
     sbws.core.generate.main(args, conf)
     assert 'No recent results' in caplog.records[-1].getMessage()
 
-# TODO: move the following tests to test_v3bwfile?
-
 
 def test_generate_single_error(dotsbws_error_result, caplog, parser):
     caplog.set_level(logging.DEBUG)
@@ -123,8 +121,7 @@ def test_generate_single_success_noscale(dotsbws_success_result, caplog,
                        master_key_ed25519=result.ed25519_master_key,
                        success=1, error_circ=0, error_misc=0,
                        error_stream=0)
-    # FIXME: left side does not contain ed25519
-    # assert stdout_lines[NUM_LINES_HEADER_V110] + '\n' == str(bw_line)
+    assert stdout_lines[NUM_LINES_HEADER_V110] + '\n' == str(bw_line)
 
 
 def test_generate_single_success_scale(dotsbws_success_result, parser,
@@ -157,8 +154,7 @@ def test_generate_single_success_scale(dotsbws_success_result, parser,
                        master_key_ed25519=result.ed25519_master_key,
                        success=1, error_circ=0, error_misc=0,
                        error_stream=0)
-    # FIXME: left side does not contain ed25519
-    # assert stdout_lines[NUM_LINES_HEADER_V110] + '\n' == str(bw_line)
+    assert stdout_lines[NUM_LINES_HEADER_V110] + '\n' == str(bw_line)
 
 
 def test_generate_single_relay_success_noscale(
@@ -193,8 +189,7 @@ def test_generate_single_relay_success_noscale(
                        time=unixts_to_isodt_str(round(result.time)),
                        success=2, error_circ=0, error_misc=0,
                        error_stream=0)
-    # FIXME: left side does not contain ed25519
-    # assert stdout_lines[NUM_LINES_HEADER_V110] + '\n' == str(bw_line)
+    assert stdout_lines[NUM_LINES_HEADER_V110] + '\n' == str(bw_line)
 
 
 def test_generate_single_relay_success_scale(
@@ -228,8 +223,7 @@ def test_generate_single_relay_success_scale(
                        time=unixts_to_isodt_str(round(result.time)),
                        success=2, error_circ=0, error_misc=0,
                        error_stream=0)
-    # FIXME: left side does not contain ed25519
-    # assert stdout_lines[NUM_LINES_HEADER_V110] + '\n' == str(bw_line)
+    assert stdout_lines[NUM_LINES_HEADER_V110] + '\n' == str(bw_line)
 
 
 def test_generate_two_relays_success_noscale(
@@ -285,5 +279,4 @@ def test_generate_two_relays_success_noscale(
                        time=r2_time, master_key_ed25519=r2_ed25519,
                        success=2, error_circ=0, error_misc=0,
                        error_stream=0)
-    # FIXME: left side does not contain ed25519
-    # assert stdout_lines[NUM_LINES_HEADER_V110] + '\n' == str(bw_line)
+    assert stdout_lines[NUM_LINES_HEADER_V110] + '\n' == str(bw_line)

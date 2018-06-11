@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 """Test generation of bandwidth measurements document (v3bw)"""
 import json
-import pytest
 
 from sbws import __version__ as version
-from sbws.globals import SPEC_VERSION
+from sbws.globals import SPEC_VERSION, RESULT_VERSION
 from sbws.lib.resultdump import Result, load_result_file
 from sbws.lib.v3bwfile import (V3BwHeader, V3BWLine, TERMINATOR, LINE_SEP,
                                KEYVALUE_SEP_V110, num_results_of_type,
@@ -36,6 +35,7 @@ header_extra_ls = [timestamp_l, version_l,
 header_extra_str = LINE_SEP.join(header_extra_ls) + LINE_SEP
 
 bwl_str = "bw=54 error_circ=0 error_misc=0 error_stream=1 " \
+    "master_key_ed25519=g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s " \
     "nick=A " \
     "node_id=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA rtt=456 success=1 " \
     "time=2018-04-17T14:09:07\n"
@@ -49,11 +49,12 @@ RESULT_ERROR_STREAM_DICT = {
     "time": 1526894062.6408398,
     "circ": ["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
              "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"],
-    "version": 2,
+    "version": RESULT_VERSION,
     "scanner": "IDidntEditTheSBWSConfig",
     "type": "error-stream",
     "msg": "Something bad happened while measuring bandwidth",
-    "nickname": "A"
+    "nickname": "A",
+    "ed25519_master_key": "g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s"
 }
 
 RESULT_SUCCESS_DICT = {
@@ -67,7 +68,7 @@ RESULT_SUCCESS_DICT = {
              0.4635589122772217],
     "circ": ["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
              "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"],
-    "version": 2,
+    "version": RESULT_VERSION,
     "scanner": "IDidntEditTheSBWSConfig",
     "type": "success",
     "downloads": [
@@ -76,7 +77,8 @@ RESULT_SUCCESS_DICT = {
         {"amount": 321663, "duration": 7.064587831497192},
         {"amount": 321663, "duration": 8.266003131866455},
         {"amount": 321663, "duration": 5.779450178146362}],
-    "nickname": "A"
+    "nickname": "A",
+    "ed25519_master_key": "g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s"
 }
 RESULT_SUCCESS_STR = str(RESULT_SUCCESS_DICT)
 RESULT_ERROR_STREAM_STR = str(RESULT_ERROR_STREAM_DICT)
@@ -128,7 +130,6 @@ def test_v3bwheader_from_file(datadir):
     assert str(h) == str(header)
 
 
-@pytest.mark.skip(reason="FIXME results")
 def test_num_results_of_type():
     assert num_results_of_type([Result.from_dict(RESULT_SUCCESS_DICT)],
                                'success') == 1
@@ -140,7 +141,6 @@ def test_num_results_of_type():
                                'error-stream') == 1
 
 
-@pytest.mark.skip(reason="FIXME results")
 def test_v3bwline_from_results_file(datadir):
     lines = datadir.readlines('results.txt')
     d = dict()
@@ -154,7 +154,6 @@ def test_v3bwline_from_results_file(datadir):
     assert bwl_str == str(bwl)
 
 
-@pytest.mark.skip(reason="FIXME results")
 def test_v3bwfile(datadir, tmpdir):
     """Test generate v3bw file (including relay_lines)."""
     v3bw = datadir.read('v3bw.txt')
@@ -165,5 +164,4 @@ def test_v3bwfile(datadir, tmpdir):
                         earliest_bandwidth=earliest_bandwidth)
     bwls = [V3BWLine.from_results(results[fp]) for fp in results]
     f = V3BwFile(header, bwls)
-    # f = V3BwFile.from_results(None, str(tmpdir.join("v3bw.txt")), results)
     assert v3bw == str(f)

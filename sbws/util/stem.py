@@ -2,7 +2,6 @@ from stem.control import (Controller, Listener)
 from stem import (SocketError, InvalidRequest, UnsatisfiableRequest)
 from stem.connection import IncorrectSocketType
 import stem.process
-from stem.descriptor.router_status_entry import RouterStatusEntryV3
 from configparser import ConfigParser
 from threading import RLock
 import copy
@@ -13,17 +12,6 @@ from sbws.globals import TORRC_STARTING_POINT
 
 log = logging.getLogger(__name__)
 stream_building_lock = RLock()
-
-
-def fp_or_nick_to_relay(controller, fp_nick):
-    ''' Takes a string that could be either a relay's fingerprint or nickname.
-    Return the relay's descriptor if found. Otherwise return None.
-
-    Note that if a nickname is given and multiple relays have that nickname,
-    only one of them will be returned. '''
-    assert isinstance(fp_nick, str)
-    assert is_controller_okay(controller)
-    return controller.get_network_status(fp_nick, default=None)
 
 
 def attach_stream_to_circuit_listener(controller, circ_id):
@@ -223,7 +211,7 @@ def only_relays_with_bandwidth(controller, relays, min_bw=None, max_bw=None):
     assert max_bw is None or max_bw >= 0
     ret = []
     for relay in relays:
-        assert isinstance(relay, RouterStatusEntryV3)
+        assert hasattr(relay, 'bandwidth')
         if min_bw is not None and relay.bandwidth < min_bw:
             continue
         if max_bw is not None and relay.bandwidth > max_bw:

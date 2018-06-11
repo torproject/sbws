@@ -19,12 +19,13 @@ def test_Result(time_mock):
     time_mock.side_effect = monotonic_time()
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
+    ed25519 = 'g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s'
     circ = [fp1, fp2]
     dest_url = 'http://example.com/sbws.bin'
     scanner_nick = 'sbwsscanner'
     nick = 'Mooooooo'
     relay_ip = '169.254.100.1'
-    relay = Result.Relay(fp1, nick, relay_ip)
+    relay = Result.Relay(fp1, nick, relay_ip, ed25519)
     r = Result(relay, circ, dest_url, scanner_nick)
     try:
         str(r)
@@ -64,12 +65,13 @@ def test_ResultSuccess(time_mock):
     time_mock.side_effect = monotonic_time(start=t)
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
+    ed25519 = 'g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s'
     circ = [fp1, fp2]
     dest_url = 'http://example.com/sbws.bin'
     scanner_nick = 'sbwsscanner'
     nick = 'Mooooooo'
     relay_ip = '169.254.100.1'
-    relay = Result.Relay(fp1, nick, relay_ip)
+    relay = Result.Relay(fp1, nick, relay_ip, ed25519)
     rtts = [5, 25]
     downloads = [{'duration': 4, 'amount': 40}]
     r1 = ResultSuccess(rtts, downloads, relay, circ, dest_url, scanner_nick)
@@ -95,12 +97,13 @@ def test_ResultSuccess_from_dict(time_mock):
     time_mock.side_effect = monotonic_time(start=t)
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
+    ed25519 = 'g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s'
     circ = [fp1, fp2]
     dest_url = 'http://example.com/sbws.bin'
     scanner_nick = 'sbwsscanner'
     nick = 'Mooooooo'
     relay_ip = '169.254.100.1'
-    relay = Result.Relay(fp1, nick, relay_ip)
+    relay = Result.Relay(fp1, nick, relay_ip, ed25519)
     rtts = [5, 25]
     downloads = [{'duration': 4, 'amount': 40}]
     r1 = ResultSuccess(rtts, downloads, relay, circ, dest_url, scanner_nick)
@@ -109,6 +112,7 @@ def test_ResultSuccess_from_dict(time_mock):
         'nickname': nick, 'address': relay_ip, 'circ': circ,
         'dest_url': dest_url, 'scanner': scanner_nick,
         'version': RESULT_VERSION, 'type': _ResultType.Success, 'time': t,
+        'ed25519_master_key': ed25519,
     }
     r2 = Result.from_dict(d)
     assert isinstance(r1, ResultSuccess)
@@ -122,12 +126,13 @@ def test_ResultError(time_mock):
     time_mock.side_effect = monotonic_time(start=t)
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
+    ed25519 = 'g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s'
     circ = [fp1, fp2]
     dest_url = 'http://example.com/sbws.bin'
     scanner_nick = 'sbwsscanner'
     nick = 'Mooooooo'
     relay_ip = '169.254.100.1'
-    relay = Result.Relay(fp1, nick, relay_ip)
+    relay = Result.Relay(fp1, nick, relay_ip, ed25519)
     msg = 'aaaaayyyyyy bb'
     r1 = ResultError(relay, circ, dest_url, scanner_nick, msg=msg)
     r2 = ResultError(relay, circ, dest_url, scanner_nick, msg=msg, t=t)
@@ -150,12 +155,13 @@ def test_ResultError_from_dict(time_mock):
     time_mock.side_effect = monotonic_time(start=t)
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
+    ed25519 = 'g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s'
     circ = [fp1, fp2]
     dest_url = 'http://example.com/sbws.bin'
     scanner_nick = 'sbwsscanner'
     nick = 'Mooooooo'
     relay_ip = '169.254.100.1'
-    relay = Result.Relay(fp1, nick, relay_ip)
+    relay = Result.Relay(fp1, nick, relay_ip, ed25519)
     msg = 'aaaaayyyyyy bb'
     r1 = ResultError(relay, circ, dest_url, scanner_nick, msg=msg)
     d = {
@@ -163,6 +169,7 @@ def test_ResultError_from_dict(time_mock):
         'nickname': nick, 'address': relay_ip, 'circ': circ,
         'dest_url': dest_url, 'scanner': scanner_nick,
         'version': RESULT_VERSION, 'type': _ResultType.Error, 'time': t,
+        'ed25519_master_key': ed25519,
     }
     r2 = Result.from_dict(d)
     assert isinstance(r1, ResultError)
@@ -176,12 +183,13 @@ def test_ResultErrorCircuit(time_mock):
     time_mock.side_effect = monotonic_time(start=t)
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
+    ed25519 = 'g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s'
     circ = [fp1, fp2]
     dest_url = 'http://example.com/sbws.bin'
     scanner_nick = 'sbwsscanner'
     nick = 'Mooooooo'
     relay_ip = '169.254.100.1'
-    relay = Result.Relay(fp1, nick, relay_ip)
+    relay = Result.Relay(fp1, nick, relay_ip, ed25519)
     msg = 'aaaaayyyyyy bb'
     r1 = ResultErrorCircuit(relay, circ, dest_url, scanner_nick, msg=msg)
     r2 = ResultErrorCircuit(relay, circ, dest_url, scanner_nick, msg=msg,
@@ -205,12 +213,13 @@ def test_ResultErrorCircuit_from_dict(time_mock):
     time_mock.side_effect = monotonic_time(start=t)
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
+    ed25519 = 'g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s'
     circ = [fp1, fp2]
     dest_url = 'http://example.com/sbws.bin'
     scanner_nick = 'sbwsscanner'
     nick = 'Mooooooo'
     relay_ip = '169.254.100.1'
-    relay = Result.Relay(fp1, nick, relay_ip)
+    relay = Result.Relay(fp1, nick, relay_ip, ed25519)
     msg = 'aaaaayyyyyy bb'
     r1 = ResultErrorCircuit(relay, circ, dest_url, scanner_nick, msg=msg)
     d = {
@@ -218,6 +227,7 @@ def test_ResultErrorCircuit_from_dict(time_mock):
         'nickname': nick, 'address': relay_ip, 'circ': circ,
         'dest_url': dest_url, 'scanner': scanner_nick,
         'version': RESULT_VERSION, 'type': _ResultType.ErrorCircuit, 'time': t,
+        'ed25519_master_key': ed25519,
     }
     r2 = Result.from_dict(d)
     assert isinstance(r1, ResultErrorCircuit)
@@ -231,12 +241,13 @@ def test_ResultErrorStream(time_mock):
     time_mock.side_effect = monotonic_time(start=t)
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
+    ed25519 = 'g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s'
     circ = [fp1, fp2]
     dest_url = 'http://example.com/sbws.bin'
     scanner_nick = 'sbwsscanner'
     nick = 'Mooooooo'
     relay_ip = '169.254.100.1'
-    relay = Result.Relay(fp1, nick, relay_ip)
+    relay = Result.Relay(fp1, nick, relay_ip, ed25519)
     msg = 'aaaaayyyyyy bb'
     r1 = ResultErrorStream(relay, circ, dest_url, scanner_nick, msg=msg)
     r2 = ResultErrorStream(relay, circ, dest_url, scanner_nick, msg=msg,
@@ -260,12 +271,13 @@ def test_ResultErrorStream_from_dict(time_mock):
     time_mock.side_effect = monotonic_time(start=t)
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
+    ed25519 = 'g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s'
     circ = [fp1, fp2]
     dest_url = 'http://example.com/sbws.bin'
     scanner_nick = 'sbwsscanner'
     nick = 'Mooooooo'
     relay_ip = '169.254.100.1'
-    relay = Result.Relay(fp1, nick, relay_ip)
+    relay = Result.Relay(fp1, nick, relay_ip, ed25519)
     msg = 'aaaaayyyyyy bb'
     r1 = ResultErrorStream(relay, circ, dest_url, scanner_nick, msg=msg)
     d = {
@@ -273,6 +285,7 @@ def test_ResultErrorStream_from_dict(time_mock):
         'nickname': nick, 'address': relay_ip, 'circ': circ,
         'dest_url': dest_url, 'scanner': scanner_nick,
         'version': RESULT_VERSION, 'type': _ResultType.ErrorStream, 'time': t,
+        'ed25519_master_key': ed25519,
     }
     r2 = Result.from_dict(d)
     assert isinstance(r1, ResultErrorStream)
@@ -286,12 +299,13 @@ def test_ResultErrorAuth(time_mock):
     time_mock.side_effect = monotonic_time(start=t)
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
+    ed25519 = 'g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s'
     circ = [fp1, fp2]
     dest_url = 'http://example.com/sbws.bin'
     scanner_nick = 'sbwsscanner'
     nick = 'Mooooooo'
     relay_ip = '169.254.100.1'
-    relay = Result.Relay(fp1, nick, relay_ip)
+    relay = Result.Relay(fp1, nick, relay_ip, ed25519)
     msg = 'aaaaayyyyyy bb'
     r1 = ResultErrorAuth(relay, circ, dest_url, scanner_nick, msg=msg)
     r2 = ResultErrorAuth(relay, circ, dest_url, scanner_nick, msg=msg,
@@ -315,12 +329,13 @@ def test_ResultErrorAuth_from_dict(time_mock):
     time_mock.side_effect = monotonic_time(start=t)
     fp1 = 'A' * 40
     fp2 = 'Z' * 40
+    ed25519 = 'g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s'
     circ = [fp1, fp2]
     dest_url = 'http://example.com/sbws.bin'
     scanner_nick = 'sbwsscanner'
     nick = 'Mooooooo'
     relay_ip = '169.254.100.1'
-    relay = Result.Relay(fp1, nick, relay_ip)
+    relay = Result.Relay(fp1, nick, relay_ip, ed25519)
     msg = 'aaaaayyyyyy bb'
     r1 = ResultErrorAuth(relay, circ, dest_url, scanner_nick, msg=msg)
     d = {
@@ -328,6 +343,7 @@ def test_ResultErrorAuth_from_dict(time_mock):
         'nickname': nick, 'address': relay_ip, 'circ': circ,
         'dest_url': dest_url, 'scanner': scanner_nick,
         'version': RESULT_VERSION, 'type': _ResultType.ErrorAuth, 'time': t,
+        'ed25519_master_key': ed25519,
     }
     r2 = Result.from_dict(d)
     assert isinstance(r1, ResultErrorAuth)

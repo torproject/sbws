@@ -11,9 +11,9 @@ from queue import Empty
 from datetime import datetime
 from datetime import timedelta
 from enum import Enum
-from stem.descriptor.router_status_entry import RouterStatusEntryV3
 from sbws.globals import RESULT_VERSION
 from sbws.util.filelock import DirectoryLock
+from sbws.lib.relaylist import Relay
 
 log = logging.getLogger(__name__)
 
@@ -150,14 +150,15 @@ class Result:
     class Relay:
         ''' Implements just enough of a stem RouterStatusEntryV3 for this
         Result class to be happy '''
-        def __init__(self, fingerprint, nickname, address):
+        def __init__(self, fingerprint, nickname, address, ed25519_master_key):
             self.fingerprint = fingerprint
             self.nickname = nickname
             self.address = address
+            self.ed25519_master_key = ed25519_master_key
 
     def __init__(self, relay, circ, dest_url, scanner_nick, t=None):
         self._relay = Result.Relay(relay.fingerprint, relay.nickname,
-                                   relay.address)
+                                   relay.address, relay.ed25519_master_key)
         self._circ = circ
         self._dest_url = dest_url
         self._scanner = scanner_nick
@@ -178,6 +179,10 @@ class Result:
     @property
     def address(self):
         return self._relay.address
+
+    @property
+    def ed25519_master_key(self):
+        return self._relay.ed25519_master_key
 
     @property
     def circ(self):
@@ -204,6 +209,7 @@ class Result:
             'fingerprint': self.fingerprint,
             'nickname': self.nickname,
             'address': self.address,
+            'ed25519_master_key': self.ed25519_master_key,
             'circ': self.circ,
             'dest_url': self.dest_url,
             'time': self.time,
@@ -275,7 +281,9 @@ class ResultError(Result):
     def from_dict(d):
         assert isinstance(d, dict)
         return ResultError(
-            Result.Relay(d['fingerprint'], d['nickname'], d['address']),
+            Result.Relay(
+                d['fingerprint'], d['nickname'], d['address'],
+                d['ed25519_master_key']),
             d['circ'], d['dest_url'], d['scanner'],
             msg=d['msg'], t=d['time'])
 
@@ -314,7 +322,9 @@ class ResultErrorCircuit(ResultError):
     def from_dict(d):
         assert isinstance(d, dict)
         return ResultErrorCircuit(
-            Result.Relay(d['fingerprint'], d['nickname'], d['address']),
+            Result.Relay(
+                d['fingerprint'], d['nickname'], d['address'],
+                d['ed25519_master_key']),
             d['circ'], d['dest_url'], d['scanner'],
             msg=d['msg'], t=d['time'])
 
@@ -335,7 +345,9 @@ class ResultErrorStream(ResultError):
     def from_dict(d):
         assert isinstance(d, dict)
         return ResultErrorStream(
-            Result.Relay(d['fingerprint'], d['nickname'], d['address']),
+            Result.Relay(
+                d['fingerprint'], d['nickname'], d['address'],
+                d['ed25519_master_key']),
             d['circ'], d['dest_url'], d['scanner'],
             msg=d['msg'], t=d['time'])
 
@@ -369,7 +381,9 @@ class ResultErrorAuth(ResultError):
     def from_dict(d):
         assert isinstance(d, dict)
         return ResultErrorAuth(
-            Result.Relay(d['fingerprint'], d['nickname'], d['address']),
+            Result.Relay(
+                d['fingerprint'], d['nickname'], d['address'],
+                d['ed25519_master_key']),
             d['circ'], d['dest_url'], d['scanner'],
             msg=d['msg'], t=d['time'])
 
@@ -401,7 +415,9 @@ class ResultSuccess(Result):
         assert isinstance(d, dict)
         return ResultSuccess(
             d['rtts'], d['downloads'],
-            Result.Relay(d['fingerprint'], d['nickname'], d['address']),
+            Result.Relay(
+                d['fingerprint'], d['nickname'], d['address'],
+                d['ed25519_master_key']),
             d['circ'], d['dest_url'], d['scanner'],
             t=d['time'])
 
@@ -481,7 +497,7 @@ class ResultDump:
                             'Ignoring %s', type(data))
 
     def results_for_relay(self, relay):
-        assert isinstance(relay, RouterStatusEntryV3)
+        assert isinstance(relay, Relay)
         fp = relay.fingerprint
         with self.data_lock:
             if fp not in self.data:

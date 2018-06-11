@@ -25,7 +25,7 @@ def init_directory(dname):
 
 def add_single_stale_result(dname):
     r = ResultError(
-        Result.Relay('DEADBEEF1111', 'CowSayWhat', '127.0.0.1'),
+        Result.Relay('DEADBEEF1111', 'CowSayWhat', '127.0.0.1', 'ed25519key'),
         ['DEADBEEF1111', 'BEADDEEF2222'],
         '127.0.1.1', 'SBWSscanner', t=19950216)
     dd = os.path.join(str(dname), 'datadir')
@@ -35,7 +35,7 @@ def add_single_stale_result(dname):
 
 def add_single_fresh_result(dname):
     r = ResultError(
-        Result.Relay('DEADBEEF1111', 'CowSayWhat', '127.0.0.1'),
+        Result.Relay('DEADBEEF1111', 'CowSayWhat', '127.0.0.1', 'ed25519key'),
         ['DEADBEEF1111', 'BEADDEEF2222'],
         '127.0.1.1', 'SBWSscanner', t=time.time())
     dd = os.path.join(str(dname), 'datadir')
@@ -45,12 +45,12 @@ def add_single_fresh_result(dname):
 
 def add_two_fresh_results(dname, t):
     r1 = ResultError(
-        Result.Relay('DEADBEEF1111', 'CowSayWhat', '127.0.0.1'),
+        Result.Relay('DEADBEEF1111', 'CowSayWhat', '127.0.0.1', 'ed25519key'),
         ['DEADBEEF1111', 'BEADDEEF2222'],
         '127.0.1.1', 'SBWSscanner', t=t)
     r2 = ResultSuccess(
         [1, 2, 3], [{'amount': 100, 'duration': 1}],
-        Result.Relay('DEADBEEF1111', 'CowSayWhat', '127.0.0.1'),
+        Result.Relay('DEADBEEF1111', 'CowSayWhat', '127.0.0.1', 'ed25519key'),
         ['DEADBEEF1111', 'BEADDEEF2222'],
         '127.0.1.1', 'SBWSscanner', t=t)
     dd = os.path.join(str(dname), 'datadir')

@@ -1,3 +1,5 @@
+from stem.descriptor.router_status_entry import RouterStatusEntryV3
+from stem.descriptor.server_descriptor import ServerDescriptor
 import sbws.util.stem as stem_utils
 from stem import Flag
 from stem import DescriptorUnavailable
@@ -9,6 +11,75 @@ import logging
 from sbws.globals import resolve
 
 log = logging.getLogger(__name__)
+
+
+class Relay:
+    def __init__(self, fp, cont, ns=None, desc=None):
+        '''
+        Given a relay fingerprint, fetch all the information about a relay that
+        sbws currently needs and store it in this class. Acts as an abstraction
+        to hide the confusion that is Tor consensus/descriptor stuff.
+
+        :param str fp: fingerprint of the relay.
+        :param cont: active and valid stem Tor controller connection
+        '''
+        assert isinstance(fp, str)
+        assert len(fp) == 40
+        assert stem_utils.is_controller_okay(cont)
+        if ns is not None:
+            assert isinstance(ns, RouterStatusEntryV3)
+            self._ns = ns
+        else:
+            self._ns = cont.get_network_status(fp, default=None)
+        if desc is not None:
+            assert isinstance(desc, ServerDescriptor)
+            self._desc = desc
+        else:
+            self._desc = cont.get_server_descriptor(fp, default=None)
+
+    def _from_desc(self, attr):
+        if not self._desc:
+            return None
+        assert hasattr(self._desc, attr)
+        return getattr(self._desc, attr)
+
+    def _from_ns(self, attr):
+        if not self._ns:
+            return None
+        assert hasattr(self._ns, attr)
+        return getattr(self._ns, attr)
+
+    @property
+    def nickname(self):
+        return self._from_ns('nickname')
+
+    @property
+    def fingerprint(self):
+        return self._from_ns('fingerprint')
+
+    @property
+    def flags(self):
+        return self._from_ns('flags')
+
+    @property
+    def exit_policy(self):
+        return self._from_desc('exit_policy')
+
+    @property
+    def average_bandwidth(self):
+        return self._from_desc('average_bandwidth')
+
+    @property
+    def bandwidth(self):
+        return self._from_ns('bandwidth')
+
+    @property
+    def address(self):
+        return self._from_ns('address')
+
+    @property
+    def ed25519_master_key(self):
+        return self._from_desc('ed25519_master_key').rstrip('=')
 
 
 class RelayList:
@@ -131,7 +202,9 @@ class RelayList:
     def _init_relays(self):
         c = self._controller
         assert stem_utils.is_controller_okay(c)
-        return [ns for ns in c.get_network_statuses()]
+        relays = [Relay(ns.fingerprint, c, ns=ns)
+                  for ns in c.get_network_statuses()]
+        return relays
 
     def _refresh(self):
         self._relays = self._init_relays()

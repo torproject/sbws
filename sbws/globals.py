@@ -4,7 +4,7 @@ import socket
 
 log = logging.getLogger(__name__)
 
-RESULT_VERSION = 2
+RESULT_VERSION = 3
 WIRE_VERSION = 1
 SPEC_VERSION = '1.1.0'
 
@@ -22,6 +22,9 @@ TORRC_STARTING_POINT = {
     'CookieAuthentication': '1',
     # To avoid path bias warnings
     'UseEntryGuards': '0',
+    # Because we need things from full server descriptors (namely for now: the
+    # bandwidth line)
+    'UseMicrodescriptors': '0',
 }
 
 SCALE_CONSTANT = 7500

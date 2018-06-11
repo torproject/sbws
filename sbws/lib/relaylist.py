@@ -78,12 +78,14 @@ class Relay:
         return self._from_ns('address')
 
     @property
-    def ed25519_master_key(self):
+    def master_key_ed25519(self):
         """Obtain ed25519 master key of the relay in server descriptors.
 
         :returns: str, the ed25519 master key base 64 encoded without
         trailing '='s.
         """
+        # Even if this key is called master-key-ed25519 in dir-spec.txt,
+        # it seems that stem parses it as ed25519_master_key
         return self._from_desc('ed25519_master_key').rstrip('=')
 
 

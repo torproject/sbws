@@ -54,7 +54,7 @@ RESULT_ERROR_STREAM_DICT = {
     "type": "error-stream",
     "msg": "Something bad happened while measuring bandwidth",
     "nickname": "A",
-    "ed25519_master_key": "g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s"
+    "master_key_ed25519": "g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s"
 }
 
 RESULT_SUCCESS_DICT = {
@@ -78,7 +78,7 @@ RESULT_SUCCESS_DICT = {
         {"amount": 321663, "duration": 8.266003131866455},
         {"amount": 321663, "duration": 5.779450178146362}],
     "nickname": "A",
-    "ed25519_master_key": "g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s"
+    "master_key_ed25519": "g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s"
 }
 RESULT_SUCCESS_STR = str(RESULT_SUCCESS_DICT)
 RESULT_ERROR_STREAM_STR = str(RESULT_ERROR_STREAM_DICT)

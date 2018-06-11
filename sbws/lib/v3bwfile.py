@@ -336,8 +336,8 @@ class V3BWLine(object):
         bw = cls.bw_from_results(success_results)
         kwargs = dict()
         kwargs['nick'] = results[0].nickname
-        if getattr(results[0], 'ed25519_master_key'):
-            kwargs['master_key_ed25519'] = results[0].ed25519_master_key
+        if getattr(results[0], 'master_key_ed25519'):
+            kwargs['master_key_ed25519'] = results[0].master_key_ed25519
         kwargs['rtt'] = cls.rtt_from_results(success_results)
         kwargs['time'] = cls.last_time_from_results(results)
         kwargs.update(cls.result_types_from_results(results))

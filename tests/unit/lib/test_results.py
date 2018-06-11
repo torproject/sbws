@@ -112,7 +112,7 @@ def test_ResultSuccess_from_dict(time_mock):
         'nickname': nick, 'address': relay_ip, 'circ': circ,
         'dest_url': dest_url, 'scanner': scanner_nick,
         'version': RESULT_VERSION, 'type': _ResultType.Success, 'time': t,
-        'ed25519_master_key': ed25519,
+        'master_key_ed25519': ed25519,
     }
     r2 = Result.from_dict(d)
     assert isinstance(r1, ResultSuccess)
@@ -169,7 +169,7 @@ def test_ResultError_from_dict(time_mock):
         'nickname': nick, 'address': relay_ip, 'circ': circ,
         'dest_url': dest_url, 'scanner': scanner_nick,
         'version': RESULT_VERSION, 'type': _ResultType.Error, 'time': t,
-        'ed25519_master_key': ed25519,
+        'master_key_ed25519': ed25519,
     }
     r2 = Result.from_dict(d)
     assert isinstance(r1, ResultError)
@@ -227,7 +227,7 @@ def test_ResultErrorCircuit_from_dict(time_mock):
         'nickname': nick, 'address': relay_ip, 'circ': circ,
         'dest_url': dest_url, 'scanner': scanner_nick,
         'version': RESULT_VERSION, 'type': _ResultType.ErrorCircuit, 'time': t,
-        'ed25519_master_key': ed25519,
+        'master_key_ed25519': ed25519,
     }
     r2 = Result.from_dict(d)
     assert isinstance(r1, ResultErrorCircuit)
@@ -285,7 +285,7 @@ def test_ResultErrorStream_from_dict(time_mock):
         'nickname': nick, 'address': relay_ip, 'circ': circ,
         'dest_url': dest_url, 'scanner': scanner_nick,
         'version': RESULT_VERSION, 'type': _ResultType.ErrorStream, 'time': t,
-        'ed25519_master_key': ed25519,
+        'master_key_ed25519': ed25519,
     }
     r2 = Result.from_dict(d)
     assert isinstance(r1, ResultErrorStream)
@@ -343,7 +343,7 @@ def test_ResultErrorAuth_from_dict(time_mock):
         'nickname': nick, 'address': relay_ip, 'circ': circ,
         'dest_url': dest_url, 'scanner': scanner_nick,
         'version': RESULT_VERSION, 'type': _ResultType.ErrorAuth, 'time': t,
-        'ed25519_master_key': ed25519,
+        'master_key_ed25519': ed25519,
     }
     r2 = Result.from_dict(d)
     assert isinstance(r1, ResultErrorAuth)

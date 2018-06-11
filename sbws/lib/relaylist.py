@@ -79,6 +79,11 @@ class Relay:
 
     @property
     def ed25519_master_key(self):
+        """Obtain ed25519 master key of the relay in server descriptors.
+
+        :returns: str, the ed25519 master key base 64 encoded without
+        trailing '='s.
+        """
         return self._from_desc('ed25519_master_key').rstrip('=')
 
 

@@ -112,11 +112,6 @@ class RelayList:
         return self._relays_with_flag(Flag.FAST)
 
     @property
-    def slow(self):
-        ''' Returns relays without the Fast flag '''
-        return self._relays_without_flag(Flag.FAST)
-
-    @property
     def exits(self):
         return self._relays_with_flag(Flag.EXIT)
 
@@ -125,26 +120,8 @@ class RelayList:
         return self._relays_with_flag(Flag.GUARD)
 
     @property
-    def hsdirs(self):
-        return self._relays_with_flag(Flag.HSDIR)
-
-    @property
     def authorities(self):
         return self._relays_with_flag(Flag.AUTHORITY)
-
-    @property
-    def unmeasured(self):
-        ''' SEEMS BROKEN in stem 1.6.0 as it always returns no relays '''
-        relays = self.relays
-        # return [r for r in relays if r.measured is None]
-        return [r for r in relays if r.is_unmeasured]
-
-    @property
-    def measured(self):
-        ''' SEEMS BROKEN in stem 1.6.0 as it always returns all relays '''
-        relays = self.relays
-        # return [r for r in relays if r.measured is not None]
-        return [r for r in relays if not r.is_unmeasured]
 
     def exits_can_exit_to(self, host, port):
         '''

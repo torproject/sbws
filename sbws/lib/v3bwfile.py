@@ -331,7 +331,7 @@ class V3BWLine(object):
     @classmethod
     def from_results(cls, results):
         success_results = [r for r in results if isinstance(r, ResultSuccess)]
-        log.debug('len(success_results) %s', len(success_results))
+        # log.debug('len(success_results) %s', len(success_results))
         node_id = results[0].fingerprint
         bw = cls.bw_from_results(success_results)
         kwargs = dict()

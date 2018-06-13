@@ -52,6 +52,15 @@ approxmiately all sbws configuration options and can be changed with an sbws
 update. The latter is used as a starting point for generating a client's
 ``config.ini`` and changes to it only affect newly generated config files.
 
+**Document your addition, fix, change, or whatever in the changelog**. See
+`keep a changelog`_ for the standard we follow. Of note, add Added, Changed,
+Deprecated, Removed, Fixed, and Security headings as needed in the Unreleased
+section. **If your change has a trac or GitHub ticket, reference it** like
+``(GH#123)`` or ``(trac#22104)``. When it comes time to do a release, the
+person doing the release should (1) change the name of the Unreleased section
+and add a new one, and (2) update the links at the bottom.
+
+
 .. _commit-msg:
 
 Example commit message
@@ -89,3 +98,5 @@ With thanks to `Tim Pope`_:
 .. _pull request: https://github.com/pastly/simple-bw-scanner/compare
 
 .. _tim pope: https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
+
+.. _`keep a changelog`: https://keepachangelog.com/en/1.0.0/

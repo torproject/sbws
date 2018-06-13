@@ -85,7 +85,10 @@ class Relay:
         """
         # Even if this key is called master-key-ed25519 in dir-spec.txt,
         # it seems that stem parses it as ed25519_master_key
-        return self._from_desc('ed25519_master_key').rstrip('=')
+        key = self._from_desc('ed25519_master_key')
+        if key is None:
+            return None
+        return key.rstrip('=')
 
     def can_exit_to(self, host, port):
         '''

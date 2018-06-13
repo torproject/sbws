@@ -26,6 +26,8 @@ the exit position.
   tried fixing something in this area with `88fae60bc` but neglected to
 remember that `.join()` wants only string arguments and can't handle a `None`.
 So fix that.
+- Exception when failing to get a relay's `ed25519_master_key` from Tor and
+  trying to do `.rstrip()` on a None.
 
 
 [Unreleased]: https://github.com/pastly/simple-bw-scanner/compare/v0.4.0...master

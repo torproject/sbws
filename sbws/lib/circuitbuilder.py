@@ -164,7 +164,7 @@ class GapsCircuitBuilder(CircuitBuilder):
         insert_relays = self._random_sample_relays(
             num_missing, [r for r in path if r is not None])
         if insert_relays is None:
-            path = ','.join([r.nickname if r else None for r in path])
+            path = ','.join([r.nickname if r else str(None) for r in path])
             log.warning(
                 'Problem building a circuit to satisfy %s with available '
                 'relays in the network', path)

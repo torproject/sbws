@@ -2,7 +2,6 @@ from stem.descriptor.router_status_entry import RouterStatusEntryV3
 from stem.descriptor.server_descriptor import ServerDescriptor
 import sbws.util.stem as stem_utils
 from stem import Flag
-from stem import DescriptorUnavailable
 from stem.util.connection import is_valid_ipv4_address
 from stem.util.connection import is_valid_ipv6_address
 import random
@@ -89,6 +88,13 @@ class Relay:
         return self._from_desc('ed25519_master_key').rstrip('=')
 
     def can_exit_to(self, host, port):
+        '''
+        Returns if this relay can MOST LIKELY exit to the given host:port.
+        **host** can be a hostname, but be warned that we will resolve it
+        locally and use the first (arbitrary/unknown order) result when
+        checking exit policies, which is different than what other parts of the
+        code may do (leaving it up to the exit to resolve the name).
+        '''
         if not self.exit_policy:
             return False
         assert isinstance(host, str)
@@ -142,54 +148,6 @@ class RelayList:
     @property
     def authorities(self):
         return self._relays_with_flag(Flag.AUTHORITY)
-
-    def exits_can_exit_to(self, host, port):
-        '''
-        Return exits that can MOST LIKELY exit to the given host:port. **host**
-        can be a hostname, but be warned that we will resolve it locally and
-        use the first (arbitrary/unknown order) result when checking exit
-        policies, which is different than what other parts of the code may do
-        (leaving it up to the exit to resolve the name).
-
-        An exit can only MOST LIKELY not just because of the above DNS
-        disconnect, but also because fundamentally our Tor client is most
-        likely using microdescriptors which do not have full information about
-        exit policies.
-        '''
-        c = self._controller
-        if not is_valid_ipv4_address(host) and not is_valid_ipv6_address(host):
-            # It certainly isn't perfect trying to guess if an exit can connect
-            # to an ipv4/6 address based on the DNS result we got locally. But
-            # it's the best we can do.
-            #
-            # Also, only use the first ipv4/6 we get even if there is more than
-            # one.
-            host = resolve(host)[0]
-        assert is_valid_ipv4_address(host) or is_valid_ipv6_address(host)
-        exits = []
-        for exit in self.exits:
-            # If we have the exit policy already, easy
-            if exit.exit_policy:
-                policy = exit.exit_policy
-            else:
-                # Otherwise ask Tor for the microdescriptor and assume the exit
-                # won't work if the desc isn't available
-                try:
-                    fp = exit.fingerprint
-                    policy = c.get_microdescriptor(fp).exit_policy
-                except DescriptorUnavailable as e:
-                    log.debug(e)
-                    continue
-            # There's a weird KeyError we sometimes hit when checking
-            # policy.can_exit_to()... so catch that and log about it. Maybe
-            # someday it can be fixed?
-            try:
-                if policy is not None and policy.can_exit_to(port=port):
-                    exits.append(exit)
-            except KeyError as e:
-                log.exception('Got that KeyError in stem again...: %s', e)
-                continue
-        return exits
 
     def random_relay(self):
         relays = self.relays

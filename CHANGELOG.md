@@ -15,4 +15,4 @@ remember that `.join()` wants only string arguments and can't handle a `None`.
 So fix that.
 
 
-[Unreleased]: https://github.com/pastly/simple-bw-scanner/v0.4.0...master
+[Unreleased]: https://github.com/pastly/simple-bw-scanner/compare/v0.4.0...master

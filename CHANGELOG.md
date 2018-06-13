@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Changed
+
+- If the relay to measure is an exit, put it in the exit position and choose a
+  non-exit to help. Previously the relay to measure would always be the first
+hop. (GH#181)
+- Try harder to find a relay to help measure the target relay with two changes.
+  Essentially: (1) Instead of only picking from relays that are 1.25 - 2.00
+times faster than it by consensus weight, try (in order) to find a relay that
+is at least 2.00, 1.75, 1.50, 1.25, or 1.00 times as fast. If that fails,
+instead of giving up, (2) pick the fastest relay in the network instead of
+giving up. This compliments the previous change about measuring target exits in
+the exit position.
+
 ### Fixed
 
 - Exception that causes sbws to fall back to one measurement thread. We first

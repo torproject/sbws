@@ -88,6 +88,22 @@ class Relay:
         # it seems that stem parses it as ed25519_master_key
         return self._from_desc('ed25519_master_key').rstrip('=')
 
+    def can_exit_to(self, host, port):
+        if not self.exit_policy:
+            return False
+        assert isinstance(host, str)
+        assert isinstance(port, int)
+        if not is_valid_ipv4_address(host) and not is_valid_ipv6_address(host):
+            # It certainly isn't perfect trying to guess if an exit can connect
+            # to an ipv4/6 address based on the DNS result we got locally. But
+            # it's the best we can do.
+            #
+            # Also, only use the first ipv4/6 we get even if there is more than
+            # one.
+            host = resolve(host)[0]
+        assert is_valid_ipv4_address(host) or is_valid_ipv6_address(host)
+        return self.exit_policy.can_exit_to(host, port)
+
 
 class RelayList:
     ''' Keeps a list of all relays in the current Tor network and updates it
@@ -114,6 +130,10 @@ class RelayList:
     @property
     def exits(self):
         return self._relays_with_flag(Flag.EXIT)
+
+    @property
+    def non_exits(self):
+        return self._relays_without_flag(Flag.EXIT)
 
     @property
     def guards(self):

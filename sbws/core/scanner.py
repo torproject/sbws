@@ -131,6 +131,40 @@ def measure_bandwidth_to_server(session, conf, dest, content_length):
     return results
 
 
+def _pick_ideal_second_hop(relay, dest, rl, cont, is_exit):
+    '''
+    Sbws builds two hop circuits. Given the **relay** to measure with
+    destination **dest**, pick a second relay that is or is not an exit
+    according to **is_exit**.
+    '''
+    candidates = []
+    candidates.extend(rl.exits if is_exit else rl.non_exits)
+    if not len(candidates):
+        return None
+    log.debug('Picking a 2nd hop to measure %s from %d choices. is_exit=%s',
+              relay.nickname, len(candidates), is_exit)
+    for min_bw_factor in [2, 1.75, 1.5, 1.25, 1]:
+        min_bw = relay.bandwidth * min_bw_factor
+        new_candidates = stem_utils.only_relays_with_bandwidth(
+            cont, candidates, min_bw=min_bw)
+        if len(new_candidates) > 0:
+            chosen = rng.choice(new_candidates)
+            log.debug(
+                'Found %d candidate 2nd hops with at least %sx the bandwidth '
+                'of %s. Returning %s (bw=%s).',
+                len(new_candidates), min_bw_factor, relay.nickname,
+                chosen.nickname, chosen.bandwidth)
+            return chosen
+    candidates = sorted(candidates, key=lambda r: r.bandwidth, reverse=True)
+    chosen = candidates[0]
+    log.debug(
+        'Didn\'t find any 2nd hops at least as fast as %s (bw=%s). It\'s '
+        'probably really fast. Returning %s (bw=%s), the fastest '
+        'candidate we have.', relay.nickname, relay.bandwidth,
+        chosen.nickname, chosen.bandwidth)
+    return chosen
+
+
 def measure_relay(args, conf, destinations, cb, rl, relay):
     s = requests_utils.make_session(
         cb.controller, conf.getfloat('general', 'http_timeout'))
@@ -140,24 +174,29 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         log.warning('Unable to get destination to measure %s %s',
                     relay.nickname, relay.fingerprint[0:8])
         return None
-    # Pick an exit
-    exits = rl.exits_can_exit_to(dest.hostname, dest.port)
-    exits = [e for e in exits if e.fingerprint != relay.fingerprint]
-    exits = stem_utils.only_relays_with_bandwidth(
-        cb.controller, exits, min_bw=round(relay.bandwidth*1.25),
-        max_bw=max(round(relay.bandwidth*2.00), 100))
-    if len(exits) < 1:
-        log.warning('No available exits to help measure %s %s', relay.nickname,
-                    relay.fingerprint[0:8])
+    # Pick a relay to help us measure the given relay. If the given relay is an
+    # exit, then pick a non-exit. Otherwise pick an exit.
+    helper = None
+    circ_fps = None
+    if relay.can_exit_to(dest.hostname, dest.port):
+        helper = _pick_ideal_second_hop(
+            relay, dest, rl, cb.controller, is_exit=False)
+        if helper:
+            circ_fps = [helper.fingerprint, relay.fingerprint]
+    else:
+        helper = _pick_ideal_second_hop(
+            relay, dest, rl, cb.controller, is_exit=True)
+        if helper:
+            circ_fps = [relay.fingerprint, helper.fingerprint]
+    if not helper:
         # TODO: Return ResultError of some sort
+        log.warning('Unable to pick a 2nd hop to help measure %s %s',
+                    relay.nickname, relay.fingerprint[0:8])
         return None
-    exit = rng.choice(exits)
+    assert helper
+    assert circ_fps is not None and len(circ_fps) == 2
     # Build the circuit
-    log.debug('We selected exit %s %s (cw=%d) to help measure %s %s (cw=%d)',
-              exit.nickname, exit.fingerprint[0:8], exit.bandwidth,
-              relay.nickname, relay.fingerprint[0:8], relay.bandwidth)
     our_nick = conf['scanner']['nickname']
-    circ_fps = [relay.fingerprint, exit.fingerprint]
     circ_id = cb.build_circuit(circ_fps)
     if not circ_id:
         log.warning('Could not build circuit involving %s', relay.nickname)

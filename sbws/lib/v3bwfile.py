@@ -223,7 +223,7 @@ class V3BwHeader(object):
     def from_results(cls, conf, results):
         kwargs = dict()
         latest_bandwidth = cls.latest_bandwidth_from_results(results)
-        earliest_bandwidth = cls.latest_bandwidth_from_results(results)
+        earliest_bandwidth = cls.earliest_bandwidth_from_results(results)
         generator_started = cls.generator_started_from_file(conf)
         timestamp = str(latest_bandwidth)
         kwargs['latest_bandwidth'] = unixts_to_isodt_str(latest_bandwidth)

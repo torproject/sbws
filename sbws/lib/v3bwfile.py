@@ -3,12 +3,13 @@
 (v3bw) used by bandwidth authorities."""
 
 import logging
+import os
 from statistics import median
 
 from sbws import __version__
 from sbws.globals import SPEC_VERSION, BW_LINE_SIZE
 from sbws.lib.resultdump import ResultSuccess, _ResultType
-from sbws.util.filelock import FileLock
+from sbws.util.filelock import FileLock, DirectoryLock
 from sbws.util.timestamp import now_isodt_str, unixts_to_isodt_str, now_fname
 
 log = logging.getLogger(__name__)
@@ -401,7 +402,16 @@ class V3BwFile(object):
 
     def write(self, output):
         log.info('Writing v3bw file to %s', output)
-        with open(output, 'wt') as fd:
-            fd.write(str(self.header))
-            for line in self.bw_lines:
-                fd.write(str(line))
+        # to keep test_generate.py working
+        if output != '/dev/stdout':
+            with DirectoryLock(os.path.dirname(output)):
+                with open(output, 'wt') as fd:
+                    fd.write(str(self.header))
+                    for line in self.bw_lines:
+                        fd.write(str(line))
+                os.symlink(output, 'latest.v3bw')
+        else:
+            with open(output, 'wt') as fd:
+                fd.write(str(self.header))
+                for line in self.bw_lines:
+                    fd.write(str(line))

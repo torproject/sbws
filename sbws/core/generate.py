@@ -4,6 +4,8 @@ from sbws.lib.resultdump import load_recent_results_in_datadir
 from argparse import ArgumentDefaultsHelpFormatter
 import os
 import logging
+from sbws.util.filelock import DirectoryLock
+from sbws.util.timestamp import now_fname
 
 log = logging.getLogger(__name__)
 
@@ -31,6 +33,31 @@ def gen_parser(sub):
                    'out, and we do so proportionally')
 
 
+def _write_v3bw_file(v3bwfile, output):
+    log.info('Writing v3bw file to %s', output)
+    out_dir = os.path.dirname(output)
+    out_link = os.path.join(out_dir, 'latest.v3bw')
+    if os.path.exists(out_link):
+        log.debug('Deleting existing symlink before creating a new one.')
+        os.remove(out_link)
+    # to keep test_generate.py working
+    if output != '/dev/stdout':
+        with DirectoryLock(out_dir):
+            with open(output, 'wt') as fd:
+                fd.write(str(v3bwfile.header))
+                for line in v3bwfile.bw_lines:
+                    fd.write(str(line))
+            output_basename = os.path.basename(output)
+            log.debug('Creating symlink from {} to {}.'
+                      .format(output_basename, out_link))
+            os.symlink(output_basename, out_link)
+    else:
+        with open(output, 'wt') as fd:
+            fd.write(str(v3bwfile.header))
+            for line in v3bwfile.bw_lines:
+                fd.write(str(line))
+
+
 def main(args, conf):
     if not is_initted(args.directory):
         fail_hard('Sbws isn\'t initialized.  Try sbws init')
@@ -51,4 +78,6 @@ def main(args, conf):
                     'ran sbws scanner recently?)')
         return
     bw_file = V3BwFile.from_arg_results(args, conf, results)
+    output = args.output or conf['paths']['v3bw_fname'].format(now_fname())
+    _write_v3bw_file(bw_file, output)
     log.info('Mean bandwidth per line: %f "KiB"', bw_file.avg_bw)

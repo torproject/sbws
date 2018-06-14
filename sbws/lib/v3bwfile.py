@@ -379,15 +379,6 @@ class V3BwFile(object):
         return self.total_bw / self.num_lines
 
     @classmethod
-    def from_results(cls, conf, output, results):
-        bw_lines = [V3BWLine.from_results(results[fp]) for fp in results]
-        bw_lines = sorted(bw_lines, key=lambda d: d.bw, reverse=True)
-        header = V3BwHeader.from_results(conf, results)
-        f = cls(header, bw_lines)
-        f.write(output)
-        return f
-
-    @classmethod
     def from_arg_results(cls, args, conf, results):
         bw_lines = [V3BWLine.from_results(results[fp]) for fp in results]
         bw_lines = sorted(bw_lines, key=lambda d: d.bw, reverse=True)

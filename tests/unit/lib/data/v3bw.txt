@@ -5,6 +5,6 @@ file_created=2018-04-25T13:10:57
 generator_started=2018-04-16T14:09:05
 latest_bandwidth=2018-04-17T14:09:07
 software=sbws
-software_version=0.4.1
+software_version=0.4.2-dev
 ====
 bw=54 error_circ=0 error_misc=0 error_stream=1 master_key_ed25519=g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s nick=A node_id=$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA rtt=456 success=1 time=2018-04-17T14:09:07

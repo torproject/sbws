@@ -37,7 +37,7 @@ header_extra_str = LINE_SEP.join(header_extra_ls) + LINE_SEP
 bwl_str = "bw=54 error_circ=0 error_misc=0 error_stream=1 " \
     "master_key_ed25519=g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s " \
     "nick=A " \
-    "node_id=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA rtt=456 success=1 " \
+    "node_id=$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA rtt=456 success=1 " \
     "time=2018-04-17T14:09:07\n"
 
 v3bw_str = header_extra_str + bwl_str

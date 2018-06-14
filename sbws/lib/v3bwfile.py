@@ -253,6 +253,7 @@ class V3BWLine(object):
     def __init__(self, node_id, bw, **kwargs):
         assert isinstance(node_id, str)
         assert isinstance(bw, int)
+        assert node_id.startswith('$')
         self.node_id = node_id
         self.bw = bw
         [setattr(self, k, v) for k, v in kwargs.items()
@@ -332,7 +333,7 @@ class V3BWLine(object):
     def from_results(cls, results):
         success_results = [r for r in results if isinstance(r, ResultSuccess)]
         # log.debug('len(success_results) %s', len(success_results))
-        node_id = results[0].fingerprint
+        node_id = '$' + results[0].fingerprint
         bw = cls.bw_from_results(success_results)
         kwargs = dict()
         kwargs['nick'] = results[0].nickname

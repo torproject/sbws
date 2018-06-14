@@ -116,7 +116,8 @@ def test_generate_single_success_noscale(dotsbws_success_result, caplog,
     bw = round(median([dl['amount'] / dl['duration'] / 1024
                        for dl in result.downloads]))
     rtt = median([round(r * 1000) for r in result.rtts])
-    bw_line = V3BWLine(result.fingerprint, bw, nick=result.nickname, rtt=rtt,
+    bw_line = V3BWLine('$' + result.fingerprint, bw, nick=result.nickname,
+                       rtt=rtt,
                        time=unixts_to_isodt_str(round(result.time)),
                        master_key_ed25519=result.master_key_ed25519,
                        success=1, error_circ=0, error_misc=0,
@@ -149,7 +150,8 @@ def test_generate_single_success_scale(dotsbws_success_result, parser,
 
     bw = 7500
     rtt = median([round(r * 1000) for r in result.rtts])
-    bw_line = V3BWLine(result.fingerprint, bw, nick=result.nickname, rtt=rtt,
+    bw_line = V3BWLine('$' + result.fingerprint, bw, nick=result.nickname,
+                       rtt=rtt,
                        time=unixts_to_isodt_str(round(result.time)),
                        master_key_ed25519=result.master_key_ed25519,
                        success=1, error_circ=0, error_misc=0,
@@ -184,7 +186,7 @@ def test_generate_single_relay_success_noscale(
               for r in results for dl in r.downloads]
     speed = round(median(speeds))
     rtt = round(median([round(r * 1000) for r in result.rtts]))
-    bw_line = V3BWLine(result.fingerprint, speed, nick=result.nickname,
+    bw_line = V3BWLine('$' + result.fingerprint, speed, nick=result.nickname,
                        rtt=rtt, master_key_ed25519=result.master_key_ed25519,
                        time=unixts_to_isodt_str(round(result.time)),
                        success=2, error_circ=0, error_misc=0,
@@ -217,7 +219,7 @@ def test_generate_single_relay_success_scale(
 
     speed = 7500
     rtt = round(median([round(r * 1000) for r in result.rtts]))
-    bw_line = V3BWLine(result.fingerprint, speed, nick=result.nickname,
+    bw_line = V3BWLine('$' + result.fingerprint, speed, nick=result.nickname,
                        rtt=rtt,
                        master_key_ed25519=result.master_key_ed25519,
                        time=unixts_to_isodt_str(round(result.time)),
@@ -252,7 +254,7 @@ def test_generate_two_relays_success_noscale(
     r1_results = [r for r in results if r.fingerprint == 'A' * 40]
     r1_time = unixts_to_isodt_str(round(max([r.time for r in r1_results])))
     r1_name = r1_results[0].nickname
-    r1_fingerprint = r1_results[0].fingerprint
+    r1_fingerprint = '$' + r1_results[0].fingerprint
     r1_ed25519 = r1_results[0].master_key_ed25519
     r1_speeds = [dl['amount'] / dl['duration'] / 1024
                  for r in r1_results for dl in r.downloads]
@@ -268,7 +270,7 @@ def test_generate_two_relays_success_noscale(
     r2_results = [r for r in results if r.fingerprint == 'B' * 40]
     r2_time = unixts_to_isodt_str(round(max([r.time for r in r2_results])))
     r2_name = r2_results[0].nickname
-    r2_fingerprint = r2_results[0].fingerprint
+    r2_fingerprint = '$' + r2_results[0].fingerprint
     r2_ed25519 = r2_results[0].master_key_ed25519
     r2_speeds = [dl['amount'] / dl['duration'] / 1024
                  for r in r2_results for dl in r.downloads]

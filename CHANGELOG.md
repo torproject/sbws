@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.4.1]
+
 ### Changed
 
 - If the relay to measure is an exit, put it in the exit position and choose a
@@ -31,4 +33,5 @@ So fix that.
 - `earliest_bandwidth` being the newest bw not the oldest (thanks juga0)
 - `node_id` was missing the character "$" at the beginning
 
-[Unreleased]: https://github.com/pastly/simple-bw-scanner/compare/v0.4.0...master
+[Unreleased]: https://github.com/pastly/simple-bw-scanner/compare/v0.4.1...master
+[0.4.1]: https://github.com/pastly/simple-bw-scanner/compare/v0.4.0...v0.4.1

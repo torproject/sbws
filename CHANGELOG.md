@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-## Changed
+### Changed
 
 - Change the path where the Bandwidth List files are generated: now they are
   stored in `v3bw` directory, named `YYmmdd_HHMMSS.v3bw`, and previously

@@ -29,6 +29,6 @@ So fix that.
 - Exception when failing to get a relay's `ed25519_master_key` from Tor and
   trying to do `.rstrip()` on a None.
 - `earliest_bandwidth` being the newest bw not the oldest (thanks juga0)
-
+- `node_id` was missing the character "$" at the beginning
 
 [Unreleased]: https://github.com/pastly/simple-bw-scanner/compare/v0.4.0...master

@@ -9,7 +9,7 @@ from sbws import __version__
 from sbws.globals import SPEC_VERSION, BW_LINE_SIZE
 from sbws.lib.resultdump import ResultSuccess, _ResultType
 from sbws.util.filelock import FileLock
-from sbws.util.timestamp import now_isodt_str, unixts_to_isodt_str
+from sbws.util.timestamp import now_isodt_str, unixts_to_isodt_str, now_fname
 
 log = logging.getLogger(__name__)
 
@@ -395,7 +395,7 @@ class V3BwFile(object):
             bw_lines = scale_lines(bw_lines, args.scale_constant)
         header = V3BwHeader.from_results(conf, results)
         f = cls(header, bw_lines)
-        output = args.output or conf['paths']['v3bw_fname']
+        output = args.output or conf['paths']['v3bw_fname'].format(now_fname())
         f.write(output)
         return f
 

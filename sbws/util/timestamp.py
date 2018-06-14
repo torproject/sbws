@@ -47,6 +47,16 @@ def now_isodt_str():
     return dt_obj_to_isodt_str(datetime.utcnow())
 
 
+def now_fname():
+    """
+    Return now timestamp in UTC formatted as %Y%m%d_%H%M%S string for file
+    names.
+
+    :returns: now timestamp in UTC formatted as %Y%m%d_%H%M%S string
+    """
+    return datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+
+
 def unixts_to_str(unixts):
     """Convert unix timestamp integer or float to string"""
     # even if it is only converting to str, ensure that input is nothing else

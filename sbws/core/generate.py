@@ -35,6 +35,8 @@ def main(args, conf):
     if not is_initted(args.directory):
         fail_hard('Sbws isn\'t initialized.  Try sbws init')
 
+    os.makedirs(conf['paths']['v3bw_dname'], exist_ok=True)
+
     datadir = conf['paths']['datadir']
     if not os.path.isdir(datadir):
         fail_hard('%s does not exist', datadir)

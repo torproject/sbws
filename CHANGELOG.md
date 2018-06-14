@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## Changed
+
+- Change the path where the Bandwidth List files are generated: now they are
+  stored in `v3bw` directory, named `YYmmdd_HHMMSS.v3bw`, and previously
+generated ones are kept. A `latest.v3bw` symlink is updated. (GH#179 GHPR#190)
+
 ## [0.4.1]
 
 ### Changed
@@ -21,8 +27,6 @@ is at least 2.00, 1.75, 1.50, 1.25, or 1.00 times as fast. If that fails,
 instead of giving up, (2) pick the fastest relay in the network instead of
 giving up. This compliments the previous change about measuring target exits in
 the exit position.
-- Change the path where the Bandwidth List files are generated: now they are
-  stored in `v3bw` directory and named `YYmmdd_HHMMSS.v3bw`
 
 ### Fixed
 

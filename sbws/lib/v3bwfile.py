@@ -75,7 +75,7 @@ def read_started_ts(conf):
     """
     try:
         filepath = conf['paths']['started_filepath']
-    except TypeError as e:
+    except TypeError:
         return ''
     try:
         with FileLock(filepath):
@@ -184,7 +184,7 @@ class V3BwHeader(object):
         assert isinstance(lines, list)
         try:
             index_terminator = lines.index(TERMINATOR)
-        except ValueError as e:
+        except ValueError:
             # is not a bw file or is v100
             log.warn('Terminator is not in lines')
             return None

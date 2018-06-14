@@ -414,9 +414,10 @@ class V3BwFile(object):
                     fd.write(str(self.header))
                     for line in self.bw_lines:
                         fd.write(str(line))
+                output_basename = os.path.basename(output)
                 log.debug('Creating symlink from {} to {}.'
-                          .format(output, out_link))
-                os.symlink(output, out_link)
+                          .format(output_basename, out_link))
+                os.symlink(output_basename, out_link)
         else:
             with open(output, 'wt') as fd:
                 fd.write(str(self.header))

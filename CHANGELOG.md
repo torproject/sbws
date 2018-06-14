@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+
+- Use a relay's {,Relay}BandwidthRate/MaxAdvertisedBandwidth as an upper bound
+  on the measurements we make for it. (GH#155)
+
 ### Changed
 
 - Change the path where the Bandwidth List files are generated: now they are

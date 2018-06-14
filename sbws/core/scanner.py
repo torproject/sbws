@@ -165,6 +165,41 @@ def _pick_ideal_second_hop(relay, dest, rl, cont, is_exit):
     return chosen
 
 
+def _clamp_bw_results(relay, bw_results):
+    '''
+    If a relay has MaxAdvertisedBandwidth set, they may be capable of some
+    large amount of bandwidth but prefer if they didn't receive it. We also
+    could have managed to measure them faster than their {,Relay}BandwidthRate
+    somehow.
+
+    See https://github.com/pastly/simple-bw-scanner/issues/155 and
+    https://trac.torproject.org/projects/tor/ticket/8494
+    '''
+    upper_bound = relay.average_bandwidth
+    if upper_bound is None:
+        log.warning(
+            'Could not get average bandwidth from %s\'s descriptor. Not '
+            'capping the results for it to some upper bound.', relay.nickname)
+        return bw_results
+    capped_count = 0
+    new_results = []
+    for result in bw_results:
+        rate = result['amount'] / result['duration']
+        if rate > upper_bound:
+            capped_count += 1
+            new_results.append({
+                'amount': int(upper_bound * result['duration']),
+                'duration': result['duration']})
+        else:
+            new_results.append(result)
+    assert len(new_results) == len(bw_results)
+    if capped_count > 0:
+        log.debug(
+            'Capped %d results to %d for relay %s', capped_count, upper_bound,
+            relay.nickname)
+    return new_results
+
+
 def measure_relay(args, conf, destinations, cb, rl, relay):
     s = requests_utils.make_session(
         cb.controller, conf.getfloat('general', 'http_timeout'))
@@ -246,6 +281,7 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
             ResultErrorStream(relay, circ_fps, dest.url, our_nick, msg=msg),
         ]
     cb.close_circuit(circ_id)
+    bw_results = _clamp_bw_results(relay, bw_results)
     # Finally: store result
     return [
         ResultSuccess(rtts, bw_results, relay, circ_fps, dest.url, our_nick),

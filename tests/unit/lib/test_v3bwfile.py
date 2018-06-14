@@ -5,9 +5,9 @@ import json
 from sbws import __version__ as version
 from sbws.globals import SPEC_VERSION, RESULT_VERSION
 from sbws.lib.resultdump import Result, load_result_file
-from sbws.lib.v3bwfile import (V3BwHeader, V3BWLine, TERMINATOR, LINE_SEP,
+from sbws.lib.v3bwfile import (V3BWHeader, V3BWLine, TERMINATOR, LINE_SEP,
                                KEYVALUE_SEP_V110, num_results_of_type,
-                               V3BwFile)
+                               V3BWFile)
 
 timestamp = 1523974147
 timestamp_l = str(timestamp)
@@ -86,13 +86,13 @@ RESULT_ERROR_STREAM_STR = str(RESULT_ERROR_STREAM_DICT)
 
 def test_v3bwheader_str():
     """Test header str"""
-    header = V3BwHeader(timestamp_l, file_created=file_created)
+    header = V3BWHeader(timestamp_l, file_created=file_created)
     assert header_str == str(header)
 
 
 def test_v3bwheader_extra_str():
     """Test header str with additional headers"""
-    header = V3BwHeader(timestamp_l,
+    header = V3BWHeader(timestamp_l,
                         file_created=file_created,
                         generator_started=generator_started,
                         earliest_bandwidth=earliest_bandwidth)
@@ -101,33 +101,33 @@ def test_v3bwheader_extra_str():
 
 def test_v3bwheader_from_lines():
     """"""
-    header_obj = V3BwHeader(timestamp_l,
+    header_obj = V3BWHeader(timestamp_l,
                             file_created=file_created,
                             generator_started=generator_started,
                             earliest_bandwidth=earliest_bandwidth)
-    header, _ = V3BwHeader.from_lines_v110(header_extra_ls)
+    header, _ = V3BWHeader.from_lines_v110(header_extra_ls)
     assert str(header_obj) == str(header)
 
 
 def test_v3bwheader_from_text():
     """"""
-    header_obj = V3BwHeader(timestamp_l,
+    header_obj = V3BWHeader(timestamp_l,
                             file_created=file_created,
                             generator_started=generator_started,
                             earliest_bandwidth=earliest_bandwidth)
-    header, _ = V3BwHeader.from_text_v110(header_extra_str)
+    header, _ = V3BWHeader.from_text_v110(header_extra_str)
     assert str(header_obj) == str(header)
 
 
 def test_v3bwheader_from_file(datadir):
     """Test header str with additional headers"""
-    header = V3BwHeader(timestamp_l,
+    header = V3BWHeader(timestamp_l,
                         file_created=file_created,
                         generator_started=generator_started,
                         earliest_bandwidth=earliest_bandwidth)
     # at some point this should be read from conftest
     text = datadir.read('v3bw/20180425_131057.v3bw')
-    h, _ = V3BwHeader.from_text_v110(text)
+    h, _ = V3BWHeader.from_text_v110(text)
     assert str(h) == str(header)
 
 
@@ -160,10 +160,10 @@ def test_v3bwfile(datadir, tmpdir):
     # at some point this should be obtained from conftest
     v3bw = datadir.read('v3bw/20180425_131057.v3bw')
     results = load_result_file(str(datadir.join("results.txt")))
-    header = V3BwHeader(timestamp_l,
+    header = V3BWHeader(timestamp_l,
                         file_created=file_created,
                         generator_started=generator_started,
                         earliest_bandwidth=earliest_bandwidth)
     bwls = [V3BWLine.from_results(results[fp]) for fp in results]
-    f = V3BwFile(header, bwls)
+    f = V3BWFile(header, bwls)
     assert v3bw == str(f)

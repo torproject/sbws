@@ -95,7 +95,7 @@ def result_type_to_key(type_str):
     return type_str.replace('-', '_')
 
 
-class V3BwHeader(object):
+class V3BWHeader(object):
     """
     Create a bandwidth measurements (V3bw) header
     following bandwidth measurements document spec version 1.1.0.
@@ -178,7 +178,7 @@ class V3BwHeader(object):
     def from_lines_v110(cls, lines):
         """
         :param list lines: list of lines to parse
-        :returns: tuple of V3BwHeader object and non-header lines
+        :returns: tuple of V3BWHeader object and non-header lines
         """
         assert isinstance(lines, list)
         try:
@@ -198,7 +198,7 @@ class V3BwHeader(object):
     def from_text_v110(self, text):
         """
         :param str text: text to parse
-        :returns: tuple of V3BwHeader object and non-header lines
+        :returns: tuple of V3BWHeader object and non-header lines
         """
         assert isinstance(text, str)
         return self.from_lines_v110(text.split(LINE_SEP))
@@ -351,7 +351,7 @@ class V3BWLine(object):
         return cls.from_results(data[fingerprint])
 
 
-class V3BwFile(object):
+class V3BWFile(object):
     """
     Create a Bandwidth List file following spec version 1.1.0
 
@@ -384,6 +384,6 @@ class V3BwFile(object):
         bw_lines = sorted(bw_lines, key=lambda d: d.bw, reverse=True)
         if args.scale:
             bw_lines = scale_lines(bw_lines, args.scale_constant)
-        header = V3BwHeader.from_results(conf, results)
+        header = V3BWHeader.from_results(conf, results)
         f = cls(header, bw_lines)
         return f

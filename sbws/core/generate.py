@@ -1,5 +1,5 @@
 from sbws.globals import (fail_hard, is_initted, SCALE_CONSTANT)
-from sbws.lib.v3bwfile import V3BwFile
+from sbws.lib.v3bwfile import V3BWFile
 from sbws.lib.resultdump import load_recent_results_in_datadir
 from argparse import ArgumentDefaultsHelpFormatter
 import os
@@ -77,7 +77,7 @@ def main(args, conf):
         log.warning('No recent results, so not generating anything. (Have you '
                     'ran sbws scanner recently?)')
         return
-    bw_file = V3BwFile.from_arg_results(args, conf, results)
+    bw_file = V3BWFile.from_arg_results(args, conf, results)
     output = args.output or conf['paths']['v3bw_fname'].format(now_fname())
     _write_v3bw_file(bw_file, output)
     log.info('Mean bandwidth per line: %f "KiB"', bw_file.avg_bw)

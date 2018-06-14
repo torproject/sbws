@@ -402,14 +402,21 @@ class V3BwFile(object):
 
     def write(self, output):
         log.info('Writing v3bw file to %s', output)
+        out_dir = os.path.dirname(output)
+        out_link = os.path.join(out_dir, 'latest.v3bw')
+        if os.path.exists(out_link):
+            log.debug('Deleting existing symlink before creating a new one.')
+            os.remove(out_link)
         # to keep test_generate.py working
         if output != '/dev/stdout':
-            with DirectoryLock(os.path.dirname(output)):
+            with DirectoryLock(out_dir):
                 with open(output, 'wt') as fd:
                     fd.write(str(self.header))
                     for line in self.bw_lines:
                         fd.write(str(line))
-                os.symlink(output, 'latest.v3bw')
+                log.debug('Creating symlink from {} to {}.'
+                          .format(output, out_link))
+                os.symlink(output, out_link)
         else:
             with open(output, 'wt') as fd:
                 fd.write(str(self.header))

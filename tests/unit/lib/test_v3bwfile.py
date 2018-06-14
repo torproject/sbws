@@ -125,7 +125,8 @@ def test_v3bwheader_from_file(datadir):
                         file_created=file_created,
                         generator_started=generator_started,
                         earliest_bandwidth=earliest_bandwidth)
-    text = datadir.read('v3bw.txt')
+    # at some point this should be read from conftest
+    text = datadir.read('v3bw/20180425_131057.v3bw')
     h, _ = V3BwHeader.from_text_v110(text)
     assert str(h) == str(header)
 
@@ -156,7 +157,8 @@ def test_v3bwline_from_results_file(datadir):
 
 def test_v3bwfile(datadir, tmpdir):
     """Test generate v3bw file (including relay_lines)."""
-    v3bw = datadir.read('v3bw.txt')
+    # at some point this should be obtained from conftest
+    v3bw = datadir.read('v3bw/20180425_131057.v3bw')
     results = load_result_file(str(datadir.join("results.txt")))
     header = V3BwHeader(timestamp_l,
                         file_created=file_created,

@@ -11,7 +11,7 @@ from queue import Empty
 from datetime import datetime
 from datetime import timedelta
 from enum import Enum
-from sbws.globals import RESULT_VERSION
+from sbws.globals import RESULT_VERSION, fail_hard
 from sbws.util.filelock import DirectoryLock
 from sbws.lib.relaylist import Relay
 
@@ -444,7 +444,10 @@ class ResultDump:
         self.data_lock = RLock()
         self.thread = Thread(target=self.enter)
         self.queue = Queue()
-        self.thread.start()
+        try:
+            self.thread.start()
+        except RuntimeError as e:
+            fail_hard(e)
 
     def store_result(self, result):
         ''' Call from ResultDump thread '''

@@ -144,6 +144,9 @@ def load_recent_results_in_datadir(fresh_days, datadir, success_only=False,
                 results = merge_result_dicts(results, new_results)
         working_day += timedelta(days=1)
     results = trim_results(fresh_days, results)
+    # in time fresh days is possible that a relay changed ip,
+    # if that's the case, keep only the results for the last ip
+    results = trim_results_ip_changed(results, ipv4, ipv6)
     num_res = sum([len(results[fp]) for fp in results])
     if num_res == 0:
         log.warning('Results files that are valid not found. '
@@ -492,6 +495,9 @@ class ResultDump:
                 self.data[fp] = []
             self.data[fp].append(result)
             self.data = trim_results(self.fresh_days, self.data)
+            # we probably do not want to remove the results for a relay
+            # that has changed address when storing the results
+            # it will be already done when loading
 
     def handle_result(self, result):
         ''' Call from ResultDump thread. If we are shutting down, ignores

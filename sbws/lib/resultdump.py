@@ -82,7 +82,44 @@ def trim_results(fresh_days, result_dict):
     return out_results
 
 
-def load_recent_results_in_datadir(fresh_days, datadir, success_only=False):
+def trim_results_ip_changed(result_dict, ipv4=True, ipv6=False):
+    """When there are results for the same relay with different IPs,
+    create a new results' dictionary without that relay's results using an
+    older IP.
+
+    :param dict result_dict: a dictionary of results
+    :param bool ipv4: whether to trim the results when a relay's IPv4 changes
+    :param bool ipv6: whether to trim the results when a relay's IPv6 changes
+    :returns: a new results dictionary
+    """
+    assert isinstance(result_dict, dict)
+    assert ipv4 is True or ipv6 is True
+    new_results_dict = {}
+    if ipv4 is True:
+        for fp in result_dict.keys():
+            results = result_dict[fp]
+            # find if the results for a relay have more than one ipv4
+            # address
+            ipv4s = set([result.address for result in results])
+            if len(ipv4s) > 1:
+                # keep only the results for the last ip used
+                # probably we should not just discard all the results for
+                # a relay that change address
+                ordered_results = sorted(results, key=lambda r: r.time)
+                latest_address = ordered_results[-1].address
+                last_ip_results = [result for result in results
+                                   if result.address == latest_address]
+                new_results_dict[fp] = last_ip_results
+            else:
+                new_results_dict[fp] = results
+    if ipv6 is True:
+        # Not implemented
+        pass
+    return new_results_dict
+
+
+def load_recent_results_in_datadir(fresh_days, datadir, success_only=False,
+                                   ipv4=True, ipv6=False):
     ''' Given a data directory, read all results files in it that could have
     results in them that are still valid. Trim them, and return the valid
     Results as a list '''

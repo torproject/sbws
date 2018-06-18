@@ -71,8 +71,11 @@ def main(args, conf):
         fail_hard('--scale-constant must be positive')
 
     fresh_days = conf.getint('general', 'data_period')
+    reset_bw_ipv4_changes = conf.getboolean('general', 'reset_bw_ipv4_changes')
+    reset_bw_ipv6_changes = conf.getboolean('general', 'reset_bw_ipv6_changes')
     results = load_recent_results_in_datadir(
-        fresh_days, datadir, success_only=True)
+        fresh_days, datadir, success_only=True, ipv4=reset_bw_ipv4_changes,
+        ipv6=reset_bw_ipv6_changes)
     if len(results) < 1:
         log.warning('No recent results, so not generating anything. (Have you '
                     'ran sbws scanner recently?)')

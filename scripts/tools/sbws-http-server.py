@@ -19,7 +19,6 @@
 # Don't breathe too hard or this script might break.
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import http.server
-from http import HTTPStatus
 # import time
 
 FILE_SIZE = 1*1024*1024*1024  # 1 GiB
@@ -39,7 +38,7 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         super().__init__(*a, **kw)
 
     def send_head(self, length):
-        self.send_response(HTTPStatus.OK)
+        self.send_response(200)
         self.send_header('Content-Type', 'application/octet-stream')
         self.send_header('Content-Length', length)
         # self.send_header('Last-Modified', self.date_time_string(time.time()))

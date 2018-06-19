@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+
+- Maintenance script to help us find functions that are (probably) no longer
+  being called.
+
 ### Changed
 
 - Change the path where the Bandwidth List files are generated: now they are

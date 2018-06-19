@@ -21,7 +21,7 @@ generated ones are kept. A `latest.v3bw` symlink is updated. (GH#179 GHPR#190)
 - Replace v3bw-into-xy bash script with python script to handle a more complex
   v3bw file format (GH#182)
 
-## [0.4.1]
+## [0.4.1] - 2018-06-14
 
 ### Changed
 

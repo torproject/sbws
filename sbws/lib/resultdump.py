@@ -82,20 +82,23 @@ def trim_results(fresh_days, result_dict):
     return out_results
 
 
-def trim_results_ip_changed(result_dict, ipv4=True, ipv6=False):
+def trim_results_ip_changed(result_dict, on_changed_ipv4=False,
+                            on_changed_ipv6=False):
     """When there are results for the same relay with different IPs,
     create a new results' dictionary without that relay's results using an
     older IP.
 
     :param dict result_dict: a dictionary of results
-    :param bool ipv4: whether to trim the results when a relay's IPv4 changes
-    :param bool ipv6: whether to trim the results when a relay's IPv6 changes
+    :param bool on_changed_ipv4: whether to trim the results when a relay's
+        IPv4 changes
+    :param bool on_changed_ipv6: whether to trim the results when a relay's
+        IPv6 changes
     :returns: a new results dictionary
     """
     assert isinstance(result_dict, dict)
-    assert ipv4 is True or ipv6 is True
+    assert on_changed_ipv4 is True or on_changed_ipv6 is True
     new_results_dict = {}
-    if ipv4 is True:
+    if on_changed_ipv4 is True:
         for fp in result_dict.keys():
             results = result_dict[fp]
             # find if the results for a relay have more than one ipv4
@@ -112,14 +115,15 @@ def trim_results_ip_changed(result_dict, ipv4=True, ipv6=False):
                 new_results_dict[fp] = last_ip_results
             else:
                 new_results_dict[fp] = results
-    if ipv6 is True:
+    if on_changed_ipv6 is True:
         # Not implemented
         pass
     return new_results_dict
 
 
 def load_recent_results_in_datadir(fresh_days, datadir, success_only=False,
-                                   ipv4=True, ipv6=False):
+                                   on_changed_ipv4=False,
+                                   on_changed_ipv6=False):
     ''' Given a data directory, read all results files in it that could have
     results in them that are still valid. Trim them, and return the valid
     Results as a list '''
@@ -146,7 +150,8 @@ def load_recent_results_in_datadir(fresh_days, datadir, success_only=False,
     results = trim_results(fresh_days, results)
     # in time fresh days is possible that a relay changed ip,
     # if that's the case, keep only the results for the last ip
-    results = trim_results_ip_changed(results, ipv4, ipv6)
+    results = trim_results_ip_changed(results, on_changed_ipv4,
+                                      on_changed_ipv6)
     num_res = sum([len(results[fp]) for fp in results])
     if num_res == 0:
         log.warning('Results files that are valid not found. '

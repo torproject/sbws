@@ -500,9 +500,10 @@ class ResultDump:
                 self.data[fp] = []
             self.data[fp].append(result)
             self.data = trim_results(self.fresh_days, self.data)
-            # we probably do not want to remove the results for a relay
-            # that has changed address when storing the results
-            # it will be already done when loading
+            # Not calling trim_results_ip_changed here to do not remove
+            # the results for a relay that has changed address.
+            # It will be called when loading the results to generate a v3bw
+            # file.
 
     def handle_result(self, result):
         ''' Call from ResultDump thread. If we are shutting down, ignores

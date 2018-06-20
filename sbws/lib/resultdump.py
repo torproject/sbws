@@ -116,8 +116,8 @@ def trim_results_ip_changed(result_dict, on_changed_ipv4=False,
                 new_results_dict[fp] = results
         return new_results_dict
     if on_changed_ipv6 is True:
-        log.warn("Reseting bandwidth results when IPv6 changes,"
-                 " is not yet implemented.")
+        log.warning("Reseting bandwidth results when IPv6 changes,"
+                    " is not yet implemented.")
     return result_dict
 
 

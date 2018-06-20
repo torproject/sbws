@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+
+- Ability to only consider results for a given relay valid if they came from
+  when that relay is using its most recent known IP address. Thanks Juga.
+(GH#154 GHPR#199)
+
 ### Changed
 
 - Change the path where the Bandwidth List files are generated: now they are

@@ -137,10 +137,16 @@ def _validate_general(conf):
     floats = {
         'http_timeout': {'minimum': 0.0, 'maximum': None},
     }
-    all_valid_keys = list(ints.keys()) + list(floats.keys())
+    bools = {
+        'reset_bw_ipv4_changes': {},
+        'reset_bw_ipv6_changes': {},
+    }
+    all_valid_keys = list(ints.keys()) + list(floats.keys()) + \
+        list(bools.keys())
     errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))
     errors.extend(_validate_section_ints(conf, sec, ints, err_tmpl))
     errors.extend(_validate_section_floats(conf, sec, floats, err_tmpl))
+    errors.extend(_validate_section_bools(conf, sec, bools, err_tmpl))
     return errors
 
 

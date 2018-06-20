@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- Ability to only consider results for a given relay valid if they came from
+  when that relay is using its most recent known IP address. Thanks Juga.
+(GH#154 GHPR#199)
 - Maintenance script to help us find functions that are (probably) no longer
   being called.
 

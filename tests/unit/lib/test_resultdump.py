@@ -26,12 +26,29 @@ RESULTDICT_IP_CHANGED = {FP1: [RESULTSUCCESS1, RESULTSUCCESS2]}
 RESULTDICT_IP_NOT_CHANGED = {FP1: [RESULTSUCCESS1, RESULTSUCCESS1]}
 
 
-def test_trim_results_ip_changed():
+def test_trim_results_ip_changed_defaults():
+    results_dict = trim_results_ip_changed(RESULTDICT_IP_NOT_CHANGED)
+    assert RESULTDICT_IP_NOT_CHANGED == results_dict
+
+
+def test_trim_results_ip_changed_on_changed_ipv4_changed():
     expected_results_dict = {FP1: [RESULTSUCCESS2]}
-    results_dict = trim_results_ip_changed(RESULTDICT_IP_CHANGED)
+    results_dict = trim_results_ip_changed(RESULTDICT_IP_CHANGED,
+                                           on_changed_ipv4=True)
     assert expected_results_dict == results_dict
 
 
-def test_trim_results_ip_changed_false():
-    results_dict = trim_results_ip_changed(RESULTDICT_IP_CHANGED)
+def test_trim_results_ip_changed_on_changed_ipv4_no_changed():
+    results_dict = trim_results_ip_changed(RESULTDICT_IP_NOT_CHANGED,
+                                           on_changed_ipv4=True)
     assert RESULTDICT_IP_NOT_CHANGED == results_dict
+
+
+def test_trim_results_ip_changed_on_changed_ipv6(caplog):
+    results_dict = trim_results_ip_changed(RESULTDICT_IP_NOT_CHANGED,
+                                           on_changed_ipv6=True)
+    assert RESULTDICT_IP_NOT_CHANGED == results_dict
+    for record in caplog.records:
+        assert record.levelname == 'WARNING'
+    assert 'Reseting bandwidth results when IPv6 changes, ' \
+           'is not yet implemented.\n' in caplog.text

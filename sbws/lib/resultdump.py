@@ -96,7 +96,6 @@ def trim_results_ip_changed(result_dict, on_changed_ipv4=False,
     :returns: a new results dictionary
     """
     assert isinstance(result_dict, dict)
-    assert on_changed_ipv4 is True or on_changed_ipv6 is True
     new_results_dict = {}
     if on_changed_ipv4 is True:
         for fp in result_dict.keys():
@@ -115,10 +114,11 @@ def trim_results_ip_changed(result_dict, on_changed_ipv4=False,
                 new_results_dict[fp] = last_ip_results
             else:
                 new_results_dict[fp] = results
+        return new_results_dict
     if on_changed_ipv6 is True:
         log.warn("Reseting bandwidth results when IPv6 changes,"
                  " is not yet implemented.")
-    return new_results_dict
+    return result_dict
 
 
 def load_recent_results_in_datadir(fresh_days, datadir, success_only=False,

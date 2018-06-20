@@ -81,7 +81,7 @@ def test_measure_relay_with_relaybandwidthrate(
     result = result[0]
     assert isinstance(result, ResultSuccess)
     one_mbyte = 1 * 1024 * 1024
-    allowed_error = 5  # bytes per second
+    allowed_error = 0.1 * one_mbyte  # allow 10% error in either direction
     dls = result.downloads
     for dl in dls:
         assert_within(dl['amount'] / dl['duration'], one_mbyte, allowed_error)

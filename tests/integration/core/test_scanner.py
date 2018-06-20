@@ -4,6 +4,7 @@ from sbws.util.config import get_config
 from sbws.lib.relaylist import RelayList
 from sbws.lib.destination import DestinationList
 from sbws.lib.resultdump import ResultSuccess
+import logging
 
 
 def assert_within(value, target, radius):
@@ -40,7 +41,8 @@ def get_everything_to_measure(dotsbws, cont, parser):
 
 
 def test_measure_relay_with_maxadvertisedbandwidth(
-        persistent_launch_tor, parser, persistent_empty_dotsbws):
+        persistent_launch_tor, parser, persistent_empty_dotsbws, caplog):
+    caplog.set_level(logging.DEBUG)
     cont = persistent_launch_tor
     dotsbws = persistent_empty_dotsbws.name
     d = get_everything_to_measure(dotsbws, cont, parser)
@@ -57,10 +59,13 @@ def test_measure_relay_with_maxadvertisedbandwidth(
     result = result[0]
     assert isinstance(result, ResultSuccess)
     one_mbyte = 1 * 1024 * 1024
-    allowed_error = 5  # bytes per second
     dls = result.downloads
     for dl in dls:
-        assert_within(dl['amount'] / dl['duration'], one_mbyte, allowed_error)
+        # This relay has MaxAdvertisedBandwidth set, but should not be limited
+        # to just 1 Mbyte. Assume and assert that all downloads where at least
+        # more than 10% faster than 1 MBps
+        assert dl['amount'] / dl['duration'] > one_mbyte * 1.1
+    assert result.relay_average_bandwidth == one_mbyte
 
 
 def test_measure_relay_with_relaybandwidthrate(

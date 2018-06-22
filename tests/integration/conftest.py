@@ -4,6 +4,7 @@ from sbws.util.parser import create_parser
 from sbws.util.config import get_config
 from sbws.util.stem import launch_tor
 import sbws.core.init
+import os
 
 
 @pytest.fixture(scope='session')
@@ -14,13 +15,14 @@ def parser():
 @pytest.fixture(scope='session')
 def persistent_empty_dotsbws(parser):
     '''
-    Creates a ~/.sbws with nothing in it but a config.ini
+    Creates a ~/.sbws with nothing in it but a config.ini and a datadir/
     '''
     d = TemporaryDirectory()
     args = parser.parse_args(
         '-d {} --log-level DEBUG init'.format(d.name).split())
     conf = get_config(args)
     sbws.core.init.main(args, conf)
+    os.makedirs(os.path.join(d.name, 'datadir'))
     return d
 
 

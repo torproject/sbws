@@ -8,6 +8,7 @@ import random
 import time
 import logging
 from sbws.globals import resolve
+from threading import Lock
 
 log = logging.getLogger(__name__)
 
@@ -124,12 +125,26 @@ class RelayList:
     def __init__(self, args, conf, controller):
         self._controller = controller
         self.rng = random.SystemRandom()
+        self._refresh_lock = Lock()
         self._refresh()
+
+    def _need_refresh(self):
+        return time.time() >= self._last_refresh + self.REFRESH_INTERVAL
 
     @property
     def relays(self):
-        if time.time() >= self._last_refresh + self.REFRESH_INTERVAL:
-            self._refresh()
+        # See if we can get the list of relays without having to do a refresh,
+        # which is expensive and blocks other threads
+        if self._need_refresh():
+            # Whelp we couldn't just get the list of relays because the list is
+            # stale. Wait for the lock so we can refresh it.
+            with self._refresh_lock:
+                # Now we have the lock ... but wait! Maybe someone else already
+                # did the refreshing. So check if it still needs refreshing. If
+                # not, we can do nothing.
+                if self._need_refresh():
+                    self._refresh()
+        assert not self._need_refresh()
         return self._relays
 
     @property

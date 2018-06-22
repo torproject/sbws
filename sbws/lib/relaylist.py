@@ -136,14 +136,23 @@ class RelayList:
         # See if we can get the list of relays without having to do a refresh,
         # which is expensive and blocks other threads
         if self._need_refresh():
+            log.debug('We need to refresh our list of relays. '
+                      'Going to wait for lock.')
             # Whelp we couldn't just get the list of relays because the list is
             # stale. Wait for the lock so we can refresh it.
             with self._refresh_lock:
+                log.debug('We got the lock. Now to see if we still '
+                          'need to refresh.')
                 # Now we have the lock ... but wait! Maybe someone else already
                 # did the refreshing. So check if it still needs refreshing. If
                 # not, we can do nothing.
                 if self._need_refresh():
+                    log.debug('Yup we need to refresh our relays. Doing so.')
                     self._refresh()
+                else:
+                    log.debug('No we don\'t need to refresh our relays. '
+                              'It was done by someone else.')
+            log.debug('Giving back the lock for refreshing relays.')
         assert not self._need_refresh()
         return self._relays
 

@@ -20,6 +20,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Make relay priority calculations take only ~5% of the time they used to (3s
   vs 60s) by using sets instead of lists when selecting non-Authority relays.
 (GH#204)
+- Make relay list refreshing take much less time by not allowing worker threads
+  to dogpile on the CPU. Before they would all start requesting descriptors
+from Tor at roughly the same time, causing us to overload our CPU core and make
+the process take unnecessarily long. Now we let one thread do the work so it
+can peg the CPU on its own and get the refresh done ASAP.
+(GH#205)
 
 ### Changed
 

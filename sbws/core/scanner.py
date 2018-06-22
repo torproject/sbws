@@ -347,8 +347,8 @@ def run_speedtest(args, conf):
             'even lead to messed up results.', conf['tor']['control_socket'])
         time.sleep(15)
     assert stem_utils.is_controller_okay(controller)
-    cb = CB(args, conf, controller)
     rl = RelayList(args, conf, controller)
+    cb = CB(args, conf, controller, rl)
     rd = ResultDump(args, conf, end_event)
     rp = RelayPrioritizer(args, conf, rl, rd)
     destinations, error_msg = DestinationList.from_config(

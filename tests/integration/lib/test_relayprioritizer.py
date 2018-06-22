@@ -1,5 +1,5 @@
 from sbws.lib.resultdump import ResultDump
-from sbws.lib.resultdump import (Result, ResultSuccess, ResultErrorCircuit)
+from sbws.lib.resultdump import (ResultSuccess, ResultErrorCircuit)
 from sbws.lib.relaylist import RelayList
 from sbws.lib.relayprioritizer import RelayPrioritizer
 from sbws.util.config import get_config

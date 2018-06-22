@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Maintenance script to help us find functions that are (probably) no longer
   being called.
 
+### Fixed
+
+- Make relay priority calculations take only ~5% of the time they used to (3s
+  vs 60s) by using sets instead of lists when selecting non-Authority relays.
+(GH#204)
+
 ### Changed
 
 - Change the path where the Bandwidth List files are generated: now they are

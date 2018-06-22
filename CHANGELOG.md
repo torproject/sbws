@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 (GH#154 GHPR#199)
 - Maintenance script to help us find functions that are (probably) no longer
   being called.
+- Integration test(s) for RelayPrioritizer (GHPR#206)
 
 ### Fixed
 

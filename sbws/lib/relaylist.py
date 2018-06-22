@@ -153,7 +153,6 @@ class RelayList:
                     log.debug('No we don\'t need to refresh our relays. '
                               'It was done by someone else.')
             log.debug('Giving back the lock for refreshing relays.')
-        assert not self._need_refresh()
         return self._relays
 
     @property

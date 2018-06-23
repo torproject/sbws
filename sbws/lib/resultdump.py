@@ -11,7 +11,7 @@ from queue import Empty
 from datetime import datetime
 from datetime import timedelta
 from enum import Enum
-from sbws.globals import RESULT_VERSION
+from sbws.globals import RESULT_VERSION, fail_hard
 from sbws.util.filelock import DirectoryLock
 from sbws.lib.relaylist import Relay
 
@@ -82,7 +82,48 @@ def trim_results(fresh_days, result_dict):
     return out_results
 
 
-def load_recent_results_in_datadir(fresh_days, datadir, success_only=False):
+def trim_results_ip_changed(result_dict, on_changed_ipv4=False,
+                            on_changed_ipv6=False):
+    """When there are results for the same relay with different IPs,
+    create a new results' dictionary without that relay's results using an
+    older IP.
+
+    :param dict result_dict: a dictionary of results
+    :param bool on_changed_ipv4: whether to trim the results when a relay's
+        IPv4 changes
+    :param bool on_changed_ipv6: whether to trim the results when a relay's
+        IPv6 changes
+    :returns: a new results dictionary
+    """
+    assert isinstance(result_dict, dict)
+    new_results_dict = {}
+    if on_changed_ipv4 is True:
+        for fp in result_dict.keys():
+            results = result_dict[fp]
+            # find if the results for a relay have more than one ipv4
+            # address
+            ipv4s = set([result.address for result in results])
+            if len(ipv4s) > 1:
+                # keep only the results for the last ip used
+                # probably we should not just discard all the results for
+                # a relay that change address
+                ordered_results = sorted(results, key=lambda r: r.time)
+                latest_address = ordered_results[-1].address
+                last_ip_results = [result for result in results
+                                   if result.address == latest_address]
+                new_results_dict[fp] = last_ip_results
+            else:
+                new_results_dict[fp] = results
+        return new_results_dict
+    if on_changed_ipv6 is True:
+        log.warning("Reseting bandwidth results when IPv6 changes,"
+                    " is not yet implemented.")
+    return result_dict
+
+
+def load_recent_results_in_datadir(fresh_days, datadir, success_only=False,
+                                   on_changed_ipv4=False,
+                                   on_changed_ipv6=False):
     ''' Given a data directory, read all results files in it that could have
     results in them that are still valid. Trim them, and return the valid
     Results as a list '''
@@ -107,6 +148,10 @@ def load_recent_results_in_datadir(fresh_days, datadir, success_only=False):
                 results = merge_result_dicts(results, new_results)
         working_day += timedelta(days=1)
     results = trim_results(fresh_days, results)
+    # in time fresh days is possible that a relay changed ip,
+    # if that's the case, keep only the results for the last ip
+    results = trim_results_ip_changed(results, on_changed_ipv4,
+                                      on_changed_ipv6)
     num_res = sum([len(results[fp]) for fp in results])
     if num_res == 0:
         log.warning('Results files that are valid not found. '
@@ -452,7 +497,10 @@ class ResultDump:
         self.data_lock = RLock()
         self.thread = Thread(target=self.enter)
         self.queue = Queue()
-        self.thread.start()
+        try:
+            self.thread.start()
+        except RuntimeError as e:
+            fail_hard(e)
 
     def store_result(self, result):
         ''' Call from ResultDump thread '''
@@ -463,6 +511,10 @@ class ResultDump:
                 self.data[fp] = []
             self.data[fp].append(result)
             self.data = trim_results(self.fresh_days, self.data)
+            # Not calling trim_results_ip_changed here to do not remove
+            # the results for a relay that has changed address.
+            # It will be called when loading the results to generate a v3bw
+            # file.
 
     def handle_result(self, result):
         ''' Call from ResultDump thread. If we are shutting down, ignores

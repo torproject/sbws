@@ -11,6 +11,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Use a relay's {,Relay}BandwidthRate/MaxAdvertisedBandwidth as an upper bound
   on the measurements we make for it. (GH#155)
+- Ability to only consider results for a given relay valid if they came from
+  when that relay is using its most recent known IP address. Thanks Juga.
+(GH#154 GHPR#199)
+- Maintenance script to help us find functions that are (probably) no longer
+  being called.
+
+### Fixed
+
+- Make relay priority calculations take only ~5% of the time they used to (3s
+  vs 60s) by using sets instead of lists when selecting non-Authority relays.
+(GH#204)
 
 ### Changed
 
@@ -18,8 +29,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   stored in `v3bw` directory, named `YYmmdd_HHMMSS.v3bw`, and previously
 generated ones are kept. A `latest.v3bw` symlink is updated. (GH#179 GHPR#190)
 - Code refactoring in the v3bw classes and generation area
+- Replace v3bw-into-xy bash script with python script to handle a more complex
+  v3bw file format (GH#182)
 
-## [0.4.1]
+## [0.4.1] - 2018-06-14
 
 ### Changed
 

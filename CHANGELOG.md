@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- Use a relay's {,Relay}BandwidthRate/MaxAdvertisedBandwidth as an upper bound
+  on the measurements we make for it. (GH#155)
 - Ability to only consider results for a given relay valid if they came from
   when that relay is using its most recent known IP address. Thanks Juga.
 (GH#154 GHPR#199)

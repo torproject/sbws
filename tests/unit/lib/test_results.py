@@ -103,7 +103,8 @@ def test_ResultSuccess_from_dict(time_mock):
     scanner_nick = 'sbwsscanner'
     nick = 'Mooooooo'
     relay_ip = '169.254.100.1'
-    relay = Result.Relay(fp1, nick, relay_ip, ed25519)
+    relay_average_bandwidth = 1 * 1024 * 1024
+    relay = Result.Relay(fp1, nick, relay_ip, ed25519, relay_average_bandwidth)
     rtts = [5, 25]
     downloads = [{'duration': 4, 'amount': 40}]
     r1 = ResultSuccess(rtts, downloads, relay, circ, dest_url, scanner_nick)
@@ -113,6 +114,7 @@ def test_ResultSuccess_from_dict(time_mock):
         'dest_url': dest_url, 'scanner': scanner_nick,
         'version': RESULT_VERSION, 'type': _ResultType.Success, 'time': t,
         'master_key_ed25519': ed25519,
+        'relay_average_bandwidth': relay_average_bandwidth,
     }
     r2 = Result.from_dict(d)
     assert isinstance(r1, ResultSuccess)

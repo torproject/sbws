@@ -28,7 +28,7 @@ def get_everything_to_measure(dotsbws, cont, parser):
     conf['destinations.foo'] = {}
     conf['destinations.foo']['url'] = 'http://127.0.0.1:28888/sbws.bin'
     rl = RelayList(args, conf, cont)
-    cb = CB(args, conf, cont)
+    cb = CB(args, conf, cont, rl)
     dests, error_msg = DestinationList.from_config(conf, cb, rl, cont)
     assert dests, error_msg
     return {

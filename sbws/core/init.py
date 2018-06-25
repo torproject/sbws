@@ -24,9 +24,6 @@ def main(args, conf):
         log.info('Creating %s', args.directory)
         os.makedirs(args.directory, exist_ok=False)
 
-    # Create config.log.ini ####
-    touch_file(os.path.join(args.directory, 'config.log.ini'))
-
     # Create config.ini ####
     fname = os.path.join(args.directory, 'config.ini')
     if os.path.exists(fname) and not os.path.isfile(fname):

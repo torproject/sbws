@@ -46,18 +46,6 @@ def _get_user_config(args, conf=None):
     return conf
 
 
-def _get_user_logging_config(args, conf=None):
-    if not conf:
-        conf = ConfigParser(interpolation=ExtendedInterpolation())
-    else:
-        assert isinstance(conf, ConfigParser)
-    fname = os.path.join(args.directory, 'config.log.ini')
-    if not os.path.isfile(fname):
-        return conf
-    conf = _read_config_file(conf, fname)
-    return conf
-
-
 def _get_default_logging_config(args, conf=None):
     if not conf:
         conf = ConfigParser(interpolation=ExtendedInterpolation())
@@ -73,7 +61,6 @@ def get_config(args):
     conf = _get_default_config()
     conf = _get_default_logging_config(args, conf=conf)
     conf = _get_user_config(args, conf=conf)
-    conf = _get_user_logging_config(args, conf=conf)
     return conf
 
 

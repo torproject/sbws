@@ -35,8 +35,7 @@ def is_initted(d):
     if not os.path.isdir(d):
         log.debug('%s not initialized: %s doesn\'t exist', d, d)
         return False
-    conf_fnames = [os.path.join(d, 'config.ini'),
-                   os.path.join(d, 'config.log.ini')]
+    conf_fnames = [os.path.join(d, 'config.ini')]
     for fname in conf_fnames:
         if not os.path.isfile(fname):
             log.debug('%s not initialized: missing %s', d, fname)

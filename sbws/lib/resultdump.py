@@ -497,7 +497,7 @@ class ResultDump:
         self.fresh_days = conf.getint('general', 'data_period')
         self.datadir = conf['paths']['datadir']
         self.end_event = end_event
-        self.data = None
+        self.data = {}
         self.data_lock = RLock()
         self.thread = Thread(target=self.enter)
         self.queue = Queue()

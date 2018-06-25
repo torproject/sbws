@@ -20,7 +20,7 @@ def create_parser():
         '--version', action='version', help='sbws version',
         version='{}'.format(__version__))
     p.add_argument('--log-level',
-                   choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+                   choices=['debug', 'info', 'warning', 'error', 'critical'],
                    help='Override the sbws log level')
     p.add_argument('-d', '--directory', default=_default_dot_sbws_dname(),
                    help='Name of the .sbws directory')

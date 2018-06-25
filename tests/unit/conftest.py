@@ -2,7 +2,7 @@ from sbws.lib.resultdump import ResultError
 from sbws.lib.resultdump import ResultSuccess
 from sbws.lib.resultdump import Result
 from sbws.lib.resultdump import write_result_to_datadir
-from sbws.util.config import get_config
+from sbws.util.config import get_config, _get_default_config
 from sbws.util.parser import create_parser
 import sbws.core.init
 from tempfile import TemporaryDirectory
@@ -48,6 +48,39 @@ def datadir(request):
             with self.open(name, "r") as f:
                 return f.readlines()
     return D(request.fspath.dirpath("data"))
+
+
+@pytest.fixture
+def tmpdir(tmpdir_factory, request):
+    """Create a tmp dir for the tests"""
+    base = str(hash(request.node.nodeid))[:3]
+    bn = tmpdir_factory.mktemp(base)
+    return bn
+
+
+@pytest.fixture
+def tmpdir_sbwshome(tmpdir):
+    """Create .sbws inside of the tests tmp dir"""
+    home = tmpdir.join('.sbws')
+    os.makedirs(home.strpath, exist_ok=True)
+    return home
+
+
+@pytest.fixture()
+def unittest_args(tmpdir_sbwshome, parser):
+    """Args with sbws home in the tests tmp dir"""
+    return _PseudoArguments(directory=tmpdir_sbwshome.strpath,
+                            output=tmpdir_sbwshome.strpath,
+                            scale=False)
+
+
+@pytest.fixture()
+def unittest_conf(tmpdir_sbwshome):
+    """Default configuration with sbws home in the tmp test dir"""
+    conf = _get_default_config()
+    conf['paths']['sbwshome'] = tmpdir_sbwshome.strpath
+    conf['paths']['started_filepath'] = ""
+    return conf
 
 
 @pytest.fixture(scope='session')

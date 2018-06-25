@@ -23,8 +23,8 @@ Pull requests are welcome, especially if they address open issues.
 #. Commit your changes and push them to a branch in your sbws GitHub repo
 #. Open a `pull request`_
 
-We use flake8 to enforce standard python coding style. This will be checked
-with ``tox``.
+We use flake8 to check some PEP8 errors/warnings. This will be checked with
+``tox`` and Travis.
 
 **Write good commit messages** that at least follow the spirit of
 :ref:`this example <commit-msg>`.

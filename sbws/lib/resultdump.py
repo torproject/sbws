@@ -44,7 +44,11 @@ def load_result_file(fname, success_only=False):
         with open(fname, 'rt') as fd:
             for line in fd:
                 num_total += 1
-                r = Result.from_dict(json.loads(line.strip()))
+                try:
+                    r = Result.from_dict(json.loads(line.strip()))
+                except json.decoder.JSONDecodeError:
+                    log.warning('Could not decode result %s', line.strip())
+                    r = None
                 if r is None:
                     num_ignored += 1
                     continue

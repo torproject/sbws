@@ -3,12 +3,13 @@
 (v3bw) used by bandwidth authorities."""
 
 import logging
+import os
 from statistics import median
 
 from sbws import __version__
 from sbws.globals import SPEC_VERSION, BW_LINE_SIZE
 from sbws.lib.resultdump import ResultSuccess, _ResultType
-from sbws.util.filelock import FileLock
+from sbws.util.filelock import FileLock, DirectoryLock
 from sbws.util.timestamp import now_isodt_str, unixts_to_isodt_str
 
 log = logging.getLogger(__name__)
@@ -405,3 +406,23 @@ class V3BWFile(object):
         header = V3BWHeader.from_results(conf, results)
         f = cls(header, bw_lines)
         return f
+
+    def write(self, output):
+        if output == '/dev/stdout':
+            log.info("Writing to stdout is not supported.")
+            return
+        log.info('Writing v3bw file to %s', output)
+        out_dir = os.path.dirname(output)
+        out_link = os.path.join(out_dir, 'latest.v3bw')
+        if os.path.exists(out_link):
+            log.debug('Deleting existing symlink before creating a new one.')
+            os.remove(out_link)
+        with DirectoryLock(out_dir):
+            with open(output, 'wt') as fd:
+                fd.write(str(self.header))
+                for line in self.bw_lines:
+                    fd.write(str(line))
+            output_basename = os.path.basename(output)
+            log.debug('Creating symlink from {} to {}.'
+                      .format(output_basename, out_link))
+            os.symlink(output_basename, out_link)

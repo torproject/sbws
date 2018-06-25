@@ -29,13 +29,28 @@ We use flake8 to check some PEP8 errors/warnings. This will be checked with
 Simple Bandwidth Scanner is moving towards 100% test coverage. Please help us
 reach that goal, or at least not move us away from it.
 
+Git and GitHub Guidelines
+=========================
+
 **Write good commit messages** that at least follow the spirit of
 :ref:`this example <commit-msg>`.
 
-**Write many small commits** each containing an atomic change instead of one
-large mega-commit. This not only makes code review easier, but it also makes
-commits that show up in ``git blame`` 10 years from now make more sense.
+Strive to **write many small commits** each containing an atomic change instead
+of one large mega-commit. This not only makes code review easier, but it also
+makes commits that show up in ``git blame`` 10 years from now make more sense.
 
+**Prefer a rebase workflow instead of merge**. Incorporating PRs should be done
+with fast-forward merge, if easily possible. The larger the topic branch, the
+harder this may be, so merge commits are allowed.
+
+If, while working on a topic branch, some changes are made to master that
+conflict with your work or that you need to incorporate into your work, **do
+not merge master into your topic branch**; instead, rebase your topic branch on
+top of master or cherry-pick the changes.
+
+**Do not force push lightly** unless branches are clearly labeled as ones that
+may get overwritten (for example: "transient\_" prefix). Instead of overwriting
+a branch, add a version suffix (for example: "_02").
 
 Coding Guidelines
 =================

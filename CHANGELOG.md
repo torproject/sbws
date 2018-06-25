@@ -34,6 +34,7 @@ Summary of changes:
 - Maintenance script to help us find functions that are (probably) no longer
   being called.
 - Integration test(s) for RelayPrioritizer (GHPR#206)
+- Git/GitHub usage guidelines to CONTRIBUTING document (GH#208 GHPR#215)
 
 ### Fixed
 

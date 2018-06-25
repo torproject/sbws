@@ -368,6 +368,27 @@ def _validate_section_urls(conf, sec, urls, tmpl):
     return errors
 
 
+def _validate_section_enums(conf, sec, enums, tmpl):
+    errors = []
+    section = conf[sec]
+    for key in enums:
+        choices = enums[key]['choices']
+        valid, error = _validate_enum(section, key, choices)
+        if not valid:
+            errors.append(tmpl.substitute(
+                sec=sec, key=key, val=section[key],
+                e='Not a valid enum choice ({})'.format(', '.join(choices))))
+    return errors
+
+
+def _validate_enum(section, key, choices):
+    value = section[key]
+    if value not in choices:
+        return False, '{} not in allowed choices: {}'.format(
+            value, ', '.join(choices))
+    return True, ''
+
+
 def _validate_url(section, key):
     value = section[key]
     if not value.startswith(('http://', 'https://')):

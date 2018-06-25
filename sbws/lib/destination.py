@@ -186,6 +186,9 @@ class DestinationList:
             possible_exits = sorted(
                 possible_exits, key=lambda e: e.bandwidth, reverse=True)
             exits = possible_exits[0:num_keep]
+            if len(exits) < 1:
+                log.warning("There are no exits to perform usability tests.")
+                continue
             # Try three times to build a circuit to test this destination
             circ_id = None
             for _ in range(0, 3):

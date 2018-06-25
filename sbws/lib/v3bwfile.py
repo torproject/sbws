@@ -76,14 +76,14 @@ def read_started_ts(conf):
     try:
         filepath = conf['paths']['started_filepath']
     except TypeError:
-        return ''
+        return None
     try:
         with FileLock(filepath):
             with open(filepath, 'r') as fd:
                 generator_started = fd.read()
     except FileNotFoundError as e:
         log.warn('File %s not found.%s', filepath, e)
-        return ''
+        return None
     return generator_started
 
 
@@ -229,7 +229,8 @@ class V3BWHeader(object):
         timestamp = str(latest_bandwidth)
         kwargs['latest_bandwidth'] = unixts_to_isodt_str(latest_bandwidth)
         kwargs['earliest_bandwidth'] = unixts_to_isodt_str(earliest_bandwidth)
-        kwargs['generator_started'] = generator_started
+        if generator_started is not None:
+            kwargs['generator_started'] = generator_started
         h = cls(timestamp, **kwargs)
         return h
 

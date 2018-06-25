@@ -1,4 +1,5 @@
 from configparser import (ConfigParser, ExtendedInterpolation)
+from configparser import InterpolationMissingOptionError
 import os
 import logging
 import logging.config
@@ -14,6 +15,8 @@ _ALPHANUM += '0123456789'
 _SYMBOLS_NO_QUOTES = '!@#$%^&*()-_=+\\|[]{}:;/?.,<>'
 
 _HEX = '0123456789ABCDEF'
+
+_LOG_LEVELS = ['debug', 'info', 'warning', 'error', 'critical']
 
 log = logging.getLogger(__name__)
 
@@ -72,12 +75,63 @@ def get_user_example_config():
     return conf
 
 
-def configure_logging(conf):
+def _can_log_to_file(conf):
+    '''
+    Checks all the known reasons for why we might not be able to log to a file,
+    and returns whether or not we think we will be able to do so. This is
+    useful because if we can't log to a file, we might want to force logging to
+    stdout.
+
+    If we can't log to file, return False and the reason. Otherwise return True
+    and an empty string.
+    '''
+    # We won't be able to get paths.log_dname from the config when we are first
+    # initializing sbws because it depends on paths.sbws_home (by default).
+    # If there is an issue getting this option, tell the caller that we can't
+    # log to file.
+    try:
+        conf['paths']['log_dname']
+    except InterpolationMissingOptionError as e:
+        return False, e
+    return True, ''
+
+
+def configure_logging(args, conf):
     assert isinstance(conf, ConfigParser)
-    # log_filepath is not a variable in config.log.default.ini,
-    # so adding it here. Maybe there is a better way to do this
-    conf['handler_sbwsfile']['args'] = \
-        "('{}',)".format(conf['paths']['log_filepath'])
+    logger = 'logger_sbws'
+    if args.log_level:
+        conf[logger]['level'] = args.log_level.upper()
+    # Set the correct handler(s) based on [logging] options
+    handlers = set()
+    can_log_to_file, reason = _can_log_to_file(conf)
+    if not can_log_to_file or conf.getboolean('logging', 'to_stdout'):
+        # always add to_stdout if we cannot log to file
+        handlers.add('to_stdout')
+    if can_log_to_file and conf.getboolean('logging', 'to_file'):
+        handlers.add('to_file')
+    # Collect the handlers in the appropriate config option
+    conf[logger]['handlers'] = ','.join(handlers)
+    if 'to_file' in handlers:
+        # Because of the way python's standard logging library works, we can't
+        # tell this handler that the file it should log to is
+        # ${paths:log_dname}/foo.log. It evals() the string stored in the args,
+        # therefore not allowing the config parser to change that to
+        # ~/.sbws/log/foo.log. So we set it here.
+        #
+        # Also we set files to rotate at 10 MiB in size and to keep 100 backups
+        dname = conf['paths']['log_dname']
+        os.makedirs(dname, exist_ok=True)
+        fname = os.path.join(dname, '{}.log'.format(args.command or 'sbws'))
+        conf['handler_to_file']['args'] = \
+            "('{}', 'a', 10*1024*1024, 100)".format(fname)
+    # Set some stuff that needs config parser's interpolation
+    conf['formatter_to_file']['format'] = conf['logging']['to_file_format']
+    conf['formatter_to_stdout']['format'] = conf['logging']['to_stdout_format']
+    conf[logger]['level'] = conf['logging']['level'].upper()
+    conf['handler_to_file']['level'] = conf['logging']['to_file_level'].upper()
+    conf['handler_to_stdout']['level'] = \
+        conf['logging']['to_stdout_level'].upper()
+    # Now we configure the standard python logging system
     with NamedTemporaryFile('w+t') as fd:
         conf.write(fd)
         fd.seek(0, 0)
@@ -220,13 +274,15 @@ def _validate_logging(conf):
     sec = 'logging'
     err_tmpl = Template('$sec/$key ($val): $e')
     enums = {
-        'level': {'choices': ['debug', 'info', 'warning', 'error']},
+        'level': {'choices': _LOG_LEVELS},
+        'to_file_level': {'choices': _LOG_LEVELS},
+        'to_stdout_level': {'choices': _LOG_LEVELS},
     }
     bools = {
         'to_file': {},
         'to_stdout': {},
     }
-    unvalidated = ['format']
+    unvalidated = ['format', 'to_file_format', 'to_stdout_format']
     all_valid_keys = list(bools.keys()) + list(enums.keys()) + unvalidated
     errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))
     errors.extend(_validate_section_bools(conf, sec, bools, err_tmpl))

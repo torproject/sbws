@@ -28,7 +28,7 @@ def main():
         for e in conf_errors:
             log.critical(e)
         exit(1)
-    # configure_logging(conf)
+    configure_logging(args, conf)
     def_args = [args, conf]
     def_kwargs = {}
     known_commands = {

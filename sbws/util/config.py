@@ -109,6 +109,7 @@ def validate_config(conf):
     errors.extend(_validate_paths(conf))
     errors.extend(_validate_destinations(conf))
     errors.extend(_validate_relayprioritizer(conf))
+    errors.extend(_validate_logging(conf))
     return len(errors) < 1, errors
 
 
@@ -156,7 +157,7 @@ def _validate_paths(conf):
     err_tmpl = Template('$sec/$key ($val): $e')
     unvalidated_keys = [
         'datadir', 'sbws_home', 'v3bw_fname', 'v3bw_dname',
-        'started_filepath', 'log_filepath']
+        'started_filepath', 'log_filepath', 'log_dname']
     all_valid_keys = unvalidated_keys
     allow_missing = ['sbws_home']
     errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl,
@@ -224,6 +225,25 @@ def _validate_relayprioritizer(conf):
     errors.extend(_validate_section_ints(conf, sec, ints, err_tmpl))
     errors.extend(_validate_section_floats(conf, sec, floats, err_tmpl))
     errors.extend(_validate_section_bools(conf, sec, bools, err_tmpl))
+    return errors
+
+
+def _validate_logging(conf):
+    errors = []
+    sec = 'logging'
+    err_tmpl = Template('$sec/$key ($val): $e')
+    enums = {
+        'level': {'choices': ['debug', 'info', 'warning', 'error']},
+    }
+    bools = {
+        'to_file': {},
+        'to_stdout': {},
+    }
+    unvalidated = ['format']
+    all_valid_keys = list(bools.keys()) + list(enums.keys()) + unvalidated
+    errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))
+    errors.extend(_validate_section_bools(conf, sec, bools, err_tmpl))
+    errors.extend(_validate_section_enums(conf, sec, enums, err_tmpl))
     return errors
 
 

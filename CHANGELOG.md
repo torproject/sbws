@@ -29,6 +29,8 @@ from Tor at roughly the same time, causing us to overload our CPU core and make
 the process take unnecessarily long. Now we let one thread do the work so it
 can peg the CPU on its own and get the refresh done ASAP.
 (GH#205)
+- Catch a JSON decode exception on malformed results so sbws can continue
+  gracefully (GH#210 GHPR#212)
 
 ### Changed
 

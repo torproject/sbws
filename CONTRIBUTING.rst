@@ -26,6 +26,9 @@ Pull requests are welcome, especially if they address open issues.
 We use flake8 to check some PEP8 errors/warnings. This will be checked with
 ``tox`` and Travis.
 
+Simple Bandwidth Scanner is moving towards 100% test coverage. Please help us
+reach that goal, or at least not move us away from it.
+
 **Write good commit messages** that at least follow the spirit of
 :ref:`this example <commit-msg>`.
 
@@ -33,8 +36,6 @@ We use flake8 to check some PEP8 errors/warnings. This will be checked with
 large mega-commit. This not only makes code review easier, but it also makes
 commits that show up in ``git blame`` 10 years from now make more sense.
 
-Simple Bandwidth Scanner is moving towards 100% test coverage. Please help us
-reach that goal, or at least not move us away from it.
 
 Coding Guidelines
 =================

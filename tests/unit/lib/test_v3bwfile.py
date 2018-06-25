@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Test generation of bandwidth measurements document (v3bw)"""
 import json
+import os.path
 
 from sbws import __version__ as version
 from sbws.globals import SPEC_VERSION, RESULT_VERSION
@@ -8,6 +9,7 @@ from sbws.lib.resultdump import Result, load_result_file
 from sbws.lib.v3bwfile import (V3BWHeader, V3BWLine, TERMINATOR, LINE_SEP,
                                KEYVALUE_SEP_V110, num_results_of_type,
                                V3BWFile)
+from sbws.util.timestamp import now_fname
 
 timestamp = 1523974147
 timestamp_l = str(timestamp)
@@ -168,3 +170,25 @@ def test_v3bwfile(datadir, tmpdir):
     bwls = [V3BWLine.from_results(results[fp]) for fp in results]
     f = V3BWFile(header, bwls)
     assert v3bw == str(f)
+
+
+def test_from_arg_results(datadir, tmpdir, unittest_conf, unittest_args):
+    results = load_result_file(str(datadir.join("results.txt")))
+    expected_header = V3BWHeader(timestamp_l,
+                                 earliest_bandwidth=earliest_bandwidth,
+                                 latest_bandwidth=latest_bandwidth)
+    expected_bwls = [V3BWLine.from_results(results[fp]) for fp in results]
+    expected_f = V3BWFile(expected_header, expected_bwls)
+    v3bwfile = V3BWFile.from_arg_results(unittest_args, unittest_conf, results)
+    assert str(expected_f)[1:] == str(v3bwfile)[1:]
+    output = os.path.join(unittest_args.output, now_fname())
+    print(output)
+    v3bwfile.write(output)
+
+
+def test_from_arg_results_write(datadir, tmpdir, unittest_conf, unittest_args):
+    results = load_result_file(str(datadir.join("results.txt")))
+    v3bwfile = V3BWFile.from_arg_results(unittest_args, unittest_conf, results)
+    output = os.path.join(unittest_args.output, now_fname())
+    v3bwfile.write(output)
+    assert os.path.isfile(output)

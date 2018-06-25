@@ -40,7 +40,7 @@ commits that show up in ``git blame`` 10 years from now make more sense.
 Coding Guidelines
 =================
 
-**Strongly prefer Unix timestamps** over ``datetime`` structures and always
+**Strongly prefer Unix timestamps or datetime objects in UTC** and always
 work in UTC for as long as possible. When reading/writing/manipulating results
 from some period of time in the past, always err on the side of caution. For
 example, open an extra file into the past just in case it happens to include

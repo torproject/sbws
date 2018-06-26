@@ -24,18 +24,10 @@ def line_into_dict(line):
 def main(args):
     total_input_weight = 0
     line_dicts = []
-    is_first_line = True
     for line in args.input:
-        if is_first_line:
-            # First line is special and is supposed to be a timestamp
-            try:
-                int(line)
-            except ValueError as e:
-                fail_hard('First line should be an int.', e)
-            is_first_line = False
+        if 'node_id=' not in line:
             args.output.write(line)
             continue
-        # All lines but the first go through this
         d = line_into_dict(line)
         # Check that the required parts of the line are here
         if 'node_id' not in d:

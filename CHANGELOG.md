@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+
+
+## [0.5.0] - 2018-06-26
+
+**Important changes**:
+
+- Result format changed, causing a version bump to 4. Updating sbws to 0.5.0
+  will cause it to ignore results with version less than 4.
+
+Summary of changes:
+
+- Keep previously-generated v3bw files
+- Allow a relay to limit its weight based on
+  RelayBandwidthRate/MaxAdvertisedBandwidth
+- 1 CPU usage optimization
+- 1 memory usage optimization
+
 ### Added
 
 - Use a relay's {,Relay}BandwidthRate/MaxAdvertisedBandwidth as an upper bound
@@ -67,5 +84,6 @@ So fix that.
 - `earliest_bandwidth` being the newest bw not the oldest (thanks juga0)
 - `node_id` was missing the character "$" at the beginning
 
-[Unreleased]: https://github.com/pastly/simple-bw-scanner/compare/v0.4.1...master
+[Unreleased]: https://github.com/pastly/simple-bw-scanner/compare/v0.5.0...master
+[0.5.0]: https://github.com/pastly/simple-bw-scanner/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/pastly/simple-bw-scanner/compare/v0.4.0...v0.4.1

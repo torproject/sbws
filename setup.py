@@ -64,7 +64,7 @@ setup(
     },
     data_files=get_data_files(),
     keywords='',
-    python_requires='>=3.4',
+    python_requires='>=3.4.5',
     # test_suite='test',
     entry_points={
         'console_scripts': [

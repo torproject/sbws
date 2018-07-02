@@ -164,6 +164,10 @@ class RelayList:
         return self._relays_with_flag(Flag.EXIT)
 
     @property
+    def bad_exits(self):
+        return self._relays_without_flag(Flag.BADEXIT)
+
+    @property
     def non_exits(self):
         return self._relays_without_flag(Flag.EXIT)
 

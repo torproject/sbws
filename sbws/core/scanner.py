@@ -178,7 +178,8 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     # exit, then pick a non-exit. Otherwise pick an exit.
     helper = None
     circ_fps = None
-    if relay.can_exit_to(dest.hostname, dest.port):
+    if relay.can_exit_to(dest.hostname, dest.port) and \
+            relay not in rl.bad_exits:
         helper = _pick_ideal_second_hop(
             relay, dest, rl, cb.controller, is_exit=False)
         if helper:

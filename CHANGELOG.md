@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Fixed
+
+- Measure relays that have both Exit and BadExit as non-exits, which is how
+  clients would use them. (GH#217)
 
 
 ## [0.5.0] - 2018-06-26

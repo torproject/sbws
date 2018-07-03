@@ -1,7 +1,6 @@
 from stem import CircuitExtensionFailed, InvalidRequest, ProtocolError, Timeout
 from stem import InvalidArguments
 import random
-import sbws.util.stem as stem_utils
 from .relaylist import Relay
 import logging
 
@@ -59,28 +58,30 @@ class CircuitBuilder:
 
     def get_circuit_path(self, circ_id):
         c = self.controller
-        assert stem_utils.is_controller_okay(c)
-        circ = c.get_circuit(circ_id, default=None)
-        if circ is None:
-            return None
-        return [relay[0] for relay in circ.path]
+        try:
+            circ = c.get_circuit(circ_id, default=None)
+        except Exception as e:
+            log.exception("Exception trying to get circuit: %s.", e)
+        else:
+            return [relay[0] for relay in circ.path]
+        return None
 
     def close_circuit(self, circ_id):
         c = self.controller
-        if not stem_utils.is_controller_okay(c):
-            return
-        if c.get_circuit(circ_id, default=None):
+        try:
+            c.get_circuit(circ_id, default=None)
             try:
                 c.close_circuit(circ_id)
             except InvalidArguments:
                 pass
             self.built_circuits.discard(circ_id)
+        except Exception as e:
+            log.exception("Error trying to get circuit to close it: %s.", e)
 
     def _build_circuit_impl(self, path):
         if not valid_circuit_length(path):
             raise PathLengthException()
         c = self.controller
-        assert stem_utils.is_controller_okay(c)
         timeout = self.circuit_timeout
         fp_path = '[' + ' -> '.join([p[0:8] for p in path]) + ']'
         log.debug('Building %s', fp_path)
@@ -92,6 +93,9 @@ class CircuitBuilder:
                     ProtocolError, Timeout) as e:
                 log.warning(e)
                 continue
+            except Exception as e:
+                log.exception("Exception trying to build circuit: %s.", e)
+                continue
             else:
                 return circ_id
         return None
@@ -100,14 +104,16 @@ class CircuitBuilder:
         c = self.controller
         if not self.close_circuits_on_exit:
             return
-        if not stem_utils.is_controller_okay(c):
-            return
         for circ_id in self.built_circuits:
-            if c.get_circuit(circ_id, default=None):
+            try:
+                c.get_circuit(circ_id, default=None)
                 try:
                     c.close_circuit(circ_id)
                 except InvalidArguments:
                     pass
+            except Exception as e:
+                log.exception("Exception trying to get circuit to delete: %s",
+                              e)
         self.built_circuits.clear()
 
 

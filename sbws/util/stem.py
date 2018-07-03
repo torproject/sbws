@@ -17,7 +17,6 @@ stream_building_lock = RLock()
 def attach_stream_to_circuit_listener(controller, circ_id):
     ''' Returns a function that should be given to add_event_listener(). It
     looks for newly created streams and attaches them to the given circ_id '''
-    assert is_controller_okay(controller)
 
     def closure_stream_event_listener(st):
         if st.status == 'NEW' and st.purpose == 'USER':
@@ -28,21 +27,25 @@ def attach_stream_to_circuit_listener(controller, circ_id):
             except (UnsatisfiableRequest, InvalidRequest) as e:
                 log.warning('Couldn\'t attach stream to circ %s: %s',
                             circ_id, e)
+            except Exception as e:
+                log.exception("Exception trying to get ns %s", e)
         else:
             pass
     return closure_stream_event_listener
 
 
 def add_event_listener(controller, func, event):
-    assert is_controller_okay(controller)
-    controller.add_event_listener(func, event)
+    try:
+        controller.add_event_listener(func, event)
+    except Exception as e:
+        log.exception("Exception trying to add event listener %s", e)
 
 
 def remove_event_listener(controller, func):
-    if not is_controller_okay(controller):
-        log.warning('Controller not okay so not trying to remove event')
-        return
-    controller.remove_event_listener(func)
+    try:
+        controller.remove_event_listener(func)
+    except Exception as e:
+        log.exception("Exception trying to remove event %s", e)
 
 
 def init_controller(port=None, path=None, set_custom_stream_settings=True):
@@ -72,21 +75,17 @@ def init_controller(port=None, path=None, set_custom_stream_settings=True):
 
 
 def is_bootstrapped(c):
-    if not is_controller_okay(c):
+    try:
+        line = c.get_info('status/bootstrap-phase')
+    except Exception as e:
+        log.exception("Exception bootstrapping %s", e)
         return False
-    line = c.get_info('status/bootstrap-phase')
     state, _, progress, *_ = line.split()
     progress = int(progress.split('=')[1])
     if state == 'NOTICE' and progress == 100:
         return True
     log.debug('Not bootstrapped. state={} progress={}'.format(state, progress))
     return False
-
-
-def is_controller_okay(c):
-    if not c:
-        return False
-    return c.is_alive() and c.is_authenticated()
 
 
 def _init_controller_port(port):
@@ -106,6 +105,10 @@ def _init_controller_socket(socket):
         c = Controller.from_socket_file(path=socket)
         c.authenticate()
     except (IncorrectSocketType, SocketError):
+        log.debug("Error initting controller socket: socket error.")
+        return None
+    except Exception as e:
+        log.exception("Error initting controller socket: %s", e)
         return None
     # TODO: Allow for auth via more than just CookieAuthentication
     return c
@@ -182,21 +185,26 @@ def launch_tor(conf):
         torrc, init_msg_handler=log.debug, take_ownership=True)
     # And return a controller to it
     cont = _init_controller_socket(conf['tor']['control_socket'])
-    assert is_controller_okay(cont)
     # Because we build things by hand and can't set these before Tor bootstraps
     cont.set_conf('__DisablePredictedCircuits', '1')
     cont.set_conf('__LeaveStreamsUnattached', '1')
-    log.info('Started and connected to Tor %s via %s', cont.get_version(),
-             conf['tor']['control_socket'])
-    return cont
+    try:
+        log.info('Started and connected to Tor %s via %s', cont.get_version(),
+                 conf['tor']['control_socket'])
+        return cont
+    except Exception as e:
+        log.exception("Exception trying to launch tor %s", e)
 
 
 def get_socks_info(controller):
     ''' Returns the first SocksPort Tor is configured to listen on, in the form
     of an (address, port) tuple '''
-    assert is_controller_okay(controller)
-    socks_ports = controller.get_listeners(Listener.SOCKS)
-    return socks_ports[0]
+    try:
+        socks_ports = controller.get_listeners(Listener.SOCKS)
+        return socks_ports[0]
+    except Exception as e:
+        log.exception("Exception trying to get socks info: %e.", e)
+        exit(1)
 
 
 def only_relays_with_bandwidth(controller, relays, min_bw=None, max_bw=None):
@@ -206,7 +214,6 @@ def only_relays_with_bandwidth(controller, relays, min_bw=None, max_bw=None):
     min_bw nor max_bw are given, essentially just returns the input list of
     relays.
     '''
-    assert is_controller_okay(controller)
     assert min_bw is None or min_bw >= 0
     assert max_bw is None or max_bw >= 0
     ret = []
@@ -221,7 +228,6 @@ def only_relays_with_bandwidth(controller, relays, min_bw=None, max_bw=None):
 
 
 def circuit_str(controller, circ_id):
-    assert is_controller_okay(controller)
     assert isinstance(circ_id, str)
     int(circ_id)
     try:
@@ -229,6 +235,9 @@ def circuit_str(controller, circ_id):
     except ValueError as e:
         log.warning('Circuit %s no longer seems to exist so can\'t return '
                     'a valid circuit string for it: %s', circ_id, e)
+        return None
+    except Exception as e:
+        log.exception("Exception trying to get circuit string %s", e)
         return None
     return '[' +\
         ' -> '.join(['{} ({})'.format(n, fp[0:8]) for fp, n in circ.path]) +\

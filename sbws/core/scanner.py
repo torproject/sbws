@@ -347,7 +347,6 @@ def run_speedtest(args, conf):
             'exists for sbws developers. It is expected to be broken and may '
             'even lead to messed up results.', conf['tor']['control_socket'])
         time.sleep(15)
-    assert stem_utils.is_controller_okay(controller)
     rl = RelayList(args, conf, controller)
     cb = CB(args, conf, controller, rl)
     rd = ResultDump(args, conf, end_event)

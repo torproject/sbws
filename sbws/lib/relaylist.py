@@ -1,6 +1,5 @@
 from stem.descriptor.router_status_entry import RouterStatusEntryV3
 from stem.descriptor.server_descriptor import ServerDescriptor
-import sbws.util.stem as stem_utils
 from stem import Flag
 from stem.util.connection import is_valid_ipv4_address
 from stem.util.connection import is_valid_ipv6_address
@@ -25,17 +24,22 @@ class Relay:
         '''
         assert isinstance(fp, str)
         assert len(fp) == 40
-        assert stem_utils.is_controller_okay(cont)
         if ns is not None:
             assert isinstance(ns, RouterStatusEntryV3)
             self._ns = ns
         else:
-            self._ns = cont.get_network_status(fp, default=None)
+            try:
+                self._ns = cont.get_network_status(fp, default=None)
+            except Exception as e:
+                log.exception("Exception trying to get ns %s", e)
         if desc is not None:
             assert isinstance(desc, ServerDescriptor)
             self._desc = desc
         else:
-            self._desc = cont.get_server_descriptor(fp, default=None)
+            try:
+                self._desc = cont.get_server_descriptor(fp, default=None)
+            except Exception as e:
+                log.exception("Exception trying to get ns %s", e)
 
     def _from_desc(self, attr):
         if not self._desc:
@@ -190,9 +194,12 @@ class RelayList:
 
     def _init_relays(self):
         c = self._controller
-        assert stem_utils.is_controller_okay(c)
-        relays = [Relay(ns.fingerprint, c, ns=ns)
-                  for ns in c.get_network_statuses()]
+        try:
+            relays = [Relay(ns.fingerprint, c, ns=ns)
+                      for ns in c.get_network_statuses()]
+        except Exception as e:
+            log.exception("Exception trying to init relays %s", e)
+            return []
         return relays
 
     def _refresh(self):

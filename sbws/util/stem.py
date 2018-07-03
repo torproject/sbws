@@ -181,8 +181,11 @@ def launch_tor(conf):
                 existing_val.append(value)
                 torrc.update({key: existing_val})
     # Finally launch Tor
-    stem.process.launch_tor_with_config(
-        torrc, init_msg_handler=log.debug, take_ownership=True)
+    try:
+        stem.process.launch_tor_with_config(
+            torrc, init_msg_handler=log.debug, take_ownership=True)
+    except Exception as e:
+        fail_hard('Error trying to launch tor: %s', e)
     # And return a controller to it
     cont = _init_controller_socket(conf['tor']['control_socket'])
     # Because we build things by hand and can't set these before Tor bootstraps

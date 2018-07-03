@@ -62,6 +62,8 @@ generated ones are kept. A `latest.v3bw` symlink is updated. (GH#179 GHPR#190)
 - Code refactoring in the v3bw classes and generation area
 - Replace v3bw-into-xy bash script with python script to handle a more complex
   v3bw file format (GH#182)
+- Remove is_controller_ok. Instead catch possible controller exceptions and 
+ log them
 
 ## [0.4.1] - 2018-06-14
 

@@ -112,18 +112,23 @@ def configure_logging(args, conf):
     # Collect the handlers in the appropriate config option
     conf[logger]['handlers'] = ','.join(handlers)
     if 'to_file' in handlers:
-        # Because of the way python's standard logging library works, we can't
-        # tell this handler that the file it should log to is
-        # ${paths:log_dname}/foo.log. It evals() the string stored in the args,
-        # therefore not allowing the config parser to change that to
-        # ~/.sbws/log/foo.log. So we set it here.
+        # This is weird.
         #
-        # Also we set files to rotate at 10 MiB in size and to keep 100 backups
+        # Python's logging library expects 'args' to be a tuple ... but it has
+        # to be stored as a string and it evals() the string.
+        #
+        # The first argument is the file name to which it should log. Set it to
+        # the sbws command (like 'scanner' or 'generate') if possible, or to
+        # 'sbws' failing that.
         dname = conf['paths']['log_dname']
         os.makedirs(dname, exist_ok=True)
         fname = os.path.join(dname, '{}.log'.format(args.command or 'sbws'))
-        conf['handler_to_file']['args'] = \
-            "('{}', 'a', 10*1024*1024, 100)".format(fname)
+        # The second argument is the number of backups to keep, and the third
+        # is the maximum file size (in bytes) each log file should be.
+        max_bytes = conf.getint('logging', 'to_file_max_bytes')
+        num_backups = conf.getint('logging', 'to_file_num_backups')
+        # Now store those things as a string in the config. So dumb.
+        conf['handler_to_file']['args'] = str((fname, num_backups, max_bytes))
     # Set some stuff that needs config parser's interpolation
     conf['formatter_to_file']['format'] = conf['logging']['to_file_format']
     conf['formatter_to_stdout']['format'] = conf['logging']['to_stdout_format']

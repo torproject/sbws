@@ -192,14 +192,15 @@ def launch_tor(conf):
     # And return a controller to it
     cont = _init_controller_socket(conf['tor']['control_socket'])
     # Because we build things by hand and can't set these before Tor bootstraps
-    cont.set_conf('__DisablePredictedCircuits', '1')
-    cont.set_conf('__LeaveStreamsUnattached', '1')
     try:
-        log.info('Started and connected to Tor %s via %s', cont.get_version(),
-                 conf['tor']['control_socket'])
-        return cont
+        cont.set_conf('__DisablePredictedCircuits', '1')
+        cont.set_conf('__LeaveStreamsUnattached', '1')
     except Exception as e:
         log.exception("Exception trying to launch tor %s", e)
+        exit(1)
+    log.info('Started and connected to Tor %s via %s', cont.get_version(),
+             conf['tor']['control_socket'])
+    return cont
 
 
 def get_socks_info(controller):

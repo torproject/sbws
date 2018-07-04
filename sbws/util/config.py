@@ -100,7 +100,7 @@ def configure_logging(args, conf):
     assert isinstance(conf, ConfigParser)
     logger = 'logger_sbws'
     if args.log_level:
-        conf[logger]['level'] = args.log_level.upper()
+        conf['logging']['level'] = args.log_level.upper()
     # Set the correct handler(s) based on [logging] options
     handlers = set()
     can_log_to_file, reason = _can_log_to_file(conf)

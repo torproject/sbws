@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Measure relays that have both Exit and BadExit as non-exits, which is how
   clients would use them. (GH#217)
+- Could not init sbws because of a catch-22 related to logging configuration.
+  Overhaul how logging is configured. (GH#186 GHPR#224)
 
 
 ## [0.5.0] - 2018-06-26

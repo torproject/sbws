@@ -1,7 +1,7 @@
 Simple Bandwidth Scanner Configuration Files
 ============================================
 
-Sbws has four config files it reads: two general, and two specific to logging.
+Sbws has three config files it reads: two general, and one specific to logging.
 They all get combined internally to the same ``conf`` structure, so technically
 you can put any option in any file, but you need to pay attention to the order
 in which they are read. Options specified in multiple files will take the
@@ -25,12 +25,7 @@ Sbws then reads your custom config file. By default, after running ``sbws
 init``, it is located in ``~/.sbws/config.ini``. Options in this
 file overwrite options set in previously read config files.
 
-Finally, sbws reads your custom logging config file. By default, after running
-``sbws init``, it is located in ``~/.sbws/config.log.ini``. Options set in this file
-overwrite options set in all other config files.
-
-After running ``sbws init``, your ``~/.sbws/config.ini`` might look like this. Your
-``~/.sbws/config.log.ini`` will be empty.
+After running ``sbws init``, your ``~/.sbws/config.ini`` might look like this.
 
 .. _init-config:
 
@@ -49,5 +44,11 @@ Default Config
 
 .. _default-log-config:
 
+If you know how to use
+`Python's logging configuration file format`_,
+then you can override or add to what is listed here by editing your config.ini.
+
 .. literalinclude:: config.log.default.ini
     :caption: config.log.default.ini
+
+.. _Python's logging configuration file format: https://docs.python.org/3.5/library/logging.config.html#logging-config-fileformat

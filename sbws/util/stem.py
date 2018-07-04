@@ -196,7 +196,9 @@ def launch_tor(conf):
         cont.set_conf('__DisablePredictedCircuits', '1')
         cont.set_conf('__LeaveStreamsUnattached', '1')
     except Exception as e:
-        log.exception("Exception trying to launch tor %s", e)
+        log.exception("Error trying to launch tor: %s. "
+                      "Maybe the tor directory is being used by other "
+                      "sbws instance?", e)
         exit(1)
     log.info('Started and connected to Tor %s via %s', cont.get_version(),
              conf['tor']['control_socket'])

@@ -1,4 +1,4 @@
-from sbws.globals import (is_initted, fail_hard, touch_file)
+from sbws.globals import (is_initted, fail_hard)
 from sbws.util.config import get_user_example_config
 from sbws.util.userquery import query_yes_no
 from argparse import ArgumentDefaultsHelpFormatter

@@ -27,7 +27,6 @@ class CircuitBuilder:
     ''' The CircuitBuilder interface.
 
     Subclasses must implement their own build_circuit() function.
-    Subclasses probably shouldn't implement their own get_circuit_path().
     Subclasses may keep additional state if they'd find it helpful.
 
     The primary way to use a CircuitBuilder of any type is to simply create it

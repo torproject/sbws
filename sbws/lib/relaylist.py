@@ -32,6 +32,7 @@ class Relay:
                 self._ns = cont.get_network_status(fp, default=None)
             except Exception as e:
                 log.exception("Exception trying to get ns %s", e)
+                self._ns = None
         if desc is not None:
             assert isinstance(desc, ServerDescriptor)
             self._desc = desc

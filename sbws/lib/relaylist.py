@@ -40,7 +40,7 @@ class Relay:
             try:
                 self._desc = cont.get_server_descriptor(fp, default=None)
             except Exception as e:
-                log.exception("Exception trying to get ns %s", e)
+                log.exception("Exception trying to get desc %s", e)
 
     def _from_desc(self, attr):
         if not self._desc:

@@ -282,8 +282,13 @@ def _validate_logging(conf):
         'to_file': {},
         'to_stdout': {},
     }
+    ints = {
+        'to_file_max_bytes': {'minimum': 0, 'maximum': None},
+        'to_file_num_backups': {'minimum': 0, 'maximum': None},
+    }
     unvalidated = ['format', 'to_file_format', 'to_stdout_format']
-    all_valid_keys = list(bools.keys()) + list(enums.keys()) + unvalidated
+    all_valid_keys = list(bools.keys()) + list(enums.keys()) + \
+        list(ints.keys()) + unvalidated
     errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))
     errors.extend(_validate_section_bools(conf, sec, bools, err_tmpl))
     errors.extend(_validate_section_enums(conf, sec, enums, err_tmpl))

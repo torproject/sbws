@@ -198,7 +198,7 @@ class RelayList:
         try:
             relays = [Relay(ns.fingerprint, c, ns=ns)
                       for ns in c.get_network_statuses()]
-        except Exception as e:
+        except ControllerError as e:
             log.exception("Exception trying to init relays %s", e)
             return []
         return relays

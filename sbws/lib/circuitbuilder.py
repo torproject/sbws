@@ -82,9 +82,6 @@ class CircuitBuilder:
                     ProtocolError, Timeout) as e:
                 log.warning(e)
                 continue
-            except Exception as e:
-                log.exception("Exception trying to build circuit: %s.", e)
-                continue
             else:
                 return circ_id
         return None

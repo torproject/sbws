@@ -97,7 +97,7 @@ class CircuitBuilder:
                     c.close_circuit(circ_id)
                 except InvalidArguments:
                     pass
-            except Exception as e:
+            except (ControllerError, InvalidArguments) as e:
                 log.exception("Exception trying to get circuit to delete: %s",
                               e)
         self.built_circuits.clear()

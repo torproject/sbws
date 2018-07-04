@@ -47,7 +47,7 @@ def add_event_listener(controller, func, event):
 def remove_event_listener(controller, func):
     try:
         controller.remove_event_listener(func)
-    except Exception as e:
+    except ProtocolError as e:
         log.exception("Exception trying to remove event %s", e)
 
 

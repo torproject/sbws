@@ -28,7 +28,8 @@ def attach_stream_to_circuit_listener(controller, circ_id):
                 log.warning('Couldn\'t attach stream to circ %s: %s',
                             circ_id, e)
             except Exception as e:
-                log.exception("Exception trying to get ns %s", e)
+                log.exception("Error attaching stream %s to circ %s: %s",
+                              st.id, circ_id, e)
         else:
             pass
     return closure_stream_event_listener

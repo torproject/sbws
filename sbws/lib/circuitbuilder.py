@@ -61,7 +61,7 @@ class CircuitBuilder:
             c.get_circuit(circ_id, default=None)
             try:
                 c.close_circuit(circ_id)
-            except InvalidArguments:
+            except (InvalidArguments, InvalidRequest):
                 pass
             self.built_circuits.discard(circ_id)
         except (ControllerError, ValueError) as e:

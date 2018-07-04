@@ -19,7 +19,7 @@ def persistent_empty_dotsbws(parser):
     '''
     d = TemporaryDirectory()
     args = parser.parse_args(
-        '-d {} --log-level DEBUG init'.format(d.name).split())
+        '-d {} --log-level debug init'.format(d.name).split())
     conf = get_config(args)
     sbws.core.init.main(args, conf)
     os.makedirs(os.path.join(d.name, 'datadir'))

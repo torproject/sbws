@@ -13,7 +13,7 @@ def test_cleanup_no_dotsbws(tmpdir, caplog, parser):
     caplog.set_level(logging.DEBUG)
     dotsbws = tmpdir
     args = parser.parse_args(
-        '-d {} --log-level DEBUG cleanup'.format(dotsbws).split())
+        '-d {} --log-level debug cleanup'.format(dotsbws).split())
     conf = get_config(args)
     try:
         sbws.core.cleanup.main(args, conf)
@@ -27,7 +27,7 @@ def test_cleanup_no_dotsbws(tmpdir, caplog, parser):
 def test_cleanup_no_datadir(empty_dotsbws, caplog, parser):
     dotsbws = empty_dotsbws
     args = parser.parse_args(
-        '-d {} --log-level DEBUG cleanup'.format(dotsbws.name).split())
+        '-d {} --log-level debug cleanup'.format(dotsbws.name).split())
     conf = get_config(args)
     try:
         sbws.core.cleanup.main(args, conf)
@@ -42,7 +42,7 @@ def test_cleanup_no_datadir(empty_dotsbws, caplog, parser):
 def test_cleanup_small_stale(empty_dotsbws_datadir, caplog, parser):
     dotsbws = empty_dotsbws_datadir
     args = parser.parse_args(
-        '-d {} --log-level DEBUG cleanup'.format(dotsbws.name).split())
+        '-d {} --log-level debug cleanup'.format(dotsbws.name).split())
     conf = get_config(args)
     conf['general']['data_period'] = '1'
     conf['cleanup']['stale_days'] = '2'
@@ -60,7 +60,7 @@ def test_cleanup_small_stale(empty_dotsbws_datadir, caplog, parser):
 def test_cleanup_small_rotten(empty_dotsbws_datadir, caplog, parser):
     dotsbws = empty_dotsbws_datadir
     args = parser.parse_args(
-        '-d {} --log-level DEBUG cleanup'.format(dotsbws.name).split())
+        '-d {} --log-level debug cleanup'.format(dotsbws.name).split())
     conf = get_config(args)
     conf['general']['data_period'] = '1'
     conf['cleanup']['stale_days'] = '5'
@@ -78,7 +78,7 @@ def test_cleanup_small_rotten(empty_dotsbws_datadir, caplog, parser):
 def test_cleanup_medium_stale(empty_dotsbws_datadir, caplog, parser):
     dotsbws = empty_dotsbws_datadir
     args = parser.parse_args(
-        '-d {} --log-level DEBUG cleanup'.format(dotsbws.name).split())
+        '-d {} --log-level debug cleanup'.format(dotsbws.name).split())
     conf = get_config(args)
     conf['general']['data_period'] = '10'
     conf['cleanup']['stale_days'] = '19'
@@ -94,7 +94,7 @@ def test_cleanup_only_compress_stale(time_mock, empty_dotsbws_datadir, caplog,
     caplog.set_level(logging.DEBUG)
     dotsbws = empty_dotsbws_datadir
     args = parser.parse_args(
-        '-d {} --log-level DEBUG cleanup'.format(dotsbws.name).split())
+        '-d {} --log-level debug cleanup'.format(dotsbws.name).split())
     conf = get_config(args)
     conf['general']['data_period'] = '1'
     conf['cleanup']['stale_days'] = '10'
@@ -140,7 +140,7 @@ def test_cleanup_only_delete_rotten(time_mock, empty_dotsbws_datadir, caplog,
     caplog.set_level(logging.DEBUG)
     dotsbws = empty_dotsbws_datadir
     args = parser.parse_args(
-        '-d {} --log-level DEBUG cleanup'.format(dotsbws.name).split())
+        '-d {} --log-level debug cleanup'.format(dotsbws.name).split())
     conf = get_config(args)
     conf['general']['data_period'] = '1'
     conf['cleanup']['stale_days'] = '10'
@@ -188,7 +188,7 @@ def test_cleanup_nothing_to_do(empty_dotsbws_datadir, caplog, parser):
     caplog.set_level(logging.DEBUG)
     dotsbws = empty_dotsbws_datadir
     args = parser.parse_args(
-        '-d {} --log-level DEBUG cleanup'.format(dotsbws.name).split())
+        '-d {} --log-level debug cleanup'.format(dotsbws.name).split())
     conf = get_config(args)
     try:
         sbws.core.cleanup.main(args, conf)
@@ -203,7 +203,7 @@ def test_cleanup_compress_barely_stale(time_mock, empty_dotsbws_datadir,
     caplog.set_level(logging.DEBUG)
     dotsbws = empty_dotsbws_datadir
     args = parser.parse_args(
-        '-d {} --log-level DEBUG cleanup'.format(dotsbws.name).split())
+        '-d {} --log-level debug cleanup'.format(dotsbws.name).split())
     conf = get_config(args)
     conf['general']['data_period'] = '1'
     conf['cleanup']['stale_days'] = '10'
@@ -239,7 +239,7 @@ def test_cleanup_delete_barely_rotten(time_mock, empty_dotsbws_datadir,
     caplog.set_level(logging.DEBUG)
     dotsbws = empty_dotsbws_datadir
     args = parser.parse_args(
-        '-d {} --log-level DEBUG cleanup'.format(dotsbws.name).split())
+        '-d {} --log-level debug cleanup'.format(dotsbws.name).split())
     conf = get_config(args)
     conf['general']['data_period'] = '1'
     conf['cleanup']['stale_days'] = '5'

@@ -56,16 +56,6 @@ class CircuitBuilder:
         its (str) ID. If it cannot be built, it should return None. '''
         raise NotImplementedError()
 
-    def get_circuit_path(self, circ_id):
-        c = self.controller
-        try:
-            circ = c.get_circuit(circ_id, default=None)
-        except Exception as e:
-            log.exception("Exception trying to get circuit: %s.", e)
-        else:
-            return [relay[0] for relay in circ.path]
-        return None
-
     def close_circuit(self, circ_id):
         c = self.controller
         try:

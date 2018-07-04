@@ -245,7 +245,7 @@ def circuit_str(controller, circ_id):
         log.warning('Circuit %s no longer seems to exist so can\'t return '
                     'a valid circuit string for it: %s', circ_id, e)
         return None
-    except Exception as e:
+    except ControllerError as e:
         log.exception("Exception trying to get circuit string %s", e)
         return None
     return '[' +\

@@ -211,7 +211,7 @@ def get_socks_info(controller):
     try:
         socks_ports = controller.get_listeners(Listener.SOCKS)
         return socks_ports[0]
-    except Exception as e:
+    except ControllerError as e:
         log.exception("Exception trying to get socks info: %e.", e)
         exit(1)
 

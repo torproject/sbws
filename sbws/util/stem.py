@@ -80,7 +80,7 @@ def is_bootstrapped(c):
     try:
         line = c.get_info('status/bootstrap-phase')
     except Exception as e:
-        log.exception("Exception bootstrapping %s", e)
+        log.exception("Error trying to check bootstrap phase %s", e)
         return False
     state, _, progress, *_ = line.split()
     progress = int(progress.split('=')[1])

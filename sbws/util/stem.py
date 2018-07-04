@@ -40,7 +40,7 @@ def attach_stream_to_circuit_listener(controller, circ_id):
 def add_event_listener(controller, func, event):
     try:
         controller.add_event_listener(func, event)
-    except Exception as e:
+    except ProtocolError as e:
         log.exception("Exception trying to add event listener %s", e)
 
 

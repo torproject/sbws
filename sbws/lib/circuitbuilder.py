@@ -1,5 +1,5 @@
 from stem import CircuitExtensionFailed, InvalidRequest, ProtocolError, Timeout
-from stem import InvalidArguments
+from stem import InvalidArguments, ControllerError
 import random
 from .relaylist import Relay
 import logging
@@ -64,7 +64,7 @@ class CircuitBuilder:
             except InvalidArguments:
                 pass
             self.built_circuits.discard(circ_id)
-        except Exception as e:
+        except (ControllerError, ValueError) as e:
             log.exception("Error trying to get circuit to close it: %s.", e)
 
     def _build_circuit_impl(self, path):

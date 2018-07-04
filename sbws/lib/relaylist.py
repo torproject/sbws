@@ -39,7 +39,7 @@ class Relay:
         else:
             try:
                 self._desc = cont.get_server_descriptor(fp, default=None)
-            except Exception as e:
+            except (DescriptorUnavailable, ControllerError) as e:
                 log.exception("Exception trying to get desc %s", e)
 
     def _from_desc(self, attr):

@@ -1,6 +1,6 @@
 from stem.descriptor.router_status_entry import RouterStatusEntryV3
 from stem.descriptor.server_descriptor import ServerDescriptor
-from stem import Flag
+from stem import Flag, DescriptorUnavailable, ControllerError
 from stem.util.connection import is_valid_ipv4_address
 from stem.util.connection import is_valid_ipv6_address
 import random
@@ -30,7 +30,7 @@ class Relay:
         else:
             try:
                 self._ns = cont.get_network_status(fp, default=None)
-            except Exception as e:
+            except (DescriptorUnavailable, ControllerError) as e:
                 log.exception("Exception trying to get ns %s", e)
                 self._ns = None
         if desc is not None:

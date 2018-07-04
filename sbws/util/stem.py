@@ -1,5 +1,6 @@
 from stem.control import (Controller, Listener)
-from stem import (SocketError, InvalidRequest, UnsatisfiableRequest)
+from stem import (SocketError, InvalidRequest, UnsatisfiableRequest,
+                  OperationFailed)
 from stem.connection import IncorrectSocketType
 import stem.process
 from configparser import ConfigParser
@@ -27,7 +28,7 @@ def attach_stream_to_circuit_listener(controller, circ_id):
             except (UnsatisfiableRequest, InvalidRequest) as e:
                 log.warning('Couldn\'t attach stream to circ %s: %s',
                             circ_id, e)
-            except Exception as e:
+            except OperationFailed as e:
                 log.exception("Error attaching stream %s to circ %s: %s",
                               st.id, circ_id, e)
         else:

@@ -14,7 +14,7 @@ def static_time(value):
 
 def get_global_stuff(dotsbws, cont, parser):
     args = parser.parse_args(
-        '-d {} --log-level DEBUG'.format(dotsbws).split())
+        '-d {} --log-level debug'.format(dotsbws).split())
     conf = get_config(args)
     rl = RelayList(args, conf, cont)
     return {

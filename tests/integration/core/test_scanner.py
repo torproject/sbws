@@ -22,7 +22,7 @@ def assert_within(value, target, radius):
 
 def get_everything_to_measure(dotsbws, cont, parser):
     args = parser.parse_args(
-        '-d {} --log-level DEBUG scanner'.format(dotsbws).split())
+        '-d {} --log-level debug scanner'.format(dotsbws).split())
     conf = get_config(args)
     conf['destinations']['foo'] = 'on'
     conf['destinations.foo'] = {}

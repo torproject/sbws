@@ -1,6 +1,7 @@
 from stem.control import (Controller, Listener)
 from stem import (SocketError, InvalidRequest, UnsatisfiableRequest,
-                  OperationFailed)
+                  OperationFailed, ControllerError, InvalidArguments,
+                  ProtocolError)
 from stem.connection import IncorrectSocketType
 import stem.process
 from configparser import ConfigParser
@@ -79,7 +80,7 @@ def init_controller(port=None, path=None, set_custom_stream_settings=True):
 def is_bootstrapped(c):
     try:
         line = c.get_info('status/bootstrap-phase')
-    except Exception as e:
+    except (ControllerError, InvalidArguments, ProtocolError) as e:
         log.exception("Error trying to check bootstrap phase %s", e)
         return False
     state, _, progress, *_ = line.split()

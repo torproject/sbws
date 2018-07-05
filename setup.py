@@ -82,6 +82,6 @@ setup(
         'dev': ['flake8'],
         'test': ['tox', 'pytest', 'coverage'],
         # recommonmark: to make sphinx render markdown
-        'doc': ['sphinx', 'recommonmark'],
+        'doc': ['sphinx', 'recommonmark', 'pylint'],
     },
 )

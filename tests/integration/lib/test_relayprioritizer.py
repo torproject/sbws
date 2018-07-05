@@ -1,8 +1,6 @@
 from sbws.lib.resultdump import ResultDump
-from sbws.lib.resultdump import (ResultSuccess, ResultErrorCircuit)
-from sbws.lib.relaylist import RelayList
+from sbws.lib.resultdump import ResultSuccess, ResultErrorCircuit
 from sbws.lib.relayprioritizer import RelayPrioritizer
-from sbws.util.config import get_config
 from threading import Event
 from unittest.mock import patch
 
@@ -12,66 +10,46 @@ def static_time(value):
         yield value
 
 
-def get_global_stuff(dotsbws, cont, parser):
-    args = parser.parse_args(
-        '-d {} --log-level debug'.format(dotsbws).split())
-    conf = get_config(args)
-    rl = RelayList(args, conf, cont)
-    return {
-        'args': args,
-        'conf': conf,
-        'rl': rl,
-        'end': Event(),
-    }
-
-
-def _build_result_for_relay(relay_nick, result_type, timestamp, rl):
+def _build_result_for_relay(conf, rl, result_type, relay_nick,
+                            timestamp):
     relay = [r for r in rl.relays if r.nickname == relay_nick]
     assert len(relay) == 1
     relay = relay[0]
     other = [r for r in rl.relays if r.nickname != relay_nick][0]
     circ = [relay.fingerprint, other.fingerprint]
-    url = 'http://example.com/sbws.bin'
-    nick = 'sbws_scanner'
+    rtts = [0.5, 0.5, 0.5]
+    dls = [
+        {'amount': 1024, 'duration': 1},
+        {'amount': 1024, 'duration': 1},
+        {'amount': 1024, 'duration': 1},
+    ]
     if result_type == ResultSuccess:
-        rtts = [0.5, 0.5, 0.5]
-        dls = [
-            {'amount': 1024, 'duration': 1},
-            {'amount': 1024, 'duration': 1},
-            {'amount': 1024, 'duration': 1},
-        ]
-        return ResultSuccess(rtts, dls, relay, circ, url, nick, t=timestamp)
+        return ResultSuccess(rtts, dls, relay, circ,
+                             conf['destinations.foo']['url'],
+                             'test', t=timestamp)
+
     elif result_type == ResultErrorCircuit:
-        return ResultErrorCircuit(
-            relay, circ, url, nick, msg='Test error circ message', t=timestamp)
+        return ResultErrorCircuit(relay, circ,
+                                  conf['destinations.foo']['url'],
+                                  'test', msg='Test error circ message',
+                                  t=timestamp)
 
 
 @patch('time.time')
-def test_relayprioritizer_general(
-        time_mock, persistent_empty_dotsbws, parser, persistent_launch_tor):
+def test_relayprioritizer_general(time_mock, sbwshome_empty, args,
+                                  conf, rl,
+                                  persistent_launch_tor):
     now = 1000000
     time_mock.side_effect = static_time(now)
-    cont = persistent_launch_tor
-    dotsbws = persistent_empty_dotsbws.name
-    d = get_global_stuff(dotsbws, cont, parser)
-    args = d['args']
-    conf = d['conf']
-    end_event = d['end']
-    rl = d['rl']
+    end_event = Event()
     rd = ResultDump(args, conf, end_event)
     try:
         rp = RelayPrioritizer(args, conf, rl, rd)
+        results = []
         results = [
-            _build_result_for_relay(
-                'relay1', ResultSuccess, now - 100, rl),
-            _build_result_for_relay(
-                'relay2', ResultSuccess, now - 200, rl),
-            _build_result_for_relay(
-                'relay3', ResultSuccess, now - 300, rl),
-            _build_result_for_relay(
-                'relay4', ResultSuccess, now - 400, rl),
-            _build_result_for_relay(
-                'relay5', ResultSuccess, now - 500, rl),
+            _build_result_for_relay(conf, rl, ResultSuccess,
+                                    'relay{}'.format(i), now - (i * 100))
+            for i in range(1, 6)
         ]
         for result in results:
             rd.store_result(result)

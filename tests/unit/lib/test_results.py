@@ -10,25 +10,14 @@ from sbws.lib.resultdump import _ResultType
 from tests.unit.globals import monotonic_time
 
 
-@patch('time.time')
-def test_Result(time_mock):
+def test_Result(result):
     '''
     A standard Result should not be convertible to a string because Result.type
     is not implemented.
     '''
-    time_mock.side_effect = monotonic_time()
-    fp1 = 'A' * 40
-    fp2 = 'Z' * 40
-    ed25519 = 'g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s'
-    circ = [fp1, fp2]
-    dest_url = 'http://example.com/sbws.bin'
-    scanner_nick = 'sbwsscanner'
-    nick = 'Mooooooo'
-    relay_ip = '169.254.100.1'
-    relay = Result.Relay(fp1, nick, relay_ip, ed25519)
-    r = Result(relay, circ, dest_url, scanner_nick)
     try:
-        str(r)
+        str(result)
+        print(str(result))
     except NotImplementedError:
         pass
     else:
@@ -59,124 +48,16 @@ def test_Result_from_dict_bad_type():
         assert None, 'Should have failed'
 
 
-@patch('time.time')
-def test_ResultSuccess(time_mock):
-    t = 2000
-    time_mock.side_effect = monotonic_time(start=t)
-    fp1 = 'A' * 40
-    fp2 = 'Z' * 40
-    ed25519 = 'g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s'
-    circ = [fp1, fp2]
-    dest_url = 'http://example.com/sbws.bin'
-    scanner_nick = 'sbwsscanner'
-    nick = 'Mooooooo'
-    relay_ip = '169.254.100.1'
-    relay = Result.Relay(fp1, nick, relay_ip, ed25519)
-    rtts = [5, 25]
-    downloads = [{'duration': 4, 'amount': 40}]
-    r1 = ResultSuccess(rtts, downloads, relay, circ, dest_url, scanner_nick)
-    r2 = ResultSuccess(rtts, downloads, relay, circ, dest_url, scanner_nick,
-                       t=t)
-    assert r1.downloads == downloads
-    assert r1.rtts == rtts
-    assert r1.nickname == nick
-    assert r1.time == t
-    assert r1.fingerprint == fp1
-    assert r1.scanner == scanner_nick
-    assert r1.type == _ResultType.Success
-    assert r1.address == relay_ip
-    assert r1.circ == circ
-    assert r1.dest_url == dest_url
-    assert r1.version == RESULT_VERSION
-    assert str(r1) == str(r2)
-
-
-@patch('time.time')
-def test_ResultSuccess_from_dict(time_mock):
-    t = 2000
-    time_mock.side_effect = monotonic_time(start=t)
-    fp1 = 'A' * 40
-    fp2 = 'Z' * 40
-    ed25519 = 'g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s'
-    circ = [fp1, fp2]
-    dest_url = 'http://example.com/sbws.bin'
-    scanner_nick = 'sbwsscanner'
-    nick = 'Mooooooo'
-    relay_ip = '169.254.100.1'
-    relay_average_bandwidth = 1 * 1024 * 1024
-    relay = Result.Relay(fp1, nick, relay_ip, ed25519, relay_average_bandwidth)
-    rtts = [5, 25]
-    downloads = [{'duration': 4, 'amount': 40}]
-    r1 = ResultSuccess(rtts, downloads, relay, circ, dest_url, scanner_nick)
-    d = {
-        'rtts': rtts, 'downloads': downloads, 'fingerprint': fp1,
-        'nickname': nick, 'address': relay_ip, 'circ': circ,
-        'dest_url': dest_url, 'scanner': scanner_nick,
-        'version': RESULT_VERSION, 'type': _ResultType.Success, 'time': t,
-        'master_key_ed25519': ed25519,
-        'relay_average_bandwidth': relay_average_bandwidth,
-    }
-    r2 = Result.from_dict(d)
-    assert isinstance(r1, ResultSuccess)
+def test_ResultSuccess_from_dict(result_success, result_success_dict):
+    r2 = Result.from_dict(result_success_dict)
     assert isinstance(r2, ResultSuccess)
-    assert str(r1) == str(r2)
+    assert str(result_success) == str(r2)
 
 
-@patch('time.time')
-def test_ResultError(time_mock):
-    t = 2000
-    time_mock.side_effect = monotonic_time(start=t)
-    fp1 = 'A' * 40
-    fp2 = 'Z' * 40
-    ed25519 = 'g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s'
-    circ = [fp1, fp2]
-    dest_url = 'http://example.com/sbws.bin'
-    scanner_nick = 'sbwsscanner'
-    nick = 'Mooooooo'
-    relay_ip = '169.254.100.1'
-    relay = Result.Relay(fp1, nick, relay_ip, ed25519)
-    msg = 'aaaaayyyyyy bb'
-    r1 = ResultError(relay, circ, dest_url, scanner_nick, msg=msg)
-    r2 = ResultError(relay, circ, dest_url, scanner_nick, msg=msg, t=t)
-    assert r1.msg == msg
-    assert r1.nickname == nick
-    assert r1.time == t
-    assert r1.fingerprint == fp1
-    assert r1.scanner == scanner_nick
-    assert r1.type == _ResultType.Error
-    assert r1.address == relay_ip
-    assert r1.circ == circ
-    assert r1.dest_url == dest_url
-    assert r1.version == RESULT_VERSION
-    assert str(r1) == str(r2)
-
-
-@patch('time.time')
-def test_ResultError_from_dict(time_mock):
-    t = 2000
-    time_mock.side_effect = monotonic_time(start=t)
-    fp1 = 'A' * 40
-    fp2 = 'Z' * 40
-    ed25519 = 'g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s'
-    circ = [fp1, fp2]
-    dest_url = 'http://example.com/sbws.bin'
-    scanner_nick = 'sbwsscanner'
-    nick = 'Mooooooo'
-    relay_ip = '169.254.100.1'
-    relay = Result.Relay(fp1, nick, relay_ip, ed25519)
-    msg = 'aaaaayyyyyy bb'
-    r1 = ResultError(relay, circ, dest_url, scanner_nick, msg=msg)
-    d = {
-        'msg': msg, 'fingerprint': fp1,
-        'nickname': nick, 'address': relay_ip, 'circ': circ,
-        'dest_url': dest_url, 'scanner': scanner_nick,
-        'version': RESULT_VERSION, 'type': _ResultType.Error, 'time': t,
-        'master_key_ed25519': ed25519,
-    }
-    r2 = Result.from_dict(d)
-    assert isinstance(r1, ResultError)
+def test_ResultError_from_dict(result_error_stream, result_error_stream_dict):
+    r2 = Result.from_dict(result_error_stream_dict)
     assert isinstance(r2, ResultError)
-    assert str(r1) == str(r2)
+    assert str(result_error_stream) == str(r2)
 
 
 @patch('time.time')

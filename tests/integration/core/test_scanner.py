@@ -1,8 +1,4 @@
 from sbws.core.scanner import measure_relay
-from sbws.lib.circuitbuilder import GapsCircuitBuilder as CB
-from sbws.util.config import get_config
-from sbws.lib.relaylist import RelayList
-from sbws.lib.destination import DestinationList
 from sbws.lib.resultdump import ResultSuccess
 import logging
 
@@ -20,40 +16,18 @@ def assert_within(value, target, radius):
         '{} of {}'.format(value, radius, target)
 
 
-def get_everything_to_measure(dotsbws, cont, parser):
-    args = parser.parse_args(
-        '-d {} --log-level debug scanner'.format(dotsbws).split())
-    conf = get_config(args)
-    conf['destinations']['foo'] = 'on'
-    conf['destinations.foo'] = {}
-    conf['destinations.foo']['url'] = 'http://127.0.0.1:28888/sbws.bin'
-    rl = RelayList(args, conf, cont)
-    cb = CB(args, conf, cont, rl)
-    dests, error_msg = DestinationList.from_config(conf, cb, rl, cont)
-    assert dests, error_msg
-    return {
-        'args': args,
-        'conf': conf,
-        'rl': rl,
-        'cb': cb,
-        'dests': dests
-    }
-
-
 def test_measure_relay_with_maxadvertisedbandwidth(
-        persistent_launch_tor, parser, persistent_empty_dotsbws, caplog):
+        persistent_launch_tor, sbwshome, args, conf,
+        dests, cb, rl, caplog):
     caplog.set_level(logging.DEBUG)
-    cont = persistent_launch_tor
-    dotsbws = persistent_empty_dotsbws.name
-    d = get_everything_to_measure(dotsbws, cont, parser)
-    args = d['args']
-    conf = d['conf']
-    rl = d['rl']
-    dests = d['dests']
-    cb = d['cb']
+    # d = get_everything_to_measure(sbwshome, cont, args, conf)
+    # rl = d['rl']
+    # dests = d['dests']
+    # cb = d['cb']
     # 117A456C911114076BEB4E757AC48B16CC0CCC5F is relay1mbyteMAB
     relay = [r for r in rl.relays
              if r.nickname == 'relay1mbyteMAB'][0]
+    # d['relay'] = relay
     result = measure_relay(args, conf, dests, cb, rl, relay)
     assert len(result) == 1
     result = result[0]
@@ -69,16 +43,7 @@ def test_measure_relay_with_maxadvertisedbandwidth(
 
 
 def test_measure_relay_with_relaybandwidthrate(
-        persistent_launch_tor, parser, persistent_empty_dotsbws):
-    cont = persistent_launch_tor
-    dotsbws = persistent_empty_dotsbws.name
-    d = get_everything_to_measure(dotsbws, cont, parser)
-    args = d['args']
-    conf = d['conf']
-    rl = d['rl']
-    dests = d['dests']
-    cb = d['cb']
-    # relay1mbyteRBR 934E06F38A391CB71DF83ECDE05DFF5CDE3AC49D
+        persistent_launch_tor, args, conf, dests, cb, rl):
     relay = [r for r in rl.relays
              if r.nickname == 'relay1mbyteRBR'][0]
     result = measure_relay(args, conf, dests, cb, rl, relay)

@@ -24,6 +24,7 @@ Contents
    LICENSE
    faq
    glossary
+   diagrams
    sbws
 
 Proposals

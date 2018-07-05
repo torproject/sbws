@@ -130,7 +130,7 @@ def print_stats(args, data):
         fastest_transfer/1024))
     print('Results come from', first, 'to', last, 'over a period of',
           duration)
-    if args.error_types:
+    if getattr(args, 'error_types', False) is True:
         _print_stats_error_types(data)
 
 

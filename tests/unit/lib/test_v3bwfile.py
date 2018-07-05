@@ -4,7 +4,7 @@ import json
 import os.path
 
 from sbws import __version__ as version
-from sbws.globals import SPEC_VERSION, RESULT_VERSION
+from sbws.globals import SPEC_VERSION
 from sbws.lib.resultdump import Result, load_result_file
 from sbws.lib.v3bwfile import (V3BWHeader, V3BWLine, TERMINATOR, LINE_SEP,
                                KEYVALUE_SEP_V110, num_results_of_type,
@@ -43,48 +43,6 @@ bwl_str = "bw=54 error_circ=0 error_misc=0 error_stream=1 " \
     "time=2018-04-17T14:09:07\n"
 
 v3bw_str = header_extra_str + bwl_str
-
-RESULT_ERROR_STREAM_DICT = {
-    "fingerprint": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-    "address": "111.111.111.111",
-    "dest_url": "http://y.z",
-    "time": 1526894062.6408398,
-    "circ": ["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-             "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"],
-    "version": RESULT_VERSION,
-    "scanner": "IDidntEditTheSBWSConfig",
-    "type": "error-stream",
-    "msg": "Something bad happened while measuring bandwidth",
-    "nickname": "A",
-    "master_key_ed25519": "g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s"
-}
-
-RESULT_SUCCESS_DICT = {
-    "fingerprint": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-    "address": "111.111.111.111",
-    "dest_url": "http://y.z",
-    "time": 1526894062.6408398,
-    "rtts": [0.4596822261810303, 0.44872617721557617, 0.4563450813293457,
-             0.44872212409973145, 0.4561030864715576, 0.4765200614929199,
-             0.4495084285736084, 0.45711588859558105, 0.45520496368408203,
-             0.4635589122772217],
-    "circ": ["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-             "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"],
-    "version": RESULT_VERSION,
-    "scanner": "IDidntEditTheSBWSConfig",
-    "type": "success",
-    "downloads": [
-        {"amount": 590009, "duration": 6.1014368534088135},
-        {"amount": 590009, "duration": 8.391342878341675},
-        {"amount": 321663, "duration": 7.064587831497192},
-        {"amount": 321663, "duration": 8.266003131866455},
-        {"amount": 321663, "duration": 5.779450178146362}],
-    "nickname": "A",
-    "master_key_ed25519": "g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s",
-    "relay_average_bandwidth": 1 * 1024 * 1024,
-}
-RESULT_SUCCESS_STR = str(RESULT_SUCCESS_DICT)
-RESULT_ERROR_STREAM_STR = str(RESULT_ERROR_STREAM_DICT)
 
 
 def test_v3bwheader_str():
@@ -134,15 +92,11 @@ def test_v3bwheader_from_file(datadir):
     assert str(h) == str(header)
 
 
-def test_num_results_of_type():
-    assert num_results_of_type([Result.from_dict(RESULT_SUCCESS_DICT)],
-                               'success') == 1
-    assert num_results_of_type([Result.from_dict(RESULT_ERROR_STREAM_DICT)],
-                               'success') == 0
-    assert num_results_of_type([Result.from_dict(RESULT_SUCCESS_DICT)],
-                               'error-stream') == 0
-    assert num_results_of_type([Result.from_dict(RESULT_ERROR_STREAM_DICT)],
-                               'error-stream') == 1
+def test_num_results_of_type(result_success, result_error_stream):
+    assert num_results_of_type([result_success], 'success') == 1
+    assert num_results_of_type([result_error_stream], 'success') == 0
+    assert num_results_of_type([result_success], 'error-stream') == 0
+    assert num_results_of_type([result_error_stream], 'error-stream') == 1
 
 
 def test_v3bwline_from_results_file(datadir):
@@ -172,23 +126,23 @@ def test_v3bwfile(datadir, tmpdir):
     assert v3bw == str(f)
 
 
-def test_from_arg_results(datadir, tmpdir, unittest_conf, unittest_args):
+def test_from_arg_results(datadir, tmpdir, conf, args):
     results = load_result_file(str(datadir.join("results.txt")))
     expected_header = V3BWHeader(timestamp_l,
                                  earliest_bandwidth=earliest_bandwidth,
                                  latest_bandwidth=latest_bandwidth)
     expected_bwls = [V3BWLine.from_results(results[fp]) for fp in results]
     expected_f = V3BWFile(expected_header, expected_bwls)
-    v3bwfile = V3BWFile.from_arg_results(unittest_args, unittest_conf, results)
+    v3bwfile = V3BWFile.from_arg_results(args, conf, results)
     assert str(expected_f)[1:] == str(v3bwfile)[1:]
-    output = os.path.join(unittest_args.output, now_fname())
+    output = os.path.join(args.output, now_fname())
     print(output)
     v3bwfile.write(output)
 
 
-def test_from_arg_results_write(datadir, tmpdir, unittest_conf, unittest_args):
+def test_from_arg_results_write(datadir, tmpdir, conf, args):
     results = load_result_file(str(datadir.join("results.txt")))
-    v3bwfile = V3BWFile.from_arg_results(unittest_args, unittest_conf, results)
-    output = os.path.join(unittest_args.output, now_fname())
+    v3bwfile = V3BWFile.from_arg_results(args, conf, results)
+    output = os.path.join(args.output, now_fname())
     v3bwfile.write(output)
     assert os.path.isfile(output)

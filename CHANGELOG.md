@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+
+- UML diagrams to documentation. In docs/ run `make umlsvg` to rebuild them.
+  Requires graphviz to be installed.(GHPR#226)
+
 ### Fixed
 
 - Measure relays that have both Exit and BadExit as non-exits, which is how

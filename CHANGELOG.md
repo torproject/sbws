@@ -24,6 +24,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Remove is_controller_ok. Instead catch possible controller exceptions and 
 log them
 
+### Removed
+
+- Two parsing/plotting scripts in scripts/tools/ that can now be found at
+<https://github.com/pastly/v3bw-tools>
 
 ## [0.5.0] - 2018-06-26
 

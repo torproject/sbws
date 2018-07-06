@@ -2,6 +2,9 @@
 
 [![Build Status](https://travis-ci.org/pastly/simple-bw-scanner.svg?branch=master)](https://travis-ci.org/pastly/simple-bw-scanner)
 
+`simple-bw-scanner` (also called `sbws`) is a Tor bandwidth scanner that 
+produces bandwidth measurements files to be used by Directory Authorities.
+
 It doesn't get simpler than this, folks.
 
 The scanner builds two hop circuits consisting of the relay being measured and

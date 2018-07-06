@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   clients would use them. (GH#217)
 - Could not init sbws because of a catch-22 related to logging configuration.
   Overhaul how logging is configured. (GH#186 GHPR#224)
+- Call write method of V3BWFile class from the object instance. (#26671)
 
 ### Changed
 

@@ -320,13 +320,13 @@ class V3BWLine(object):
         # Note how this isn't some measured-by-us average of bandwidth. It's
         # the first value on the 'bandwidth' line in the relay's server
         # descriptor.
-        relay_average_bw = median([
-            r.relay_average_bandwidth for r in results
-            if r.relay_average_bandwidth is not None])
-        if median_bw > relay_average_bw:
-            bw = relay_average_bw
-        else:
-            bw = median_bw
+        bw = median_bw
+        relay_average_bw = [r.relay_average_bandwidth for r in results
+                            if r.relay_average_bandwidth is not None]
+        if relay_average_bw:
+            median_relay_average_bw = median(relay_average_bw)
+            if median_bw > median_relay_average_bw:
+                bw = median_relay_average_bw
         # convert to KB and ensure it's at least 1
         bw_kb = max(round(bw / 1024), 1)
         return bw_kb

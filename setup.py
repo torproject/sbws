@@ -8,10 +8,10 @@ import os
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-# Causes the lint Travis builds to fail for some reason, so just going to
-# remove the long description for now.
-# with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
-#         long_description = f.read()
+
+def long_description():
+    with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
+        return f.read()
 
 
 def get_package_data():
@@ -44,18 +44,22 @@ setup(
     name='sbws',
     version=find_version(),
     description='Simple Bandwidth Scanner',
-    # long_description=long_description,
+    long_description=long_description(),
+    long_description_content_type="text/markdown",
     author='Matt Traudt',
     author_email='pastly@torproject.org',
     license='CC0',
-    # https://packaging.python.org/tutorials/distributing-packages/#id48
-    # https://pypi.python.org/pypi?%3Aaction=list_classifiers
+    url="https://gitweb.torproject.org/sbws.git",
     classifiers=[
-        # How mature is this project? Common values are
-        #   3 - Alpha
-        #   4 - Beta
-        #   5 - Production/Stable
         'Development Status :: 4 - Beta',
+        "Environment :: Console",
+        'Intended Audience :: Developers',
+        'Intended Audience :: System Administrators',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Topic :: System :: Networking',
     ],
     packages=find_packages(),
     include_package_data=True,
@@ -63,9 +67,8 @@ setup(
         'sbws': get_package_data(),
     },
     data_files=get_data_files(),
-    keywords='',
+    keywords='tor onion bandwidth measurements scanner relay circuit',
     python_requires='>=3.4.5',
-    # test_suite='test',
     entry_points={
         'console_scripts': [
             'sbws = sbws.sbws:main',

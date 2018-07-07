@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - UML diagrams to documentation. In docs/ run `make umlsvg` to rebuild them.
   Requires graphviz to be installed.(GHPR#226)
 - Add metadata to setup.py, useful for source/binary distributions.
+- Add possibility to log to system log. (#26683)
 
 ### Fixed
 

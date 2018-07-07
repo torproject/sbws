@@ -109,6 +109,8 @@ def configure_logging(args, conf):
         handlers.add('to_stdout')
     if can_log_to_file and conf.getboolean('logging', 'to_file'):
         handlers.add('to_file')
+    if conf.getboolean('logging', 'to_syslog'):
+        handlers.add('to_syslog')
     # Collect the handlers in the appropriate config option
     conf[logger]['handlers'] = ','.join(handlers)
     if 'to_file' in handlers:
@@ -286,6 +288,7 @@ def _validate_logging(conf):
     bools = {
         'to_file': {},
         'to_stdout': {},
+        'to_syslog': {},
     }
     ints = {
         'to_file_max_bytes': {'minimum': 0, 'maximum': None},

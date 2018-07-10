@@ -139,6 +139,8 @@ def configure_logging(args, conf):
     conf['handler_to_file']['level'] = conf['logging']['to_file_level'].upper()
     conf['handler_to_stdout']['level'] = \
         conf['logging']['to_stdout_level'].upper()
+    conf['handler_to_syslog']['level'] = \
+        conf['logging']['to_syslog_level'].upper()
     # Now we configure the standard python logging system
     with NamedTemporaryFile('w+t') as fd:
         conf.write(fd)

@@ -285,6 +285,7 @@ def _validate_logging(conf):
         'level': {'choices': _LOG_LEVELS},
         'to_file_level': {'choices': _LOG_LEVELS},
         'to_stdout_level': {'choices': _LOG_LEVELS},
+        'to_syslog_level': {'choices': _LOG_LEVELS},
     }
     bools = {
         'to_file': {},

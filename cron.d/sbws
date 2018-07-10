@@ -1,0 +1,19 @@
+# Example crontab for sbws
+
+# Edit SBWSBIN if sbws executable is in other location
+SBWSBIN=/usr/local/bin/sbws
+
+# Edit SBWSHOME if sbws home directory is in other location
+SBWSHOME=$HOME/.sbws
+
+# Bandwidth list files should be generated and transfer between 
+# 5-15 or 35-45 minutes past the hour
+# The following commented lines are all the possible times at which sbws 
+# should run. Choose only one.
+# 5 * * * *
+# 10 * * * *
+# 15 * * * *
+# 35 * * * *
+# 40 * * * *
+# 45 * * * *
+40 * * * *    $SBWSBIN -d $SBWSHOME generate

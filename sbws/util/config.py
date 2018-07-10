@@ -134,6 +134,7 @@ def configure_logging(args, conf):
     # Set some stuff that needs config parser's interpolation
     conf['formatter_to_file']['format'] = conf['logging']['to_file_format']
     conf['formatter_to_stdout']['format'] = conf['logging']['to_stdout_format']
+    conf['formatter_to_syslog']['format'] = conf['logging']['to_syslog_format']
     conf[logger]['level'] = conf['logging']['level'].upper()
     conf['handler_to_file']['level'] = conf['logging']['to_file_level'].upper()
     conf['handler_to_stdout']['level'] = \
@@ -294,7 +295,8 @@ def _validate_logging(conf):
         'to_file_max_bytes': {'minimum': 0, 'maximum': None},
         'to_file_num_backups': {'minimum': 0, 'maximum': None},
     }
-    unvalidated = ['format', 'to_file_format', 'to_stdout_format']
+    unvalidated = ['format', 'to_file_format', 'to_stdout_format',
+                   'to_syslog_format']
     all_valid_keys = list(bools.keys()) + list(enums.keys()) + \
         list(ints.keys()) + unvalidated
     errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))

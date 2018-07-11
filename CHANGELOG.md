@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.6.0] - 2018-07-11
+
+**Important changes**:
+
+- The way users configure logging has changed. No longer are most users
+  expected to be familiar with how to configure python's standard logging
+library with a config file. Instead we've abstracted out the setting of log
+level, format, and destinations to make these settings more accessible to
+users. Expert users familiar with [the logging config file format][logconffmt]
+can still make tweaks.
+
+Summary of changes:
+
+- Make logging configuration easier for the user.
+- Add UML diagrams to documentation. They can be found in docs/source/images/
+  and regenerated with `make umlsvg` in docs/.
+
+[logconffmt]: https://docs.python.org/3/library/logging.config.html#logging-config-fileformat
+
 ### Added
 
 - UML diagrams to documentation. In docs/ run `make umlsvg` to rebuild them.
@@ -109,6 +128,7 @@ So fix that.
 - `earliest_bandwidth` being the newest bw not the oldest (thanks juga0)
 - `node_id` was missing the character "$" at the beginning
 
-[Unreleased]: https://github.com/pastly/simple-bw-scanner/compare/v0.5.0...master
+[Unreleased]: https://github.com/pastly/simple-bw-scanner/compare/v0.6.0...master
+[0.6.0]: https://github.com/pastly/simple-bw-scanner/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/pastly/simple-bw-scanner/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/pastly/simple-bw-scanner/compare/v0.4.0...v0.4.1

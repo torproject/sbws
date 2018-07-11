@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+
+- Log line on start up with sbws version, platform info, and library versions
+(trac#26751)
+
 ## [0.6.0] - 2018-07-11
 
 **Important changes**:

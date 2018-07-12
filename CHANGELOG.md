@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   Requires graphviz to be installed.(GHPR#226)
 - Add metadata to setup.py, useful for source/binary distributions.
 - Add possibility to log to system log. (#26683)
+- Add option to cleanup v3bw files. (#26701)
 
 ### Fixed
 

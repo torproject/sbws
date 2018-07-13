@@ -1,10 +1,12 @@
 # Example crontab for sbws
 
 # Edit SBWSBIN if sbws executable is in other location
+# In a system package, this would be the global bin path
 SBWSBIN=/usr/local/bin/sbws
 
 # Edit SBWSHOME if sbws home directory is in other location
-SBWSHOME=$HOME/.sbws
+# In a system package, a user will be created and its home will be used here
+SBWSHOME=/home/sbws/.sbws
 
 # Bandwidth list files should be generated and transfer between 
 # 5-15 or 35-45 minutes past the hour

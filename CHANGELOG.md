@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Changed
+
+- Remove test data v3bw file and generate it from the same test. (#26736)
+
 ### Added
 
 - Log line on start up with sbws version, platform info, and library versions

@@ -7,9 +7,9 @@ from sbws.util.config import get_config
 from sbws.util.config import validate_config
 from sbws.util.config import configure_logging
 from sbws.util.parser import create_parser
-from sbws import __version__ as SBWS_VERSION
-from stem import __version__ as STEM_VERSION
-from requests.__version__ import __version__ as REQ_VERSION
+from sbws import __version__ as version
+from stem import __version__ as stem_version
+from requests.__version__ import __version__ as requests_version
 import platform
 import logging
 
@@ -26,7 +26,7 @@ def _get_startup_line():
     py_ver = platform.python_version()
     py_plat = platform.platform()
     return 'sbws %s with python %s on %s, stem %s, and requests %s' % \
-        (SBWS_VERSION, py_ver, py_plat, STEM_VERSION, REQ_VERSION)
+        (version, py_ver, py_plat, stem_version, requests_version)
 
 
 def main():

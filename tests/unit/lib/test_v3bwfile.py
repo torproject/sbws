@@ -80,18 +80,6 @@ def test_v3bwheader_from_text():
     assert str(header_obj) == str(header)
 
 
-def test_v3bwheader_from_file(datadir):
-    """Test header str with additional headers"""
-    header = V3BWHeader(timestamp_l,
-                        file_created=file_created,
-                        generator_started=generator_started,
-                        earliest_bandwidth=earliest_bandwidth)
-    # at some point this should be read from conftest
-    text = datadir.read('v3bw/20180425_131057.v3bw')
-    h, _ = V3BWHeader.from_text_v110(text)
-    assert str(h) == str(header)
-
-
 def test_num_results_of_type(result_success, result_error_stream):
     assert num_results_of_type([result_success], 'success') == 1
     assert num_results_of_type([result_error_stream], 'success') == 0

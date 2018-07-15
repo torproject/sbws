@@ -23,6 +23,9 @@ import logging
 import requests
 import random
 
+from ..util.fs import is_low_space
+
+
 rng = random.SystemRandom()
 end_event = Event()
 log = logging.getLogger(__name__)
@@ -393,6 +396,8 @@ def gen_parser(sub):
 
 
 def main(args, conf):
+    if is_low_space(conf):
+        exit(1)
     if not is_initted(args.directory):
         fail_hard('Sbws isn\'t initialized. Try sbws init')
 

@@ -198,7 +198,16 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     our_nick = conf['scanner']['nickname']
     circ_id = cb.build_circuit(circ_fps)
     if not circ_id:
-        log.warning('Could not build circuit involving %s', relay.nickname)
+        try:
+            log.warning('Could not build circuit involving %s', relay.nickname)
+        except OSError as e:
+            # if the error is no space left (logging to file system)
+            # can not log the error, so print it
+            # this can happen in any log call, here would happen when measuring
+            # new relay starts
+            if e.code == 28:  # No space left on device
+                print("ERROR: " + str(e))
+                exit(1)
         msg = 'Unable to complete circuit'
         return [
             ResultErrorCircuit(relay, circ_fps, dest.url, our_nick, msg=msg),

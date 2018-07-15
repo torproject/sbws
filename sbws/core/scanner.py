@@ -21,6 +21,9 @@ import logging
 import requests
 import random
 
+from ..util.fs import is_low_space
+
+
 rng = random.SystemRandom()
 end_event = Event()
 log = logging.getLogger(__name__)
@@ -377,6 +380,9 @@ def gen_parser(sub):
 
 
 def main(args, conf):
+    if is_low_space(conf):
+        exit(1)
+
     if conf.getint('scanner', 'measurement_threads') < 1:
         fail_hard('Number of measurement threads must be larger than 1')
 

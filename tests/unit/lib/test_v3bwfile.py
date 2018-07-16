@@ -80,18 +80,6 @@ def test_v3bwheader_from_text():
     assert str(header_obj) == str(header)
 
 
-def test_v3bwheader_from_file(datadir):
-    """Test header str with additional headers"""
-    header = V3BWHeader(timestamp_l,
-                        file_created=file_created,
-                        generator_started=generator_started,
-                        earliest_bandwidth=earliest_bandwidth)
-    # at some point this should be read from conftest
-    text = datadir.read('v3bw/20180425_131057.v3bw')
-    h, _ = V3BWHeader.from_text_v110(text)
-    assert str(h) == str(header)
-
-
 def test_num_results_of_type(result_success, result_error_stream):
     assert num_results_of_type([result_success], 'success') == 1
     assert num_results_of_type([result_error_stream], 'success') == 0
@@ -112,20 +100,6 @@ def test_v3bwline_from_results_file(datadir):
     assert bwl_str == str(bwl)
 
 
-def test_v3bwfile(datadir, tmpdir):
-    """Test generate v3bw file (including relay_lines)."""
-    # at some point this should be obtained from conftest
-    v3bw = datadir.read('v3bw/20180425_131057.v3bw')
-    results = load_result_file(str(datadir.join("results.txt")))
-    header = V3BWHeader(timestamp_l,
-                        file_created=file_created,
-                        generator_started=generator_started,
-                        earliest_bandwidth=earliest_bandwidth)
-    bwls = [V3BWLine.from_results(results[fp]) for fp in results]
-    f = V3BWFile(header, bwls)
-    assert v3bw == str(f)
-
-
 def test_from_arg_results(datadir, tmpdir, conf, args):
     results = load_result_file(str(datadir.join("results.txt")))
     expected_header = V3BWHeader(timestamp_l,
@@ -136,7 +110,6 @@ def test_from_arg_results(datadir, tmpdir, conf, args):
     v3bwfile = V3BWFile.from_arg_results(args, conf, results)
     assert str(expected_f)[1:] == str(v3bwfile)[1:]
     output = os.path.join(args.output, now_fname())
-    print(output)
     v3bwfile.write(output)
 
 
@@ -146,3 +119,13 @@ def test_from_arg_results_write(datadir, tmpdir, conf, args):
     output = os.path.join(args.output, now_fname())
     v3bwfile.write(output)
     assert os.path.isfile(output)
+
+
+def test_from_arg_results_write_read(datadir, tmpdir, conf, args):
+    results = load_result_file(str(datadir.join("results.txt")))
+    v3bwfile = V3BWFile.from_arg_results(args, conf, results)
+    output = os.path.join(args.output, now_fname())
+    v3bwfile.write(output)
+    with open(output) as fd:
+        v3bw = fd.read()
+    assert v3bw == str(v3bwfile)

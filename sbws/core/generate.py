@@ -12,7 +12,12 @@ log = logging.getLogger(__name__)
 def gen_parser(sub):
     d = 'Generate a v3bw file based on recent results. A v3bw file is the '\
         'file Tor directory authorities want to read and base their '\
-        'bandwidth votes on.'
+        'bandwidth votes on.' \
+        'This file should be generated every hour at any minute, except ' \
+        'between 45 and 55 minutes past the hour because Tor read this file '\
+        ' at minute 50 and except ' \
+        'between 15 and 25 minutes past the hour because Tor read this file '\
+        ' at minute 20 during a consensus failure.'
     p = sub.add_parser('generate', description=d,
                        formatter_class=ArgumentDefaultsHelpFormatter)
     p.add_argument('--output', default=None, type=str,

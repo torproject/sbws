@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Log line on start up with sbws version, platform info, and library versions
 (trac#26751)
 
+### Changed
+
+- Document at which times should v3bw files be generated (#26740)
+
 ## [0.6.0] - 2018-07-11
 
 **Important changes**:

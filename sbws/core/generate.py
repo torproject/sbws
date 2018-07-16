@@ -13,8 +13,7 @@ def gen_parser(sub):
     d = 'Generate a v3bw file based on recent results. A v3bw file is the '\
         'file Tor directory authorities want to read and base their '\
         'bandwidth votes on.' \
-        'This file should be generated every hour at any minute multiple ' \
-        'of 5, except ' \
+        'This file should be generated every hour at any minute, except ' \
         'between 45 and 55 minutes past the hour because Tor read this file '\
         ' at minute 50 and except ' \
         'between 15 and 25 minutes past the hour because Tor read this file '\

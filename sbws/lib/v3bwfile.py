@@ -9,8 +9,9 @@ from statistics import median
 from sbws import __version__
 from sbws.globals import SPEC_VERSION, BW_LINE_SIZE
 from sbws.lib.resultdump import ResultSuccess, _ResultType
-from sbws.util.filelock import FileLock, DirectoryLock
+from sbws.util.filelock import DirectoryLock
 from sbws.util.timestamp import now_isodt_str, unixts_to_isodt_str
+from sbws.util.state import State
 
 log = logging.getLogger(__name__)
 
@@ -64,27 +65,6 @@ def warn_if_not_accurate_enough(bw_lines, scale_constant):
     if accuracy_ratio < 1 - margin or accuracy_ratio > 1 + margin:
         log.warning('There was %f%% error and only +/- %f%% is '
                     'allowed', (1 - accuracy_ratio) * 100, margin * 100)
-
-
-def read_started_ts(conf):
-    """Read ISO formated timestamp which represents the date and time
-    when scanner started.
-
-    :param ConfigParser conf: configuration
-    :returns: str, ISO formated timestamp
-    """
-    try:
-        filepath = conf['paths']['started_filepath']
-    except TypeError:
-        return None
-    try:
-        with FileLock(filepath):
-            with open(filepath, 'r') as fd:
-                generator_started = fd.read()
-    except FileNotFoundError as e:
-        log.warn('File %s not found.%s', filepath, e)
-        return None
-    return generator_started
 
 
 def num_results_of_type(results, type_str):
@@ -210,7 +190,11 @@ class V3BWHeader(object):
 
     @staticmethod
     def generator_started_from_file(conf):
-        return read_started_ts(conf)
+        state = State(conf['paths']['state_fname'])
+        if 'scanner_started' in state:
+            return state['scanner_started']
+        else:
+            return None
 
     @staticmethod
     def latest_bandwidth_from_results(results):

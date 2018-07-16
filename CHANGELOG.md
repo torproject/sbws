@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Log line on start up with sbws version, platform info, and library versions
 (trac#26751)
+- State file for storing the last time `sbws scanner` was started, and able to
+  be used for storing many other types of state in the future. (GH#166)
 
 ### Changed
 

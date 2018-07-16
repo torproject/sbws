@@ -207,8 +207,8 @@ def _validate_paths(conf):
     sec = 'paths'
     err_tmpl = Template('$sec/$key ($val): $e')
     unvalidated_keys = [
-        'datadir', 'sbws_home', 'v3bw_fname', 'v3bw_dname',
-        'started_filepath', 'log_dname']
+        'datadir', 'sbws_home', 'v3bw_fname', 'v3bw_dname', 'state_fname',
+        'log_dname']
     all_valid_keys = unvalidated_keys
     allow_missing = ['sbws_home']
     errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl,

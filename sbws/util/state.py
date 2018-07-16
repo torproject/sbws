@@ -20,7 +20,7 @@ class State:
     def _write(self):
         with FileLock(self._fname):
             with open(self._fname, 'wt') as fd:
-                return json.dump(self._state, fd)
+                return json.dump(self._state, fd, indent=4)
 
     def __len__(self):
         self._state = self._read()

@@ -110,7 +110,6 @@ def test_from_arg_results(datadir, tmpdir, conf, args):
     v3bwfile = V3BWFile.from_arg_results(args, conf, results)
     assert str(expected_f)[1:] == str(v3bwfile)[1:]
     output = os.path.join(args.output, now_fname())
-    print(output)
     v3bwfile.write(output)
 
 
@@ -119,7 +118,6 @@ def test_from_arg_results_write(datadir, tmpdir, conf, args):
     v3bwfile = V3BWFile.from_arg_results(args, conf, results)
     output = os.path.join(args.output, now_fname())
     v3bwfile.write(output)
-    print(output)
     assert os.path.isfile(output)
 
 

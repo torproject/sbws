@@ -4,7 +4,7 @@ import os
 
 
 def test_state_set_allowed_key_types(tmpdir):
-    state = State(os.path.join(tmpdir, 'statefoo'))
+    state = State(os.path.join(str(tmpdir), 'statefoo'))
     attempt_keys = ('k')
     for key in attempt_keys:
         state[key] = 4
@@ -12,7 +12,7 @@ def test_state_set_allowed_key_types(tmpdir):
 
 
 def test_state_set_bad_key_types(tmpdir):
-    state = State(os.path.join(tmpdir, 'statefoo'))
+    state = State(os.path.join(str(tmpdir), 'statefoo'))
     attempt_keys = (15983, None, True, -1.2, [], {}, set())
     for key in attempt_keys:
         try:
@@ -32,7 +32,7 @@ def test_state_set_bad_key_types(tmpdir):
 
 
 def test_state_set_allowed_value_types(tmpdir):
-    state = State(os.path.join(tmpdir, 'statefoo'))
+    state = State(os.path.join(str(tmpdir), 'statefoo'))
     attempt_vals = (15983, None, True, -1.2, 'loooooool')
     for val in attempt_vals:
         state['foo'] = val
@@ -40,7 +40,7 @@ def test_state_set_allowed_value_types(tmpdir):
 
 
 def test_state_set_bad_value_types(tmpdir):
-    state = State(os.path.join(tmpdir, 'statefoo'))
+    state = State(os.path.join(str(tmpdir), 'statefoo'))
     attempt_vals = ([], {}, set())
     for val in attempt_vals:
         try:
@@ -53,7 +53,7 @@ def test_state_set_bad_value_types(tmpdir):
 
 
 def test_state_del(tmpdir):
-    state = State(os.path.join(tmpdir, 'statefoo'))
+    state = State(os.path.join(str(tmpdir), 'statefoo'))
     d = {'a': 1, 'b': 2, 'c': 3, 'd': 4}
     for key in d:
         state[key] = d[key]
@@ -83,7 +83,7 @@ def test_state_del(tmpdir):
 
 
 def test_state_get_len(tmpdir):
-    state = State(os.path.join(tmpdir, 'statefoo'))
+    state = State(os.path.join(str(tmpdir), 'statefoo'))
     d = {'a': 1, 'b': 2, 'c': 3, 'd': 4}
     for key in d:
         state[key] = d[key]
@@ -101,7 +101,7 @@ def test_state_get_len(tmpdir):
 
 
 def test_state_contains(tmpdir):
-    state = State(os.path.join(tmpdir, 'statefoo'))
+    state = State(os.path.join(str(tmpdir), 'statefoo'))
     d = {'a': 1, 'b': 2, 'c': 3, 'd': 4}
     for key in d:
         state[key] = d[key]
@@ -110,7 +110,7 @@ def test_state_contains(tmpdir):
 
 
 def test_state_iter(tmpdir):
-    state = State(os.path.join(tmpdir, 'statefoo'))
+    state = State(os.path.join(str(tmpdir), 'statefoo'))
     for key in state:
         pass
     d = {'a': 1, 'b': 2, 'c': 3, 'd': 4}

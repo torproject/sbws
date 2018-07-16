@@ -136,6 +136,8 @@ In this directory you will find
 - `datadir` Once your sbws scanner has started gathering results, it will dump
   them into this directory. Other sbws commands (such as generate and stats)
   read results from the files in this directory.
+- `state.dat` A file for storing state needed between sbws commands. See its
+  documentation for more information.
 
 ## Running tests
 

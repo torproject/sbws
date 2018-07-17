@@ -1,5 +1,6 @@
 from sbws.util.filelock import DirectoryLock
 from sbws.globals import (fail_hard, is_initted)
+from sbws.util.timestamp import unixts_to_dt_obj
 from argparse import ArgumentDefaultsHelpFormatter
 from datetime import datetime
 from datetime import timedelta
@@ -31,6 +32,33 @@ def gen_parser(sub):
     p.add_argument('--no-v3bw', action='store_true',
                    help='Do not clean v3bw files')
 
+
+def _get_files_mtime_older_than(dname, days_delta, extensions):
+    """Return files which modification time is older than days_delta
+    and which extension is one of the extensions."""
+    assert os.path.isdir(dname)
+    assert isinstance(days_delta, int)
+    assert isinstance(extensions, list)
+    for ext in extensions:
+        assert isinstance(ext, str)
+        assert ext[0] == '.'
+    # Determine oldest allowed date
+    today = datetime.utcfromtimestamp(time.time())
+    oldest_day = today - timedelta(days=days_delta)
+    for root, dirs, files in os.walk(dname):
+        for f in files:
+            fname = os.path.join(root, f)
+            _, ext = os.path.splitext(fname)
+            if ext not in extensions:
+                log.debug('Ignoring %s because it doesn\'t have extension '
+                          '%s', fname, ext)
+                continue
+            # using file modification time instead of parsing the name
+            # of the file.
+            filedt = unixts_to_dt_obj(
+                os.stat(fname, follow_symlinks=False).st_mtime)
+            if filedt < oldest_day and os.path.splitext:
+                yield fname
 
 
 def _get_older_files_than(dname, num_days_ago, extensions):

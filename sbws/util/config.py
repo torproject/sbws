@@ -171,8 +171,8 @@ def _validate_cleanup(conf):
     ints = {
         'stale_days': {'minimum': 1, 'maximum': None},
         'rotten_days': {'minimum': 1, 'maximum': None},
-        'stale_mins_v3bw_files': {'minimum': 1, 'maximum': None},
-        'rotten_mins_v3bw_files': {'minimum': 1, 'maximum': None},
+        'v3bw_files_compress_after_days': {'minimum': 1, 'maximum': None},
+        'v3bw_files_delete_after_days': {'minimum': 1, 'maximum': None},
     }
     all_valid_keys = list(ints.keys())
     errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))
@@ -186,7 +186,6 @@ def _validate_general(conf):
     err_tmpl = Template('$sec/$key ($val): $e')
     ints = {
         'data_period': {'minimum': 1, 'maximum': None},
-        'valid_mins_v3bw_files': {'minimum': 1, 'maximum': None},
         'circuit_timeout': {'minimum': 1, 'maximum': None},
     }
     floats = {

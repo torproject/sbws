@@ -121,6 +121,22 @@ def _remove_rotten_files(datadir, rotten_days, dry_run=True):
                 os.remove(fname)
 
 
+def _compress_files(dname, files, dry_run=True):
+    """Compress the files passed as argument."""
+    assert os.path.isdir(dname)
+    assert isinstance(files, types.GeneratorType)
+    with DirectoryLock(dname):
+        for fname in files:
+            log.info('Compressing %s', fname)
+            if dry_run:
+                continue
+            with open(fname, 'rt') as in_fd:
+                out_fname = fname + '.gz'
+                with gzip.open(out_fname, 'wt') as out_fd:
+                    shutil.copyfileobj(in_fd, out_fd)
+            os.remove(fname)
+
+
 def _compress_stale_files(datadir, stale_days, dry_run=True):
     assert os.path.isdir(datadir)
     assert isinstance(stale_days, int)

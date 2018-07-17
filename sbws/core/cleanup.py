@@ -20,8 +20,8 @@ def gen_parser(sub):
 
     :param argparse._SubParsersAction sub: what to add a sub-parser to
     '''
-    d = 'Compress data files that are no longer fresh and delete data files '\
-        'that stopped being fresh a long time ago'
+    d = 'Compress and delete results and/or v3bw files old files.' \
+        'Configuration options are read to determine which are old files'
     p = sub.add_parser('cleanup', description=d,
                        formatter_class=ArgumentDefaultsHelpFormatter)
     p.add_argument('--dry-run', action='store_true',

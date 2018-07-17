@@ -155,6 +155,13 @@ def _compress_stale_files(datadir, stale_days, dry_run=True):
             os.remove(fname)
 
 
+def _check_validity_periods_v3bw(compress_after_days, delete_after_days):
+    if 1 <= compress_after_days and compress_after_days < delete_after_days:
+        return True
+    fail_hard("v3bw files should only be compressed after 1 day and deleted "
+              "after a bigger number of days.")
+
+
 def main(args, conf):
     '''
     Main entry point in to the cleanup command.

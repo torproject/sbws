@@ -1,3 +1,6 @@
+"""Util functions to cleanup disk space."""
+import types
+
 from sbws.util.filelock import DirectoryLock
 from sbws.globals import (fail_hard, is_initted)
 from sbws.util.timestamp import unixts_to_dt_obj
@@ -91,6 +94,17 @@ def _get_older_files_than(dname, num_days_ago, extensions):
             d = datetime(*[int(n) for n in match.group(1).split('-')])
             if d < oldest_day:
                 yield fname
+
+
+def _delete_files(dname, files, dry_run=True):
+    """Delete the files passed as argument."""
+    assert os.path.isdir(dname)
+    assert isinstance(files, types.GeneratorType)
+    with DirectoryLock(dname):
+        for fname in files:
+            log.info('Deleting %s', fname)
+            if not dry_run:
+                os.remove(fname)
 
 
 def _remove_rotten_files(datadir, rotten_days, dry_run=True):

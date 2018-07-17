@@ -162,6 +162,28 @@ def _check_validity_periods_v3bw(compress_after_days, delete_after_days):
               "after a bigger number of days.")
 
 
+def _clean_v3bw_files(args, conf):
+    v3bw_dname = conf['paths']['v3bw_dname']
+    if not os.path.isdir(v3bw_dname):
+        fail_hard('%s does not exist', v3bw_dname)
+    compress_after_days = conf.getint('cleanup',
+                                      'v3bw_files_compress_after_days')
+    delete_after_days = conf.getint('cleanup',
+                                    'v3bw_files_delete_after_days')
+    _check_validity_periods_v3bw(compress_after_days, delete_after_days)
+    # first delete so that the files to be deleted are not compressed first
+    files_to_delete = _get_files_mtime_older_than(v3bw_dname,
+                                                  delete_after_days,
+                                                  ['.v3bw'])
+    _delete_files(v3bw_dname, files_to_delete, dry_run=args.dry_run)
+    files_to_compress = _get_files_mtime_older_than(v3bw_dname,
+                                                    compress_after_days,
+                                                    ['.v3bw'])
+    # when dry_run is true, compress will also show all the files that
+    # would have been deleted, since they are not really deleted
+    _compress_files(v3bw_dname, files_to_compress, dry_run=args.dry_run)
+
+
 def main(args, conf):
     '''
     Main entry point in to the cleanup command.

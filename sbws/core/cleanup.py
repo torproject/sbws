@@ -194,27 +194,34 @@ def main(args, conf):
     if not is_initted(args.directory):
         fail_hard('Sbws isn\'t initialized. Try sbws init')
 
-    datadir = conf['paths']['datadir']
-    if not os.path.isdir(datadir):
-        fail_hard('%s does not exist', datadir)
+    if args.no_results and args.no_v3bw:
+        fail_hard('Nothing to clean.')
 
-    fresh_days = conf.getint('general', 'data_period')
-    stale_days = conf.getint('cleanup', 'stale_days')
-    rotten_days = conf.getint('cleanup', 'rotten_days')
-    if stale_days - 2 < fresh_days:
-        fail_hard('For safetly, cleanup/stale_days (%d) must be at least 2 '
-                  'days larger than general/data_period (%d)', stale_days,
-                  fresh_days)
-    if rotten_days < stale_days:
-        fail_hard('cleanup/rotten_days (%d) must be the same or larger than '
-                  'cleanup/stale_days (%d)', rotten_days, stale_days)
+    if not args.no_results:
+        datadir = conf['paths']['datadir']
+        if not os.path.isdir(datadir):
+            fail_hard('%s does not exist', datadir)
 
-    if stale_days / 2 < fresh_days:
-        log.warning(
-            'cleanup/stale_days (%d) is less than twice '
-            'general/data_period (%d). For ease of parsing older results '
-            'if necessary, it is recommended to make stale_days at least '
-            'twice the data_period.', stale_days, fresh_days)
+        fresh_days = conf.getint('general', 'data_period')
+        stale_days = conf.getint('cleanup', 'stale_days')
+        rotten_days = conf.getint('cleanup', 'rotten_days')
+        if stale_days - 2 < fresh_days:
+            fail_hard('For safetly, cleanup/stale_days (%d) must be at least '
+                      '2 days larger than general/data_period (%d)',
+                      stale_days, fresh_days)
+        if rotten_days < stale_days:
+            fail_hard('cleanup/rotten_days (%d) must be the same or larger '
+                      'than cleanup/stale_days (%d)', rotten_days, stale_days)
 
-    _remove_rotten_files(datadir, rotten_days, dry_run=args.dry_run)
-    _compress_stale_files(datadir, stale_days, dry_run=args.dry_run)
+        if stale_days / 2 < fresh_days:
+            log.warning(
+                'cleanup/stale_days (%d) is less than twice '
+                'general/data_period (%d). For ease of parsing older results '
+                'if necessary, it is recommended to make stale_days at least '
+                'twice the data_period.', stale_days, fresh_days)
+
+        _remove_rotten_files(datadir, rotten_days, dry_run=args.dry_run)
+        _compress_stale_files(datadir, stale_days, dry_run=args.dry_run)
+
+    if not args.no_v3bw:
+        _clean_v3bw_files(args, conf)

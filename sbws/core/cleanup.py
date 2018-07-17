@@ -26,6 +26,11 @@ def gen_parser(sub):
                        formatter_class=ArgumentDefaultsHelpFormatter)
     p.add_argument('--dry-run', action='store_true',
                    help='Don\'t actually compress or delete anything')
+    p.add_argument('--no-results', action='store_true',
+                   help='Do not clean results files')
+    p.add_argument('--no-v3bw', action='store_true',
+                   help='Do not clean v3bw files')
+
 
 
 def _get_older_files_than(dname, num_days_ago, extensions):

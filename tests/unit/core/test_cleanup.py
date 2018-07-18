@@ -10,18 +10,7 @@ import os
 log = logging.getLogger(__name__)
 
 
-def test_cleanup_no_dotsbws(caplog,  args, conf):
-    caplog.set_level(logging.DEBUG)
-    try:
-        sbws.core.cleanup.main(args, conf)
-    except SystemExit as e:
-        assert e.code == 1
-    else:
-        assert None, 'Should have failed'
-    assert 'Try sbws init' in caplog.records[-1].getMessage()
-
-
-def test_cleanup_no_datadir(sbwshome_config, args, conf, caplog):
+def test_cleanup_no_datadir(sbwshome_empty, args, conf, caplog):
     '''
     An initialized but rather empty .sbws directory should fail about missing
     ~/.sbws/datadir
@@ -33,10 +22,10 @@ def test_cleanup_no_datadir(sbwshome_config, args, conf, caplog):
     else:
         assert None, 'Should have failed'
     assert '{}/datadir does not exist'.format(
-        os.path.abspath(sbwshome_config)) == caplog.records[-1].getMessage()
+        os.path.abspath(sbwshome_empty)) == caplog.records[-1].getMessage()
 
 
-def test_cleanup_small_stale(sbwshome, caplog, args, conf):
+def test_cleanup_small_stale(sbwshome_only_datadir, caplog, args, conf):
     conf['general']['data_period'] = '1'
     conf['cleanup']['stale_days'] = '2'
     conf['cleanup']['rotten_days'] = '3'
@@ -50,7 +39,7 @@ def test_cleanup_small_stale(sbwshome, caplog, args, conf):
         'general/data_period (1)' in caplog.records[-1].getMessage()
 
 
-def test_cleanup_small_rotten(sbwshome, caplog, args, conf):
+def test_cleanup_small_rotten(sbwshome_only_datadir, caplog, args, conf):
     conf['general']['data_period'] = '1'
     conf['cleanup']['stale_days'] = '5'
     conf['cleanup']['rotten_days'] = '4'
@@ -64,7 +53,7 @@ def test_cleanup_small_rotten(sbwshome, caplog, args, conf):
         'cleanup/stale_days (5)' in caplog.records[-1].getMessage()
 
 
-def test_cleanup_medium_stale(sbwshome, caplog, args, conf):
+def test_cleanup_medium_stale(sbwshome_only_datadir, caplog, args, conf):
     args.dry_run = False
     conf['general']['data_period'] = '10'
     conf['cleanup']['stale_days'] = '19'
@@ -76,7 +65,7 @@ def test_cleanup_medium_stale(sbwshome, caplog, args, conf):
 
 @pytest.mark.skip(reason="FIXME")
 @patch('time.time')
-def test_cleanup_only_compress_stale(time_mock, sbwshome, caplog, args, conf):
+def test_cleanup_only_compress_stale(time_mock, sbwshome_empty, caplog, args, conf):
     args.dry_run = True
     caplog.set_level(logging.DEBUG)
     conf['general']['data_period'] = '1'
@@ -85,7 +74,7 @@ def test_cleanup_only_compress_stale(time_mock, sbwshome, caplog, args, conf):
     now = 1041379200  # 1,041,379,200 is 1 Jan 2003 00:00:00 UTC
     time_mock.side_effect = monotonic_time(start=now)
     j = os.path.join
-    dd = j(sbwshome, 'datadir')
+    dd = j(sbwshome_empty, 'datadir')
     sub_a = j(dd, 'a')
     sub_b = j(dd, 'b')
     sub_ab = j(dd, 'a', 'b')
@@ -118,7 +107,7 @@ def test_cleanup_only_compress_stale(time_mock, sbwshome, caplog, args, conf):
 
 
 @patch('time.time')
-def test_cleanup_only_delete_rotten(time_mock, sbwshome, caplog, args, conf):
+def test_cleanup_only_delete_rotten(time_mock, sbwshome_empty, caplog, args, conf):
     caplog.set_level(logging.DEBUG)
     args.dry_run = False
     conf['general']['data_period'] = '1'
@@ -127,7 +116,7 @@ def test_cleanup_only_delete_rotten(time_mock, sbwshome, caplog, args, conf):
     now = 1041379200  # 1,041,379,200 is 1 Jan 2003 00:00:00 UTC
     time_mock.side_effect = monotonic_time(start=now)
     j = os.path.join
-    dd = j(sbwshome, 'datadir')
+    dd = j(sbwshome_empty, 'datadir')
     sub_a = j(dd, 'a')
     sub_b = j(dd, 'b')
     sub_ab = j(dd, 'a', 'b')
@@ -163,7 +152,7 @@ def test_cleanup_only_delete_rotten(time_mock, sbwshome, caplog, args, conf):
     assert expected_fnames == existing_fnames
 
 
-def test_cleanup_nothing_to_do(sbwshome, caplog, args, conf):
+def test_cleanup_nothing_to_do(sbwshome_only_datadir, caplog, args, conf):
     caplog.set_level(logging.DEBUG)
     args.dry_run = False
     try:
@@ -174,7 +163,7 @@ def test_cleanup_nothing_to_do(sbwshome, caplog, args, conf):
 
 
 @patch('time.time')
-def test_cleanup_compress_barely_stale(time_mock, sbwshome, caplog, args,
+def test_cleanup_compress_barely_stale(time_mock, sbwshome_only_datadir, caplog, args,
                                        conf):
     args.dry_run = False
     caplog.set_level(logging.DEBUG)
@@ -183,7 +172,7 @@ def test_cleanup_compress_barely_stale(time_mock, sbwshome, caplog, args,
     conf['cleanup']['rotten_days'] = '30'
     now = 1443571200  # 1,443,571,200 is 30 Sep 2015 00:00:00 UTC
     time_mock.side_effect = monotonic_time(start=now)
-    dd = os.path.join(sbwshome, 'datadir')
+    dd = os.path.join(sbwshome_only_datadir, 'datadir')
     fname_compress1 = os.path.join(dd, '2015-09-19.txt')
     fname_compress2 = os.path.join(dd, '2015-09-20.txt')
     fname_leave = os.path.join(dd, '2015-09-21.txt')
@@ -207,7 +196,7 @@ def test_cleanup_compress_barely_stale(time_mock, sbwshome, caplog, args,
 
 
 @patch('time.time')
-def test_cleanup_delete_barely_rotten(time_mock, sbwshome, caplog, args, conf):
+def test_cleanup_delete_barely_rotten(time_mock, sbwshome_only_datadir, caplog, args, conf):
     args.dry_run = False
     caplog.set_level(logging.DEBUG)
     conf['general']['data_period'] = '1'
@@ -215,7 +204,7 @@ def test_cleanup_delete_barely_rotten(time_mock, sbwshome, caplog, args, conf):
     conf['cleanup']['rotten_days'] = '20'
     now = 1443571200  # 1,443,571,200 is 30 Sep 2015 00:00:00 UTC
     time_mock.side_effect = monotonic_time(start=now)
-    dd = os.path.join(sbwshome, 'datadir')
+    dd = os.path.join(sbwshome_only_datadir, 'datadir')
     fname_rotten1 = os.path.join(dd, '2015-09-09.txt')
     fname_rotten2 = os.path.join(dd, '2015-09-10.txt')
     fname_leave = os.path.join(dd, '2015-09-11.txt')

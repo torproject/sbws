@@ -3,7 +3,6 @@ import argparse
 import pytest
 import os
 
-from sbws.core import init
 from sbws.lib.circuitbuilder import GapsCircuitBuilder as CB
 from sbws.lib.destination import DestinationList
 from sbws.lib.relaylist import RelayList
@@ -80,7 +79,6 @@ SafeLogging 0
 
 @pytest.fixture(scope='session')
 def sbwshome(sbwshome_dir, args, conf):
-    init.main(args, conf)
     return sbwshome_dir
 
 

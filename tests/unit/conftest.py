@@ -4,7 +4,6 @@ import pytest
 from datetime import datetime
 import os
 
-from sbws.core import init
 from sbws.globals import RESULT_VERSION
 from sbws.lib.resultdump import (ResultErrorStream, ResultSuccess, Result)
 from sbws.lib.resultdump import write_result_to_datadir
@@ -116,9 +115,16 @@ def sbwshome_only_datadir(sbwshome_empty):
 
 
 @pytest.fixture(scope='function')
-def args(sbwshome_empty, parser):
+def test_config_path(tmpdir):
+    """"""
+    config = tmpdir.join('.sbws.ini')
+    return config
+
+
+@pytest.fixture(scope='function')
+def args(sbwshome_empty, parser, test_config_path):
     """Args with sbws home in the tests tmp dir."""
-    args = _PseudoArguments(directory=sbwshome_empty, output=sbwshome_empty,
+    args = _PseudoArguments(config=test_config_path, output=sbwshome_empty,
                             scale=False, log_level='debug')
     return args
 
@@ -129,21 +135,6 @@ def conf(sbwshome_empty):
     conf = _get_default_config()
     conf['paths']['sbws_home'] = sbwshome_empty
     return conf
-
-
-@pytest.fixture(scope='function')
-def sbwshome_config(sbwshome_empty, args, conf):
-    """Create sbws home inside of the tests tmp dir with only datadir."""
-    init.main(args, conf)
-    return sbwshome_empty
-
-
-@pytest.fixture(scope='function')
-def sbwshome(sbwshome_only_datadir, args, conf):
-    """Create sbws home inside of the tests tmp dir."""
-    os.makedirs(os.path.join(sbwshome_only_datadir, 'v3bw'), exist_ok=True)
-    init.main(args, conf)
-    return conf['paths']['sbws_home']
 
 
 @pytest.fixture()
@@ -187,38 +178,38 @@ def resultdict_ip_changed_trimmed():
 
 
 @pytest.fixture(scope='function')
-def sbwshome_error_result(sbwshome, conf):
+def sbwshome_error_result(sbwshome_only_datadir, conf):
     '''
     Creates an ~/.sbws with a single fresh ResultError in it
     '''
     dd = conf['paths']['datadir']
     write_result_to_datadir(RESULT_ERROR_STREAM, dd)
-    return sbwshome
+    return sbwshome_only_datadir
 
 
 @pytest.fixture(scope='function')
-def sbwshome_success_result(sbwshome, conf):
+def sbwshome_success_result(sbwshome_only_datadir, conf):
     '''
     Creates an ~/.sbws with a single fresh ResultSuccess in it
     '''
     dd = conf['paths']['datadir']
     write_result_to_datadir(RESULT_SUCCESS1, dd)
-    return sbwshome
+    return sbwshome_only_datadir
 
 
 @pytest.fixture(scope='function')
-def sbwshome_success_result_one_relay(sbwshome, conf):
+def sbwshome_success_result_one_relay(sbwshome_only_datadir, conf):
     '''
     Creates an ~/.sbws with a a couple of fresh ResultSuccess for one relay
     '''
     dd = conf['paths']['datadir']
     write_result_to_datadir(RESULT_SUCCESS1, dd)
     write_result_to_datadir(RESULT_SUCCESS1, dd)
-    return sbwshome
+    return sbwshome_only_datadir
 
 
 @pytest.fixture(scope='function')
-def sbwshome_success_result_two_relays(sbwshome, conf):
+def sbwshome_success_result_two_relays(sbwshome_only_datadir, conf):
     '''
     Creates an ~/.sbws with a a couple of fresh ResultSuccess for a couple or
     relays
@@ -228,4 +219,4 @@ def sbwshome_success_result_two_relays(sbwshome, conf):
     write_result_to_datadir(RESULT_SUCCESS1, dd)
     write_result_to_datadir(RESULT_SUCCESS2, dd)
     write_result_to_datadir(RESULT_SUCCESS2, dd)
-    return sbwshome
+    return sbwshome_only_datadir

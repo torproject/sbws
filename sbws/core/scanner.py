@@ -11,7 +11,7 @@ from ..util.filelock import FileLock
 from ..util.timestamp import now_isodt_str
 # from ..util.simpleauth import authenticate_to_server
 # from ..util.sockio import (make_socket, close_socket)
-from sbws.globals import (fail_hard, is_initted)
+from sbws.globals import fail_hard
 import sbws.util.stem as stem_utils
 import sbws.util.requests as requests_utils
 from argparse import ArgumentDefaultsHelpFormatter
@@ -384,9 +384,6 @@ def gen_parser(sub):
 
 
 def main(args, conf):
-    if not is_initted(args.directory):
-        fail_hard('Sbws isn\'t initialized. Try sbws init')
-
     if conf.getint('scanner', 'measurement_threads') < 1:
         fail_hard('Number of measurement threads must be larger than 1')
 

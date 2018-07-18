@@ -1,4 +1,4 @@
-from sbws.globals import (fail_hard, is_initted, SCALE_CONSTANT)
+from sbws.globals import (fail_hard, SCALE_CONSTANT)
 from sbws.lib.v3bwfile import V3BWFile
 from sbws.lib.resultdump import load_recent_results_in_datadir
 from argparse import ArgumentDefaultsHelpFormatter
@@ -39,9 +39,6 @@ def gen_parser(sub):
 
 
 def main(args, conf):
-    if not is_initted(args.directory):
-        fail_hard('Sbws isn\'t initialized.  Try sbws init')
-
     os.makedirs(conf['paths']['v3bw_dname'], exist_ok=True)
 
     datadir = conf['paths']['datadir']

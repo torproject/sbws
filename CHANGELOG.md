@@ -12,9 +12,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Log line on start up with sbws version, platform info, and library versions
 (trac#26751)
 
+### Fixed
+
+- Stop deleting the latest.v3bw symlink. Instead, do an atomic rename.
+  (#26740)
+
 ### Changed
 
-- Document at which times should v3bw files be generated (#26740)
 - Remove test data v3bw file and generate it from the same test. (#26736)
 
 ### Fixed

@@ -8,10 +8,6 @@ RESULT_VERSION = 4
 WIRE_VERSION = 1
 SPEC_VERSION = '1.1.0'
 
-PKG_DIR = os.path.abspath(os.path.dirname(__file__))
-
-SOCKET_TIMEOUT = 60  # seconds
-
 # This is a dictionary of torrc options we always want to set when launching
 # Tor and that do not depend on any runtime configuration
 TORRC_STARTING_POINT = {
@@ -27,21 +23,15 @@ TORRC_STARTING_POINT = {
     'UseMicrodescriptors': '0',
 }
 
+PKG_DIR = os.path.abspath(os.path.dirname(__file__))
+DEFAULT_CONFIG_PATH = os.path.join(PKG_DIR, 'config.default.ini')
+DEFAULT_LOG_CONFIG_PATH = os.path.join(PKG_DIR, 'config.log.default.ini')
+MINIMUM_USER_CONFIG_PATH = os.path.join(PKG_DIR, 'config.user.ini')
+USER_CONFIG_PATH = os.path.join(os.path.expanduser('~'), '.sbws.ini')
+
+SOCKET_TIMEOUT = 60  # seconds
 SCALE_CONSTANT = 7500
 BW_LINE_SIZE = 510
-
-
-def is_initted(d):
-    if not os.path.isdir(d):
-        log.debug('%s not initialized: %s doesn\'t exist', d, d)
-        return False
-    conf_fnames = [os.path.join(d, 'config.ini')]
-    for fname in conf_fnames:
-        if not os.path.isfile(fname):
-            log.debug('%s not initialized: missing %s', d, fname)
-            return False
-    log.debug('%s seems initialized.', d)
-    return True
 
 
 def fail_hard(*a, **kw):

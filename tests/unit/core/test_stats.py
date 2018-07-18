@@ -1,27 +1,12 @@
 import os.path
 
-import sbws.core.init
 import sbws.core.stats
 from tests.unit.globals import monotonic_time
 from unittest.mock import patch
 import logging
 
 
-def test_stats_uninitted(sbwshome_empty, args, conf, caplog):
-    '''
-    An un-initialized .sbws directory should fail hard and exit immediately
-    '''
-    try:
-        sbws.core.stats.main(args, conf)
-    except SystemExit as e:
-        assert e.code == 1
-    else:
-        assert None, 'Should have failed'
-    assert 'Sbws isn\'t initialized. Try sbws init' == \
-        caplog.records[-1].getMessage()
-
-
-def test_stats_initted(sbwshome_config, args, conf, caplog):
+def test_stats_initted(sbwshome_empty, args, conf, caplog):
     '''
     An initialized but rather empty .sbws directory should fail about missing
     ~/.sbws/datadir
@@ -33,10 +18,10 @@ def test_stats_initted(sbwshome_config, args, conf, caplog):
     else:
         assert None, 'Should have failed'
     assert '{}/datadir does not exist'.format(
-        os.path.abspath(sbwshome_config)) == caplog.records[-1].getMessage()
+        os.path.abspath(sbwshome_empty)) == caplog.records[-1].getMessage()
 
 
-def test_stats_stale_result(sbwshome, args, conf, caplog,
+def test_stats_stale_result(args, conf, caplog,
                             sbwshome_success_result):
     '''
     An initialized .sbws directory with no fresh results should say so and

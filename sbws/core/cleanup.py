@@ -2,7 +2,7 @@
 import types
 
 from sbws.util.filelock import DirectoryLock
-from sbws.globals import (fail_hard, is_initted)
+from sbws.globals import fail_hard
 from sbws.util.timestamp import unixts_to_dt_obj
 from argparse import ArgumentDefaultsHelpFormatter
 from datetime import datetime
@@ -174,11 +174,9 @@ def main(args, conf):
     :param argparse.Namespace args: command line arguments
     :param configparser.ConfigParser conf: parsed config files
     '''
-    if not is_initted(args.directory):
-        fail_hard('Sbws isn\'t initialized. Try sbws init')
-
-    if args.no_results and args.no_v3bw:
-        fail_hard('Nothing to clean.')
+    datadir = conf['paths']['datadir']
+    if not os.path.isdir(datadir):
+        fail_hard('%s does not exist', datadir)
 
     if not args.no_results:
         _clean_result_files(args, conf)

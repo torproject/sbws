@@ -1,3 +1,6 @@
+"""Util functions to manage sbws configuration files."""
+import shutil
+
 from configparser import (ConfigParser, ExtendedInterpolation)
 from configparser import InterpolationMissingOptionError
 import os
@@ -6,7 +9,8 @@ import logging.config
 from urllib.parse import urlparse
 from string import Template
 from tempfile import NamedTemporaryFile
-from sbws.globals import PKG_DIR
+from sbws.globals import (DEFAULT_CONFIG_PATH, DEFAULT_LOG_CONFIG_PATH,
+                          MINIMUM_USER_CONFIG_PATH, USER_CONFIG_PATH)
 
 _ALPHANUM = 'abcdefghijklmnopqrstuvwxyz'
 _ALPHANUM += _ALPHANUM.upper()
@@ -21,6 +25,12 @@ _LOG_LEVELS = ['debug', 'info', 'warning', 'error', 'critical']
 log = logging.getLogger(__name__)
 
 
+def _create_user_config_file(fname):
+    """Copy minimal user config to user config path."""
+    if not os.path.isfile(fname):
+        shutil.copyfile(MINIMUM_USER_CONFIG_PATH, fname)
+
+
 def _read_config_file(conf, fname):
     assert os.path.isfile(fname)
     log.debug('Reading config file %s', fname)
@@ -29,49 +39,54 @@ def _read_config_file(conf, fname):
     return conf
 
 
-def _get_default_config():
-    conf = ConfigParser(interpolation=ExtendedInterpolation())
-    fname = os.path.join(PKG_DIR, 'config.default.ini')
-    assert os.path.isfile(fname)
-    conf = _read_config_file(conf, fname)
+def _extend_config(conf, fpath):
+    """Extend ConfigParser from file configuration."""
+    conf = _read_config_file(conf, fpath)
     return conf
+
+
+def _get_default_config():
+    """Return ConfigParser with default configuration."""
+    conf = ConfigParser(interpolation=ExtendedInterpolation())
+    return _read_config_file(conf, DEFAULT_CONFIG_PATH)
 
 
 def _get_user_config(args, conf=None):
+    """Get user configuration.
+    If a custom path is passed, search for user configuration there.
+    In any case, create a minimal user configuration in user configuration path
+    , in case it needs to be overwritten.
+    """
     if not conf:
         conf = ConfigParser(interpolation=ExtendedInterpolation())
     else:
         assert isinstance(conf, ConfigParser)
-    fname = os.path.join(args.directory, 'config.ini')
-    if not os.path.isfile(fname):
-        return conf
-    conf = _read_config_file(conf, fname)
-    return conf
+    if args.config:
+        if not os.path.isfile(args.config):
+            log.warning('Configuration file %s not found, '
+                        'using default configuration, and creating a minimal '
+                        'configuration in %s.', args.config, args.config)
+            _create_user_config_file(args.config)
+            return conf
+        return _extend_config(conf, args.config)
+    _create_user_config_file(USER_CONFIG_PATH)
+    return _extend_config(conf, USER_CONFIG_PATH)
 
 
-def _get_default_logging_config(args, conf=None):
+def _get_default_logging_config(conf=None):
+    """Get default logging configuration."""
     if not conf:
         conf = ConfigParser(interpolation=ExtendedInterpolation())
     else:
         assert isinstance(conf, ConfigParser)
-    fname = os.path.join(PKG_DIR, 'config.log.default.ini')
-    assert os.path.isfile(fname)
-    conf = _read_config_file(conf, fname)
-    return conf
+    return _extend_config(conf, DEFAULT_LOG_CONFIG_PATH)
 
 
 def get_config(args):
+    """Get ConfigParser interpolating all configuration files."""
     conf = _get_default_config()
-    conf = _get_default_logging_config(args, conf=conf)
+    conf = _get_default_logging_config(conf=conf)
     conf = _get_user_config(args, conf=conf)
-    return conf
-
-
-def get_user_example_config():
-    conf = ConfigParser(interpolation=ExtendedInterpolation())
-    fname = os.path.join(PKG_DIR, 'config.example.ini')
-    assert os.path.isfile(fname)
-    conf = _read_config_file(conf, fname)
     return conf
 
 

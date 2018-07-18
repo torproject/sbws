@@ -1,7 +1,6 @@
 import sbws.core.cleanup
 import sbws.core.scanner
 import sbws.core.generate
-import sbws.core.init
 import sbws.core.stats
 from sbws import __version__
 
@@ -22,12 +21,11 @@ def create_parser():
     p.add_argument('--log-level',
                    choices=['debug', 'info', 'warning', 'error', 'critical'],
                    help='Override the sbws log level')
-    p.add_argument('-d', '--directory', default=_default_dot_sbws_dname(),
-                   help='Name of the .sbws directory')
+    p.add_argument('-c', '--config',
+                   help='Path the sbws config file')
     sub = p.add_subparsers(dest='command')
     sbws.core.cleanup.gen_parser(sub)
     sbws.core.scanner.gen_parser(sub)
     sbws.core.generate.gen_parser(sub)
-    sbws.core.init.gen_parser(sub)
     sbws.core.stats.gen_parser(sub)
     return p

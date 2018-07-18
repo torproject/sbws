@@ -16,6 +16,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Document at which times should v3bw files be generated (#26740)
 - Remove test data v3bw file and generate it from the same test. (#26736)
+- Make sbws more compatible with system packages: (#26862)
+  - Allow a configuration file argument
+  - Remove directory argument
+  - Create minimal user configuration when running
+  - Do not require to run a command to initialize
+  - Initialize directories when running
+  - Do not require configuration file inside directories specified by the 
+    configuration
 
 ## [0.6.0] - 2018-07-11
 

@@ -413,17 +413,24 @@ class V3BWFile(object):
             log.info("Writing to stdout is not supported.")
             return
         log.info('Writing v3bw file to %s', output)
+        # To avoid inconsistent reads, the bandwidth data is written to an
+        # archive path, then atomically symlinked to 'latest.v3bw'
         out_dir = os.path.dirname(output)
         out_link = os.path.join(out_dir, 'latest.v3bw')
-        if os.path.exists(out_link):
-            log.debug('Deleting existing symlink before creating a new one.')
-            os.remove(out_link)
+        out_link_tmp = out_link + '.tmp'
         with DirectoryLock(out_dir):
             with open(output, 'wt') as fd:
                 fd.write(str(self.header))
                 for line in self.bw_lines:
                     fd.write(str(line))
             output_basename = os.path.basename(output)
-            log.debug('Creating symlink from {} to {}.'
-                      .format(output_basename, out_link))
-            os.symlink(output_basename, out_link)
+            # To atomically symlink a file, we need to create a temporary link,
+            # then rename it to the final link name. (POSIX guarantees that
+            # rename is atomic.)
+            log.debug('Creating symlink {} -> {}.'
+                      .format(out_link_tmp, output_basename))
+            os.symlink(output_basename, out_link_tmp)
+            log.debug('Renaming symlink {} -> {} to {} -> {}.'
+                      .format(out_link_tmp, output_basename,
+                              out_link, output_basename))
+            os.rename(out_link_tmp, out_link)

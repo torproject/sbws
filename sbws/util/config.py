@@ -132,7 +132,8 @@ def configure_logging(args, conf):
         # And the forth is the number of backups to keep
         num_backups = conf.getint('logging', 'to_file_num_backups')
         # Now store those things as a string in the config. So dumb.
-        conf['handler_to_file']['args'] = str((fname, mode, max_bytes, num_backups))
+        conf['handler_to_file']['args'] = \
+            str((fname, mode, max_bytes, num_backups))
     # Set some stuff that needs config parser's interpolation
     conf['formatter_to_file']['format'] = conf['logging']['to_file_format']
     conf['formatter_to_stdout']['format'] = conf['logging']['to_stdout_format']

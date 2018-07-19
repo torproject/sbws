@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Document at which times should v3bw files be generated (#26740)
 - Remove test data v3bw file and generate it from the same test. (#26736)
 
+### Fixed
+
+- Log files weren't rotating. Now they are. (#26881)
+
 ## [0.6.0] - 2018-07-11
 
 **Important changes**:

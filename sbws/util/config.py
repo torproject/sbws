@@ -125,12 +125,14 @@ def configure_logging(args, conf):
         dname = conf['paths']['log_dname']
         os.makedirs(dname, exist_ok=True)
         fname = os.path.join(dname, '{}.log'.format(args.command or 'sbws'))
-        # The second argument is the number of backups to keep, and the third
-        # is the maximum file size (in bytes) each log file should be.
+        # The second argument is the file mode, and it should be left alone
+        mode = 'a'
+        # The third is the maximum file size (in bytes) each log file should be
         max_bytes = conf.getint('logging', 'to_file_max_bytes')
+        # And the forth is the number of backups to keep
         num_backups = conf.getint('logging', 'to_file_num_backups')
         # Now store those things as a string in the config. So dumb.
-        conf['handler_to_file']['args'] = str((fname, num_backups, max_bytes))
+        conf['handler_to_file']['args'] = str((fname, mode, max_bytes, num_backups))
     # Set some stuff that needs config parser's interpolation
     conf['formatter_to_file']['format'] = conf['logging']['to_file_format']
     conf['formatter_to_stdout']['format'] = conf['logging']['to_stdout_format']

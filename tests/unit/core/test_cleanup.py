@@ -65,7 +65,8 @@ def test_cleanup_medium_stale(sbwshome_only_datadir, caplog, args, conf):
 
 @pytest.mark.skip(reason="FIXME")
 @patch('time.time')
-def test_cleanup_only_compress_stale(time_mock, sbwshome_empty, caplog, args, conf):
+def test_cleanup_only_compress_stale(time_mock, sbwshome_empty, caplog, args,
+                                     conf):
     args.dry_run = True
     caplog.set_level(logging.DEBUG)
     conf['general']['data_period'] = '1'
@@ -107,7 +108,8 @@ def test_cleanup_only_compress_stale(time_mock, sbwshome_empty, caplog, args, co
 
 
 @patch('time.time')
-def test_cleanup_only_delete_rotten(time_mock, sbwshome_empty, caplog, args, conf):
+def test_cleanup_only_delete_rotten(time_mock, sbwshome_empty, caplog, args,
+                                    conf):
     caplog.set_level(logging.DEBUG)
     args.dry_run = False
     conf['general']['data_period'] = '1'
@@ -163,8 +165,8 @@ def test_cleanup_nothing_to_do(sbwshome_only_datadir, caplog, args, conf):
 
 
 @patch('time.time')
-def test_cleanup_compress_barely_stale(time_mock, sbwshome_only_datadir, caplog, args,
-                                       conf):
+def test_cleanup_compress_barely_stale(time_mock, sbwshome_only_datadir,
+                                       caplog, args, conf):
     args.dry_run = False
     caplog.set_level(logging.DEBUG)
     conf['general']['data_period'] = '1'
@@ -196,7 +198,8 @@ def test_cleanup_compress_barely_stale(time_mock, sbwshome_only_datadir, caplog,
 
 
 @patch('time.time')
-def test_cleanup_delete_barely_rotten(time_mock, sbwshome_only_datadir, caplog, args, conf):
+def test_cleanup_delete_barely_rotten(time_mock, sbwshome_only_datadir, caplog,
+                                      args, conf):
     args.dry_run = False
     caplog.set_level(logging.DEBUG)
     conf['general']['data_period'] = '1'

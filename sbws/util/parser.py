@@ -22,7 +22,7 @@ def create_parser():
                    choices=['debug', 'info', 'warning', 'error', 'critical'],
                    help='Override the sbws log level')
     p.add_argument('-c', '--config',
-                   help='Path the sbws config file')
+                   help='Path to the sbws config file')
     sub = p.add_subparsers(dest='command')
     sbws.core.cleanup.gen_parser(sub)
     sbws.core.scanner.gen_parser(sub)

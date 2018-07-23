@@ -81,6 +81,10 @@ def get_config(args):
     conf = _get_default_config()
     conf = _get_default_logging_config(conf=conf)
     conf = _get_user_config(args, conf=conf)
+    # it is only needed to expand user and vars to have the rest of the
+    # paths correctly expanded too
+    conf['paths']['sbws_home'] = os.path.expanduser(os.path.expandvars(
+        conf['paths']['sbws_home']))
     return conf
 
 

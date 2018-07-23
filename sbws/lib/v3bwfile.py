@@ -190,6 +190,10 @@ class V3BWHeader(object):
 
     @staticmethod
     def generator_started_from_file(conf):
+        '''
+        ISO formatted timestamp for the time when the scanner process most
+        recently started.
+        '''
         state = State(conf['paths']['state_fname'])
         if 'scanner_started' in state:
             return state['scanner_started']

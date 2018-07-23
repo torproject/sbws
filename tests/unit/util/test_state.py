@@ -68,7 +68,7 @@ def test_state_del(tmpdir):
     attempt_keys = (15983, None, True, -1.2, [], {}, set())
     for key in attempt_keys:
         try:
-            del state[False]
+            del state[key]
         except TypeError:
             pass
         else:
@@ -116,5 +116,4 @@ def test_state_iter(tmpdir):
     d = {'a': 1, 'b': 2, 'c': 3, 'd': 4}
     for key in d:
         state[key] = d[key]
-    for key in state:
-        pass
+    assert set([key for key in state]) == set(d)

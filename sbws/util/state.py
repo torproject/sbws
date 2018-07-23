@@ -4,6 +4,43 @@ import json
 
 
 class State:
+    '''
+    State allows one to atomically access and update a simple state file on
+    disk across threads and across processes.
+
+    To put it blunty, due to limited developer time and his inability to
+    quickly find a way to safely access and update more complex data types
+    (namely, collections like list, set, and dict), you may only store simple
+    types of data as enumerated in _ALLOWED_TYPES. Keys must be strings.
+
+    Data is stored as JSON on disk in the provided file file.
+
+    >>> state = State('foo.state')
+    >>> # state == {}
+
+    >>> state['linux'] = True
+    >>> # 'foo.state' now exists on disk with the JSON for {'linux': True}
+
+    >>> # We read 'foo.state' from disk in order to get the most up-to-date
+    >>> #     state info. Pretend another process has updated 'linux' to be
+    >>> #     False
+    >>> state['linux']
+    >>> # returns False
+
+    >>> # Pretend another process has added the user's age to the state file.
+    >>> #     As before, we read the state file from disk for the most
+    >>> #     up-to-date info.
+    >>> state['age']
+    >>> # Returns 14
+
+    >>> # We now set their name. We read the state file first, set the option,
+    >>> #     and then write it out.
+    >>> state['name'] = 'John'
+
+    >>> # We can do many of the same things with a State object as with a dict
+    >>> for key in state: print(key)
+    >>> # Prints 'linux', 'age', and 'name'
+    '''
     _ALLOWED_TYPES = (int, float, str, bool, type(None))
 
     def __init__(self, fname):

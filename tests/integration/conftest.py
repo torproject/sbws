@@ -78,11 +78,6 @@ SafeLogging 0
 
 
 @pytest.fixture(scope='session')
-def sbwshome(sbwshome_dir, args, conf):
-    return sbwshome_dir
-
-
-@pytest.fixture(scope='session')
 def persistent_launch_tor(conf):
     cont = launch_tor(conf)
     return cont

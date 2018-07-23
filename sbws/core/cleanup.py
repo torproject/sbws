@@ -53,7 +53,7 @@ def _get_files_mtime_older_than(dname, days_delta, extensions):
             fname = os.path.join(root, f)
             _, ext = os.path.splitext(fname)
             if ext not in extensions:
-                log.debug('Ignoring %s because it doesn\'t have extension '
+                log.debug('Ignoring %s because its extension is not in '
                           '%s', fname, ext)
                 continue
             # using file modification time instead of parsing the name

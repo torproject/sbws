@@ -174,7 +174,7 @@ def _clean_v3bw_files(args, conf):
     # first delete so that the files to be deleted are not compressed first
     files_to_delete = _get_files_mtime_older_than(v3bw_dname,
                                                   delete_after_days,
-                                                  ['.v3bw'])
+                                                  ['.v3bw', 'v3bw.gz'])
     _delete_files(v3bw_dname, files_to_delete, dry_run=args.dry_run)
     files_to_compress = _get_files_mtime_older_than(v3bw_dname,
                                                     compress_after_days,

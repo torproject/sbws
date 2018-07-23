@@ -17,7 +17,7 @@ def assert_within(value, target, radius):
 
 
 def test_measure_relay_with_maxadvertisedbandwidth(
-        persistent_launch_tor, sbwshome, args, conf,
+        persistent_launch_tor, sbwshome_dir, args, conf,
         dests, cb, rl, caplog):
     caplog.set_level(logging.DEBUG)
     # d = get_everything_to_measure(sbwshome, cont, args, conf)

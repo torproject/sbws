@@ -31,24 +31,18 @@ def _create_user_config_file(fname):
         shutil.copyfile(MINIMUM_USER_CONFIG_PATH, fname)
 
 
-def _read_config_file(conf, fname):
-    assert os.path.isfile(fname)
+def _extend_config(conf, fname):
+    """Extend ConfigParser from file configuration."""
     log.debug('Reading config file %s', fname)
     with open(fname, 'rt') as fd:
         conf.read_file(fd, source=fname)
     return conf
 
 
-def _extend_config(conf, fpath):
-    """Extend ConfigParser from file configuration."""
-    conf = _read_config_file(conf, fpath)
-    return conf
-
-
 def _get_default_config():
     """Return ConfigParser with default configuration."""
     conf = ConfigParser(interpolation=ExtendedInterpolation())
-    return _read_config_file(conf, DEFAULT_CONFIG_PATH)
+    return _extend_config(conf, DEFAULT_CONFIG_PATH)
 
 
 def _get_user_config(args, conf=None):

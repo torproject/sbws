@@ -1,12 +1,25 @@
 Simple Bandwidth Scanner Configuration Files
 ============================================
 
-Sbws has three config files it reads: two general, and one specific to logging.
-They all get combined internally to the same ``conf`` structure, so technically
-you can put any option in any file, but you need to pay attention to the order
-in which they are read. Options specified in multiple files will take the
-values set in the last-read file. **It's best to only put options in the files
-you are meant to put them in.**
+How to create user customized configuration files
+--------------------------------------------------
+``sbws`` use internal configuration files.
+These are **not** intented to be modified by a user.
+If a user needs a customized configuration file, the user needs to create it.
+There's an example configuration file with the minimum data that a user
+probably needs to edit in ``examples``. For more advanced configuration options see
+documentation below.
+``sbws`` will check by default whether there's a user customized file in
+``~/sbws.ini`` and use it when it exists.
+The user can store a customized configuration file anywhere else in the file
+system and and provide ``sbws`` with the path to it via the ``-c`` or
+``--config`` cli option.
+
+How sbws configuration works internally
+----------------------------------------
+Sbws has two default config files it reads: on general, and one specific to
+logging.
+They all get combined internally to the same ``conf`` structure.
 
 It first reads the config file containing the default values for almost all
 options. If you installed sbws in a virtual environment located at /tmp/venv,
@@ -21,16 +34,16 @@ previous file. The contents of this default log config file can be found
 :ref:`at the bottom of this page <default-log-config>`. Options set here
 overwrite options set in the previous config file.
 
-Sbws then reads your custom config file. By default, after running ``sbws
-init``, it is located in ``~/.sbws/config.ini``. Options in this
-file overwrite options set in previously read config files.
+Sbws then reads your custom config file. By default, it will search for it
+in ``~/.sbws.ini``. Options in this file overwrite options set in previously
+read config files.
 
-After running ``sbws init``, your ``~/.sbws/config.ini`` might look like this.
+The user example config file provided by ``sbws`` might look like this.
 
 .. _init-config:
 
-.. literalinclude:: config.ini
-    :caption: Example ~/.sbws/config.ini
+.. literalinclude:: config.example.ini
+    :caption: Example config.example.ini
 
 **No other configuration files are read.**
 

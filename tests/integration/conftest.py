@@ -62,6 +62,7 @@ def conf(sbwshome_dir):
     """Default configuration with sbws home in the tmp test dir."""
     conf = _get_default_config()
     conf['paths']['sbws_home'] = sbwshome_dir
+    conf['tor']['run_dpath'] = os.path.join(sbwshome_dir, 'tor', 'run')
     conf['destinations']['foo'] = 'on'
     conf['destinations.foo'] = {}
     conf['destinations.foo']['url'] = 'http://127.0.0.1:28888/sbws.bin'

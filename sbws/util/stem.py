@@ -120,6 +120,7 @@ def _init_controller_socket(socket):
 def launch_tor(conf):
     assert isinstance(conf, ConfigParser)
     os.makedirs(conf.getpath('tor', 'datadir'), mode=0o700, exist_ok=True)
+    os.makedirs(conf.getpath('tor', 'log'), exist_ok=True)
     os.makedirs(conf.getpath('tor', 'run_dpath'), mode=0o700, exist_ok=True)
     # Bare minimum things, more or less
     torrc = copy.deepcopy(TORRC_STARTING_POINT)

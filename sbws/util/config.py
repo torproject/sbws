@@ -1,5 +1,4 @@
 """Util functions to manage sbws configuration files."""
-import shutil
 
 from configparser import (ConfigParser, ExtendedInterpolation)
 from configparser import InterpolationMissingOptionError
@@ -10,7 +9,7 @@ from urllib.parse import urlparse
 from string import Template
 from tempfile import NamedTemporaryFile
 from sbws.globals import (DEFAULT_CONFIG_PATH, DEFAULT_LOG_CONFIG_PATH,
-                          MINIMUM_USER_CONFIG_PATH, USER_CONFIG_PATH)
+                          USER_CONFIG_PATH, fail_hard)
 
 _ALPHANUM = 'abcdefghijklmnopqrstuvwxyz'
 _ALPHANUM += _ALPHANUM.upper()
@@ -30,12 +29,6 @@ def _expand_path(path):
     into their values.
     """
     return os.path.expanduser(os.path.expandvars(path))
-
-
-def _create_user_config_file(fname):
-    """Copy minimal user config to user config path."""
-    if not os.path.isfile(fname):
-        shutil.copyfile(MINIMUM_USER_CONFIG_PATH, fname)
 
 
 def _extend_config(conf, fname):
@@ -66,14 +59,12 @@ def _get_user_config(args, conf=None):
         assert isinstance(conf, ConfigParser)
     if args.config:
         if not os.path.isfile(args.config):
-            log.warning('Configuration file %s not found, '
-                        'using default configuration, and creating a minimal '
-                        'configuration in %s.', args.config, args.config)
-            _create_user_config_file(args.config)
-            return conf
+            fail_hard('Configuration file %s not found.', args.config)
         return _extend_config(conf, args.config)
-    _create_user_config_file(USER_CONFIG_PATH)
-    return _extend_config(conf, USER_CONFIG_PATH)
+    if os.path.isfile(USER_CONFIG_PATH):
+        return _extend_config(conf, USER_CONFIG_PATH)
+    log.debug('No user config found.')
+    return conf
 
 
 def _get_default_logging_config(conf=None):

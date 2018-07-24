@@ -376,7 +376,7 @@ def main(args, conf):
         fail_hard('Max download size %d cannot be smaller than min %d',
                   max_dl, min_dl)
 
-    os.makedirs(conf['paths']['datadir'], exist_ok=True)
+    os.makedirs(conf.getpath('paths', 'datadir'), exist_ok=True)
 
     state = State(conf['paths']['state_fname'])
     state['scanner_started'] = now_isodt_str()

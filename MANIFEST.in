@@ -1,6 +1,7 @@
 include *.md
 include *.rst
 include sbws/*.ini
+include examples *
 recursive-include docs *
 prune docs/build
 recursive-include tests *

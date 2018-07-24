@@ -182,7 +182,7 @@ def sbwshome_error_result(sbwshome_only_datadir, conf):
     '''
     Creates an ~/.sbws with a single fresh ResultError in it
     '''
-    dd = conf['paths']['datadir']
+    dd = conf.getpath('paths', 'datadir')
     write_result_to_datadir(RESULT_ERROR_STREAM, dd)
     return sbwshome_only_datadir
 
@@ -192,7 +192,7 @@ def sbwshome_success_result(sbwshome_only_datadir, conf):
     '''
     Creates an ~/.sbws with a single fresh ResultSuccess in it
     '''
-    dd = conf['paths']['datadir']
+    dd = conf.getpath('paths', 'datadir')
     write_result_to_datadir(RESULT_SUCCESS1, dd)
     return sbwshome_only_datadir
 
@@ -202,7 +202,7 @@ def sbwshome_success_result_one_relay(sbwshome_only_datadir, conf):
     '''
     Creates an ~/.sbws with a a couple of fresh ResultSuccess for one relay
     '''
-    dd = conf['paths']['datadir']
+    dd = conf.getpath('paths', 'datadir')
     write_result_to_datadir(RESULT_SUCCESS1, dd)
     write_result_to_datadir(RESULT_SUCCESS1, dd)
     return sbwshome_only_datadir
@@ -214,7 +214,7 @@ def sbwshome_success_result_two_relays(sbwshome_only_datadir, conf):
     Creates an ~/.sbws with a a couple of fresh ResultSuccess for a couple or
     relays
     '''
-    dd = conf['paths']['datadir']
+    dd = conf.getpath('paths', 'datadir')
     write_result_to_datadir(RESULT_SUCCESS1, dd)
     write_result_to_datadir(RESULT_SUCCESS1, dd)
     write_result_to_datadir(RESULT_SUCCESS2, dd)

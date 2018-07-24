@@ -26,7 +26,6 @@ TORRC_STARTING_POINT = {
 PKG_DIR = os.path.abspath(os.path.dirname(__file__))
 DEFAULT_CONFIG_PATH = os.path.join(PKG_DIR, 'config.default.ini')
 DEFAULT_LOG_CONFIG_PATH = os.path.join(PKG_DIR, 'config.log.default.ini')
-MINIMUM_USER_CONFIG_PATH = os.path.join(PKG_DIR, 'config.user.ini')
 USER_CONFIG_PATH = os.path.join(os.path.expanduser('~'), '.sbws.ini')
 
 SOCKET_TIMEOUT = 60  # seconds

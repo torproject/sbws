@@ -48,7 +48,8 @@ def _extend_config(conf, fname):
 
 def _get_default_config():
     """Return ConfigParser with default configuration."""
-    conf = ConfigParser(interpolation=ExtendedInterpolation())
+    conf = ConfigParser(interpolation=ExtendedInterpolation(),
+                        converters={'path': _expand_path})
     return _extend_config(conf, DEFAULT_CONFIG_PATH)
 
 
@@ -59,7 +60,8 @@ def _get_user_config(args, conf=None):
     , in case it needs to be overwritten.
     """
     if not conf:
-        conf = ConfigParser(interpolation=ExtendedInterpolation())
+        conf = ConfigParser(interpolation=ExtendedInterpolation(),
+                            converters={'path': _expand_path})
     else:
         assert isinstance(conf, ConfigParser)
     if args.config:
@@ -77,7 +79,8 @@ def _get_user_config(args, conf=None):
 def _get_default_logging_config(conf=None):
     """Get default logging configuration."""
     if not conf:
-        conf = ConfigParser(interpolation=ExtendedInterpolation())
+        conf = ConfigParser(interpolation=ExtendedInterpolation(),
+                            converters={'path': _expand_path})
     else:
         assert isinstance(conf, ConfigParser)
     return _extend_config(conf, DEFAULT_LOG_CONFIG_PATH)
@@ -88,10 +91,6 @@ def get_config(args):
     conf = _get_default_config()
     conf = _get_default_logging_config(conf=conf)
     conf = _get_user_config(args, conf=conf)
-    # it is only needed to expand user and vars to have the rest of the
-    # paths correctly expanded too
-    conf['paths']['sbws_home'] = os.path.expanduser(os.path.expandvars(
-        conf['paths']['sbws_home']))
     return conf
 
 
@@ -110,7 +109,7 @@ def _can_log_to_file(conf):
     # If there is an issue getting this option, tell the caller that we can't
     # log to file.
     try:
-        conf['paths']['log_dname']
+        conf.getpath('paths', 'log_dname')
     except InterpolationMissingOptionError as e:
         return False, e
     return True, ''
@@ -142,7 +141,7 @@ def configure_logging(args, conf):
         # The first argument is the file name to which it should log. Set it to
         # the sbws command (like 'scanner' or 'generate') if possible, or to
         # 'sbws' failing that.
-        dname = conf['paths']['log_dname']
+        dname = conf.getpath('paths', 'log_dname')
         os.makedirs(dname, exist_ok=True)
         fname = os.path.join(dname, '{}.log'.format(args.command or 'sbws'))
         # The second argument is the number of backups to keep, and the third

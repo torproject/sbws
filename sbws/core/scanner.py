@@ -316,7 +316,7 @@ def result_putter_error(target):
 
 def run_speedtest(args, conf):
     controller, _ = stem_utils.init_controller(
-        path=conf['tor']['control_socket'])
+        path=conf.getpath('tor', 'control_socket'))
     if not controller:
         controller = stem_utils.launch_tor(conf)
     else:
@@ -328,7 +328,8 @@ def run_speedtest(args, conf):
             'If you experience problems, you should try letting sbws launch '
             'Tor for itself. The ability to use an already running Tor only '
             'exists for sbws developers. It is expected to be broken and may '
-            'even lead to messed up results.', conf['tor']['control_socket'])
+            'even lead to messed up results.',
+            conf.getpath('tor', 'control_socket'))
         time.sleep(15)
     rl = RelayList(args, conf, controller)
     cb = CB(args, conf, controller, rl)

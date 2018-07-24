@@ -25,6 +25,13 @@ _LOG_LEVELS = ['debug', 'info', 'warning', 'error', 'critical']
 log = logging.getLogger(__name__)
 
 
+def _expand_path(path):
+    """Expand path string containing shell variables and ~ constructions
+    into their values.
+    """
+    return os.path.expanduser(os.path.expandvars(path))
+
+
 def _create_user_config_file(fname):
     """Copy minimal user config to user config path."""
     if not os.path.isfile(fname):

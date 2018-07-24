@@ -21,9 +21,9 @@ def _ensure_dirs(conf):
     log.debug('Ensuring all dirs exists.')
     # it is not needed to check sbws_home dir, since the following
     # will create parent dirs too (in case they don't exist)
-    os.makedirs(conf['paths']['datadir'], exist_ok=True)
-    os.makedirs(conf['paths']['v3bw_dname'], exist_ok=True)
-    os.makedirs(conf['paths']['log_dname'], exist_ok=True)
+    os.makedirs(conf.getpath('paths', 'datadir'), exist_ok=True)
+    os.makedirs(conf.getpath('paths', 'v3bw_dname'), exist_ok=True)
+    os.makedirs(conf.getpath('paths', 'log_dname'), exist_ok=True)
 
 
 def _adjust_log_level(args, conf):

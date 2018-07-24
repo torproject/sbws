@@ -83,22 +83,19 @@ of sbws.
     git checkout v1.5.3
     pip install .
 
-Initialize sbws
-~~~~~~~~~~~~~~~~~~~
+Run sbws
+~~~~~~~~~~
 
-This creates ``~/.sbws`` and initializes some files in it.
+If you would like to use a custom configuration file you can create it in
+``~/.sbws.ini`` or provide ``sbws`` with it via ``-c`` ``--config`` option.
 
+See the documentation section about configuration files for more information
+about how to create a configuration file.
+
+Tor run the scanner run
 ::
 
-    sbws init
-
-If you would like to keep sbws's data directory somewhere else, use ``-d``.
-**You will have to use -d every time you run an sbws command to use this custom
-directory**.
-
-::
-
-    sbws -d /tmp/dotsbws-testing init
+    sbws scanner
 
 
 [OBSOLETE DO NOT FOLLOW] Virtualenv - Production

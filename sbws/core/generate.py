@@ -38,9 +38,9 @@ def gen_parser(sub):
 
 
 def main(args, conf):
-    os.makedirs(conf['paths']['v3bw_dname'], exist_ok=True)
+    os.makedirs(conf.getpath('paths', 'v3bw_dname'), exist_ok=True)
 
-    datadir = conf['paths']['datadir']
+    datadir = conf.getpath('paths', 'datadir')
     if not os.path.isdir(datadir):
         fail_hard('%s does not exist', datadir)
     if args.scale_constant < 1:

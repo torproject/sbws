@@ -174,7 +174,7 @@ def main(args, conf):
     :param argparse.Namespace args: command line arguments
     :param configparser.ConfigParser conf: parsed config files
     '''
-    datadir = conf['paths']['datadir']
+    datadir = conf.getpath('paths', 'datadir')
     if not os.path.isdir(datadir):
         fail_hard('%s does not exist', datadir)
 

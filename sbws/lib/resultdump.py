@@ -491,11 +491,11 @@ class ResultDump:
     ''' Runs the enter() method in a new thread and collects new Results on its
     queue. Writes them to daily result files in the data directory '''
     def __init__(self, args, conf, end_event):
-        assert os.path.isdir(conf['paths']['datadir'])
+        assert os.path.isdir(conf.getpath('paths', 'datadir'))
         assert isinstance(end_event, Event)
         self.conf = conf
         self.fresh_days = conf.getint('general', 'data_period')
-        self.datadir = conf['paths']['datadir']
+        self.datadir = conf.getpath('paths', 'datadir')
         self.end_event = end_event
         self.data = {}
         self.data_lock = RLock()

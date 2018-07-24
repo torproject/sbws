@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/pastly/simple-bw-scanner.svg?branch=master)](https://travis-ci.org/pastly/simple-bw-scanner)
 
-`simple-bw-scanner` (also called `sbws`) is a Tor bandwidth scanner that 
+`simple-bw-scanner` (also called `sbws`) is a Tor bandwidth scanner that
 produces bandwidth measurements files to be used by Directory Authorities.
 
 It doesn't get simpler than this, folks.
@@ -121,16 +121,10 @@ The generated HTML will be in `docs/build/`.
 
 ## The `.sbws` directory
 
-By default is `~/.sbws`. You can choose a different one by specifying `-d` when
-calling sbws.
-
-    sbws -d /tmp/testing-dotsbws init
-    sbws -d /tmp/testing-dotsbws client
+By default is `~/.sbws`.
 
 In this directory you will find
 
-- `config.ini` The configuration file you should be editing if you want to
-  modify sbws's behavior.
 - `datadir/` Once your sbws scanner has started gathering results, it will dump
   them into this directory. Other sbws commands (such as generate and stats)
   read results from the files in this directory.

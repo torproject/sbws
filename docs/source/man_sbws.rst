@@ -1,5 +1,5 @@
-Simple Bandwidth Scanner
-========================
+Simple Bandwidth Scanner - SBWS(1)
+===================================
 
 SYNOPSIS
 --------

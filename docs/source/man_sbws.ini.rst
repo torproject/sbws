@@ -1,5 +1,5 @@
-Simple Bandwidth Scanner configuration file manual
-===================================================
+Simple Bandwidth Scanner - SBWS.INI(5)
+=====================================
 
 DESCRIPTION
 -----------

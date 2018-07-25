@@ -18,6 +18,8 @@ Contents
    INSTALL
    DEPLOY
    README
+   man_sbws
+   man_sbws.ini
    CHANGELOG
    CONTRIBUTING
    AUTHORS

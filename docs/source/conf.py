@@ -25,7 +25,7 @@ def find_version():
 
 project = 'Simple Bandwidth Scanner'
 copyright = 'Public Domain'
-author = 'Matt Traudt'
+author = 'Matt Traudt [sirmatt at ksu dot edu], juga [juga at riseup dot net]'
 
 # The short X.Y version
 version = find_version()
@@ -139,7 +139,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'simple-bw-scanner.tex', 'simple-bw-scanner Documentation',
-     'pastly', 'manual'),
+     [author], 'manual'),
 ]
 
 
@@ -148,8 +148,9 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'simple-bw-scanner', 'simple-bw-scanner Documentation',
-     [author], 1)
+    ('man_sbws', 'sbws', 'Simple Bandwidth Scanner', [author], 1),
+    ('man_sbws.ini', 'sbws.ini',
+     'Simple Bandwidth Scanner configuration', [author], 5)
 ]
 
 

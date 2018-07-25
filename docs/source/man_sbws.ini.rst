@@ -1,5 +1,5 @@
 Simple Bandwidth Scanner - SBWS.INI(5)
-=====================================
+======================================
 
 DESCRIPTION
 -----------
@@ -45,8 +45,16 @@ paths
     (Default ~/.sbws/log)
 
 destinations
+  STR = {on, off}
+    Name of destination. It is a name for the Web server from where to
+    download files in order to measure bandwidths.
+
   usability_test_interval = INT
     How often to check if a destination is usable
+
+destinations.STR
+  url = STR
+    The url to the destination
 
 tor
   datadir = STR

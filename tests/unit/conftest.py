@@ -119,7 +119,8 @@ def sbwshome_only_datadir(sbwshome_empty):
 def args(sbwshome_empty, parser):
     """Args with sbws home in the tests tmp dir."""
     args = _PseudoArguments(directory=sbwshome_empty, output=sbwshome_empty,
-                            scale=False, log_level='debug')
+                            scale=False, log_level='debug',
+                            no_results=False, no_v3bw=False)
     return args
 
 

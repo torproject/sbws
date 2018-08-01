@@ -60,7 +60,7 @@ def _get_files_mtime_older_than(dname, days_delta, extensions):
             # of the file.
             filedt = unixts_to_dt_obj(
                 os.stat(fname, follow_symlinks=False).st_mtime)
-            if filedt < oldest_day and os.path.splitext:
+            if filedt < oldest_day:
                 yield fname
 
 

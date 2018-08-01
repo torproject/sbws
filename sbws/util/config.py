@@ -172,8 +172,8 @@ def _validate_cleanup(conf):
     sec = 'cleanup'
     err_tmpl = Template('$sec/$key ($val): $e')
     ints = {
-        'stale_days': {'minimum': 1, 'maximum': None},
-        'rotten_days': {'minimum': 1, 'maximum': None},
+        'data_files_compress_after_days': {'minimum': 1, 'maximum': None},
+        'data_files_delete_after_days': {'minimum': 1, 'maximum': None},
         'v3bw_files_compress_after_days': {'minimum': 1, 'maximum': None},
         'v3bw_files_delete_after_days': {'minimum': 1, 'maximum': None},
     }

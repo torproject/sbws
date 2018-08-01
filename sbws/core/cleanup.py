@@ -103,19 +103,21 @@ def _check_validity_periods_results(
         data_period, compress_after_days, delete_after_days):
     if compress_after_days - 2 < data_period:
         fail_hard(
-            'For safetly, cleanup/stale_days (%d) must be at least 2 days '
-            'larger than general/data_period (%d)', compress_after_days,
-            data_period)
+            'For safetly, cleanup/data_files_compress_after_days (%d) must be '
+            'at least 2 days larger than general/data_period (%d)',
+            compress_after_days, data_period)
     if delete_after_days < compress_after_days:
         fail_hard(
-            'cleanup/rotten_days (%d) must be the same or larger than '
-            'cleanup/stale_days (%d)', delete_after_days, compress_after_days)
+            'cleanup/data_files_delete_after_days (%d) must be the same or '
+            'larger than cleanup/data_files_compress_after_days (%d)',
+            delete_after_days, compress_after_days)
     if compress_after_days / 2 < data_period:
         log.warning(
-            'cleanup/stale_days (%d) is less than twice '
+            'cleanup/data_files_compress_after_days (%d) is less than twice '
             'general/data_period (%d). For ease of parsing older results '
-            'if necessary, it is recommended to make stale_days at least '
-            'twice the data_period.', compress_after_days, data_period)
+            'if necessary, it is recommended to make '
+            'data_files_compress_after_days at least twice the data_period.',
+            compress_after_days, data_period)
     return True
 
 
@@ -146,8 +148,10 @@ def _clean_result_files(args, conf):
     if not os.path.isdir(datadir):
         fail_hard('%s does not exist', datadir)
     data_period = conf.getint('general', 'data_period')
-    compress_after_days = conf.getint('cleanup', 'stale_days')
-    delete_after_days = conf.getint('cleanup', 'rotten_days')
+    compress_after_days = conf.getint(
+        'cleanup', 'data_files_compress_after_days')
+    delete_after_days = conf.getint(
+        'cleanup', 'data_files_delete_after_days')
     _check_validity_periods_results(
         data_period, compress_after_days, delete_after_days)
 

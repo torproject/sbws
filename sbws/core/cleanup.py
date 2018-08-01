@@ -103,6 +103,7 @@ def _delete_files(dname, files, dry_run=True):
     with DirectoryLock(dname):
         for fname in files:
             log.info('Deleting %s', fname)
+            assert os.path.commonprefix([dname, fname]) == dname
             if not dry_run:
                 os.remove(fname)
 
@@ -128,6 +129,7 @@ def _compress_files(dname, files, dry_run=True):
     with DirectoryLock(dname):
         for fname in files:
             log.info('Compressing %s', fname)
+            assert os.path.commonprefix([dname, fname]) == dname
             if dry_run:
                 continue
             with open(fname, 'rt') as in_fd:

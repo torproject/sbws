@@ -27,6 +27,7 @@ Contents
    faq
    glossary
    diagrams
+   state
    sbws
 
 Proposals

@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Stop deleting the latest.v3bw symlink. Instead, do an atomic rename.
   (#26740)
+- State file for storing the last time `sbws scanner` was started, and able to
+  be used for storing many other types of state in the future. (GH#166)
 
 ### Changed
 

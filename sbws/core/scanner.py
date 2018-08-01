@@ -7,10 +7,8 @@ from ..lib.resultdump import ResultErrorStream
 from ..lib.relaylist import RelayList
 from ..lib.relayprioritizer import RelayPrioritizer
 from ..lib.destination import DestinationList
-from ..util.filelock import FileLock
 from ..util.timestamp import now_isodt_str
-# from ..util.simpleauth import authenticate_to_server
-# from ..util.sockio import (make_socket, close_socket)
+from ..util.state import State
 from sbws.globals import (fail_hard, is_initted)
 import sbws.util.stem as stem_utils
 import sbws.util.requests as requests_utils
@@ -316,22 +314,7 @@ def result_putter_error(target):
     return closure
 
 
-def write_start_ts(conf):
-    """Write ISO formated timestamp which represents the date and time
-    when scanner started.
-
-    :param ConfigParser conf: configuration
-    """
-    generator_started = now_isodt_str()
-    log.info('Scanner started at {}'.format(generator_started))
-    filepath = conf['paths']['started_filepath']
-    with FileLock(filepath):
-        with open(filepath, 'w') as fd:
-            fd.write(generator_started)
-
-
 def run_speedtest(args, conf):
-    write_start_ts(conf)
     controller, _ = stem_utils.init_controller(
         path=conf['tor']['control_socket'])
     if not controller:
@@ -397,6 +380,9 @@ def main(args, conf):
                   max_dl, min_dl)
 
     os.makedirs(conf['paths']['datadir'], exist_ok=True)
+
+    state = State(conf['paths']['state_fname'])
+    state['scanner_started'] = now_isodt_str()
 
     try:
         run_speedtest(args, conf)

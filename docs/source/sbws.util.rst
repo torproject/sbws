@@ -28,6 +28,14 @@ sbws.util.parser module
     :undoc-members:
     :show-inheritance:
 
+sbws.util.state module
+~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: sbws.util.state
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 sbws.util.stem module
 ~~~~~~~~~~~~~~~~~~~~~
 

@@ -1,3 +1,5 @@
+"""Util functions to manage sbws configuration files."""
+
 from configparser import (ConfigParser, ExtendedInterpolation)
 from configparser import InterpolationMissingOptionError
 import os
@@ -6,7 +8,8 @@ import logging.config
 from urllib.parse import urlparse
 from string import Template
 from tempfile import NamedTemporaryFile
-from sbws.globals import PKG_DIR
+from sbws.globals import (DEFAULT_CONFIG_PATH, DEFAULT_LOG_CONFIG_PATH,
+                          USER_CONFIG_PATH, fail_hard)
 
 _ALPHANUM = 'abcdefghijklmnopqrstuvwxyz'
 _ALPHANUM += _ALPHANUM.upper()
@@ -21,8 +24,15 @@ _LOG_LEVELS = ['debug', 'info', 'warning', 'error', 'critical']
 log = logging.getLogger(__name__)
 
 
-def _read_config_file(conf, fname):
-    assert os.path.isfile(fname)
+def _expand_path(path):
+    """Expand path string containing shell variables and ~ constructions
+    into their values.
+    """
+    return os.path.expanduser(os.path.expandvars(path))
+
+
+def _extend_config(conf, fname):
+    """Extend ConfigParser from file configuration."""
     log.debug('Reading config file %s', fname)
     with open(fname, 'rt') as fd:
         conf.read_file(fd, source=fname)
@@ -30,48 +40,48 @@ def _read_config_file(conf, fname):
 
 
 def _get_default_config():
-    conf = ConfigParser(interpolation=ExtendedInterpolation())
-    fname = os.path.join(PKG_DIR, 'config.default.ini')
-    assert os.path.isfile(fname)
-    conf = _read_config_file(conf, fname)
-    return conf
+    """Return ConfigParser with default configuration."""
+    conf = ConfigParser(interpolation=ExtendedInterpolation(),
+                        converters={'path': _expand_path})
+    return _extend_config(conf, DEFAULT_CONFIG_PATH)
 
 
 def _get_user_config(args, conf=None):
+    """Get user configuration.
+    If a custom path is passed, search for user configuration there.
+    In any case, create a minimal user configuration in user configuration path
+    , in case it needs to be overwritten.
+    """
     if not conf:
-        conf = ConfigParser(interpolation=ExtendedInterpolation())
+        conf = ConfigParser(interpolation=ExtendedInterpolation(),
+                            converters={'path': _expand_path})
     else:
         assert isinstance(conf, ConfigParser)
-    fname = os.path.join(args.directory, 'config.ini')
-    if not os.path.isfile(fname):
-        return conf
-    conf = _read_config_file(conf, fname)
+    if args.config:
+        if not os.path.isfile(args.config):
+            fail_hard('Configuration file %s not found.', args.config)
+        return _extend_config(conf, args.config)
+    if os.path.isfile(USER_CONFIG_PATH):
+        return _extend_config(conf, USER_CONFIG_PATH)
+    log.debug('No user config found.')
     return conf
 
 
-def _get_default_logging_config(args, conf=None):
+def _get_default_logging_config(conf=None):
+    """Get default logging configuration."""
     if not conf:
-        conf = ConfigParser(interpolation=ExtendedInterpolation())
+        conf = ConfigParser(interpolation=ExtendedInterpolation(),
+                            converters={'path': _expand_path})
     else:
         assert isinstance(conf, ConfigParser)
-    fname = os.path.join(PKG_DIR, 'config.log.default.ini')
-    assert os.path.isfile(fname)
-    conf = _read_config_file(conf, fname)
-    return conf
+    return _extend_config(conf, DEFAULT_LOG_CONFIG_PATH)
 
 
 def get_config(args):
+    """Get ConfigParser interpolating all configuration files."""
     conf = _get_default_config()
-    conf = _get_default_logging_config(args, conf=conf)
+    conf = _get_default_logging_config(conf=conf)
     conf = _get_user_config(args, conf=conf)
-    return conf
-
-
-def get_user_example_config():
-    conf = ConfigParser(interpolation=ExtendedInterpolation())
-    fname = os.path.join(PKG_DIR, 'config.example.ini')
-    assert os.path.isfile(fname)
-    conf = _read_config_file(conf, fname)
     return conf
 
 
@@ -90,7 +100,7 @@ def _can_log_to_file(conf):
     # If there is an issue getting this option, tell the caller that we can't
     # log to file.
     try:
-        conf['paths']['log_dname']
+        conf.getpath('paths', 'log_dname')
     except InterpolationMissingOptionError as e:
         return False, e
     return True, ''
@@ -122,7 +132,7 @@ def configure_logging(args, conf):
         # The first argument is the file name to which it should log. Set it to
         # the sbws command (like 'scanner' or 'generate') if possible, or to
         # 'sbws' failing that.
-        dname = conf['paths']['log_dname']
+        dname = conf.getpath('paths', 'log_dname')
         os.makedirs(dname, exist_ok=True)
         fname = os.path.join(dname, '{}.log'.format(args.command or 'sbws'))
         # The second argument is the file mode, and it should be left alone
@@ -254,7 +264,7 @@ def _validate_tor(conf):
     sec = 'tor'
     err_tmpl = Template('$sec/$key ($val): $e')
     unvalidated_keys = [
-        'datadir', 'control_socket', 'log', 'extra_lines']
+        'datadir', 'run_dpath', 'control_socket', 'pid', 'log', 'extra_lines']
     all_valid_keys = unvalidated_keys
     errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))
     return errors

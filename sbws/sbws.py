@@ -1,7 +1,8 @@
+import os
+
 import sbws.core.cleanup
 import sbws.core.scanner
 import sbws.core.generate
-import sbws.core.init
 import sbws.core.stats
 from sbws.util.config import get_config
 from sbws.util.config import validate_config
@@ -14,6 +15,15 @@ import platform
 import logging
 
 log = logging.getLogger(__name__)
+
+
+def _ensure_dirs(conf):
+    log.debug('Ensuring all dirs exists.')
+    # it is not needed to check sbws_home dir, since the following
+    # will create parent dirs too (in case they don't exist)
+    os.makedirs(conf.getpath('paths', 'datadir'), exist_ok=True)
+    os.makedirs(conf.getpath('paths', 'v3bw_dname'), exist_ok=True)
+    os.makedirs(conf.getpath('paths', 'log_dname'), exist_ok=True)
 
 
 def _adjust_log_level(args, conf):
@@ -33,6 +43,7 @@ def main():
     parser = create_parser()
     args = parser.parse_args()
     conf = get_config(args)
+    _ensure_dirs(conf)
     _adjust_log_level(args, conf)
     conf_valid, conf_errors = validate_config(conf)
     if not conf_valid:
@@ -49,8 +60,6 @@ def main():
                     'a': def_args, 'kw': def_kwargs},
         'generate': {'f': sbws.core.generate.main,
                      'a': def_args, 'kw': def_kwargs},
-        'init': {'f': sbws.core.init.main,
-                 'a': def_args, 'kw': def_kwargs},
         'stats': {'f': sbws.core.stats.main,
                   'a': def_args, 'kw': def_kwargs},
     }

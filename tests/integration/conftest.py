@@ -3,7 +3,6 @@ import argparse
 import pytest
 import os
 
-from sbws.core import init
 from sbws.lib.circuitbuilder import GapsCircuitBuilder as CB
 from sbws.lib.destination import DestinationList
 from sbws.lib.relaylist import RelayList
@@ -63,6 +62,7 @@ def conf(sbwshome_dir):
     """Default configuration with sbws home in the tmp test dir."""
     conf = _get_default_config()
     conf['paths']['sbws_home'] = sbwshome_dir
+    conf['tor']['run_dpath'] = os.path.join(sbwshome_dir, 'tor', 'run')
     conf['destinations']['foo'] = 'on'
     conf['destinations.foo'] = {}
     conf['destinations.foo']['url'] = 'http://127.0.0.1:28888/sbws.bin'
@@ -76,12 +76,6 @@ LogTimeGranularity 1
 SafeLogging 0
 """
     return conf
-
-
-@pytest.fixture(scope='session')
-def sbwshome(sbwshome_dir, args, conf):
-    init.main(args, conf)
-    return sbwshome_dir
 
 
 @pytest.fixture(scope='session')

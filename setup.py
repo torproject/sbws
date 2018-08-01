@@ -24,12 +24,11 @@ def get_package_data():
     return [
         'config.default.ini',
         'config.log.default.ini',
-        'config.example.ini',
     ]
 
 
 def get_data_files():
-    return []
+    return [('examples', [os.path.join('examples', 'config.example.ini')])]
 
 
 def find_version():

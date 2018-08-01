@@ -119,16 +119,19 @@ def _init_controller_socket(socket):
 
 def launch_tor(conf):
     assert isinstance(conf, ConfigParser)
-    os.makedirs(conf['tor']['datadir'], mode=0o700, exist_ok=True)
+    os.makedirs(conf.getpath('tor', 'datadir'), mode=0o700, exist_ok=True)
+    os.makedirs(conf.getpath('tor', 'log'), exist_ok=True)
+    os.makedirs(conf.getpath('tor', 'run_dpath'), mode=0o700, exist_ok=True)
     # Bare minimum things, more or less
     torrc = copy.deepcopy(TORRC_STARTING_POINT)
     # Very important and/or common settings that we don't know until runtime
     torrc.update({
-        'DataDirectory': conf['tor']['datadir'],
-        'PidFile': os.path.join(conf['tor']['datadir'], 'tor.pid'),
-        'ControlSocket': conf['tor']['control_socket'],
+        'DataDirectory': conf.getpath('tor', 'datadir'),
+        'PidFile': conf.getpath('tor', 'pid'),
+        'ControlSocket': conf.getpath('tor', 'control_socket'),
         'Log': [
-            'NOTICE file {}'.format(conf['tor']['log']),
+            'NOTICE file {}'.format(os.path.join(conf.getpath('tor', 'log'),
+                                                 'notice.log')),
         ],
         # Things needed to make circuits fail a little faster. We get the
         # circuit_timeout as a string instead of an int on purpose: stem only
@@ -190,7 +193,7 @@ def launch_tor(conf):
     except Exception as e:
         fail_hard('Error trying to launch tor: %s', e)
     # And return a controller to it
-    cont = _init_controller_socket(conf['tor']['control_socket'])
+    cont = _init_controller_socket(conf.getpath('tor', 'control_socket'))
     # Because we build things by hand and can't set these before Tor bootstraps
     try:
         cont.set_conf('__DisablePredictedCircuits', '1')
@@ -201,7 +204,7 @@ def launch_tor(conf):
                       "sbws instance?", e)
         exit(1)
     log.info('Started and connected to Tor %s via %s', cont.get_version(),
-             conf['tor']['control_socket'])
+             conf.getpath('tor', 'control_socket'))
     return cont
 
 

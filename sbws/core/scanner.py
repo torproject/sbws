@@ -11,7 +11,7 @@ from ..util.filelock import FileLock
 from ..util.timestamp import now_isodt_str
 # from ..util.simpleauth import authenticate_to_server
 # from ..util.sockio import (make_socket, close_socket)
-from sbws.globals import (fail_hard, is_initted)
+from sbws.globals import fail_hard
 import sbws.util.stem as stem_utils
 import sbws.util.requests as requests_utils
 from argparse import ArgumentDefaultsHelpFormatter
@@ -333,7 +333,7 @@ def write_start_ts(conf):
 def run_speedtest(args, conf):
     write_start_ts(conf)
     controller, _ = stem_utils.init_controller(
-        path=conf['tor']['control_socket'])
+        path=conf.getpath('tor', 'control_socket'))
     if not controller:
         controller = stem_utils.launch_tor(conf)
     else:
@@ -345,7 +345,8 @@ def run_speedtest(args, conf):
             'If you experience problems, you should try letting sbws launch '
             'Tor for itself. The ability to use an already running Tor only '
             'exists for sbws developers. It is expected to be broken and may '
-            'even lead to messed up results.', conf['tor']['control_socket'])
+            'even lead to messed up results.',
+            conf.getpath('tor', 'control_socket'))
         time.sleep(15)
     rl = RelayList(args, conf, controller)
     cb = CB(args, conf, controller, rl)
@@ -384,9 +385,6 @@ def gen_parser(sub):
 
 
 def main(args, conf):
-    if not is_initted(args.directory):
-        fail_hard('Sbws isn\'t initialized. Try sbws init')
-
     if conf.getint('scanner', 'measurement_threads') < 1:
         fail_hard('Number of measurement threads must be larger than 1')
 
@@ -396,7 +394,7 @@ def main(args, conf):
         fail_hard('Max download size %d cannot be smaller than min %d',
                   max_dl, min_dl)
 
-    os.makedirs(conf['paths']['datadir'], exist_ok=True)
+    os.makedirs(conf.getpath('paths', 'datadir'), exist_ok=True)
 
     try:
         run_speedtest(args, conf)

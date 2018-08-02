@@ -10,7 +10,7 @@ There's an example configuration file with the minimum data that a user
 probably needs to edit in ``examples``. For more advanced configuration options see
 documentation below.
 ``sbws`` will check by default whether there's a user customized file in
-``~/sbws.ini`` and use it when it exists.
+``~/.sbws.ini`` and use it when it exists.
 The user can store a customized configuration file anywhere else in the file
 system and and provide ``sbws`` with the path to it via the ``-c`` or
 ``--config`` cli option.

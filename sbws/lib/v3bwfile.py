@@ -74,7 +74,7 @@ def read_started_ts(conf):
     :returns: str, ISO formated timestamp
     """
     try:
-        filepath = conf['paths']['started_filepath']
+        filepath = conf.getpath('paths', 'started_filepath')
     except TypeError:
         return None
     try:

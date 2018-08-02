@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+**Important changes**:
+
+- `cleanup/stale_days` is renamed to `cleanup/data_files_compress_after_days`
+- `cleanup/rotten_days` is renamed to `cleanup/data_files_delete_after_days`
+
 ### Added
 
 - Log line on start up with sbws version, platform info, and library versions
@@ -23,6 +28,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 
 - Remove test data v3bw file and generate it from the same test. (#26736)
+- Stop using food terms for cleanup-related config options
+- Cleanup command now cleans up old v3bw files too (#26701)
 
 ### Fixed
 

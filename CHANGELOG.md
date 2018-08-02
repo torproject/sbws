@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   (#26740)
 - State file for storing the last time `sbws scanner` was started, and able to
   be used for storing many other types of state in the future. (GH#166)
+- Log files weren't rotating. Now they are. (#26881)
 
 ### Changed
 
@@ -31,9 +32,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Stop using food terms for cleanup-related config options
 - Cleanup command now cleans up old v3bw files too (#26701)
 
-### Fixed
-
-- Log files weren't rotating. Now they are. (#26881)
 
 ## [0.6.0] - 2018-07-11
 

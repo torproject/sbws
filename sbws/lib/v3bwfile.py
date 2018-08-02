@@ -194,7 +194,7 @@ class V3BWHeader(object):
         ISO formatted timestamp for the time when the scanner process most
         recently started.
         '''
-        state = State(conf['paths']['state_fname'])
+        state = State(conf.getpath('paths', 'state_fname'))
         if 'scanner_started' in state:
             return state['scanner_started']
         else:

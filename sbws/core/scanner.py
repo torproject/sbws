@@ -324,7 +324,7 @@ def write_start_ts(conf):
     """
     generator_started = now_isodt_str()
     log.info('Scanner started at {}'.format(generator_started))
-    filepath = conf['paths']['started_filepath']
+    filepath = conf.getpath('paths', 'started_filepath')
     with FileLock(filepath):
         with open(filepath, 'w') as fd:
             fd.write(generator_started)

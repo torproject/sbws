@@ -48,9 +48,8 @@ def _get_default_config():
 
 def _get_user_config(args, conf=None):
     """Get user configuration.
-    If a custom path is passed, search for user configuration there.
-    In any case, create a minimal user configuration in user configuration path
-    , in case it needs to be overwritten.
+    Search for user configuration in the default path or the path passed as
+    argument and extend the configuration if they are found.
     """
     if not conf:
         conf = ConfigParser(interpolation=ExtendedInterpolation(),

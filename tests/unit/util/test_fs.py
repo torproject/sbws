@@ -9,7 +9,7 @@ def mock_df_zero(path):
 
 
 def mock_df_enough(path):
-    return 32
+    return 89
 
 
 @patch('sbws.util.fs.df', mock_df_zero)

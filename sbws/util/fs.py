@@ -15,15 +15,21 @@ def sbws_required_disk_space(conf):
     """
     # Number of relays per line average size in Bytes
     size_v3bw_file = 7500 * 220
-    num_v3bw_files = int(conf['general']['data_period'])
+    # the minimum number of required v3bw files
+    num_v3bw_files = 2
+    # ~1000 is the length of a line when the result is successfull
+    # ~4550 is the number of lines of the biggest result file
+    size_result_file = 4550 * 1000
+    num_result_files = int(conf['general']['data_period'])
     # not counting compressed files
     space_v3bw_files = size_v3bw_file * num_v3bw_files
+    space_result_files = size_result_file * num_result_files
     # not counted rotated files and assuming that when it is not rotated the
     # size will be aproximately 10MiB
-    size_log_file = (int(conf['logging']['to_file_max_bytes']) or 10485760) \
-        if conf['logging']['to_stdout'] == 'yes' else 0
-    # roughly...
-    space_result_files = space_v3bw_files
+    size_log_file = conf.getint('logging', 'to_file_max_bytes') or 10485760 \
+        if conf.getboolean('logging', 'to_stdout') else 0
+    # roughly, size of a current tor dir
+    space_tor_dir = 19828000
     # duplicate everything to warn early
     size_total = (space_v3bw_files + size_log_file + space_result_files) * 2
     size_total_mb = round(size_total / (1024 ** 2))

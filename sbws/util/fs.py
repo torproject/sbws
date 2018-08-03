@@ -31,7 +31,9 @@ def sbws_required_disk_space(conf):
     # roughly, size of a current tor dir
     space_tor_dir = 19828000
     # duplicate everything to warn early
-    size_total = (space_v3bw_files + size_log_file + space_result_files) * 2
+    size_total = (space_v3bw_files + size_log_file + space_result_files +
+                  space_tor_dir) * 2
+    # convert to MiB
     size_total_mb = round(size_total / (1024 ** 2))
     return size_total_mb
 

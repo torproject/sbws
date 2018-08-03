@@ -39,7 +39,7 @@ def sbws_required_disk_space(conf):
 
 
 def df(path):
-    """Return space left on device where path is."""
+    """Return space left on device where path is in MiB."""
     return round(shutil.disk_usage(path).free / (1024 ** 2))
 
 

@@ -51,7 +51,7 @@ def is_low_space(conf):
     disk_avail_mb = df(conf['paths']['sbws_home'])
     if disk_avail_mb < disk_required_mb:
         log.warn("The space left on the device (%s MiB) is less than "
-                 "the minimum recommented to run sbws (%s MiB)."
+                 "the minimum recommended to run sbws (%s MiB)."
                  "Run sbws cleanup to delete old sbws generated files.",
                  disk_avail_mb, disk_required_mb)
         return True

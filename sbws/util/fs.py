@@ -27,7 +27,7 @@ def sbws_required_disk_space(conf):
     # not counted rotated files and assuming that when it is not rotated the
     # size will be aproximately 10MiB
     size_log_file = conf.getint('logging', 'to_file_max_bytes') or 10485760 \
-        if conf.getboolean('logging', 'to_stdout') else 0
+        if conf.getboolean('logging', 'to_file') else 0
     # roughly, size of a current tor dir
     space_tor_dir = 19828000
     # duplicate everything to warn early

@@ -65,9 +65,7 @@ class CircuitBuilder:
                 pass
             self.built_circuits.discard(circ_id)
         except (ControllerError, ValueError) as e:
-            log.warning("Error trying to get circuit to close it: %s.", e,
-                        "If sbws didn't receive SIGHUP, "
-                        "maybe this system run out of disk space.")
+            log.exception("Error trying to get circuit to close it: %s.", e)
 
     def _build_circuit_impl(self, path):
         if not valid_circuit_length(path):

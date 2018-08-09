@@ -7,10 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.7.0] - 2018-08-09
+
 **Important changes**:
 
 - `cleanup/stale_days` is renamed to `cleanup/data_files_compress_after_days`
 - `cleanup/rotten_days` is renamed to `cleanup/data_files_delete_after_days`
+- sbws now takes as an argument the path to a config file (which contains
+  `sbws_home`) instead of `sbws_home` (which contains the path to a config
+file)
 
 ### Added
 
@@ -162,7 +167,8 @@ So fix that.
 - `earliest_bandwidth` being the newest bw not the oldest (thanks juga0)
 - `node_id` was missing the character "$" at the beginning
 
-[Unreleased]: https://github.com/pastly/simple-bw-scanner/compare/v0.6.0...master
+[Unreleased]: https://github.com/pastly/simple-bw-scanner/compare/v0.7.0...master
+[0.7.0]: https://github.com/pastly/simple-bw-scanner/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/pastly/simple-bw-scanner/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/pastly/simple-bw-scanner/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/pastly/simple-bw-scanner/compare/v0.4.0...v0.4.1

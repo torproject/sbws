@@ -17,6 +17,10 @@ log = logging.getLogger(__name__)
 
 LINE_SEP = '\n'
 KEYVALUE_SEP_V110 = '='
+# Not used so far.
+# In some future, we intend to format Bandwidth List files in the same way
+# as the Tor's XXX documents, and that would be Bandwidth List specification
+# V2.0.0.
 KEYVALUE_SEP_V200 = ' '
 # List of the extra KeyValues accepted by the class
 EXTRA_ARG_KEYVALUES = ['software', 'software_version', 'file_created',

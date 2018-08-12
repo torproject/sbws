@@ -359,6 +359,16 @@ class V3BWFile(object):
         return str(self.header) + ''.join([str(bw_line)
                                            for bw_line in self.bw_lines])
 
+    @classmethod
+    def from_v110_lines(cls, fpath):
+        log.info('Parsing bandwidth file %s', fpath)
+        with open(fpath) as fd:
+            text = fd.read()
+        all_lines = text.split(LINE_SEP)
+        header, lines = V3BWHeader.from_lines_v110(all_lines)
+        bw_lines = [V3BWLine.from_bw_line_v110(line) for line in lines]
+        return cls(header, bw_lines)
+
     @staticmethod
     def warn_if_not_accurate_enough(bw_lines,
                                     scale_constant=SBWS_SCALE_CONSTANT):

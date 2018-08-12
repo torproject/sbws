@@ -462,6 +462,224 @@ class V3BWFile(object):
                              / 1000), 1)
         return sorted(bw_lines_scaled, key=lambda x: x.bw, reverse=reverse)
 
+    @staticmethod
+    def bw_lines_scale_torflow(bw_lines, reverse=False):
+        """
+        Obtain final bandwidth measurements applying Torflow's scaling
+        method.
+
+        From Torflow's README.spec.txt (section 2.2)
+
+            In this way, the resulting network status consensus bandwidth values  # NOQA
+            are effectively re-weighted proportional to how much faster the node  # NOQA
+            was as compared to the rest of the network.
+
+        Torflow's ``strm_bw`` is obtained from the mean, not the median.
+        The descriptor bandwidth-average is multiplied by a ratio.
+        With empirical results this ratio is [0.9, 8.9]
+        Descriptors bandwidth-average jump from xxx to yyy, which may explain
+        why the final ``new_bw``s to grow exponentialy.
+
+        Torflow code and how it is translated to the new code:
+        1. filt_sbw and strm_sbw::
+
+            for rs in RouterStats.query.filter(stats_clause).\
+                  options(eagerload_all('router.streams.circuit.routers')).all():  # NOQA
+              tot_sbw = 0
+              sbw_cnt = 0
+              for s in rs.router.streams:
+                if isinstance(s, ClosedStream):
+                  skip = False
+                  #for br in badrouters:
+                  #  if br != rs:
+                  #    if br.router in s.circuit.routers:
+                  #      skip = True
+                  if not skip:
+                    # Throw out outliers < mean
+                    # (too much variance for stddev to filter much)
+                    if rs.strm_closed == 1 or s.bandwidth() >= rs.sbw:
+                      tot_sbw += s.bandwidth()
+                      sbw_cnt += 1
+
+            if sbw_cnt: rs.filt_sbw = tot_sbw/sbw_cnt
+            else: rs.filt_sbw = None
+
+        From Torflow's README.spec.txt section 1.6.::
+
+            The strm_bw field is the average (mean) of all the streams for the relay  # NOQA
+            identified by the fingerprint field.
+            strm_bw = sum(bw stream x)/|n stream|
+
+            The filt_bw field is computed similarly, but only the streams equal to  # NOQA
+            or greater than the strm_bw are counted in order to filter very slow  # NOQA
+            streams due to slow node pairings.
+
+        2. filt_avg, and strm_avg::
+
+            filt_avg = sum(map(lambda n: n.filt_bw, nodes.itervalues()))/float(len(nodes))  # NOQA
+            strm_avg = sum(map(lambda n: n.strm_bw, nodes.itervalues()))/float(len(nodes))  # NOQA
+
+        From the README::
+
+            Once we have determined the most recent measurements for each node, we  # NOQA
+            compute an average of the filt_bw fields over all nodes we have measured.  # NOQA
+
+        3. true_filt_avg and true_strm_avg::
+
+            for cl in ["Guard+Exit", "Guard", "Exit", "Middle"]:
+                true_filt_avg[cl] = filt_avg
+                true_strm_avg[cl] = strm_avg
+
+        In the non-pid case, all types of nodes get the same avg
+
+        4. n.ratio::
+
+            # Choose the larger between sbw and fbw
+              if n.sbw_ratio > n.fbw_ratio:
+                n.ratio = n.sbw_ratio
+              else:
+                n.ratio = n.fbw_ratio
+
+        From the README::
+
+            These averages are used to produce ratios for each node by dividing the  # NOQA
+            measured value for that node by the network average.
+
+        5. new_bw::
+
+            n.new_bw = n.desc_bw*n.ratio
+
+        From the README::
+            These ratios are then multiplied by the most recent observed descriptor  # NOQA
+            bandwidth we have available for each node, to produce a new value for  # NOQA
+            the network status consensus process.
+
+        6. Limit the bandwidth to a maximum::
+
+            if n.new_bw > tot_net_bw*NODE_CAP:
+              plog("INFO", "Clipping extremely fast "+n.node_class()+" node "+n.idhex+"="+n.nick+  # NOQA
+                   " at "+str(100*NODE_CAP)+"% of network capacity ("+
+                   str(n.new_bw)+"->"+str(int(tot_net_bw*NODE_CAP))+") "+
+                   " pid_error="+str(n.pid_error)+
+                   " pid_error_sum="+str(n.pid_error_sum))
+              n.new_bw = int(tot_net_bw*NODE_CAP)
+
+        However, tot_net_bw does not seems to be updated when not using pid
+
+        No mention about this in README
+
+        7.::
+
+            NODE_CAP = 0.05
+
+        From all of this, Torflow's formula to calculate ``new_bw``
+        seems to be:
+
+        .. math::
+
+            c = 0.05 \\
+            sum = \sum_{i=1}^{n} bw_i \\
+            hlimit = sum \times c \\
+            mu_i = sum / n \\
+            muf_i = min(bw_i, mu_i) \\
+            rs_i = bw_i / mu_i \\
+            rf_i = bw_i / muf_i \\
+            r_i = max(rs_i, rf_i) \\
+            bwnew_i = bwdesc_i \times r_i \\
+            bwnewl_i = min(hlimit, bnew_i) \\
+            nbewl_i = \\
+            min \left(
+                \sum_{i=1}^{n} bw_i \times 0.05,
+                max\left(
+                    \frac{bw_i}{\mu},
+                    min \left(
+                        bw_i,
+                        bw_i \times \mu
+                        \right)
+                            \times
+                            \frac{bw}{\sum_{i=1}^{n}
+                            min \left(bw_i,
+                                bw_i \times \mu
+                        \right)}
+                    \right)
+                \right) \times bwavgdesc_i
+            = \\
+            min \left(
+                \sum_{i=1}^{n} bw_i \times 0.05,
+                max\left(
+                    \frac{bw_i}{\frac{\sum_{i=1}^{n}bw_i}{n}},
+                    min \left(
+                        bw_i,
+                        bw_i \times \frac{\sum_{i=1}^{n}bw_i}{n}
+                        \right)
+                            \times
+                            \frac{bw}{\sum_{i=1}^{n}
+                            min \left(bw_i,
+                                bw_i \times \frac{\sum_{i=1}^{n}bw_i}{n}
+                        \right)}
+                    \right)
+                \right) \times bwavgdesc_i
+
+        ..note::
+
+        can this formula (and therefore the code calculations)
+        be simplified?
+
+        """
+        log.info("Calculating relays' bandwidth using Torflow method.")
+        bw_lines_tf = copy.deepcopy(bw_lines)
+        # mean (Torflow's strm_avg)
+        mu = mean([l.bw_bs_mean for l in bw_lines])
+        # filtered mean (Torflow's filt_avg)
+        muf = mean([min(l.bw_bs_mean, mu) for l in bw_lines])
+        # bw sum (Torflow's tot_net_bw or tot_sbw)
+        sum_bw = sum([l.bw_bs_mean for l in bw_lines])
+        hlimit = sum_bw * TORFLOW_BW_MARGIN
+        # # for debugging:
+        # log.debug('sum_bw %s', sum_bw)
+        # log.debug('mu %s', mu)
+        # log.debug('muf %s', muf)
+        # log.debug('sum_bw * TORFLOW_BW_MARGIN %s',
+        # sum_bw * TORFLOW_BW_MARGIN)
+        for l in bw_lines_tf:
+            # just applying the formula above:
+            # l.bw = max(round(min(
+            #         sum_bw * TORFLOW_BW_MARGIN,
+            #         max(
+            #             bw_i / mu,
+            #             min(bw_i, mu) / muf
+            #             ) * l.desc_avg_bw_bs
+            #         ) / 1000), 1)
+            # but step by step for debugging
+            # stream bandwidth
+            bw_i = l.bw_bs_mean
+            # log.debug('bw_i %s', bw_i)
+            # filtered bandwidth
+            bwf_i = min(bw_i, mu)
+            # ratio stream bw
+            rs_i = bw_i / mu
+            # log.debug('bw_i / mu %s', bw_i / mu)
+            # ratio filtered bw
+            rf_i = bwf_i / muf
+            # log.debug('min(bw_i, mu) / muf %s', min(bw_i, mu) / muf)
+            # ratio
+            r_i = max(rs_i, rf_i)
+            # new bw
+            bwn_i = r_i * l.desc_avg_bw_bs
+            # log.debug('l.desc_avg_bw_bs %s', l.desc_avg_bw_bs)
+            # new bw limited by a maximum
+            bwnc_i = max(hlimit, bwn_i)
+            # convert to KB
+            bwkb_i = bwnc_i / 1000
+            # and this seems to be needed to get values aproximmated to
+            # Torflow
+            bwt_i = bwkb_i * 0.04
+            # remove decimals, bw has to be min 1
+            bwf_i = max(round(bwt_i), 1)
+            l.bw = bwf_i
+            # log.debug('new_bw %s', l.bw)
+        return sorted(bw_lines_tf, key=lambda x: x.bw, reverse=reverse)
+
     @property
     def median_bw_lines(self):
         return max(round(median([l.bw for l in self.bw_lines])), 1)

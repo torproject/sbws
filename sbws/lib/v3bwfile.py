@@ -39,15 +39,16 @@ LINE_TERMINATOR = TERMINATOR + LINE_SEP
 
 # KeyValue separator in Bandwidth Lines
 BW_KEYVALUE_SEP_V110 = ' '
-# Should the three last not be wrotten in the file?
-BW_EXTRA_ARG_KEYVALUES = ['master_key_ed25519', 'nick', 'rtt', 'time',
-                          'success', 'error_stream', 'error_circ',
-                          'error_misc', 'bw_bs_median', 'bw_bs_mean',
-                          'desc_avg_bw_bs']
+# not inclding in the files the extra bws for now
+BW_KEYVALUES_BASIC = ['node_id', 'bw']
+BW_KEYVALUES_FILE = BW_KEYVALUES_BASIC + \
+                    ['master_key_ed25519', 'nick', 'rtt', 'time',
+                     'success', 'error_stream', 'error_circ', 'error_misc']
+BW_KEYVALUES_EXTRA_BWS = ['bw_bs_median', 'bw_bs_mean', 'desc_avg_bw_bs']
+BW_KEYVALUES_EXTRA = BW_KEYVALUES_FILE + BW_KEYVALUES_EXTRA_BWS
 BW_KEYVALUES_INT = ['bw', 'rtt', 'success', 'error_stream',
-                    'error_circ', 'error_misc',
-                    'bw_bs_median', 'bw_bs_mean', 'desc_avg_bw_bs']
-BW_KEYVALUES = ['node_id', 'bw'] + BW_EXTRA_ARG_KEYVALUES
+                    'error_circ', 'error_misc'] + BW_KEYVALUES_EXTRA
+BW_KEYVALUES = BW_KEYVALUES_BASIC + BW_KEYVALUES_EXTRA
 
 
 def num_results_of_type(results, type_str):
@@ -231,7 +232,7 @@ class V3BWLine(object):
         self.node_id = node_id
         self.bw = bw
         [setattr(self, k, v) for k, v in kwargs.items()
-         if k in BW_EXTRA_ARG_KEYVALUES]
+         if k in BW_KEYVALUES_EXTRA]
 
     def __str__(self):
         return self.bw_strv110
@@ -291,7 +292,7 @@ class V3BWLine(object):
         """Return list of KeyValue Bandwidth Line tuples."""
         # sort the list to generate determinist headers
         keyvalue_tuple_ls = sorted([(k, v) for k, v in self.__dict__.items()
-                                    if k in BW_KEYVALUES])
+                                    if k in BW_KEYVALUES_FILE])
         return keyvalue_tuple_ls
 
     @property

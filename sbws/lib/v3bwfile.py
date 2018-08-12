@@ -152,7 +152,8 @@ class V3BWHeader(object):
                        for l in lines[:index_terminator]
                        if l.split(KEYVALUE_SEP_V110)[0] in ALL_KEYVALUES])
         h = cls(ts, **kwargs)
-        return h, lines[index_terminator + 1:]
+        # last line is new line
+        return h, lines[index_terminator + 1:-1]
 
     @classmethod
     def from_text_v110(self, text):

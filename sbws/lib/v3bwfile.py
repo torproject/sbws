@@ -363,15 +363,16 @@ class V3BWFile(object):
                          scaling_method=None, reverse=False):
         """Create V3BWFile class from sbws Results
         :param dict results: see below
-        :param int scaling_method: Scaling method to obtain the bandwidth
+        :param int scaling_method:
+            Scaling method to obtain the bandwidth
             Posiable values: {NONE, SBWS_SCALING, TORFLOW_SCALING} = {0, 1, 2}
         :param bool reverse: whether to sort the bw lines descending or not
 
-        Results are in the form:
-        {
-            'relay_fp1': [Result1, Result2, ...],
-            'relay_fp2': [Result1, Result2, ...]
-        }
+        Results are in the form::
+
+            {'relay_fp1': [Result1, Result2, ...],
+             'relay_fp2': [Result1, Result2, ...]}
+
         """
         # TODO: change scaling_method to TORFLOW_SCALING before getting this
         # in production
@@ -424,23 +425,16 @@ class V3BWFile(object):
     @staticmethod
     def bw_lines_sbws_scale(bw_lines, scale_constant=SBWS_SCALE_CONSTANT,
                             reverse=False):
-        """
-        Return a new V3BwLine list with their ``bw`` scaled using sbws method.
+        """Return a new V3BwLine list scaled using sbws method.
 
-        :param list bw_lines: bw lines to scale, not self.bw_lines,
+        :param list bw_lines:
+            bw lines to scale, not self.bw_lines,
             since this method will be before self.bw_lines have been
             initialized.
-        :param int scale_constant: the constant to multiply by the ratio and
+        :param int scale_constant:
+            the constant to multiply by the ratio and
             the bandwidth to obtain the new bandwidth
         :returns list: V3BwLine list
-
-        :_math::
-
-            bwscaled_i = min\left(
-                \frac{bwdesc_i, bw_i \times scale_constant}{m}\right) \\
-            = \frac{bwdesc_i, bw_i \times scale_constant} \times
-              \sum_{i=1}^{n}bw_i}{n}\right)
-
         """
         # If a relay has MaxAdvertisedBandwidth set, they may be capable of
         # some large amount of bandwidth but prefer if they didn't receive it.
@@ -469,7 +463,7 @@ class V3BWFile(object):
         Obtain final bandwidth measurements applying Torflow's scaling
         method.
 
-        From Torflow's README.spec.txt (section 2.2)
+        From Torflow's README.spec.txt (section 2.2)::
 
             In this way, the resulting network status consensus bandwidth values  # NOQA
             are effectively re-weighted proportional to how much faster the node  # NOQA
@@ -482,7 +476,10 @@ class V3BWFile(object):
         why the final ``new_bw``s to grow exponentialy.
 
         Torflow code and how it is translated to the new code:
-        1. filt_sbw and strm_sbw::
+
+        filt_sbw and strm_sbw
+
+        ::
 
             for rs in RouterStats.query.filter(stats_clause).\
                   options(eagerload_all('router.streams.circuit.routers')).all():  # NOQA
@@ -515,7 +512,9 @@ class V3BWFile(object):
             or greater than the strm_bw are counted in order to filter very slow  # NOQA
             streams due to slow node pairings.
 
-        2. filt_avg, and strm_avg::
+        filt_avg, and strm_avg
+
+        ::
 
             filt_avg = sum(map(lambda n: n.filt_bw, nodes.itervalues()))/float(len(nodes))  # NOQA
             strm_avg = sum(map(lambda n: n.strm_bw, nodes.itervalues()))/float(len(nodes))  # NOQA
@@ -525,7 +524,7 @@ class V3BWFile(object):
             Once we have determined the most recent measurements for each node, we  # NOQA
             compute an average of the filt_bw fields over all nodes we have measured.  # NOQA
 
-        3. true_filt_avg and true_strm_avg::
+        true_filt_avg and true_strm_avg::
 
             for cl in ["Guard+Exit", "Guard", "Exit", "Middle"]:
                 true_filt_avg[cl] = filt_avg
@@ -533,7 +532,7 @@ class V3BWFile(object):
 
         In the non-pid case, all types of nodes get the same avg
 
-        4. n.ratio::
+        n.ratio::
 
             # Choose the larger between sbw and fbw
               if n.sbw_ratio > n.fbw_ratio:
@@ -546,16 +545,17 @@ class V3BWFile(object):
             These averages are used to produce ratios for each node by dividing the  # NOQA
             measured value for that node by the network average.
 
-        5. new_bw::
+        new_bw::
 
             n.new_bw = n.desc_bw*n.ratio
 
         From the README::
+
             These ratios are then multiplied by the most recent observed descriptor  # NOQA
             bandwidth we have available for each node, to produce a new value for  # NOQA
             the network status consensus process.
 
-        6. Limit the bandwidth to a maximum::
+        Limit the bandwidth to a maximum::
 
             if n.new_bw > tot_net_bw*NODE_CAP:
               plog("INFO", "Clipping extremely fast "+n.node_class()+" node "+n.idhex+"="+n.nick+  # NOQA
@@ -567,64 +567,9 @@ class V3BWFile(object):
 
         However, tot_net_bw does not seems to be updated when not using pid
 
-        No mention about this in README
-
-        7.::
+        Constant::
 
             NODE_CAP = 0.05
-
-        From all of this, Torflow's formula to calculate ``new_bw``
-        seems to be:
-
-        .. math::
-
-            c = 0.05 \\
-            sum = \sum_{i=1}^{n} bw_i \\
-            hlimit = sum \times c \\
-            mu_i = sum / n \\
-            muf_i = min(bw_i, mu_i) \\
-            rs_i = bw_i / mu_i \\
-            rf_i = bw_i / muf_i \\
-            r_i = max(rs_i, rf_i) \\
-            bwnew_i = bwdesc_i \times r_i \\
-            bwnewl_i = min(hlimit, bnew_i) \\
-            nbewl_i = \\
-            min \left(
-                \sum_{i=1}^{n} bw_i \times 0.05,
-                max\left(
-                    \frac{bw_i}{\mu},
-                    min \left(
-                        bw_i,
-                        bw_i \times \mu
-                        \right)
-                            \times
-                            \frac{bw}{\sum_{i=1}^{n}
-                            min \left(bw_i,
-                                bw_i \times \mu
-                        \right)}
-                    \right)
-                \right) \times bwavgdesc_i
-            = \\
-            min \left(
-                \sum_{i=1}^{n} bw_i \times 0.05,
-                max\left(
-                    \frac{bw_i}{\frac{\sum_{i=1}^{n}bw_i}{n}},
-                    min \left(
-                        bw_i,
-                        bw_i \times \frac{\sum_{i=1}^{n}bw_i}{n}
-                        \right)
-                            \times
-                            \frac{bw}{\sum_{i=1}^{n}
-                            min \left(bw_i,
-                                bw_i \times \frac{\sum_{i=1}^{n}bw_i}{n}
-                        \right)}
-                    \right)
-                \right) \times bwavgdesc_i
-
-        ..note::
-
-        can this formula (and therefore the code calculations)
-        be simplified?
 
         """
         log.info("Calculating relays' bandwidth using Torflow method.")

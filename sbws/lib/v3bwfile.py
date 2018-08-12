@@ -229,6 +229,9 @@ class V3BWLine(object):
         [setattr(self, k, v) for k, v in kwargs.items()
          if k in BW_EXTRA_ARG_KEYVALUES]
 
+    def __str__(self):
+        return self.bw_strv110
+
     @classmethod
     def from_bw_line_v110(cls, line):
         # log.debug('Parsing bandwidth line.')
@@ -274,9 +277,6 @@ class V3BWLine(object):
             log.warn("The bandwidth line %s is longer than %s",
                      len(bw_line_str), BW_LINE_SIZE)
         return bw_line_str
-
-    def __str__(self):
-        return self.bw_strv110
 
     @staticmethod
     def bw_from_results(results):

@@ -407,16 +407,34 @@ class V3BWFile(object):
         return sorted(bw_lines_scaled, key=lambda x: x.bw, reverse=reverse)
 
     @property
-    def total_bw(self):
-        return total_bw(self.bw_lines)
+    def median_bw_lines(self):
+        return max(round(median([l.bw for l in self.bw_lines])), 1)
 
     @property
-    def num_lines(self):
+    def mean_bw_lines(self):
+        return max(round(mean([l.bw for l in self.bw_lines])), 1)
+
+    @property
+    def sum_bw_lines(self):
+        return sum([l.bw for l in self.bw_lines])
+
+    @property
+    def max_bw_lines(self):
+        return max([l.bw for l in self.bw_lines])
+
+    @property
+    def min_bw_lines(self):
+        return min([l.bw for l in self.bw_lines])
+
+    @property
+    def num(self):
         return len(self.bw_lines)
 
     @property
-    def avg_bw(self):
-        return self.total_bw / self.num_lines
+    def info_stats(self):
+        [log.info(': '.join([attr, str(getattr(self, attr))])) for attr in
+         ['sum_bw_lines', 'mean_bw_lines', 'median_bw_lines', 'num',
+          'max_bw_lines', 'min_bw_lines']]
 
     @classmethod
     def from_arg_results(cls, args, conf, results):

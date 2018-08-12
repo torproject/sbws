@@ -310,10 +310,8 @@ class V3BWLine(object):
 
     @staticmethod
     def rtt_from_results(results):
-        # convert from miliseconds to seconds
-        rtts = [(round(rtt * 1000)) for r in results for rtt in r.rtts]
-        rtt = round(median(rtts))
-        return rtt
+        rtts = round(median([rtt * 1000 for r in results for rtt in r.rtts]))
+        return rtts
 
     @staticmethod
     def result_types_from_results(results):
@@ -342,6 +340,16 @@ class V3BWLine(object):
     def from_data(cls, data, fingerprint):
         assert fingerprint in data
         return cls.from_results(data[fingerprint])
+
+    @staticmethod
+    def bw_bs_median_from_results(results):
+        return max(round(median([dl['amount'] / dl['duration']
+                                 for r in results for dl in r.downloads])), 1)
+
+    @staticmethod
+    def bw_bs_mean_from_results(results):
+        return max(round(mean([dl['amount'] / dl['duration']
+                               for r in results for dl in r.downloads])), 1)
 
 
 class V3BWFile(object):

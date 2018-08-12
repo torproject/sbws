@@ -316,32 +316,6 @@ class V3BWLine(object):
         return bw_line_str
 
     @staticmethod
-    def bw_from_results(results):
-        median_bw = median([dl['amount'] / dl['duration']
-                            for r in results for dl in r.downloads])
-        # If a relay has MaxAdvertisedBandwidth set, they may be capable of
-        # some large amount of bandwidth but prefer if they didn't receive it.
-        # We also could have managed to measure them faster than their
-        # {,Relay}BandwidthRate somehow.
-        #
-        # See https://github.com/pastly/simple-bw-scanner/issues/155 and
-        # https://trac.torproject.org/projects/tor/ticket/8494
-        #
-        # Note how this isn't some measured-by-us average of bandwidth. It's
-        # the first value on the 'bandwidth' line in the relay's server
-        # descriptor.
-        bw = median_bw
-        relay_average_bw = [r.relay_average_bandwidth for r in results
-                            if r.relay_average_bandwidth is not None]
-        if relay_average_bw:
-            median_relay_average_bw = median(relay_average_bw)
-            if median_bw > median_relay_average_bw:
-                bw = median_relay_average_bw
-        # convert to KB and ensure it's at least 1
-        bw_kb = max(round(bw / 1024), 1)
-        return bw_kb
-
-    @staticmethod
     def last_time_from_results(results):
         return unixts_to_isodt_str(round(max([r.time for r in results])))
 

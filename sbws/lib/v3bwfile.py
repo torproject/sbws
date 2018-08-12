@@ -253,6 +253,39 @@ class V3BWLine(object):
         bw_line = cls(node_id, bw, **kwargs)
         return bw_line
 
+    @classmethod
+    def from_results(cls, results):
+        """Convert sbws results to relays' Bandwidth Lines
+
+        ``bs`` stands for Bytes/seconds
+        ``bw_bs_mean`` means the bw is obtained from the mean of the all the
+        downloads' bandwidth.
+        Downloads' bandwidth are calculated as the amount of data received
+        divided by the the time it took to received.
+        bw = data (Bytes) / time (seconds)
+        """
+        success_results = [r for r in results if isinstance(r, ResultSuccess)]
+        node_id = '$' + results[0].fingerprint
+        kwargs = dict()
+        kwargs['nick'] = results[0].nickname
+        if getattr(results[0], 'master_key_ed25519'):
+            kwargs['master_key_ed25519'] = results[0].master_key_ed25519
+        kwargs['rtt'] = cls.rtt_from_results(success_results)
+        kwargs['time'] = cls.last_time_from_results(results)
+        kwargs.update(cls.result_types_from_results(results))
+        # useful args for scaling
+        kwargs['desc_avg_bw_bs'] = results[0].relay_average_bandwidth
+        bw = cls.bw_bs_median_from_results(success_results)
+        kwargs['bw_bs_mean'] = cls.bw_bs_mean_from_results(success_results)
+        kwargs['bw_bs_median'] = cls.bw_bs_median_from_results(success_results)
+        bwl = cls(node_id, bw, **kwargs)
+        return bwl
+
+    @classmethod
+    def from_data(cls, data, fingerprint):
+        assert fingerprint in data
+        return cls.from_results(data[fingerprint])
+
     @property
     def bw_keyvalue_tuple_ls(self):
         """Return list of KeyValue Bandwidth Line tuples."""
@@ -323,27 +356,6 @@ class V3BWLine(object):
                          num_results_of_type(results, rt.value))
                         for rt in _ResultType])
         return rt_dict
-
-    @classmethod
-    def from_results(cls, results):
-        success_results = [r for r in results if isinstance(r, ResultSuccess)]
-        # log.debug('len(success_results) %s', len(success_results))
-        node_id = '$' + results[0].fingerprint
-        bw = cls.bw_from_results(success_results)
-        kwargs = dict()
-        kwargs['nick'] = results[0].nickname
-        if getattr(results[0], 'master_key_ed25519'):
-            kwargs['master_key_ed25519'] = results[0].master_key_ed25519
-        kwargs['rtt'] = cls.rtt_from_results(success_results)
-        kwargs['time'] = cls.last_time_from_results(results)
-        kwargs.update(cls.result_types_from_results(results))
-        bwl = cls(node_id, bw, **kwargs)
-        return bwl
-
-    @classmethod
-    def from_data(cls, data, fingerprint):
-        assert fingerprint in data
-        return cls.from_results(data[fingerprint])
 
     @staticmethod
     def bw_bs_median_from_results(results):

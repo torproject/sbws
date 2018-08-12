@@ -229,6 +229,23 @@ class V3BWLine(object):
         [setattr(self, k, v) for k, v in kwargs.items()
          if k in BW_EXTRA_ARG_KEYVALUES]
 
+    @classmethod
+    def from_bw_line_v110(cls, line):
+        # log.debug('Parsing bandwidth line.')
+        assert isinstance(line, str)
+        kwargs = dict([kv.split(KEYVALUE_SEP_V110)
+                       for kv in line.split(BW_KEYVALUE_SEP_V110)
+                       if kv.split(KEYVALUE_SEP_V110)[0] in BW_KEYVALUES])
+        for k, v in kwargs.items():
+            if k in BW_KEYVALUES_INT:
+                kwargs[k] = int(v)
+        node_id = kwargs['node_id']
+        bw = kwargs['bw']
+        del kwargs['node_id']
+        del kwargs['bw']
+        bw_line = cls(node_id, bw, **kwargs)
+        return bw_line
+
     @property
     def bw_keyvalue_tuple_ls(self):
         """Return list of KeyValue Bandwidth Line tuples."""
@@ -260,18 +277,6 @@ class V3BWLine(object):
 
     def __str__(self):
         return self.bw_strv110
-
-    @classmethod
-    def from_bw_line_v110(cls, line):
-        assert isinstance(line, str)
-        kwargs = dict([kv.split(KEYVALUE_SEP_V110)
-                       for kv in line.split(BW_KEYVALUE_SEP_V110)
-                       if kv.split(KEYVALUE_SEP_V110)[0] in BW_KEYVALUES])
-        for k, v in kwargs.items():
-            if k in BW_KEYVALUES_INT:
-                kwargs[k] = int(v)
-        bw_line = cls(**kwargs)
-        return bw_line
 
     @staticmethod
     def bw_from_results(results):

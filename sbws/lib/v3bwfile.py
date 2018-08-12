@@ -7,7 +7,8 @@ import os
 from statistics import median
 
 from sbws import __version__
-from sbws.globals import SPEC_VERSION, BW_LINE_SIZE
+from sbws.globals import (SPEC_VERSION, BW_LINE_SIZE, SBWS_SCALE_CONSTANT,
+                          TORFLOW_SCALING, SBWS_SCALING, TORFLOW_BW_MARGIN)
 from sbws.lib.resultdump import ResultSuccess, _ResultType
 from sbws.util.filelock import DirectoryLock
 from sbws.util.timestamp import now_isodt_str, unixts_to_isodt_str

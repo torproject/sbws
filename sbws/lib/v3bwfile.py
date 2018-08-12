@@ -446,6 +446,42 @@ class V3BWFile(object):
         f = cls(header, bw_lines)
         return f
 
+    @property
+    def node_ids(self):
+        """
+        Used from external tool to plot.
+        """
+        return [l.node_id for l in self.bw_lines]
+
+    @property
+    def bw(self):
+        """
+        Used from external tool to plot.
+        """
+        return [l.bw for l in self.bw_lines]
+
+    def bw_line_for_node_id(self, node_id):
+        """Returns the bandwidth line for a given node fingerprint.
+
+        Used to combine data when plotting.
+        """
+        if node_id in self.node_ids:
+            return self.bw_lines[self.node_ids.index(node_id)]
+        return None
+
+    def to_plot(self, attrs=['bw'], sorted_by=None):
+        """Return bandwidth data in a format useful for matplotlib.
+
+        Used from external tool to plot.
+        """
+        x = [i for i in range(0, self.num)]
+        log.debug(len(x))
+        ys = [getattr(self, k) for k in attrs]
+        log.debug([len(y) for y in ys])
+        labels = attrs
+        log.debug(labels)
+        return x, ys, labels
+
     def write(self, output):
         if output == '/dev/stdout':
             log.info("Writing to stdout is not supported.")

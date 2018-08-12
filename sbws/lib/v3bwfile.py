@@ -358,6 +358,41 @@ class V3BWFile(object):
                                            for bw_line in self.bw_lines])
 
     @classmethod
+    def from_arg_results(cls, args, conf, results,
+                         scaling_method=None, reverse=False):
+        """Create V3BWFile class from sbws Results
+        :param dict results: see below
+        :param int scaling_method: Scaling method to obtain the bandwidth
+            Posiable values: {NONE, SBWS_SCALING, TORFLOW_SCALING} = {0, 1, 2}
+        :param bool reverse: whether to sort the bw lines descending or not
+
+        Results are in the form:
+        {
+            'relay_fp1': [Result1, Result2, ...],
+            'relay_fp2': [Result1, Result2, ...]
+        }
+        """
+        # TODO: change scaling_method to TORFLOW_SCALING before getting this
+        # in production
+        log.info('Processing results to generate a bandwidth list file.')
+        bw_lines_raw = [V3BWLine.from_results(results[fp]) for fp in results]
+        if scaling_method == SBWS_SCALING:
+            bw_lines = cls.bw_lines_sbws_scale(bw_lines_raw,
+                                               args.scale_constant)
+            cls.warn_if_not_accurate_enough(bw_lines,
+                                            args.scale_constant)
+            # log.debug(bw_lines[-1])
+        elif scaling_method == TORFLOW_SCALING:
+            bw_lines = cls.bw_lines_scale_torflow(bw_lines_raw)
+            # log.debug(bw_lines[-1])
+        else:
+            bw_lines = cls.bw_lines_kb(bw_lines_raw)
+            # log.debug(bw_lines[-1])
+        header = V3BWHeader.from_results(conf, results)
+        f = cls(header, bw_lines)
+        return f
+
+    @classmethod
     def from_v110_lines(cls, fpath):
         log.info('Parsing bandwidth file %s', fpath)
         with open(fpath) as fd:
@@ -456,16 +491,6 @@ class V3BWFile(object):
         [log.info(': '.join([attr, str(getattr(self, attr))])) for attr in
          ['sum_bw_lines', 'mean_bw_lines', 'median_bw_lines', 'num',
           'max_bw_lines', 'min_bw_lines']]
-
-    @classmethod
-    def from_arg_results(cls, args, conf, results):
-        bw_lines = [V3BWLine.from_results(results[fp]) for fp in results]
-        bw_lines = sorted(bw_lines, key=lambda d: d.bw, reverse=True)
-        if args.scale:
-            bw_lines = scale_lines(bw_lines, args.scale_constant)
-        header = V3BWHeader.from_results(conf, results)
-        f = cls(header, bw_lines)
-        return f
 
     @property
     def node_ids(self):

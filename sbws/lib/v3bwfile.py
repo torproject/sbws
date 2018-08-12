@@ -26,7 +26,8 @@ KEYVALUE_SEP_V110 = '='
 KEYVALUE_SEP_V200 = ' '
 # List of the extra KeyValues accepted by the class
 EXTRA_ARG_KEYVALUES = ['software', 'software_version', 'file_created',
-                       'earliest_bandwidth', 'generator_started']
+                       'earliest_bandwidth', 'generator_started',
+                       'num_relays', 'sum_bws', 'median_bws', 'mean_bws']
 # List of all unordered KeyValues currently being used to generate the file
 UNORDERED_KEYVALUES = EXTRA_ARG_KEYVALUES + ['latest_bandwidth']
 # List of all the KeyValues currently being used to generate the file
@@ -38,11 +39,14 @@ LINE_TERMINATOR = TERMINATOR + LINE_SEP
 
 # KeyValue separator in Bandwidth Lines
 BW_KEYVALUE_SEP_V110 = ' '
+# Should the three last not be wrotten in the file?
 BW_EXTRA_ARG_KEYVALUES = ['master_key_ed25519', 'nick', 'rtt', 'time',
                           'success', 'error_stream', 'error_circ',
-                          'error_misc']
+                          'error_misc', 'bw_bs_median', 'bw_bs_mean',
+                          'desc_avg_bw_bs']
 BW_KEYVALUES_INT = ['bw', 'rtt', 'success', 'error_stream',
-                    'error_circ', 'error_misc']
+                    'error_circ', 'error_misc',
+                    'bw_bs_median', 'bw_bs_mean', 'desc_avg_bw_bs']
 BW_KEYVALUES = ['node_id', 'bw'] + BW_EXTRA_ARG_KEYVALUES
 
 

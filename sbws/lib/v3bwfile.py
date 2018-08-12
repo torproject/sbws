@@ -349,7 +349,7 @@ class V3BWFile(object):
     :param V3BWHeader v3bwheader: header
     :param list v3bwlines: V3BWLines
     """
-    def __init__(self, v3bwheader, v3bwlines):
+    def __init__(self, v3bwheader, v3bwlines, **kwargs):
         self.header = v3bwheader
         self.bw_lines = v3bwlines
 
@@ -377,6 +377,13 @@ class V3BWFile(object):
         if accuracy_ratio < 1 - margin or accuracy_ratio > 1 + margin:
             log.warning('There was %f%% error and only +/- %f%% is '
                         'allowed', (1 - accuracy_ratio) * 100, margin * 100)
+
+    @staticmethod
+    def bw_lines_kb(bw_lines, reverse=False):
+        bw_lines_tmp = copy.deepcopy(bw_lines)
+        for l in bw_lines_tmp:
+            l.bw = max(round(l.bw / 1000), 1)
+        return sorted(bw_lines_tmp, key=lambda l: l.bw, reverse=reverse)
 
     @staticmethod
     def bw_lines_sbws_scale(bw_lines, scale_constant=SBWS_SCALE_CONSTANT,

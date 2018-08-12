@@ -46,14 +46,6 @@ BW_KEYVALUES_INT = ['bw', 'rtt', 'success', 'error_stream',
 BW_KEYVALUES = ['node_id', 'bw'] + BW_EXTRA_ARG_KEYVALUES
 
 
-def total_bw(bw_lines):
-    return sum([l.bw for l in bw_lines])
-
-
-def avg_bw(bw_lines):
-    assert len(bw_lines) > 0
-    return total_bw(bw_lines) / len(bw_lines)
-
 def num_results_of_type(results, type_str):
     return len([r for r in results if r.type == type_str])
 

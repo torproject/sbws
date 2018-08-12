@@ -36,7 +36,7 @@ header_extra_ls = [timestamp_l, version_l,
                    software_l, software_version_l, TERMINATOR]
 header_extra_str = LINE_SEP.join(header_extra_ls) + LINE_SEP
 
-bwl_str = "bw=54 error_circ=0 error_misc=0 error_stream=1 " \
+bwl_str = "bw=56 error_circ=0 error_misc=0 error_stream=1 " \
     "master_key_ed25519=g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s " \
     "nick=A " \
     "node_id=$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA rtt=456 success=1 " \
@@ -97,6 +97,8 @@ def test_v3bwline_from_results_file(datadir):
             d[fp] = []
         d[fp].append(r)
     bwl = V3BWLine.from_data(d, fp)
+    # bw store now B, not KB
+    bwl.bw = round(bwl.bw / 1000)
     assert bwl_str == str(bwl)
 
 
@@ -106,7 +108,10 @@ def test_from_arg_results(datadir, tmpdir, conf, args):
                                  earliest_bandwidth=earliest_bandwidth,
                                  latest_bandwidth=latest_bandwidth)
     expected_bwls = [V3BWLine.from_results(results[fp]) for fp in results]
+    # bw store now B, not KB
+    expected_bwls[0].bw = round(expected_bwls[0].bw / 1000)
     expected_f = V3BWFile(expected_header, expected_bwls)
+    # This way is going to convert bw to KB
     v3bwfile = V3BWFile.from_arg_results(args, conf, results)
     assert str(expected_f)[1:] == str(v3bwfile)[1:]
     output = os.path.join(args.output, now_fname())

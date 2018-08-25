@@ -200,17 +200,19 @@ class Result:
         ''' Implements just enough of a stem RouterStatusEntryV3 for this
         Result class to be happy '''
         def __init__(self, fingerprint, nickname, address, master_key_ed25519,
-                     average_bandwidth=None):
+                     average_bandwidth=None, observed_bandwidth=None):
             self.fingerprint = fingerprint
             self.nickname = nickname
             self.address = address
             self.master_key_ed25519 = master_key_ed25519
             self.average_bandwidth = average_bandwidth
+            self.observed_bandwidth = observed_bandwidth
 
     def __init__(self, relay, circ, dest_url, scanner_nick, t=None):
         self._relay = Result.Relay(relay.fingerprint, relay.nickname,
                                    relay.address, relay.master_key_ed25519,
-                                   relay.average_bandwidth)
+                                   relay.average_bandwidth,
+                                   relay.observed_bandwidth)
         self._circ = circ
         self._dest_url = dest_url
         self._scanner = scanner_nick
@@ -223,6 +225,10 @@ class Result:
     @property
     def relay_average_bandwidth(self):
         return self._relay.average_bandwidth
+
+    @property
+    def relay_observed_bandwidth(self):
+        return self._relay.observed_bandwidth
 
     @property
     def fingerprint(self):
@@ -473,7 +479,8 @@ class ResultSuccess(Result):
             d['rtts'], d['downloads'],
             Result.Relay(
                 d['fingerprint'], d['nickname'], d['address'],
-                d['master_key_ed25519'], d['relay_average_bandwidth']),
+                d['master_key_ed25519'], d['relay_average_bandwidth'],
+                d['relay_observed_bandwidth']),
             d['circ'], d['dest_url'], d['scanner'],
             t=d['time'])
 
@@ -483,6 +490,7 @@ class ResultSuccess(Result):
             'rtts': self.rtts,
             'downloads': self.downloads,
             'relay_average_bandwidth': self.relay_average_bandwidth,
+            'relay_observed_bandwidth': self.relay_observed_bandwidth,
         })
         return d
 

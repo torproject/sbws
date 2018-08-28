@@ -45,8 +45,8 @@ Install the python dependencies::
    install it. It's deprecated, but it won't be needed as soon as there is
    an ``stem`` release > 1.6.0
 
-Run sbws
-~~~~~~~~~~
+``sbws`` needs :term:`destination` s to request files from.
+Please, see :ref:`deploy` to know how to configure, deploy and run ``sbws``.
 
 If you would like to use a custom configuration file you can create it in
 ``~/.sbws.ini`` or provide ``sbws`` with it via ``-c`` ``--config`` option.

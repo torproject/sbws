@@ -1,3 +1,5 @@
+.. _deploy:
+
 Deploying Simple Bandwidth Scanner
 =====================================
 

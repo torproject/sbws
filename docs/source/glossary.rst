@@ -42,4 +42,8 @@ Glossary
         .. literalinclude:: v3bw.txt
             :caption: A v3bw file
 
-.. glossary::
+   destination
+        The term used by ``sbws`` to refer to a Web server where the
+        :term:`scanner` request files to perform the bandwith measurements.
+
+.. [#] https://metrics.torproject.org/glossary.html

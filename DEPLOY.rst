@@ -29,14 +29,15 @@ Install sbws according to :doc:`/INSTALL`.
 ``sbws`` needs :term:`destination` (s) to request files from.
 They are not included by default.
 
-Inside |dotsbws| you will find ``config.ini``. Open it with a text editor. it
-should be very simple. Let's give our scanner a nickname. Add the following
-lines
+To configure destinations, create a file called ``config.ini``. It can be
+located in:
 
-::
+* ``~/.sbws/`` if you are running ``sbws`` manually
+* ``/etc/sbws`` if you are running ``sbws`` from a system package as a
+  ``systemd`` directory (not yet supported)
+* any localion, an specify the path via the ``-c`` argument
 
-    [scanner]
-    nickname = D0ntD3@dOpen!nside
+And edit destinations according to :doc:`man_sbws.ini`
 
 (Pick your own nickname. This one just demonstrates that you can use almost any
 character)

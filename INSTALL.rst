@@ -66,27 +66,19 @@ To run the tests::
 
     tox
 
-    Run these commands one at a time and check for errors before continuing.
 
-Updating
-~~~~~~~~
+Installing documentation dependendencies and building it
+---------------------------------------------------------
 
-::
+To build the documentation, extra Python dependencies are needed:
 
-    cd simple-bw-scanner
-    git pull
-    # Determine the newest released version. Assuming it is v1.5.3 ...
-    git checkout v1.5.3
-    source venv/bin/activate
-    pip install --process-dependency-links --upgrade-strategy eager --upgrade .
+- Sphinx_
+- recommonmark_
+- Pylint_ (only to update the diagrams)
 
+To install them from ``sbws``::
 
-[OBSOLETE DO NOT FOLLOW] Virtualenv - Development
-------------------------------------------------------------------------------
-
-These are almost exactly the same. The difference is the pip command: we
-install sbws in an editable state so we don't have to re-run pip every time we
-make a change.
+    pip install .[doc]
 
 ::
 

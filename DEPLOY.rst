@@ -26,8 +26,8 @@ well connected machines.
 
 Install sbws according to :doc:`/INSTALL`.
 
-Make sure you have initialized sbws. If you haven't already run ``sbws init``,
-then enter your virtualenv and run it.
+``sbws`` needs :term:`destination` (s) to request files from.
+They are not included by default.
 
 Inside |dotsbws| you will find ``config.ini``. Open it with a text editor. it
 should be very simple. Let's give our scanner a nickname. Add the following

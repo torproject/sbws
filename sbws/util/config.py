@@ -25,10 +25,10 @@ log = logging.getLogger(__name__)
 
 
 def _expand_path(path):
-    """Expand path string containing shell variables and ~ constructions
-    into their values.
-    """
-    return os.path.expanduser(os.path.expandvars(path))
+    """ Wrapper for os.path.expanduser. If we ever want to support expanding
+    environment variables in config values, this is where they should be
+    expanded. """
+    return os.path.expanduser(path)
 
 
 def _extend_config(conf, fname):

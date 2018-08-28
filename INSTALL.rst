@@ -16,35 +16,9 @@ System requirements
 - virtualenv_ (while there is not ``stem`` release > 1.6.0, it is
   recommended to install the required python dependencies in a virtualenv)
 
+In Debian::
 
-.. _Stem: https://stem.torproject.org/
-.. _Requests: http://docs.python-requests.org/
-
-.. _release page: https://github.com/pastly/simple-bw-scanner/releases
-
-Virtualenv - Development
-------------------------------------------------------------------------------
-
-Choose a directory to store code in. I might choose ``~/src``.
-
-::
-
-    cd ~/src
-
-Get stem
-~~~~~~~~~~~~~
-
-::
-
-    git clone https://git.torproject.org/stem.git
-
-Get sbws
-~~~~~~~~~~~~~~~~~
-
-::
-
-    git clone https://github.com/pastly/simple-bw-scanner.git
-    cd simple-bw-scanner
+    sudo apt install tor python3 virtualenv
 
 
 Create and enter virtualenv

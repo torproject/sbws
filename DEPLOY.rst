@@ -21,9 +21,8 @@ well connected machines.
 - Optional support for TLS
 - A large file; at the time of writing, at least 1 GiB in size
 
-|scanner_nick| setup
--------------------------------
-
+:term:`scanner` setup
+----------------------
 
 Install sbws according to :doc:`/INSTALL`.
 

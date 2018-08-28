@@ -98,4 +98,14 @@ To build the documentation diagrams::
 
 The generated diagrams will be in `docs/build/images/`.
 
-    This doesn't update dependencies and needs to be fixed.
+.. _virtualenv: https://virtualenv.pypa.io/en/stable/installation/
+.. _Stem: https://stem.torproject.org/
+.. _socks: http://docs.python-requests.org/en/master/user/advanced/#socks
+.. _Requests: http://docs.python-requests.org/
+.. _Flake8: http://flake8.pycqa.org/
+.. _pytest: https://docs.pytest.org/
+.. _tox: https://tox.readthedocs.io
+.. _Coverage: https://coverage.readthedocs.io/
+.. _Sphinx: http://www.sphinx-doc.org
+.. _recommonmark: https://recommonmark.readthedocs.io/
+.. _Pylint_: https://www.pylint.org/

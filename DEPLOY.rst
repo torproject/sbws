@@ -8,8 +8,8 @@ So you want to run sbws for yourself. You will need
 - A machine to run the :term:`scanner`.
 - One or more :term:`destination` (s) that serve a large file.
 
-Both |scanner_nick| and your |dests| should be on fast, well connected
-machines.
+Both :term:`scanner` and your :term:`destination` (s) should be on fast,
+well connected machines.
 
 |scanner_nick| requirements
 -------------------------------

@@ -80,35 +80,22 @@ To install them from ``sbws``::
 
     pip install .[doc]
 
-::
+To build the documentation as HTML::
 
-    git clone https://github.com/pastly/simple-bw-scanner.git
-    cd simple-bw-scanner
-    git checkout v1.5.3
-    virtualenv -p python3 venv-editable
-    source venv-editable/bin/activate
-    pip install --process-dependency-links --editable .
-    sbws init
+    cd docs/ && make html
 
-.. note::
+The generated HTML will be in `docs/build/`.
 
-    Because we relay on a ``-dev`` version of stem, we need to fetch it from
-    git.torproject.org. Thus ``--process-dependency-links`` is necessary.
+To build the manual (``man``) pages::
 
-.. warning::
+    cd docs/ && make man
 
-    Run these commands one at a time and check for errors before continuing.
+The generated man pages will be in `docs/man/`.
 
-Updating
-~~~~~~~~
+To build the documentation diagrams::
 
-::
+    cd docs/ && make umlsvg
 
-    cd simple-bw-scanner
-    git pull
-    # Determine the newest released version. Assuming it is v1.5.3 ...
-    git checkout v1.5.3
-
-.. todo::
+The generated diagrams will be in `docs/build/images/`.
 
     This doesn't update dependencies and needs to be fixed.

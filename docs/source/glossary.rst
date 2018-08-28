@@ -39,7 +39,7 @@ Glossary
         The term used by ``sbws`` to refer to :term:`bandwidth list file`
         v1.1.0.
 
-.. literalinclude:: v3bw.txt
-    :caption: A v3bw file
+        .. literalinclude:: v3bw.txt
+            :caption: A v3bw file
 
 .. glossary::

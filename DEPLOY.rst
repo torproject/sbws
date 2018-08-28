@@ -11,22 +11,13 @@ So you want to run sbws for yourself. You will need
 Both :term:`scanner` and your :term:`destination` (s) should be on fast,
 well connected machines.
 
-|scanner_nick| requirements
--------------------------------
+.. _destinations_requirements:
 
-- A fast, well connected machine on the Internet. Ideally its bandwidth should
-  not be a limiting factor in measurements.
-- Linux host OS
-- Python 3, virtualenv
-- Tor installed with ``tor`` in your ``PATH``
+:term:`destination` requirements
+------------------------------------
 
-|dests| requirements
--------------------------------
-
-- A fast, well connected machine on the Internet. Ideally its bandwidth should
-  not be a limiting factor in measurements.
-- Some sort of webserver installed and running that supports HEAD and GET
-  requests (apache and nginx fit this description)
+- A Web server installed and running that supports HEAD and GET
+  requests (``apache`` and ``nginx`` fit this description)
 - Optional support for TLS
 - A large file; at the time of writing, at least 1 GiB in size
 

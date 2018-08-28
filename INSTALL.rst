@@ -48,35 +48,19 @@ Install the python dependencies::
 ``sbws`` needs :term:`destination` s to request files from.
 Please, see :ref:`deploy` to know how to configure, deploy and run ``sbws``.
 
-If you would like to use a custom configuration file you can create it in
-``~/.sbws.ini`` or provide ``sbws`` with it via ``-c`` ``--config`` option.
+Installing tests dependencies and running them
+------------------------------------------------
 
-See the documentation section about configuration files for more information
-about how to create a configuration file.
+To run the tests, extra Python depenencies are needed:
 
-Tor run the scanner run
-::
+- Flake8_
+- tox_
+- pytest_
+- coverage_
 
-    sbws scanner
+To install them from ``sbws`` ::
 
-
-[OBSOLETE DO NOT FOLLOW] Virtualenv - Production
-------------------------------------------------------------------------------
-
-Installing
-~~~~~~~~~~
-
-::
-
-    git clone https://github.com/pastly/simple-bw-scanner.git
-    cd simple-bw-scanner
-    git checkout v1.5.3
-    virtualenv -p python3 venv
-    source venv/bin/activate
-    pip install --process-dependency-links .
-    sbws init
-
-.. note::
+    pip install .[dev] && pip install .[doc]
 
     Because we relay on a ``-dev`` version of stem, we need to fetch it from
     git.torproject.org. Thus ``--process-dependency-links`` is necessary.

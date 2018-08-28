@@ -379,7 +379,7 @@ def main(args, conf):
 
     os.makedirs(conf.getpath('paths', 'datadir'), exist_ok=True)
 
-    state = State(conf['paths']['state_fname'])
+    state = State(conf.getpath('paths', 'state_fname'))
     state['scanner_started'] = now_isodt_str()
 
     try:

@@ -234,7 +234,9 @@ class DestinationList:
                 conf[dest_sec],
                 conf.getint('scanner', 'max_download_size')))
         if len(dests) < 1:
-            return None, 'No enabled destinations in config'
+            msg = 'No enabled destinations in config. Please see '\
+                '"man sbws.ini" for help adding and enabling destinations'
+            return None, msg
         return DestinationList(conf, dests, circuit_builder, relay_list,
                                controller), ''
 

@@ -111,14 +111,6 @@ how its code is laid out. Therefore the code may change drastically without a
 major version bump as long as the way users interact with it does not change in
 a backward incompatible way.
 
-### Build HTML documentation
-
-    pip install -e .[doc]
-    cd docs
-    make html
-
-The generated HTML will be in `docs/build/`.
-
 ## The `.sbws` directory
 
 By default is `~/.sbws`.

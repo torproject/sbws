@@ -3,13 +3,18 @@
 Installing Simple Bandwidth Scanner
 ===================================
 
-(At the time of writing) sbws depends on two Python libraries.
+The prefered method to install ``sbws`` is to install it from your system
+distribution.
+Currently there is not any system distribution package.
+In the meanwhile, follow the following steps.
 
-- Stem_
-- Requests_
+System requirements
+--------------------
 
-Sbws relies on a stem feature that is not planned to be in a tagged release
-until stem 1.7.0.
+- Tor
+- Python 3
+- virtualenv_ (while there is not ``stem`` release > 1.6.0, it is
+  recommended to install the required python dependencies in a virtualenv)
 
 Read all the information for the installation method of your choice before
 beginning. Often you will want to be armed with the knowledge of the latest

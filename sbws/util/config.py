@@ -26,7 +26,8 @@ log = logging.getLogger(__name__)
 
 def _expand_path(path):
     """Expand path string containing shell variables and ~ constructions
-    into their values.
+    into their values. Environment variables have to have their $ escaped by
+    another $. For example: $$XDG_RUNTIME_DIR/foo.bar
     """
     return os.path.expanduser(os.path.expandvars(path))
 

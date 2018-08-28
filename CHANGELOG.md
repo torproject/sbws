@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Fixed
+
+- Broken environment variable in default sbws config. To use envvar $FOO, write
+  $$FOO in the config.
+
 ## [0.7.0] - 2018-08-09
 
 **Important changes**:

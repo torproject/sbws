@@ -5,9 +5,8 @@ Deploying Simple Bandwidth Scanner
 
 So you want to run sbws for yourself. You will need
 
-- A machine to measure from, hereafter referred to as |scanner_nick|.
-- One or more webservers hosting a large file, hereafter referred to as
-  |dests|.
+- A machine to run the :term:`scanner`.
+- One or more :term:`destination` (s) that serve a large file.
 
 Both |scanner_nick| and your |dests| should be on fast, well connected
 machines.

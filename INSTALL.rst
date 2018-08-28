@@ -108,4 +108,4 @@ The generated diagrams will be in `docs/build/images/`.
 .. _Coverage: https://coverage.readthedocs.io/
 .. _Sphinx: http://www.sphinx-doc.org
 .. _recommonmark: https://recommonmark.readthedocs.io/
-.. _Pylint_: https://www.pylint.org/
+.. _Pylint: https://www.pylint.org/

@@ -37,22 +37,13 @@ Clone ``sbws``::
 
     git clone https://gitweb.torproject.org/sbws.git
 
-::
+Install the python dependencies::
 
-    pip install ../stem
+    cd sbws && pip install --process-dependency-links .
 
-Install sbws and its remaining dependencies
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Here is where you might want to know what the latest release of sbws is (this
-document assumes it is 1.5.3). Skip
-the ``git checkout`` if you want to run the bleeding edge tip-of-master version
-of sbws.
-
-::
-
-    git checkout v1.5.3
-    pip install .
+.. note:: ``process-dependency-links`` will clone ``stem`` from master and
+   install it. It's deprecated, but it won't be needed as soon as there is
+   an ``stem`` release > 1.6.0
 
 Run sbws
 ~~~~~~~~~~

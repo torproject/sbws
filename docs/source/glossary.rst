@@ -30,10 +30,7 @@ Glossary
         to know about the file specification.
 
    sbws scanner
-        The sbws command that a :term:`bandwidth authority` runs continuously
-        to gather information about how fast Tor relays are. The results from
-        this process are used by :term:`sbws generate` to generate
-        :term:`v3bw files <v3bw file>`.
+        The ``sbws`` command used to run ``sbws`` as a :term:`scanner`.
 
    sbws generate
         The sbws command that a :term:`bandwidth authority` runs periodically

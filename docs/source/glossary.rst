@@ -18,6 +18,11 @@ Glossary
         It is also called :term:`generator` when it is the same tool that is
         used to generate :term:`bandwidth list file` s.
 
+   generator
+        Term to refer to the tool that generates the
+        :term:`bandwidth list file` s. Often used as a synomym for
+        :term:`scanner`.
+
    sbws scanner
         The sbws command that a :term:`bandwidth authority` runs continuously
         to gather information about how fast Tor relays are. The results from

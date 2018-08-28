@@ -26,12 +26,11 @@ Python dependencies
 - Stem_ > 1.6.0
 - Requests_ (with socks_ support) >= 2.10.0
 
-I like to keep mine in my simple-bw-scanner directory and assume that's where
-you'll put it.
+To install the Python dependencies, create a ``virtualenv`` first
 
 ::
 
-    virtualenv -p python3 venv
+    virtualenv venv -p /usr/bin/python3
     source venv/bin/activate
 
 Install stem in virtualenv

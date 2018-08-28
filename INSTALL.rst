@@ -62,10 +62,9 @@ To install them from ``sbws`` ::
 
     pip install .[dev] && pip install .[doc]
 
-    Because we relay on a ``-dev`` version of stem, we need to fetch it from
-    git.torproject.org. Thus ``--process-dependency-links`` is necessary.
+To run the tests::
 
-.. warning::
+    tox
 
     Run these commands one at a time and check for errors before continuing.
 

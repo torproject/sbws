@@ -39,16 +39,10 @@ located in:
 
 And edit destinations according to :doc:`man_sbws.ini`
 
-(Pick your own nickname. This one just demonstrates that you can use almost any
-character)
+It is not required, but it is recomended to include a custom scanner
+``nickname`` in ``config.ini``.
 
-Congratulations, you've learned how to add a section to your config file and
-how to add an option to a section.
-
-Remeber |dests|? We need to add them to ``config.ini``. We're going to assume
-you have two you are ready to use and one that isn't quite ready yet.
-
-::
+Destination(s) configuration in more detail::
 
     [destinations]
     foo = on

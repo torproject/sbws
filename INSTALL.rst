@@ -20,9 +20,11 @@ In Debian::
 
     sudo apt install tor python3 virtualenv
 
+Python dependencies
+--------------------
 
-Create and enter virtualenv
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- Stem_ > 1.6.0
+- Requests_ (with socks_ support) >= 2.10.0
 
 I like to keep mine in my simple-bw-scanner directory and assume that's where
 you'll put it.

@@ -33,13 +33,9 @@ To install the Python dependencies, create a ``virtualenv`` first
     virtualenv venv -p /usr/bin/python3
     source venv/bin/activate
 
-Install stem in virtualenv
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Clone ``sbws``::
 
-Sbws requires on features not yet in a released version of stem (1.7.0 has not
-been released as of the time of writing). You can either install from the
-master branch, or checkout ``60f034ad8b9c3aa48e7e2ecb0a2e159b6ed5bc71`` or
-newer.
+    git clone https://gitweb.torproject.org/sbws.git
 
 ::
 

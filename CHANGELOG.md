@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Fixed
+
+- Stop pretending we allow environment variables in the config file, and stop
+  trying to use one. (#27342)
+
 ## [0.7.0] - 2018-08-09
 
 **Important changes**:

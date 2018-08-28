@@ -4,9 +4,9 @@ Glossary
 .. glossary::
 
    directory authority
-        One of the trusted entities in the Tor network. Calculates a consensus
-        with the other directory authorities about what relays are running and
-        much much more.
+        a special-purpose relay that maintains a list of currently-running
+        relays and periodically publishes a consensus together with the other
+        directory authorities. [#]_
 
    bandwidth authority
         A :term:`directory authority` that measures and votes about Tor relay

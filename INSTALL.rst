@@ -16,11 +16,6 @@ System requirements
 - virtualenv_ (while there is not ``stem`` release > 1.6.0, it is
   recommended to install the required python dependencies in a virtualenv)
 
-Read all the information for the installation method of your choice before
-beginning. Often you will want to be armed with the knowledge of the latest
-released version of sbws. Determine that by examining its git tags, or visiting
-its `release page`_. In the remainder of this document, we assume the latest
-version is 1.5.3, which would be tagged as ``v1.5.3``.
 
 .. _Stem: https://stem.torproject.org/
 .. _Requests: http://docs.python-requests.org/

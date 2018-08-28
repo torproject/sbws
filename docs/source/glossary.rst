@@ -13,6 +13,11 @@ Glossary
         :term:`generator` or obtain :term:`bandwidth list file` s from a
         :term:`generator`.
 
+   scanner
+        Term to refer to the process that measures the relays' bandwidth.
+        It is also called :term:`generator` when it is the same tool that is
+        used to generate :term:`bandwidth list file` s.
+
    sbws scanner
         The sbws command that a :term:`bandwidth authority` runs continuously
         to gather information about how fast Tor relays are. The results from

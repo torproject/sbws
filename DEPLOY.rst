@@ -50,13 +50,13 @@ Destination(s) configuration in more detail::
     baz = off
 
     [destinations.foo]
-    url = http://fooshoomoo.com/sbws.bin
+    url = http://example.org/sbws.bin
 
     [destinations.bar]
-    url = https://barstoolsinc.com
+    url = https://example.com
 
     [destinations.baz]
-    url = https://bazistan.com/ask/stan/where/the/file/is.exe
+    url = https://example.net/ask/stan/where/the/file/is.exe
 
 ``foo`` demonstrates a typical case.
 

@@ -9,10 +9,9 @@ Glossary
         directory authorities. [#]_
 
    bandwidth authority
-        A :term:`directory authority` that measures and votes about Tor relay
-        bandwidths. In the context of sbws, it performs measurements with
-        :term:`sbws scanner` and creates :term:`v3bw files <v3bw file>`
-        periodically with :term:`sbws generate`
+        A :term:`directory authority` that runs a :term:`scanner` and a
+        :term:`generator` or obtain :term:`bandwidth list file` s from a
+        :term:`generator`.
 
    sbws scanner
         The sbws command that a :term:`bandwidth authority` runs continuously

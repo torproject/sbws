@@ -133,12 +133,3 @@ In this directory you will find
 - `v3bw/` This directory stores the v3bw files created with `sbws generate`.
 - `state.dat` A file for storing state needed between sbws commands. See its
   documentation for more information.
-
-## Running tests
-
-Make sure you have test dependencies installed. From within the top level
-repository directory:
-
-    pip install -e .[test]
-
-This should install tox and pytest. Then simply run `tox`.

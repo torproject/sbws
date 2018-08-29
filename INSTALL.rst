@@ -84,7 +84,7 @@ To build the documentation as HTML::
 
     cd docs/ && make html
 
-The generated HTML will be in `docs/build/`.
+The generated HTML will be in ``docs/build/``.
 
 To build the manual (``man``) pages::
 

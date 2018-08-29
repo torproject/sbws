@@ -61,7 +61,8 @@ destinations
 
 destinations.STR
   url = STR
-    The url to the destination
+    The URL to the destination. It must include a file path.
+    It can use both http or https.
 
 tor
   datadir = STR

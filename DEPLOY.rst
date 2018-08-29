@@ -32,31 +32,3 @@ They are not included by default.
 
 To configure destinations, create a configuration file according to
 :doc:`man_sbws.ini`
-
-It is not required, but it is recomended to include a custom scanner
-``nickname`` in the configuration file`.
-
-Destination(s) configuration in more detail::
-
-    [destinations]
-    foo = on
-    bar = on
-    baz = off
-
-    [destinations.foo]
-    url = http://example.org/sbws.bin
-
-    [destinations.bar]
-    url = https://example.com/data
-
-    [destinations.baz]
-    url = https://example.net/ask/stan/where/the/file/is.exe
-
-``foo`` demonstrates a typical case.
-
-``bar`` demonstrates a case where you want to use HTTPS and want to assume the
-large file for sbws to download is at its default path (probably
-``/sbws.bin``).
-
-``baz`` demonstrates a disabled destination that sbws will ignore.
-

@@ -30,14 +30,8 @@ Install sbws according to :doc:`/INSTALL`.
 ``sbws scanner`` needs :term:`destination` (s) to request files from.
 They are not included by default.
 
-To configure destinations, create a file called ``config.ini``. It can be
-located in:
-
-* ``~/.sbws.ini`` if you are running ``sbws`` manually
-* any location, specify the path via the ``-c`` argument.
-  For instance: ``sbws -c myconfig.ini scanner``
-
-And edit destinations according to :doc:`man_sbws.ini`
+To configure destinations, create a configuration file according to
+:doc:`man_sbws.ini`
 
 It is not required, but it is recomended to include a custom scanner
 ``nickname`` in ``config.ini``.

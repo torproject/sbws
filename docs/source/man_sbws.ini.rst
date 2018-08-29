@@ -153,9 +153,8 @@ FILES
 $HOME/.sbws.ini
    Default ``sbws`` user configuration path.
 
-$HOME/.sbws
-   Default sbws home, where it stores measurement data files,
-   bandwidth list files and tor process data.
+Any other path to the configuration file can be specified using the
+``sbws`` argument ``-c``
 
 SEE ALSO
 ---------

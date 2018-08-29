@@ -36,7 +36,8 @@ header_extra_ls = [timestamp_l, version_l,
                    software_l, software_version_l, TERMINATOR]
 header_extra_str = LINE_SEP.join(header_extra_ls) + LINE_SEP
 
-bwl_str = "bw=54 error_circ=0 error_misc=0 error_stream=1 " \
+bwl_str = "bw=56 bw_bs_mean=61423 bw_bs_median=55656 "\
+    "desc_avg_bw_bs=1000000000 error_circ=0 error_misc=0 error_stream=1 " \
     "master_key_ed25519=g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s " \
     "nick=A " \
     "node_id=$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA rtt=456 success=1 " \
@@ -97,17 +98,22 @@ def test_v3bwline_from_results_file(datadir):
             d[fp] = []
         d[fp].append(r)
     bwl = V3BWLine.from_data(d, fp)
+    # bw store now B, not KB
+    bwl.bw = round(bwl.bw / 1000)
     assert bwl_str == str(bwl)
 
 
-def test_from_arg_results(datadir, tmpdir, conf, args):
+def test_from_results_read(datadir, tmpdir, conf, args):
     results = load_result_file(str(datadir.join("results.txt")))
     expected_header = V3BWHeader(timestamp_l,
                                  earliest_bandwidth=earliest_bandwidth,
                                  latest_bandwidth=latest_bandwidth)
     expected_bwls = [V3BWLine.from_results(results[fp]) for fp in results]
+    # bw store now B, not KB
+    expected_bwls[0].bw = round(expected_bwls[0].bw / 1000)
     expected_f = V3BWFile(expected_header, expected_bwls)
-    v3bwfile = V3BWFile.from_arg_results(args, conf, results)
+    # This way is going to convert bw to KB
+    v3bwfile = V3BWFile.from_results(results)
     assert str(expected_f)[1:] == str(v3bwfile)[1:]
     output = os.path.join(args.output, now_fname())
     v3bwfile.write(output)
@@ -115,7 +121,7 @@ def test_from_arg_results(datadir, tmpdir, conf, args):
 
 def test_from_arg_results_write(datadir, tmpdir, conf, args):
     results = load_result_file(str(datadir.join("results.txt")))
-    v3bwfile = V3BWFile.from_arg_results(args, conf, results)
+    v3bwfile = V3BWFile.from_results(results)
     output = os.path.join(args.output, now_fname())
     v3bwfile.write(output)
     assert os.path.isfile(output)
@@ -123,7 +129,7 @@ def test_from_arg_results_write(datadir, tmpdir, conf, args):
 
 def test_from_arg_results_write_read(datadir, tmpdir, conf, args):
     results = load_result_file(str(datadir.join("results.txt")))
-    v3bwfile = V3BWFile.from_arg_results(args, conf, results)
+    v3bwfile = V3BWFile.from_results(results)
     output = os.path.join(args.output, now_fname())
     v3bwfile.write(output)
     with open(output) as fd:

@@ -58,7 +58,8 @@ def main(args, conf):
         log.warning('No recent results, so not generating anything. (Have you '
                     'ran sbws scanner recently?)')
         return
-    bw_file = V3BWFile.from_arg_results(args, conf, results)
+    state_fpath = conf.getpath('paths', 'state_fname')
+    bw_file = V3BWFile.from_results(results, state_fpath, args.scale_constant)
     output = args.output or \
         conf.getpath('paths', 'v3bw_fname').format(now_fname())
     bw_file.write(output)

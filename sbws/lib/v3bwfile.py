@@ -115,11 +115,11 @@ class V3BWHeader(object):
         return self.strv200
 
     @classmethod
-    def from_results(cls, conf, results):
+    def from_results(cls, results, state_fpath=''):
         kwargs = dict()
         latest_bandwidth = cls.latest_bandwidth_from_results(results)
         earliest_bandwidth = cls.earliest_bandwidth_from_results(results)
-        generator_started = cls.generator_started_from_file(conf)
+        generator_started = cls.generator_started_from_file(state_fpath)
         timestamp = str(latest_bandwidth)
         kwargs['latest_bandwidth'] = unixts_to_isodt_str(latest_bandwidth)
         kwargs['earliest_bandwidth'] = unixts_to_isodt_str(earliest_bandwidth)
@@ -159,12 +159,12 @@ class V3BWHeader(object):
         return self.from_lines_v110(text.split(LINE_SEP))
 
     @staticmethod
-    def generator_started_from_file(conf):
+    def generator_started_from_file(state_fpath):
         '''
         ISO formatted timestamp for the time when the scanner process most
         recently started.
         '''
-        state = State(conf.getpath('paths', 'state_fname'))
+        state = State(state_fpath)
         if 'scanner_started' in state:
             return state['scanner_started']
         else:
@@ -376,12 +376,14 @@ class V3BWFile(object):
                                            for bw_line in self.bw_lines])
 
     @classmethod
-    def from_arg_results(cls, args, conf, results):
+    def from_results(cls, results, state_fpath='',
+                     scale_constant=None):
         bw_lines = [V3BWLine.from_results(results[fp]) for fp in results]
         bw_lines = sorted(bw_lines, key=lambda d: d.bw, reverse=True)
-        if args.scale:
-            bw_lines = scale_lines(bw_lines, args.scale_constant)
-        header = V3BWHeader.from_results(conf, results)
+        if scale_constant:
+            bw_lines = cls.bw_sbws_scale(bw_lines, scale_constant)
+            cls.warn_if_not_accurate_enough(bw_lines, scale_constant)
+        header = V3BWHeader.from_results(results, state_fpath)
         f = cls(header, bw_lines)
         return f
 

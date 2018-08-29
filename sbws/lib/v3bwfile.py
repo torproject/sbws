@@ -249,6 +249,86 @@ class V3BWLine(object):
         [setattr(self, k, v) for k, v in kwargs.items()
          if k in BW_EXTRA_ARG_KEYVALUES]
 
+    def __str__(self):
+        return self.bw_strv110
+
+    @classmethod
+    def from_results(cls, results):
+        success_results = [r for r in results if isinstance(r, ResultSuccess)]
+        # log.debug('len(success_results) %s', len(success_results))
+        node_id = '$' + results[0].fingerprint
+        bw = cls.bw_from_results(success_results)
+        kwargs = dict()
+        kwargs['nick'] = results[0].nickname
+        if getattr(results[0], 'master_key_ed25519'):
+            kwargs['master_key_ed25519'] = results[0].master_key_ed25519
+        kwargs['rtt'] = cls.rtt_from_results(success_results)
+        kwargs['time'] = cls.last_time_from_results(results)
+        kwargs.update(cls.result_types_from_results(results))
+        bwl = cls(node_id, bw, **kwargs)
+        return bwl
+
+    @classmethod
+    def from_data(cls, data, fingerprint):
+        assert fingerprint in data
+        return cls.from_results(data[fingerprint])
+
+    @classmethod
+    def from_bw_line_v110(cls, line):
+        assert isinstance(line, str)
+        kwargs = dict([kv.split(KEYVALUE_SEP_V110)
+                       for kv in line.split(BW_KEYVALUE_SEP_V110)
+                       if kv.split(KEYVALUE_SEP_V110)[0] in BW_KEYVALUES])
+        for k, v in kwargs.items():
+            if k in BW_KEYVALUES_INT:
+                kwargs[k] = int(v)
+        bw_line = cls(**kwargs)
+        return bw_line
+
+    @staticmethod
+    def last_time_from_results(results):
+        return unixts_to_isodt_str(round(max([r.time for r in results])))
+
+    @staticmethod
+    def rtt_from_results(results):
+        # convert from miliseconds to seconds
+        rtts = [(round(rtt * 1000)) for r in results for rtt in r.rtts]
+        rtt = round(median(rtts))
+        return rtt
+
+    @staticmethod
+    def result_types_from_results(results):
+        rt_dict = dict([(result_type_to_key(rt.value),
+                         num_results_of_type(results, rt.value))
+                        for rt in _ResultType])
+        return rt_dict
+
+    @staticmethod
+    def bw_from_results(results):
+        median_bw = median([dl['amount'] / dl['duration']
+                            for r in results for dl in r.downloads])
+        # If a relay has MaxAdvertisedBandwidth set, they may be capable of
+        # some large amount of bandwidth but prefer if they didn't receive it.
+        # We also could have managed to measure them faster than their
+        # {,Relay}BandwidthRate somehow.
+        #
+        # See https://github.com/pastly/simple-bw-scanner/issues/155 and
+        # https://trac.torproject.org/projects/tor/ticket/8494
+        #
+        # Note how this isn't some measured-by-us average of bandwidth. It's
+        # the first value on the 'bandwidth' line in the relay's server
+        # descriptor.
+        bw = median_bw
+        relay_average_bw = [r.relay_average_bandwidth for r in results
+                            if r.relay_average_bandwidth is not None]
+        if relay_average_bw:
+            median_relay_average_bw = median(relay_average_bw)
+            if median_bw > median_relay_average_bw:
+                bw = median_relay_average_bw
+        # convert to KB and ensure it's at least 1
+        bw_kb = max(round(bw / 1024), 1)
+        return bw_kb
+
     @property
     def bw_keyvalue_tuple_ls(self):
         """Return list of KeyValue Bandwidth Line tuples."""
@@ -277,86 +357,6 @@ class V3BWLine(object):
             log.warn("The bandwidth line %s is longer than %s",
                      len(bw_line_str), BW_LINE_SIZE)
         return bw_line_str
-
-    def __str__(self):
-        return self.bw_strv110
-
-    @classmethod
-    def from_bw_line_v110(cls, line):
-        assert isinstance(line, str)
-        kwargs = dict([kv.split(KEYVALUE_SEP_V110)
-                       for kv in line.split(BW_KEYVALUE_SEP_V110)
-                       if kv.split(KEYVALUE_SEP_V110)[0] in BW_KEYVALUES])
-        for k, v in kwargs.items():
-            if k in BW_KEYVALUES_INT:
-                kwargs[k] = int(v)
-        bw_line = cls(**kwargs)
-        return bw_line
-
-    @staticmethod
-    def bw_from_results(results):
-        median_bw = median([dl['amount'] / dl['duration']
-                            for r in results for dl in r.downloads])
-        # If a relay has MaxAdvertisedBandwidth set, they may be capable of
-        # some large amount of bandwidth but prefer if they didn't receive it.
-        # We also could have managed to measure them faster than their
-        # {,Relay}BandwidthRate somehow.
-        #
-        # See https://github.com/pastly/simple-bw-scanner/issues/155 and
-        # https://trac.torproject.org/projects/tor/ticket/8494
-        #
-        # Note how this isn't some measured-by-us average of bandwidth. It's
-        # the first value on the 'bandwidth' line in the relay's server
-        # descriptor.
-        bw = median_bw
-        relay_average_bw = [r.relay_average_bandwidth for r in results
-                            if r.relay_average_bandwidth is not None]
-        if relay_average_bw:
-            median_relay_average_bw = median(relay_average_bw)
-            if median_bw > median_relay_average_bw:
-                bw = median_relay_average_bw
-        # convert to KB and ensure it's at least 1
-        bw_kb = max(round(bw / 1024), 1)
-        return bw_kb
-
-    @staticmethod
-    def last_time_from_results(results):
-        return unixts_to_isodt_str(round(max([r.time for r in results])))
-
-    @staticmethod
-    def rtt_from_results(results):
-        # convert from miliseconds to seconds
-        rtts = [(round(rtt * 1000)) for r in results for rtt in r.rtts]
-        rtt = round(median(rtts))
-        return rtt
-
-    @staticmethod
-    def result_types_from_results(results):
-        rt_dict = dict([(result_type_to_key(rt.value),
-                         num_results_of_type(results, rt.value))
-                        for rt in _ResultType])
-        return rt_dict
-
-    @classmethod
-    def from_results(cls, results):
-        success_results = [r for r in results if isinstance(r, ResultSuccess)]
-        # log.debug('len(success_results) %s', len(success_results))
-        node_id = '$' + results[0].fingerprint
-        bw = cls.bw_from_results(success_results)
-        kwargs = dict()
-        kwargs['nick'] = results[0].nickname
-        if getattr(results[0], 'master_key_ed25519'):
-            kwargs['master_key_ed25519'] = results[0].master_key_ed25519
-        kwargs['rtt'] = cls.rtt_from_results(success_results)
-        kwargs['time'] = cls.last_time_from_results(results)
-        kwargs.update(cls.result_types_from_results(results))
-        bwl = cls(node_id, bw, **kwargs)
-        return bwl
-
-    @classmethod
-    def from_data(cls, data, fingerprint):
-        assert fingerprint in data
-        return cls.from_results(data[fingerprint])
 
 
 class V3BWFile(object):

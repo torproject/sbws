@@ -151,7 +151,7 @@ FILES
 -----
 
 $HOME/.sbws.ini
-   Default location for the sbws user configuration file.
+   Default ``sbws`` user configuration path.
 
 $HOME/.sbws
    Default sbws home, where it stores measurement data files,

@@ -60,7 +60,7 @@ To run the tests, extra Python depenencies are needed:
 
 To install them from ``sbws`` ::
 
-    pip install .[dev] && pip install .[doc]
+    pip install .[dev] && pip install .[test]
 
 To run the tests::
 

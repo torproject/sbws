@@ -63,9 +63,10 @@ DOWNLOADS3 = [
 ]
 SCANNER = "test"
 AVG_BW = 966080
+OBS_BW = 524288
 
 RELAY1 = Result.Relay(FP1, NICK1, IP1, ED25519,
-                      average_bandwidth=AVG_BW)
+                      average_bandwidth=AVG_BW, observed_bandwidth=OBS_BW)
 RELAY2 = Result.Relay(FP2, NICK2, IP2, ED25519)
 
 RESULT = Result(RELAY1, CIRC12, DEST_URL, SCANNER, t=TIME1)
@@ -84,7 +85,8 @@ RELAY_DICT = {
     "address": IP1,
     "nickname": NICK1,
     "master_key_ed25519": ED25519,
-    "relay_average_bandwidth": AVG_BW
+    "relay_average_bandwidth": AVG_BW,
+    "relay_observed_bandwidth": OBS_BW
 }
 
 BASE_RESULT_NO_RELAY_DICT = {

@@ -34,7 +34,8 @@ To configure destinations, create a file called ``config.ini``. It can be
 located in:
 
 * ``~/.sbws.ini`` if you are running ``sbws`` manually
-* any localion, an specify the path via the ``-c`` argument
+* any location, specify the path via the ``-c`` argument.
+  For instance: ``sbws -c myconfig.ini scanner``
 
 And edit destinations according to :doc:`man_sbws.ini`
 

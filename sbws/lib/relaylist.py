@@ -75,6 +75,10 @@ class Relay:
         return self._from_desc('average_bandwidth')
 
     @property
+    def observed_bandwidth(self):
+        return self._from_desc('observed_bandwidth')
+
+    @property
     def bandwidth(self):
         return self._from_ns('bandwidth')
 

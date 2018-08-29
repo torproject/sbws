@@ -27,7 +27,7 @@ well connected machines.
 
 Install sbws according to :doc:`/INSTALL`.
 
-``sbws`` needs :term:`destination` (s) to request files from.
+``sbws scanner`` needs :term:`destination` (s) to request files from.
 They are not included by default.
 
 To configure destinations, create a file called ``config.ini``. It can be

@@ -62,6 +62,9 @@ $HOME/.sbws
    Default sbws home, where it stores measurement data files,
    bandwidth list files and tor process data.
 
+$XDG_RUNTIME_DIR/sbws
+  Runtime directory for the tor process launched by ``sbws``.
+
 SEE ALSO
 ---------
 

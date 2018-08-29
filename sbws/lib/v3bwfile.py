@@ -33,12 +33,16 @@ LINE_TERMINATOR = TERMINATOR + LINE_SEP
 
 # KeyValue separator in Bandwidth Lines
 BW_KEYVALUE_SEP_V110 = ' '
-BW_EXTRA_ARG_KEYVALUES = ['master_key_ed25519', 'nick', 'rtt', 'time',
-                          'success', 'error_stream', 'error_circ',
-                          'error_misc']
+# not inclding in the files the extra bws for now
+BW_KEYVALUES_BASIC = ['node_id', 'bw']
+BW_KEYVALUES_FILE = BW_KEYVALUES_BASIC + \
+                    ['master_key_ed25519', 'nick', 'rtt', 'time',
+                     'success', 'error_stream', 'error_circ', 'error_misc']
+BW_KEYVALUES_EXTRA_BWS = ['bw_bs_median', 'bw_bs_mean', 'desc_avg_bw_bs']
+BW_KEYVALUES_EXTRA = BW_KEYVALUES_FILE + BW_KEYVALUES_EXTRA_BWS
 BW_KEYVALUES_INT = ['bw', 'rtt', 'success', 'error_stream',
-                    'error_circ', 'error_misc']
-BW_KEYVALUES = ['node_id', 'bw'] + BW_EXTRA_ARG_KEYVALUES
+                    'error_circ', 'error_misc'] + BW_KEYVALUES_EXTRA_BWS
+BW_KEYVALUES = BW_KEYVALUES_BASIC + BW_KEYVALUES_EXTRA
 
 
 def num_results_of_type(results, type_str):
@@ -222,26 +226,43 @@ class V3BWLine(object):
         self.node_id = node_id
         self.bw = bw
         [setattr(self, k, v) for k, v in kwargs.items()
-         if k in BW_EXTRA_ARG_KEYVALUES]
+         if k in BW_KEYVALUES_EXTRA]
 
     def __str__(self):
         return self.bw_strv110
 
     @classmethod
     def from_results(cls, results):
+        """Convert sbws results to relays' Bandwidth Lines
+
+        ``bs`` stands for Bytes/seconds
+        ``bw_bs_mean`` means the bw is obtained from the mean of the all the
+        downloads' bandwidth.
+        Downloads' bandwidth are calculated as the amount of data received
+        divided by the the time it took to received.
+        bw = data (Bytes) / time (seconds)
+        """
         success_results = [r for r in results if isinstance(r, ResultSuccess)]
-        # log.debug('len(success_results) %s', len(success_results))
         node_id = '$' + results[0].fingerprint
-        bw = cls.bw_from_results(success_results)
         kwargs = dict()
         kwargs['nick'] = results[0].nickname
         if getattr(results[0], 'master_key_ed25519'):
             kwargs['master_key_ed25519'] = results[0].master_key_ed25519
-        kwargs['rtt'] = cls.rtt_from_results(success_results)
         kwargs['time'] = cls.last_time_from_results(results)
         kwargs.update(cls.result_types_from_results(results))
-        bwl = cls(node_id, bw, **kwargs)
-        return bwl
+        # useful args for scaling
+        if success_results:
+            # the most recent should be the last
+            kwargs['desc_avg_bw_bs'] = \
+                success_results[-1].relay_average_bandwidth
+            kwargs['rtt'] = cls.rtt_from_results(success_results)
+            bw = cls.bw_bs_median_from_results(success_results)
+            kwargs['bw_bs_mean'] = cls.bw_bs_mean_from_results(success_results)
+            kwargs['bw_bs_median'] = cls.bw_bs_median_from_results(
+                success_results)
+            bwl = cls(node_id, bw, **kwargs)
+            return bwl
+        return None
 
     @classmethod
     def from_data(cls, data, fingerprint):
@@ -261,6 +282,16 @@ class V3BWLine(object):
         return bw_line
 
     @staticmethod
+    def bw_bs_median_from_results(results):
+        return max(round(median([dl['amount'] / dl['duration']
+                                 for r in results for dl in r.downloads])), 1)
+
+    @staticmethod
+    def bw_bs_mean_from_results(results):
+        return max(round(mean([dl['amount'] / dl['duration']
+                               for r in results for dl in r.downloads])), 1)
+
+    @staticmethod
     def last_time_from_results(results):
         return unixts_to_isodt_str(round(max([r.time for r in results])))
 
@@ -277,32 +308,6 @@ class V3BWLine(object):
                          num_results_of_type(results, rt.value))
                         for rt in _ResultType])
         return rt_dict
-
-    @staticmethod
-    def bw_from_results(results):
-        median_bw = median([dl['amount'] / dl['duration']
-                            for r in results for dl in r.downloads])
-        # If a relay has MaxAdvertisedBandwidth set, they may be capable of
-        # some large amount of bandwidth but prefer if they didn't receive it.
-        # We also could have managed to measure them faster than their
-        # {,Relay}BandwidthRate somehow.
-        #
-        # See https://github.com/pastly/simple-bw-scanner/issues/155 and
-        # https://trac.torproject.org/projects/tor/ticket/8494
-        #
-        # Note how this isn't some measured-by-us average of bandwidth. It's
-        # the first value on the 'bandwidth' line in the relay's server
-        # descriptor.
-        bw = median_bw
-        relay_average_bw = [r.relay_average_bandwidth for r in results
-                            if r.relay_average_bandwidth is not None]
-        if relay_average_bw:
-            median_relay_average_bw = median(relay_average_bw)
-            if median_bw > median_relay_average_bw:
-                bw = median_relay_average_bw
-        # convert to KB and ensure it's at least 1
-        bw_kb = max(round(bw / 1024), 1)
-        return bw_kb
 
     @property
     def bw_keyvalue_tuple_ls(self):
@@ -393,7 +398,7 @@ class V3BWFile(object):
             # min is to limit the bw to descriptor average-bandwidth
             # max to avoid bandwidth with 0 value
             l.bw = max(round(min(l.desc_avg_bw_bs,
-                                 l.bw_bs_median * scale_constant / m)
+                                 l.bw * scale_constant / m)
                              / 1000), 1)
         return sorted(bw_lines_scaled, key=lambda x: x.bw, reverse=reverse)
 

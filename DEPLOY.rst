@@ -34,7 +34,7 @@ To configure destinations, create a configuration file according to
 :doc:`man_sbws.ini`
 
 It is not required, but it is recomended to include a custom scanner
-``nickname`` in ``config.ini``.
+``nickname`` in the configuration file`.
 
 Destination(s) configuration in more detail::
 

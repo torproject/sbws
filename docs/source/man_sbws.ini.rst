@@ -155,6 +155,28 @@ logging
     Format string to use when logging to syslog.
     (Default: %(module)s[%(process)s]: <%(levelname)s> %(message)s)
 
+EXAMPLES
+--------
+
+Example ``destinations`` section::
+
+    [destinations]
+    foo = on
+    bar = on
+    baz = off
+
+    [destinations.foo]
+    # using HTTP
+    url = http://example.org/sbws.bin
+
+    [destinations.bar]
+    # using HTTPS
+    url = https://example.com/data
+
+    [destinations.baz]
+    # this will be ignored
+    url = https://example.net/ask/stan/where/the/file/is.exe
+
 FILES
 -----
 

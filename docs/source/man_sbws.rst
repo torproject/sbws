@@ -40,6 +40,9 @@ Optional arguments
 EXAMPLES
 --------
 
+sbws scanner
+    Run the scanner using the configuration file in ~/.sbws.ini
+
 sbws -c ~/.sbwsrc scanner
     Run the scanner using the configuration file in ~/.sbwsrc
 

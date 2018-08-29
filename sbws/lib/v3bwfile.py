@@ -374,6 +374,16 @@ class V3BWFile(object):
         return str(self.header) + ''.join([str(bw_line)
                                            for bw_line in self.bw_lines])
 
+    @classmethod
+    def from_arg_results(cls, args, conf, results):
+        bw_lines = [V3BWLine.from_results(results[fp]) for fp in results]
+        bw_lines = sorted(bw_lines, key=lambda d: d.bw, reverse=True)
+        if args.scale:
+            bw_lines = scale_lines(bw_lines, args.scale_constant)
+        header = V3BWHeader.from_results(conf, results)
+        f = cls(header, bw_lines)
+        return f
+
     @property
     def total_bw(self):
         return total_bw(self.bw_lines)
@@ -385,16 +395,6 @@ class V3BWFile(object):
     @property
     def avg_bw(self):
         return self.total_bw / self.num_lines
-
-    @classmethod
-    def from_arg_results(cls, args, conf, results):
-        bw_lines = [V3BWLine.from_results(results[fp]) for fp in results]
-        bw_lines = sorted(bw_lines, key=lambda d: d.bw, reverse=True)
-        if args.scale:
-            bw_lines = scale_lines(bw_lines, args.scale_constant)
-        header = V3BWHeader.from_results(conf, results)
-        f = cls(header, bw_lines)
-        return f
 
     def write(self, output):
         if output == '/dev/stdout':

@@ -2,12 +2,13 @@
 """Classes and functions that create the bandwidth measurements document
 (v3bw) used by bandwidth authorities."""
 
+import copy
 import logging
 import os
-from statistics import median
+from statistics import median, mean
 
 from sbws import __version__
-from sbws.globals import SPEC_VERSION, BW_LINE_SIZE
+from sbws.globals import SPEC_VERSION, BW_LINE_SIZE, SCALE_CONSTANT
 from sbws.lib.resultdump import ResultSuccess, _ResultType
 from sbws.util.filelock import DirectoryLock
 from sbws.util.timestamp import now_isodt_str, unixts_to_isodt_str
@@ -38,33 +39,6 @@ BW_EXTRA_ARG_KEYVALUES = ['master_key_ed25519', 'nick', 'rtt', 'time',
 BW_KEYVALUES_INT = ['bw', 'rtt', 'success', 'error_stream',
                     'error_circ', 'error_misc']
 BW_KEYVALUES = ['node_id', 'bw'] + BW_EXTRA_ARG_KEYVALUES
-
-
-def total_bw(bw_lines):
-    return sum([l.bw for l in bw_lines])
-
-
-def avg_bw(bw_lines):
-    assert len(bw_lines) > 0
-    return total_bw(bw_lines) / len(bw_lines)
-
-
-def scale_lines(bw_lines, scale_constant):
-    avg = avg_bw(bw_lines)
-    for line in bw_lines:
-        line.bw = round(line.bw / avg * scale_constant)
-    warn_if_not_accurate_enough(bw_lines, scale_constant)
-    return bw_lines
-
-
-def warn_if_not_accurate_enough(bw_lines, scale_constant):
-    margin = 0.001
-    accuracy_ratio = avg_bw(bw_lines) / scale_constant
-    log.info('The generated lines are within {:.5}% of what they should '
-             'be'.format((1 - accuracy_ratio) * 100))
-    if accuracy_ratio < 1 - margin or accuracy_ratio > 1 + margin:
-        log.warning('There was %f%% error and only +/- %f%% is '
-                    'allowed', (1 - accuracy_ratio) * 100, margin * 100)
 
 
 def num_results_of_type(results, type_str):
@@ -387,17 +361,68 @@ class V3BWFile(object):
         f = cls(header, bw_lines)
         return f
 
-    @property
-    def total_bw(self):
-        return total_bw(self.bw_lines)
+    @staticmethod
+    def bw_sbws_scale(bw_lines, scale_constant=SCALE_CONSTANT,
+                      reverse=False):
+        """Return a new V3BwLine list scaled using sbws method.
+
+        :param list bw_lines:
+            bw lines to scale, not self.bw_lines,
+            since this method will be before self.bw_lines have been
+            initialized.
+        :param int scale_constant:
+            the constant to multiply by the ratio and
+            the bandwidth to obtain the new bandwidth
+        :returns list: V3BwLine list
+        """
+        # If a relay has MaxAdvertisedBandwidth set, they may be capable of
+        # some large amount of bandwidth but prefer if they didn't receive it.
+        # We also could have managed to measure them faster than their
+        # {,Relay}BandwidthRate somehow.
+        #
+        # See https://github.com/pastly/simple-bw-scanner/issues/155 and
+        # https://trac.torproject.org/projects/tor/ticket/8494
+        #
+        # Note how this isn't some measured-by-us average of bandwidth. It's
+        # the first value on the 'bandwidth' line in the relay's server
+        # descriptor.
+        log.debug('Scaling bandwidth using sbws method.')
+        m = median([l.bw for l in bw_lines])
+        bw_lines_scaled = copy.deepcopy(bw_lines)
+        for l in bw_lines_scaled:
+            # min is to limit the bw to descriptor average-bandwidth
+            # max to avoid bandwidth with 0 value
+            l.bw = max(round(min(l.desc_avg_bw_bs,
+                                 l.bw_bs_median * scale_constant / m)
+                             / 1000), 1)
+        return sorted(bw_lines_scaled, key=lambda x: x.bw, reverse=reverse)
+
+    @staticmethod
+    def warn_if_not_accurate_enough(bw_lines,
+                                    scale_constant=SCALE_CONSTANT):
+        margin = 0.001
+        accuracy_ratio = median([l.bw for l in bw_lines]) / scale_constant
+        log.info('The generated lines are within {:.5}% of what they should '
+                 'be'.format((1 - accuracy_ratio) * 100))
+        if accuracy_ratio < 1 - margin or accuracy_ratio > 1 + margin:
+            log.warning('There was %f%% error and only +/- %f%% is '
+                        'allowed', (1 - accuracy_ratio) * 100, margin * 100)
 
     @property
-    def num_lines(self):
+    def sum_bw(self):
+        return sum([l.bw for l in self.bw_lines])
+
+    @property
+    def num(self):
         return len(self.bw_lines)
 
     @property
-    def avg_bw(self):
-        return self.total_bw / self.num_lines
+    def mean_bw(self):
+        return mean([l.bw for l in self.bw_lines])
+
+    @property
+    def median_bw(self):
+        return median([l.bw for l in self.bw_lines])
 
     def write(self, output):
         if output == '/dev/stdout':

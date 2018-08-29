@@ -53,7 +53,7 @@ Destination(s) configuration in more detail::
     url = http://example.org/sbws.bin
 
     [destinations.bar]
-    url = https://example.com
+    url = https://example.com/data
 
     [destinations.baz]
     url = https://example.net/ask/stan/where/the/file/is.exe

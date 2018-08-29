@@ -16,8 +16,9 @@ well connected machines.
 :term:`destination` requirements
 ------------------------------------
 
-- A Web server installed and running that supports HEAD and GET
-  requests (``apache`` and ``nginx`` fit this description)
+- A Web server installed and running that supports HTTP GET, HEAD and
+  Range (:rfc:`7233`) requests.
+  ``Apache`` HTTP Server and ``Nginx`` support them.
 - Optional support for TLS
 - A large file; at the time of writing, at least 1 GiB in size
 

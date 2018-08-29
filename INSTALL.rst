@@ -96,7 +96,7 @@ To build the documentation diagrams::
 
     cd docs/ && make umlsvg
 
-The generated diagrams will be in `docs/build/images/`.
+The generated diagrams will be in ``docs/build/images/``.
 
 .. _virtualenv: https://virtualenv.pypa.io/en/stable/installation/
 .. _Stem: https://stem.torproject.org/

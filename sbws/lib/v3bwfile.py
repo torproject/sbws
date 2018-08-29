@@ -109,6 +109,74 @@ class V3BWHeader(object):
         [setattr(self, k, v) for k, v in kwargs.items()
          if k in EXTRA_ARG_KEYVALUES]
 
+    def __str__(self):
+        if self.version == '1.1.0':
+            return self.strv110
+        return self.strv200
+
+    @classmethod
+    def from_results(cls, conf, results):
+        kwargs = dict()
+        latest_bandwidth = cls.latest_bandwidth_from_results(results)
+        earliest_bandwidth = cls.earliest_bandwidth_from_results(results)
+        generator_started = cls.generator_started_from_file(conf)
+        timestamp = str(latest_bandwidth)
+        kwargs['latest_bandwidth'] = unixts_to_isodt_str(latest_bandwidth)
+        kwargs['earliest_bandwidth'] = unixts_to_isodt_str(earliest_bandwidth)
+        if generator_started is not None:
+            kwargs['generator_started'] = generator_started
+        h = cls(timestamp, **kwargs)
+        return h
+
+    @classmethod
+    def from_lines_v110(cls, lines):
+        """
+        :param list lines: list of lines to parse
+        :returns: tuple of V3BWHeader object and non-header lines
+        """
+        assert isinstance(lines, list)
+        try:
+            index_terminator = lines.index(TERMINATOR)
+        except ValueError:
+            # is not a bw file or is v100
+            log.warn('Terminator is not in lines')
+            return None
+        ts = lines[0]
+        kwargs = dict([l.split(KEYVALUE_SEP_V110)
+                       for l in lines[:index_terminator]
+                       if l.split(KEYVALUE_SEP_V110)[0] in ALL_KEYVALUES])
+        h = cls(ts, **kwargs)
+        return h, lines[index_terminator + 1:]
+
+    @classmethod
+    def from_text_v110(self, text):
+        """
+        :param str text: text to parse
+        :returns: tuple of V3BWHeader object and non-header lines
+        """
+        assert isinstance(text, str)
+        return self.from_lines_v110(text.split(LINE_SEP))
+
+    @staticmethod
+    def generator_started_from_file(conf):
+        '''
+        ISO formatted timestamp for the time when the scanner process most
+        recently started.
+        '''
+        state = State(conf.getpath('paths', 'state_fname'))
+        if 'scanner_started' in state:
+            return state['scanner_started']
+        else:
+            return None
+
+    @staticmethod
+    def latest_bandwidth_from_results(results):
+        return round(max([r.time for fp in results for r in results[fp]]))
+
+    @staticmethod
+    def earliest_bandwidth_from_results(results):
+        return round(min([r.time for fp in results for r in results[fp]]))
+
     @property
     def keyvalue_unordered_tuple_ls(self):
         """Return list of KeyValue tuples that do not have specific order."""
@@ -150,77 +218,9 @@ class V3BWHeader(object):
             LINE_TERMINATOR
         return header_str
 
-    def __str__(self):
-        if self.version == '1.1.0':
-            return self.strv110
-        return self.strv200
-
-    @classmethod
-    def from_lines_v110(cls, lines):
-        """
-        :param list lines: list of lines to parse
-        :returns: tuple of V3BWHeader object and non-header lines
-        """
-        assert isinstance(lines, list)
-        try:
-            index_terminator = lines.index(TERMINATOR)
-        except ValueError:
-            # is not a bw file or is v100
-            log.warn('Terminator is not in lines')
-            return None
-        ts = lines[0]
-        kwargs = dict([l.split(KEYVALUE_SEP_V110)
-                       for l in lines[:index_terminator]
-                       if l.split(KEYVALUE_SEP_V110)[0] in ALL_KEYVALUES])
-        h = cls(ts, **kwargs)
-        return h, lines[index_terminator + 1:]
-
-    @classmethod
-    def from_text_v110(self, text):
-        """
-        :param str text: text to parse
-        :returns: tuple of V3BWHeader object and non-header lines
-        """
-        assert isinstance(text, str)
-        return self.from_lines_v110(text.split(LINE_SEP))
-
     @property
     def num_lines(self):
         return len(self.__str__().split(LINE_SEP))
-
-    @staticmethod
-    def generator_started_from_file(conf):
-        '''
-        ISO formatted timestamp for the time when the scanner process most
-        recently started.
-        '''
-        state = State(conf.getpath('paths', 'state_fname'))
-        if 'scanner_started' in state:
-            return state['scanner_started']
-        else:
-            return None
-
-    @staticmethod
-    def latest_bandwidth_from_results(results):
-        return round(max([r.time for fp in results for r in results[fp]]))
-
-    @staticmethod
-    def earliest_bandwidth_from_results(results):
-        return round(min([r.time for fp in results for r in results[fp]]))
-
-    @classmethod
-    def from_results(cls, conf, results):
-        kwargs = dict()
-        latest_bandwidth = cls.latest_bandwidth_from_results(results)
-        earliest_bandwidth = cls.earliest_bandwidth_from_results(results)
-        generator_started = cls.generator_started_from_file(conf)
-        timestamp = str(latest_bandwidth)
-        kwargs['latest_bandwidth'] = unixts_to_isodt_str(latest_bandwidth)
-        kwargs['earliest_bandwidth'] = unixts_to_isodt_str(earliest_bandwidth)
-        if generator_started is not None:
-            kwargs['generator_started'] = generator_started
-        h = cls(timestamp, **kwargs)
-        return h
 
 
 class V3BWLine(object):

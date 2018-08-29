@@ -48,9 +48,9 @@ class State:
         self._state = self._read()
 
     def _read(self):
+        if not os.path.exists(self._fname):
+            return {}
         with FileLock(self._fname):
-            if not os.path.exists(self._fname):
-                return {}
             with open(self._fname, 'rt') as fd:
                 return json.load(fd)
 

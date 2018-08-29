@@ -6,7 +6,7 @@ Installing Simple Bandwidth Scanner
 The prefered method to install ``sbws`` is to install it from your system
 distribution.
 Currently there is not any system distribution package.
-In the meanwhile, follow the following steps.
+In the meantime, follow the following steps.
 
 System requirements
 --------------------

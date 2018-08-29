@@ -359,12 +359,21 @@ class V3BWFile(object):
                      scale_constant=None):
         bw_lines = [V3BWLine.from_results(results[fp]) for fp in results]
         bw_lines = sorted(bw_lines, key=lambda d: d.bw, reverse=True)
-        if scale_constant:
+        if scale_constant is not None:
             bw_lines = cls.bw_sbws_scale(bw_lines, scale_constant)
             cls.warn_if_not_accurate_enough(bw_lines, scale_constant)
+        else:
+            bw_lines = cls.bw_kb(bw_lines)
         header = V3BWHeader.from_results(results, state_fpath)
         f = cls(header, bw_lines)
         return f
+
+    @staticmethod
+    def bw_kb(bw_lines, reverse=False):
+        bw_lines_scaled = copy.deepcopy(bw_lines)
+        for l in bw_lines_scaled:
+            l.bw = max(round(l.bw / 1000), 1)
+        return sorted(bw_lines_scaled, key=lambda x: x.bw, reverse=reverse)
 
     @staticmethod
     def bw_sbws_scale(bw_lines, scale_constant=SCALE_CONSTANT,

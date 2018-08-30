@@ -278,7 +278,11 @@ class V3BWLine(object):
         for k, v in kwargs.items():
             if k in BW_KEYVALUES_INT:
                 kwargs[k] = int(v)
-        bw_line = cls(**kwargs)
+        node_id = kwargs['node_id']
+        bw = kwargs['bw']
+        del kwargs['node_id']
+        del kwargs['bw']
+        bw_line = cls(node_id, bw, **kwargs)
         return bw_line
 
     @staticmethod

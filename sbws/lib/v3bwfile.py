@@ -8,7 +8,10 @@ import os
 from statistics import median, mean
 
 from sbws import __version__
-from sbws.globals import SPEC_VERSION, BW_LINE_SIZE, SCALE_CONSTANT
+from sbws.globals import (SPEC_VERSION, BW_LINE_SIZE, SBWS_SCALE_CONSTANT,
+                          TORFLOW_SCALING, SBWS_SCALING, TORFLOW_BW_MARGIN,
+                          TORFLOW_OBS_LAST, TORFLOW_OBS_MEAN,
+                          fail_hard)
 from sbws.lib.resultdump import ResultSuccess, _ResultType
 from sbws.util.filelock import DirectoryLock
 from sbws.util.timestamp import now_isodt_str, unixts_to_isodt_str
@@ -38,7 +41,8 @@ BW_KEYVALUES_BASIC = ['node_id', 'bw']
 BW_KEYVALUES_FILE = BW_KEYVALUES_BASIC + \
                     ['master_key_ed25519', 'nick', 'rtt', 'time',
                      'success', 'error_stream', 'error_circ', 'error_misc']
-BW_KEYVALUES_EXTRA_BWS = ['bw_bs_median', 'bw_bs_mean', 'desc_avg_bw_bs']
+BW_KEYVALUES_EXTRA_BWS = ['bw_bs_median', 'bw_bs_mean', 'desc_avg_bw_bs',
+                          'desc_obs_bw_bs_last', 'desc_obs_bw_bs_mean']
 BW_KEYVALUES_EXTRA = BW_KEYVALUES_FILE + BW_KEYVALUES_EXTRA_BWS
 BW_KEYVALUES_INT = ['bw', 'rtt', 'success', 'error_stream',
                     'error_circ', 'error_misc'] + BW_KEYVALUES_EXTRA_BWS
@@ -355,20 +359,52 @@ class V3BWFile(object):
         self.bw_lines = v3bwlines
 
     def __str__(self):
-        return str(self.header) + ''.join([str(bw_line)
+        return str(self.header) + ''.join([str(bw_line) or ''
                                            for bw_line in self.bw_lines])
 
     @classmethod
     def from_results(cls, results, state_fpath='',
-                     scale_constant=None):
-        bw_lines = [V3BWLine.from_results(results[fp]) for fp in results]
-        bw_lines = sorted(bw_lines, key=lambda d: d.bw, reverse=True)
-        if scale_constant is not None:
-            bw_lines = cls.bw_sbws_scale(bw_lines, scale_constant)
-            cls.warn_if_not_accurate_enough(bw_lines, scale_constant)
-        else:
-            bw_lines = cls.bw_kb(bw_lines)
+                     scale_constant=SBWS_SCALE_CONSTANT,
+                     scaling_method=None, torflow_obs=TORFLOW_OBS_LAST,
+                     reverse=False):
+        """Create V3BWFile class from sbws Results.
+
+        :param dict results: see below
+        :param str state_fpath: path to the state file
+        :param int scaling_method:
+            Scaling method to obtain the bandwidth
+            Posiable values: {NONE, SBWS_SCALING, TORFLOW_SCALING} = {0, 1, 2}
+        :param int scale_constant: sbws scaling constant
+        :param int torflow_obs: method to choose descriptor observed bandwidth
+        :param bool reverse: whether to sort the bw lines descending or not
+
+        Results are in the form::
+
+            {'relay_fp1': [Result1, Result2, ...],
+             'relay_fp2': [Result1, Result2, ...]}
+
+        """
+        # TODO: change scaling_method to TORFLOW_SCALING before getting this
+        # in production
+        log.info('Processing results to generate a bandwidth list file.')
         header = V3BWHeader.from_results(results, state_fpath)
+        bw_lines_raw = []
+        for fp in results.keys():
+            l = V3BWLine.from_results(results[fp])
+            if l is not None:
+                bw_lines_raw.append(l)
+        if not bw_lines_raw:
+            return cls(header, [])
+        if scaling_method == SBWS_SCALING:
+            bw_lines = cls.bw_sbws_scale(bw_lines_raw, scale_constant)
+            cls.warn_if_not_accurate_enough(bw_lines, scale_constant)
+            # log.debug(bw_lines[-1])
+        elif scaling_method == TORFLOW_SCALING:
+            bw_lines = cls.bw_torflow_scale(bw_lines_raw, torflow_obs)
+            # log.debug(bw_lines[-1])
+        else:
+            bw_lines = cls.bw_kb(bw_lines_raw)
+            # log.debug(bw_lines[-1])
         f = cls(header, bw_lines)
         return f
 
@@ -380,7 +416,7 @@ class V3BWFile(object):
         return sorted(bw_lines_scaled, key=lambda x: x.bw, reverse=reverse)
 
     @staticmethod
-    def bw_sbws_scale(bw_lines, scale_constant=SCALE_CONSTANT,
+    def bw_sbws_scale(bw_lines, scale_constant=SBWS_SCALE_CONSTANT,
                       reverse=False):
         """Return a new V3BwLine list scaled using sbws method.
 
@@ -417,7 +453,7 @@ class V3BWFile(object):
 
     @staticmethod
     def warn_if_not_accurate_enough(bw_lines,
-                                    scale_constant=SCALE_CONSTANT):
+                                    scale_constant=SBWS_SCALE_CONSTANT):
         margin = 0.001
         accuracy_ratio = median([l.bw for l in bw_lines]) / scale_constant
         log.info('The generated lines are within {:.5}% of what they should '
@@ -425,6 +461,11 @@ class V3BWFile(object):
         if accuracy_ratio < 1 - margin or accuracy_ratio > 1 + margin:
             log.warning('There was %f%% error and only +/- %f%% is '
                         'allowed', (1 - accuracy_ratio) * 100, margin * 100)
+
+    @staticmethod
+    def bw_lines_torflow(bw_lines, desc_obs_bws=TORFLOW_OBS_LAST,
+                         cap=TORFLOW_BW_MARGIN, reverse=False):
+        pass
 
     @property
     def sum_bw(self):

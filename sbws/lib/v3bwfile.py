@@ -317,6 +317,24 @@ class V3BWLine(object):
                         for rt in _ResultType])
         return rt_dict
 
+    @staticmethod
+    def desc_obs_bw_bs_mean_from_results(results):
+        desc_obs_bws = []
+        for r in results:
+            if r.relay_observed_bandwidth is not None:
+                desc_obs_bws.append(r.relay_observed_bandwidth)
+        if desc_obs_bws:
+            return max(round(mean(desc_obs_bws)), 1)
+        return None
+
+    @staticmethod
+    def desc_obs_bw_bs_last_from_results(results):
+        # the last is at the end of the list
+        for r in reversed(results):
+            if r.relay_observed_bandwidth is not None:
+                return r.relay_observed_bandwidth
+        return None
+
     @property
     def bw_keyvalue_tuple_ls(self):
         """Return list of KeyValue Bandwidth Line tuples."""

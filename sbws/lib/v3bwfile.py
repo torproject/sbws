@@ -429,6 +429,16 @@ class V3BWFile(object):
         f = cls(header, bw_lines)
         return f
 
+    @classmethod
+    def from_v110_fpath(cls, fpath):
+        log.info('Parsing bandwidth file %s', fpath)
+        with open(fpath) as fd:
+            text = fd.read()
+        all_lines = text.split(LINE_SEP)
+        header, lines = V3BWHeader.from_lines_v110(all_lines)
+        bw_lines = [V3BWLine.from_bw_line_v110(line) for line in lines]
+        return cls(header, bw_lines)
+
     @staticmethod
     def bw_kb(bw_lines, reverse=False):
         bw_lines_scaled = copy.deepcopy(bw_lines)

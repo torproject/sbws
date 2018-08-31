@@ -259,8 +259,9 @@ class V3BWLine(object):
             kwargs['bw_bs_mean'] = cls.bw_bs_mean_from_results(success_results)
             kwargs['bw_bs_median'] = cls.bw_bs_median_from_results(
                 success_results)
-        bwl = cls(node_id, bw, **kwargs)
-        return bwl
+            bwl = cls(node_id, bw, **kwargs)
+            return bwl
+        return None
 
     @classmethod
     def from_data(cls, data, fingerprint):

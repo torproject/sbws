@@ -724,6 +724,16 @@ class V3BWFile(object):
     def median_bw(self):
         return median([l.bw for l in self.bw_lines])
 
+    def bw_line_for_node_id(self, node_id):
+        """Returns the bandwidth line for a given node fingerprint.
+
+        Used to combine data when plotting.
+        """
+        bwl = [l for l in self.bw_lines if l.node_id == node_id]
+        if bwl:
+            return bwl[0]
+        return None
+
     def to_plt(self, attrs=['bw'], sorted_by=None):
         """Return bandwidth data in a format useful for matplotlib.
 

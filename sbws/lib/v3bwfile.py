@@ -398,6 +398,7 @@ class V3BWFile(object):
     def from_results(cls, results, state_fpath='',
                      scale_constant=SBWS_SCALE_CONSTANT,
                      scaling_method=None, torflow_obs=TORFLOW_OBS_LAST,
+                     torflow_cap=TORFLOW_BW_MARGIN,
                      reverse=False):
         """Create V3BWFile class from sbws Results.
 
@@ -432,7 +433,8 @@ class V3BWFile(object):
             cls.warn_if_not_accurate_enough(bw_lines, scale_constant)
             # log.debug(bw_lines[-1])
         elif scaling_method == TORFLOW_SCALING:
-            bw_lines = cls.bw_torflow_scale(bw_lines_raw, torflow_obs)
+            bw_lines = cls.bw_torflow_scale(bw_lines_raw, torflow_obs,
+                                            torflow_cap)
             # log.debug(bw_lines[-1])
         else:
             bw_lines = cls.bw_kb(bw_lines_raw)
@@ -685,26 +687,28 @@ class V3BWFile(object):
         muf = mean([min(l.bw_bs_mean, mu) for l in bw_lines])
         # bw sum (Torflow's tot_net_bw or tot_sbw)
         sum_bw = sum([l.bw_bs_mean for l in bw_lines])
-        # Torflow's clipping, not being applied
-        # hlimit = sum_bw * TORFLOW_BW_MARGIN
+        # Torflow's clipping
+        hlimit = sum_bw * TORFLOW_BW_MARGIN
         log.debug('sum %s', sum_bw)
         log.debug('mu %s', mu)
         log.debug('muf %s', muf)
-        # log.debug('hlimit %s', hlimit)
+        log.debug('hlimit %s', hlimit)
         for l in bw_lines_tf:
             if desc_obs_bws == TORFLOW_OBS_LAST:
                 desc_obs_bw = l.desc_obs_bw_bs_last
             elif desc_obs_bws == TORFLOW_OBS_MEAN:
                 desc_obs_bw = l.desc_obs_bw_bs_mean
             # just applying the formula above:
-            l.bw = max(round(
-                max(
-                    # ratio
-                    l.bw_bs_mean / mu,
-                    # ratio filtered
-                    min(l.bw_bs_mean, mu) / muf
-                    ) * desc_obs_bw
-                / 1000), 1)
+            bw_new = max(
+                    l.bw_bs_mean / mu,  # ratio
+                    min(l.bw_bs_mean, mu) / muf  # ratio filtered
+                    ) * desc_obs_bw \
+                / 1000  # convert to KB
+            # Cap maximum bw
+            if cap is not None:
+                bw_new = min(hlimit, bw_new)
+            # remove decimals and avoid 0
+            l.bw = max(round(bw_new), 1)
         return sorted(bw_lines_tf, key=lambda x: x.bw, reverse=reverse)
 
     @property

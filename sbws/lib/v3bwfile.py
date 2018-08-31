@@ -2,12 +2,13 @@
 """Classes and functions that create the bandwidth measurements document
 (v3bw) used by bandwidth authorities."""
 
+import copy
 import logging
 import os
-from statistics import median
+from statistics import median, mean
 
 from sbws import __version__
-from sbws.globals import SPEC_VERSION, BW_LINE_SIZE
+from sbws.globals import SPEC_VERSION, BW_LINE_SIZE, SCALE_CONSTANT
 from sbws.lib.resultdump import ResultSuccess, _ResultType
 from sbws.util.filelock import DirectoryLock
 from sbws.util.timestamp import now_isodt_str, unixts_to_isodt_str
@@ -32,39 +33,16 @@ LINE_TERMINATOR = TERMINATOR + LINE_SEP
 
 # KeyValue separator in Bandwidth Lines
 BW_KEYVALUE_SEP_V110 = ' '
-BW_EXTRA_ARG_KEYVALUES = ['master_key_ed25519', 'nick', 'rtt', 'time',
-                          'success', 'error_stream', 'error_circ',
-                          'error_misc']
+# not inclding in the files the extra bws for now
+BW_KEYVALUES_BASIC = ['node_id', 'bw']
+BW_KEYVALUES_FILE = BW_KEYVALUES_BASIC + \
+                    ['master_key_ed25519', 'nick', 'rtt', 'time',
+                     'success', 'error_stream', 'error_circ', 'error_misc']
+BW_KEYVALUES_EXTRA_BWS = ['bw_bs_median', 'bw_bs_mean', 'desc_avg_bw_bs']
+BW_KEYVALUES_EXTRA = BW_KEYVALUES_FILE + BW_KEYVALUES_EXTRA_BWS
 BW_KEYVALUES_INT = ['bw', 'rtt', 'success', 'error_stream',
-                    'error_circ', 'error_misc']
-BW_KEYVALUES = ['node_id', 'bw'] + BW_EXTRA_ARG_KEYVALUES
-
-
-def total_bw(bw_lines):
-    return sum([l.bw for l in bw_lines])
-
-
-def avg_bw(bw_lines):
-    assert len(bw_lines) > 0
-    return total_bw(bw_lines) / len(bw_lines)
-
-
-def scale_lines(bw_lines, scale_constant):
-    avg = avg_bw(bw_lines)
-    for line in bw_lines:
-        line.bw = round(line.bw / avg * scale_constant)
-    warn_if_not_accurate_enough(bw_lines, scale_constant)
-    return bw_lines
-
-
-def warn_if_not_accurate_enough(bw_lines, scale_constant):
-    margin = 0.001
-    accuracy_ratio = avg_bw(bw_lines) / scale_constant
-    log.info('The generated lines are within {:.5}% of what they should '
-             'be'.format((1 - accuracy_ratio) * 100))
-    if accuracy_ratio < 1 - margin or accuracy_ratio > 1 + margin:
-        log.warning('There was %f%% error and only +/- %f%% is '
-                    'allowed', (1 - accuracy_ratio) * 100, margin * 100)
+                    'error_circ', 'error_misc'] + BW_KEYVALUES_EXTRA_BWS
+BW_KEYVALUES = BW_KEYVALUES_BASIC + BW_KEYVALUES_EXTRA
 
 
 def num_results_of_type(results, type_str):
@@ -109,6 +87,75 @@ class V3BWHeader(object):
         [setattr(self, k, v) for k, v in kwargs.items()
          if k in EXTRA_ARG_KEYVALUES]
 
+    def __str__(self):
+        if self.version == '1.1.0':
+            return self.strv110
+        return self.strv200
+
+    @classmethod
+    def from_results(cls, results, state_fpath=''):
+        kwargs = dict()
+        latest_bandwidth = cls.latest_bandwidth_from_results(results)
+        earliest_bandwidth = cls.earliest_bandwidth_from_results(results)
+        generator_started = cls.generator_started_from_file(state_fpath)
+        timestamp = str(latest_bandwidth)
+        kwargs['latest_bandwidth'] = unixts_to_isodt_str(latest_bandwidth)
+        kwargs['earliest_bandwidth'] = unixts_to_isodt_str(earliest_bandwidth)
+        if generator_started is not None:
+            kwargs['generator_started'] = generator_started
+        h = cls(timestamp, **kwargs)
+        return h
+
+    @classmethod
+    def from_lines_v110(cls, lines):
+        """
+        :param list lines: list of lines to parse
+        :returns: tuple of V3BWHeader object and non-header lines
+        """
+        assert isinstance(lines, list)
+        try:
+            index_terminator = lines.index(TERMINATOR)
+        except ValueError:
+            # is not a bw file or is v100
+            log.warn('Terminator is not in lines')
+            return None
+        ts = lines[0]
+        kwargs = dict([l.split(KEYVALUE_SEP_V110)
+                       for l in lines[:index_terminator]
+                       if l.split(KEYVALUE_SEP_V110)[0] in ALL_KEYVALUES])
+        h = cls(ts, **kwargs)
+        # last line is new line
+        return h, lines[index_terminator + 1:-1]
+
+    @classmethod
+    def from_text_v110(self, text):
+        """
+        :param str text: text to parse
+        :returns: tuple of V3BWHeader object and non-header lines
+        """
+        assert isinstance(text, str)
+        return self.from_lines_v110(text.split(LINE_SEP))
+
+    @staticmethod
+    def generator_started_from_file(state_fpath):
+        '''
+        ISO formatted timestamp for the time when the scanner process most
+        recently started.
+        '''
+        state = State(state_fpath)
+        if 'scanner_started' in state:
+            return state['scanner_started']
+        else:
+            return None
+
+    @staticmethod
+    def latest_bandwidth_from_results(results):
+        return round(max([r.time for fp in results for r in results[fp]]))
+
+    @staticmethod
+    def earliest_bandwidth_from_results(results):
+        return round(min([r.time for fp in results for r in results[fp]]))
+
     @property
     def keyvalue_unordered_tuple_ls(self):
         """Return list of KeyValue tuples that do not have specific order."""
@@ -150,77 +197,9 @@ class V3BWHeader(object):
             LINE_TERMINATOR
         return header_str
 
-    def __str__(self):
-        if self.version == '1.1.0':
-            return self.strv110
-        return self.strv200
-
-    @classmethod
-    def from_lines_v110(cls, lines):
-        """
-        :param list lines: list of lines to parse
-        :returns: tuple of V3BWHeader object and non-header lines
-        """
-        assert isinstance(lines, list)
-        try:
-            index_terminator = lines.index(TERMINATOR)
-        except ValueError:
-            # is not a bw file or is v100
-            log.warn('Terminator is not in lines')
-            return None
-        ts = lines[0]
-        kwargs = dict([l.split(KEYVALUE_SEP_V110)
-                       for l in lines[:index_terminator]
-                       if l.split(KEYVALUE_SEP_V110)[0] in ALL_KEYVALUES])
-        h = cls(ts, **kwargs)
-        return h, lines[index_terminator + 1:]
-
-    @classmethod
-    def from_text_v110(self, text):
-        """
-        :param str text: text to parse
-        :returns: tuple of V3BWHeader object and non-header lines
-        """
-        assert isinstance(text, str)
-        return self.from_lines_v110(text.split(LINE_SEP))
-
     @property
     def num_lines(self):
         return len(self.__str__().split(LINE_SEP))
-
-    @staticmethod
-    def generator_started_from_file(conf):
-        '''
-        ISO formatted timestamp for the time when the scanner process most
-        recently started.
-        '''
-        state = State(conf.getpath('paths', 'state_fname'))
-        if 'scanner_started' in state:
-            return state['scanner_started']
-        else:
-            return None
-
-    @staticmethod
-    def latest_bandwidth_from_results(results):
-        return round(max([r.time for fp in results for r in results[fp]]))
-
-    @staticmethod
-    def earliest_bandwidth_from_results(results):
-        return round(min([r.time for fp in results for r in results[fp]]))
-
-    @classmethod
-    def from_results(cls, conf, results):
-        kwargs = dict()
-        latest_bandwidth = cls.latest_bandwidth_from_results(results)
-        earliest_bandwidth = cls.earliest_bandwidth_from_results(results)
-        generator_started = cls.generator_started_from_file(conf)
-        timestamp = str(latest_bandwidth)
-        kwargs['latest_bandwidth'] = unixts_to_isodt_str(latest_bandwidth)
-        kwargs['earliest_bandwidth'] = unixts_to_isodt_str(earliest_bandwidth)
-        if generator_started is not None:
-            kwargs['generator_started'] = generator_started
-        h = cls(timestamp, **kwargs)
-        return h
 
 
 class V3BWLine(object):
@@ -247,7 +226,92 @@ class V3BWLine(object):
         self.node_id = node_id
         self.bw = bw
         [setattr(self, k, v) for k, v in kwargs.items()
-         if k in BW_EXTRA_ARG_KEYVALUES]
+         if k in BW_KEYVALUES_EXTRA]
+
+    def __str__(self):
+        return self.bw_strv110
+
+    @classmethod
+    def from_results(cls, results):
+        """Convert sbws results to relays' Bandwidth Lines
+
+        ``bs`` stands for Bytes/seconds
+        ``bw_bs_mean`` means the bw is obtained from the mean of the all the
+        downloads' bandwidth.
+        Downloads' bandwidth are calculated as the amount of data received
+        divided by the the time it took to received.
+        bw = data (Bytes) / time (seconds)
+        """
+        success_results = [r for r in results if isinstance(r, ResultSuccess)]
+        node_id = '$' + results[0].fingerprint
+        kwargs = dict()
+        kwargs['nick'] = results[0].nickname
+        if getattr(results[0], 'master_key_ed25519'):
+            kwargs['master_key_ed25519'] = results[0].master_key_ed25519
+        kwargs['time'] = cls.last_time_from_results(results)
+        kwargs.update(cls.result_types_from_results(results))
+        # useful args for scaling
+        if success_results:
+            # the most recent should be the last
+            kwargs['desc_avg_bw_bs'] = \
+                success_results[-1].relay_average_bandwidth
+            kwargs['rtt'] = cls.rtt_from_results(success_results)
+            bw = cls.bw_bs_median_from_results(success_results)
+            kwargs['bw_bs_mean'] = cls.bw_bs_mean_from_results(success_results)
+            kwargs['bw_bs_median'] = cls.bw_bs_median_from_results(
+                success_results)
+            bwl = cls(node_id, bw, **kwargs)
+            return bwl
+        return None
+
+    @classmethod
+    def from_data(cls, data, fingerprint):
+        assert fingerprint in data
+        return cls.from_results(data[fingerprint])
+
+    @classmethod
+    def from_bw_line_v110(cls, line):
+        assert isinstance(line, str)
+        kwargs = dict([kv.split(KEYVALUE_SEP_V110)
+                       for kv in line.split(BW_KEYVALUE_SEP_V110)
+                       if kv.split(KEYVALUE_SEP_V110)[0] in BW_KEYVALUES])
+        for k, v in kwargs.items():
+            if k in BW_KEYVALUES_INT:
+                kwargs[k] = int(v)
+        node_id = kwargs['node_id']
+        bw = kwargs['bw']
+        del kwargs['node_id']
+        del kwargs['bw']
+        bw_line = cls(node_id, bw, **kwargs)
+        return bw_line
+
+    @staticmethod
+    def bw_bs_median_from_results(results):
+        return max(round(median([dl['amount'] / dl['duration']
+                                 for r in results for dl in r.downloads])), 1)
+
+    @staticmethod
+    def bw_bs_mean_from_results(results):
+        return max(round(mean([dl['amount'] / dl['duration']
+                               for r in results for dl in r.downloads])), 1)
+
+    @staticmethod
+    def last_time_from_results(results):
+        return unixts_to_isodt_str(round(max([r.time for r in results])))
+
+    @staticmethod
+    def rtt_from_results(results):
+        # convert from miliseconds to seconds
+        rtts = [(round(rtt * 1000)) for r in results for rtt in r.rtts]
+        rtt = round(median(rtts))
+        return rtt
+
+    @staticmethod
+    def result_types_from_results(results):
+        rt_dict = dict([(result_type_to_key(rt.value),
+                         num_results_of_type(results, rt.value))
+                        for rt in _ResultType])
+        return rt_dict
 
     @property
     def bw_keyvalue_tuple_ls(self):
@@ -278,86 +342,6 @@ class V3BWLine(object):
                      len(bw_line_str), BW_LINE_SIZE)
         return bw_line_str
 
-    def __str__(self):
-        return self.bw_strv110
-
-    @classmethod
-    def from_bw_line_v110(cls, line):
-        assert isinstance(line, str)
-        kwargs = dict([kv.split(KEYVALUE_SEP_V110)
-                       for kv in line.split(BW_KEYVALUE_SEP_V110)
-                       if kv.split(KEYVALUE_SEP_V110)[0] in BW_KEYVALUES])
-        for k, v in kwargs.items():
-            if k in BW_KEYVALUES_INT:
-                kwargs[k] = int(v)
-        bw_line = cls(**kwargs)
-        return bw_line
-
-    @staticmethod
-    def bw_from_results(results):
-        median_bw = median([dl['amount'] / dl['duration']
-                            for r in results for dl in r.downloads])
-        # If a relay has MaxAdvertisedBandwidth set, they may be capable of
-        # some large amount of bandwidth but prefer if they didn't receive it.
-        # We also could have managed to measure them faster than their
-        # {,Relay}BandwidthRate somehow.
-        #
-        # See https://github.com/pastly/simple-bw-scanner/issues/155 and
-        # https://trac.torproject.org/projects/tor/ticket/8494
-        #
-        # Note how this isn't some measured-by-us average of bandwidth. It's
-        # the first value on the 'bandwidth' line in the relay's server
-        # descriptor.
-        bw = median_bw
-        relay_average_bw = [r.relay_average_bandwidth for r in results
-                            if r.relay_average_bandwidth is not None]
-        if relay_average_bw:
-            median_relay_average_bw = median(relay_average_bw)
-            if median_bw > median_relay_average_bw:
-                bw = median_relay_average_bw
-        # convert to KB and ensure it's at least 1
-        bw_kb = max(round(bw / 1024), 1)
-        return bw_kb
-
-    @staticmethod
-    def last_time_from_results(results):
-        return unixts_to_isodt_str(round(max([r.time for r in results])))
-
-    @staticmethod
-    def rtt_from_results(results):
-        # convert from miliseconds to seconds
-        rtts = [(round(rtt * 1000)) for r in results for rtt in r.rtts]
-        rtt = round(median(rtts))
-        return rtt
-
-    @staticmethod
-    def result_types_from_results(results):
-        rt_dict = dict([(result_type_to_key(rt.value),
-                         num_results_of_type(results, rt.value))
-                        for rt in _ResultType])
-        return rt_dict
-
-    @classmethod
-    def from_results(cls, results):
-        success_results = [r for r in results if isinstance(r, ResultSuccess)]
-        # log.debug('len(success_results) %s', len(success_results))
-        node_id = '$' + results[0].fingerprint
-        bw = cls.bw_from_results(success_results)
-        kwargs = dict()
-        kwargs['nick'] = results[0].nickname
-        if getattr(results[0], 'master_key_ed25519'):
-            kwargs['master_key_ed25519'] = results[0].master_key_ed25519
-        kwargs['rtt'] = cls.rtt_from_results(success_results)
-        kwargs['time'] = cls.last_time_from_results(results)
-        kwargs.update(cls.result_types_from_results(results))
-        bwl = cls(node_id, bw, **kwargs)
-        return bwl
-
-    @classmethod
-    def from_data(cls, data, fingerprint):
-        assert fingerprint in data
-        return cls.from_results(data[fingerprint])
-
 
 class V3BWFile(object):
     """
@@ -374,27 +358,89 @@ class V3BWFile(object):
         return str(self.header) + ''.join([str(bw_line)
                                            for bw_line in self.bw_lines])
 
-    @property
-    def total_bw(self):
-        return total_bw(self.bw_lines)
+    @classmethod
+    def from_results(cls, results, state_fpath='',
+                     scale_constant=None):
+        bw_lines = [V3BWLine.from_results(results[fp]) for fp in results]
+        bw_lines = sorted(bw_lines, key=lambda d: d.bw, reverse=True)
+        if scale_constant is not None:
+            bw_lines = cls.bw_sbws_scale(bw_lines, scale_constant)
+            cls.warn_if_not_accurate_enough(bw_lines, scale_constant)
+        else:
+            bw_lines = cls.bw_kb(bw_lines)
+        header = V3BWHeader.from_results(results, state_fpath)
+        f = cls(header, bw_lines)
+        return f
+
+    @staticmethod
+    def bw_kb(bw_lines, reverse=False):
+        bw_lines_scaled = copy.deepcopy(bw_lines)
+        for l in bw_lines_scaled:
+            l.bw = max(round(l.bw / 1000), 1)
+        return sorted(bw_lines_scaled, key=lambda x: x.bw, reverse=reverse)
+
+    @staticmethod
+    def bw_sbws_scale(bw_lines, scale_constant=SCALE_CONSTANT,
+                      reverse=False):
+        """Return a new V3BwLine list scaled using sbws method.
+
+        :param list bw_lines:
+            bw lines to scale, not self.bw_lines,
+            since this method will be before self.bw_lines have been
+            initialized.
+        :param int scale_constant:
+            the constant to multiply by the ratio and
+            the bandwidth to obtain the new bandwidth
+        :returns list: V3BwLine list
+        """
+        # If a relay has MaxAdvertisedBandwidth set, they may be capable of
+        # some large amount of bandwidth but prefer if they didn't receive it.
+        # We also could have managed to measure them faster than their
+        # {,Relay}BandwidthRate somehow.
+        #
+        # See https://github.com/pastly/simple-bw-scanner/issues/155 and
+        # https://trac.torproject.org/projects/tor/ticket/8494
+        #
+        # Note how this isn't some measured-by-us average of bandwidth. It's
+        # the first value on the 'bandwidth' line in the relay's server
+        # descriptor.
+        log.debug('Scaling bandwidth using sbws method.')
+        m = median([l.bw for l in bw_lines])
+        bw_lines_scaled = copy.deepcopy(bw_lines)
+        for l in bw_lines_scaled:
+            # min is to limit the bw to descriptor average-bandwidth
+            # max to avoid bandwidth with 0 value
+            l.bw = max(round(min(l.desc_avg_bw_bs,
+                                 l.bw * scale_constant / m)
+                             / 1000), 1)
+        return sorted(bw_lines_scaled, key=lambda x: x.bw, reverse=reverse)
+
+    @staticmethod
+    def warn_if_not_accurate_enough(bw_lines,
+                                    scale_constant=SCALE_CONSTANT):
+        margin = 0.001
+        accuracy_ratio = median([l.bw for l in bw_lines]) / scale_constant
+        log.info('The generated lines are within {:.5}% of what they should '
+                 'be'.format((1 - accuracy_ratio) * 100))
+        if accuracy_ratio < 1 - margin or accuracy_ratio > 1 + margin:
+            log.warning('There was %f%% error and only +/- %f%% is '
+                        'allowed', (1 - accuracy_ratio) * 100, margin * 100)
 
     @property
-    def num_lines(self):
+    def sum_bw(self):
+        return sum([l.bw for l in self.bw_lines])
+
+    @property
+    def num(self):
         return len(self.bw_lines)
 
     @property
-    def avg_bw(self):
-        return self.total_bw / self.num_lines
+    def mean_bw(self):
+        return mean([l.bw for l in self.bw_lines])
 
-    @classmethod
-    def from_arg_results(cls, args, conf, results):
-        bw_lines = [V3BWLine.from_results(results[fp]) for fp in results]
-        bw_lines = sorted(bw_lines, key=lambda d: d.bw, reverse=True)
-        if args.scale:
-            bw_lines = scale_lines(bw_lines, args.scale_constant)
-        header = V3BWHeader.from_results(conf, results)
-        f = cls(header, bw_lines)
-        return f
+    @property
+    def median_bw(self):
+        return median([l.bw for l in self.bw_lines])
 
     def write(self, output):
         if output == '/dev/stdout':

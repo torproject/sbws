@@ -724,6 +724,15 @@ class V3BWFile(object):
     def median_bw(self):
         return median([l.bw for l in self.bw_lines])
 
+    def to_plt(self, attrs=['bw'], sorted_by=None):
+        """Return bandwidth data in a format useful for matplotlib.
+
+        Used from external tool to plot.
+        """
+        x = [i for i in range(0, self.num)]
+        ys = [[getattr(l, k) for l in self.bw_lines] for k in attrs]
+        return x, ys, attrs
+
     def write(self, output):
         if output == '/dev/stdout':
             log.info("Writing to stdout is not supported.")

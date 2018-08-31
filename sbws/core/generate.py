@@ -1,5 +1,5 @@
 from sbws.globals import (fail_hard, SBWS_SCALE_CONSTANT, TORFLOW_SCALING,
-                          SBWS_SCALING, TORFLOW_BW_MARGIN)
+                          SBWS_SCALING, TORFLOW_BW_MARGIN, TORFLOW_ROUND_DIG)
 from sbws.lib.v3bwfile import V3BWFile
 from sbws.lib.resultdump import load_recent_results_in_datadir
 from argparse import ArgumentDefaultsHelpFormatter
@@ -44,6 +44,10 @@ def gen_parser(sub):
                    type=float,
                    help="Cap maximum bw when scaling as Torflow. "
                         "(Default: 0.05)")
+    p.add_argument('-r', '--torflow-round-digs', default=TORFLOW_ROUND_DIG,
+                   type=int,
+                   help="Number of most significant digits to round bw "
+                        "when scaling as Torflow. (Default: 3)")
 
 
 def main(args, conf):
@@ -77,7 +81,8 @@ def main(args, conf):
     state_fpath = conf.getpath('paths', 'state_fname')
     bw_file = V3BWFile.from_results(results, state_fpath, args.scale_constant,
                                     scaling_method,
-                                    torflow_cap=args.torflow_bw_margin)
+                                    torflow_cap=args.torflow_bw_margin,
+                                    torflow_round_digs=args.torflow_round_digs,
     output = args.output or \
         conf.getpath('paths', 'v3bw_fname').format(now_fname())
     bw_file.write(output)

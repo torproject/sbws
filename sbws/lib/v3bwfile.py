@@ -9,8 +9,9 @@ from statistics import median, mean
 
 from sbws import __version__
 from sbws.globals import (SPEC_VERSION, BW_LINE_SIZE, SBWS_SCALE_CONSTANT,
-                          SBWS_SCALING, TORFLOW_BW_MARGIN, TORFLOW_SCALING,
-                          TORFLOW_OBS_LAST, TORFLOW_OBS_MEAN)
+                          TORFLOW_SCALING, SBWS_SCALING, TORFLOW_BW_MARGIN,
+                          TORFLOW_OBS_LAST, TORFLOW_OBS_MEAN,
+                          TORFLOW_ROUND_DIG)
 from sbws.lib.resultdump import ResultSuccess, _ResultType
 from sbws.util.filelock import DirectoryLock
 from sbws.util.timestamp import now_isodt_str, unixts_to_isodt_str
@@ -46,6 +47,12 @@ BW_KEYVALUES_EXTRA = BW_KEYVALUES_FILE + BW_KEYVALUES_EXTRA_BWS
 BW_KEYVALUES_INT = ['bw', 'rtt', 'success', 'error_stream',
                     'error_circ', 'error_misc'] + BW_KEYVALUES_EXTRA_BWS
 BW_KEYVALUES = BW_KEYVALUES_BASIC + BW_KEYVALUES_EXTRA
+
+
+def kb_round_x_sig_dig(bw_bs, digits=TORFLOW_ROUND_DIG):
+    """Convert bw to KB and round to x most significat digits."""
+    bw_kb = bw_bs / 1000
+    return max(int(round(bw_kb, -digits)), 1)
 
 
 def num_results_of_type(results, type_str):
@@ -399,6 +406,7 @@ class V3BWFile(object):
                      scale_constant=SBWS_SCALE_CONSTANT,
                      scaling_method=None, torflow_obs=TORFLOW_OBS_LAST,
                      torflow_cap=TORFLOW_BW_MARGIN,
+                     torflow_round_digs=TORFLOW_ROUND_DIG,
                      reverse=False):
         """Create V3BWFile class from sbws Results.
 
@@ -434,7 +442,7 @@ class V3BWFile(object):
             # log.debug(bw_lines[-1])
         elif scaling_method == TORFLOW_SCALING:
             bw_lines = cls.bw_torflow_scale(bw_lines_raw, torflow_obs,
-                                            torflow_cap)
+                                            torflow_cap, torflow_round_digs)
             # log.debug(bw_lines[-1])
         else:
             bw_lines = cls.bw_kb(bw_lines_raw)
@@ -519,7 +527,8 @@ class V3BWFile(object):
 
     @staticmethod
     def bw_torflow_scale(bw_lines, desc_obs_bws=TORFLOW_OBS_LAST,
-                         cap=TORFLOW_BW_MARGIN, reverse=False):
+                         cap=TORFLOW_BW_MARGIN,
+                         num_round_dig=TORFLOW_ROUND_DIG, reverse=False):
         """
         Obtain final bandwidth measurements applying Torflow's scaling
         method.
@@ -699,11 +708,12 @@ class V3BWFile(object):
             elif desc_obs_bws == TORFLOW_OBS_MEAN:
                 desc_obs_bw = l.desc_obs_bw_bs_mean
             # just applying the formula above:
-            bw_new = max(
+            bw_new = kb_round_x_sig_dig(
+                max(
                     l.bw_bs_mean / mu,  # ratio
                     min(l.bw_bs_mean, mu) / muf  # ratio filtered
-                    ) * desc_obs_bw \
-                / 1000  # convert to KB
+                    ) * desc_obs_bw, \
+                digits=num_round_dig)  # convert to KB
             # Cap maximum bw
             if cap is not None:
                 bw_new = min(hlimit, bw_new)

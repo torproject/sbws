@@ -724,6 +724,22 @@ class V3BWFile(object):
     def median_bw(self):
         return median([l.bw for l in self.bw_lines])
 
+    @property
+    def max_bw(self):
+        return max([l.bw for l in self.bw_lines])
+
+    @property
+    def min_bw(self):
+        return min([l.bw for l in self.bw_lines])
+
+    @property
+    def info_stats(self):
+        if not self.bw_lines:
+            return
+        [log.info(': '.join([attr, str(getattr(self, attr))])) for attr in
+         ['sum_bw', 'mean_bw', 'median_bw', 'num',
+          'max_bw', 'min_bw']]
+
     def bw_line_for_node_id(self, node_id):
         """Returns the bandwidth line for a given node fingerprint.
 

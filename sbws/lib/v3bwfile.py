@@ -264,6 +264,10 @@ class V3BWLine(object):
             kwargs['bw_bs_mean'] = cls.bw_bs_mean_from_results(success_results)
             kwargs['bw_bs_median'] = cls.bw_bs_median_from_results(
                 success_results)
+            kwargs['desc_obs_bw_bs_last'] = \
+                cls.desc_obs_bw_bs_last_from_results(success_results)
+            kwargs['desc_obs_bw_bs_mean'] = \
+                cls.desc_obs_bw_bs_mean_from_results(success_results)
             bwl = cls(node_id, bw, **kwargs)
             return bwl
         return None

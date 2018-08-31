@@ -63,4 +63,4 @@ def main(args, conf):
     output = args.output or \
         conf.getpath('paths', 'v3bw_fname').format(now_fname())
     bw_file.write(output)
-    log.info('Mean bandwidth per line: %f "KiB"', bw_file.avg_bw)
+    log.info('Mean bandwidth per line: %f "KiB"', bw_file.mean_bw)

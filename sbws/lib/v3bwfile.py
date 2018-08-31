@@ -139,6 +139,17 @@ class V3BWHeader(object):
         assert isinstance(text, str)
         return self.from_lines_v110(text.split(LINE_SEP))
 
+    @classmethod
+    def from_lines_v100(cls, lines):
+        """
+        :param list lines: list of lines to parse
+        :returns: tuple of V3BWHeader object and non-header lines
+        """
+        assert isinstance(lines, list)
+        h = cls(lines[0])
+        # last line is new line
+        return h, lines[1:-1]
+
     @staticmethod
     def generator_started_from_file(state_fpath):
         '''

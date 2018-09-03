@@ -175,3 +175,28 @@ Updating
 .. todo::
 
     This doesn't update dependencies and needs to be fixed.
+
+System physical requirements
+-----------------------------
+
+- Bandwidth: at least 20MB/s (160 Mbit/s). The more the better.
+- Free RAM: at least 1.5GB
+- Free disk: at least 3GB
+
+``sbws`` and its dependencies need around 20MB of disk space.
+After 90 days ``sbws`` data files use around 3GB.
+If ``sbws`` is configured to log to files (by default will log to the
+system log), it will need a maximum of 500MB.
+
+It is recommended to set up an automatic disk space monitoring on ``sbws`` data
+and log partitions.
+
+Details about ``sbws`` data:
+
+``sbws`` produces around 100MB of data a day.
+By default raw results' files are compressed after 10 days and deleted after 90.
+The bandwidth files are compressed after 7 days and deleted after 1.
+After 90 days, the disk space used by the data will be aproximately 3GB.
+It will not increase further.
+If ``sbws`` is configured to log to files, logs will be rotated after they
+are 10MB and it will keep 50 rotated log files.

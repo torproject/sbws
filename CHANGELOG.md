@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Broken environment variable in default sbws config. To use envvar $FOO, write
   $$FOO in the config.
 
+### Added
+
+- Add system physical requirements, but do not warn (which requires to make
+  syscalls). (#26937)
+
 ## [0.7.0] - 2018-08-09
 
 **Important changes**:

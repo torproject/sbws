@@ -93,7 +93,10 @@ def main(args, conf):
     bw_file = V3BWFile.from_results(results, state_fpath, args.scale_constant,
                                     scaling_method,
                                     torflow_cap=args.torflow_bw_margin,
-                                    torflow_round_digs=args.torflow_round_digs)
+                                    torflow_round_digs=args.torflow_round_digs,
+                                    secs_recent=args.secs_recent,
+                                    secs_away=args.secs_away,
+                                    min_num=args.min_num)
     output = args.output or \
         conf.getpath('paths', 'v3bw_fname').format(now_fname())
     bw_file.write(output)

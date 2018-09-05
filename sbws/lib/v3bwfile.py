@@ -313,6 +313,33 @@ class V3BWLine(object):
         return bw_line
 
     @staticmethod
+    def min_num_results(results, min_num=0):
+        if len(results) > min_num:
+            return results
+        return None
+
+    @staticmethod
+    def results_away_each_other(results, secs_away=None):
+        if secs_away is None or len(results) < 2:
+            return results
+        # the last one should be the most recent
+        results_away = [results[-1]]
+        # iterate over the rest of the results in reverse order
+        for r in reversed(results[:-1]):
+            if abs(results_away[0].time - r.time) > secs_away:
+                results_away.insert(0, r)
+        return results_away
+
+    @staticmethod
+    def results_recent_than(results, secs_recent=None):
+        if secs_recent is None:
+            return results
+        results_recent = filter(
+                            lambda x: (now_unixts() - x.time) < secs_recent,
+                            results)
+        return list(results_recent)
+
+    @staticmethod
     def bw_bs_median_from_results(results):
         return max(round(median([dl['amount'] / dl['duration']
                                  for r in results for dl in r.downloads])), 1)

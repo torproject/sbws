@@ -49,6 +49,16 @@ def gen_parser(sub):
                    type=int,
                    help="Number of most significant digits to round bw "
                         "when scaling as Torflow. (Default: 3)")
+    p.add_argument('-p', '--secs-recent', default=None,
+                   help="How many secs in the past are results being "
+                        "still considered. Note this value will supersede "
+                        "data_period in the configuration. (Default: None)")
+    p.add_argument('-a', '--secs-away', default=DAY_SECS,
+                   help="How many secs results have to be away from each "
+                        "other. (Default: 86400 - one day -)")
+    p.add_argument('-n', '--min-num', default=NUM_MIN_RESULTS,
+                   help="Mininum number of a results to consider them."
+                        "(Default: 2)")
 
 
 def main(args, conf):

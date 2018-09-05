@@ -14,7 +14,8 @@ from sbws.globals import (SPEC_VERSION, BW_LINE_SIZE, SBWS_SCALE_CONSTANT,
                           TORFLOW_ROUND_DIG)
 from sbws.lib.resultdump import ResultSuccess, _ResultType
 from sbws.util.filelock import DirectoryLock
-from sbws.util.timestamp import now_isodt_str, unixts_to_isodt_str
+from sbws.util.timestamp import (now_isodt_str, unixts_to_isodt_str,
+                                 now_unixts)
 from sbws.util.state import State
 
 log = logging.getLogger(__name__)

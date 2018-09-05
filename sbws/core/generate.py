@@ -1,5 +1,6 @@
 from sbws.globals import (fail_hard, SBWS_SCALE_CONSTANT, TORFLOW_SCALING,
-                          SBWS_SCALING, TORFLOW_BW_MARGIN, TORFLOW_ROUND_DIG)
+                          SBWS_SCALING, TORFLOW_BW_MARGIN, TORFLOW_ROUND_DIG,
+                          DAY_SECS, NUM_MIN_RESULTS)
 from sbws.lib.v3bwfile import V3BWFile
 from sbws.lib.resultdump import load_recent_results_in_datadir
 from argparse import ArgumentDefaultsHelpFormatter

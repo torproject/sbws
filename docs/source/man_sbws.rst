@@ -40,6 +40,9 @@ Optional arguments
 EXAMPLES
 --------
 
+sbws scanner
+    Run the scanner using the configuration file in ~/.sbws.ini
+
 sbws -c ~/.sbwsrc scanner
     Run the scanner using the configuration file in ~/.sbwsrc
 
@@ -58,6 +61,9 @@ $HOME/.sbws.ini
 $HOME/.sbws
    Default sbws home, where it stores measurement data files,
    bandwidth list files and tor process data.
+
+$XDG_RUNTIME_DIR/sbws
+  Runtime directory for the tor process launched by ``sbws``.
 
 SEE ALSO
 ---------

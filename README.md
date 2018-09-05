@@ -111,14 +111,6 @@ how its code is laid out. Therefore the code may change drastically without a
 major version bump as long as the way users interact with it does not change in
 a backward incompatible way.
 
-### Build HTML documentation
-
-    pip install -e .[doc]
-    cd docs
-    make html
-
-The generated HTML will be in `docs/build/`.
-
 ## The `.sbws` directory
 
 By default is `~/.sbws`.
@@ -133,12 +125,3 @@ In this directory you will find
 - `v3bw/` This directory stores the v3bw files created with `sbws generate`.
 - `state.dat` A file for storing state needed between sbws commands. See its
   documentation for more information.
-
-## Running tests
-
-Make sure you have test dependencies installed. From within the top level
-repository directory:
-
-    pip install -e .[test]
-
-This should install tox and pytest. Then simply run `tox`.

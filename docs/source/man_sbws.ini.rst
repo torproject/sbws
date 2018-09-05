@@ -6,6 +6,13 @@ DESCRIPTION
 
 Tor bandwidth scanner configuration file.
 
+**sbws** (1) ``scanner`` command requires a configuration file with a
+"[destinations]" section.
+It is the only section that does not have a default value.
+It is recommended, but not required to configure "nickname" in the "[scanner]"
+section.
+
+
 SECTIONS
 ---------
 
@@ -54,7 +61,8 @@ destinations
 
 destinations.STR
   url = STR
-    The url to the destination
+    The URL to the destination. It must include a file path.
+    It can use both http or https.
 
 tor
   datadir = STR
@@ -147,15 +155,36 @@ logging
     Format string to use when logging to syslog.
     (Default: %(module)s[%(process)s]: <%(levelname)s> %(message)s)
 
+EXAMPLES
+--------
+
+Example ``destinations`` section::
+
+    [destinations]
+    foo = on
+    bar = on
+    baz = off
+
+    [destinations.foo]
+    # using HTTP
+    url = http://example.org/sbws.bin
+
+    [destinations.bar]
+    # using HTTPS
+    url = https://example.com/data
+
+    [destinations.baz]
+    # this will be ignored
+    url = https://example.net/ask/stan/where/the/file/is.exe
+
 FILES
 -----
 
 $HOME/.sbws.ini
-   Default location for the sbws user configuration file.
+   Default ``sbws`` user configuration path.
 
-$HOME/.sbws
-   Default sbws home, where it stores measurement data files,
-   bandwidth list files and tor process data.
+Any other path to the configuration file can be specified using the
+``sbws`` argument ``-c``
 
 SEE ALSO
 ---------

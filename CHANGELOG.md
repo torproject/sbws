@@ -12,6 +12,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Broken environment variable in default sbws config. To use envvar $FOO, write
   $$FOO in the config.
 
+### Changed
+
+- sbws install doc is confusing (#27341)
+  - Include system and Python dependencies in `INSTALL`.
+  - Include dependencies for docs and tests in `INSTALL`.
+  - Point to `DEPLOY` to run sbws.
+  - Remove obsolete sections in `INSTALL`
+  - Simplify `DEPLOY`, reuse terms in the `glossary`.
+  - Remove obsolete ``sbws init`` from `DEPLOY`.
+  - Point to config documentation.
+  - Add, unify and reuse terms in `glossary`.
+
 ## [0.7.0] - 2018-08-09
 
 **Important changes**:

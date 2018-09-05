@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+
+- Add system physical requirements section to INSTALL (#26937)
+- Warn when there is not enough disk space (#26937)
+
 ### Fixed
 
 - Broken environment variable in default sbws config. To use envvar $FOO, write
@@ -39,7 +44,6 @@ file)
 - Log line on start up with sbws version, platform info, and library versions
 (trac#26751)
 - Manual pages (#26926)
-- Warn when there is not enough disk space (#26937)
 
 ### Fixed
 

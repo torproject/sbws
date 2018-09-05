@@ -20,7 +20,7 @@ def sbws_required_disk_space(conf):
     # ~1000 is the length of a line when the result is successfull
     # ~4550 is the number of lines of the biggest result file
     size_result_file = 4550 * 1000
-    num_result_files = int(conf['general']['data_period'])
+    num_result_files = conf.getint('general', 'data_period')
     # not counting compressed files
     space_v3bw_files = size_v3bw_file * num_v3bw_files
     space_result_files = size_result_file * num_result_files
@@ -48,7 +48,7 @@ def is_low_space(conf):
     what is needed for sbws and False otherwise needs.
     """
     disk_required_mb = sbws_required_disk_space(conf)
-    disk_avail_mb = df(conf['paths']['sbws_home'])
+    disk_avail_mb = df(conf.getpath('paths', 'sbws_home'))
     if disk_avail_mb < disk_required_mb:
         log.warn("The space left on the device (%s MiB) is less than "
                  "the minimum recommended to run sbws (%s MiB)."

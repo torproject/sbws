@@ -275,18 +275,27 @@ class V3BWLine(object):
         kwargs.update(cls.result_types_from_results(results))
         # useful args for scaling
         if success_results:
+            min_num_success_results = cls.min_num_results(success_results,
+                                                          min_num)
+            if not min_num_success_results:
+                return None
+            results_away = \
+                cls.results_away_each_other(min_num_success_results, secs_away)
+            results_recent = cls.results_recent_than(results_away, secs_recent)
+            if not results_recent:
+                return None
             # the most recent should be the last
             kwargs['desc_avg_bw_bs'] = \
-                success_results[-1].relay_average_bandwidth
-            kwargs['rtt'] = cls.rtt_from_results(success_results)
-            bw = cls.bw_bs_median_from_results(success_results)
-            kwargs['bw_bs_mean'] = cls.bw_bs_mean_from_results(success_results)
+                results_recent[-1].relay_average_bandwidth
+            kwargs['rtt'] = cls.rtt_from_results(results_recent)
+            bw = cls.bw_bs_median_from_results(results_recent)
+            kwargs['bw_bs_mean'] = cls.bw_bs_mean_from_results(results_recent)
             kwargs['bw_bs_median'] = cls.bw_bs_median_from_results(
-                success_results)
+                results_recent)
             kwargs['desc_obs_bw_bs_last'] = \
-                cls.desc_obs_bw_bs_last_from_results(success_results)
+                cls.desc_obs_bw_bs_last_from_results(results_recent)
             kwargs['desc_obs_bw_bs_mean'] = \
-                cls.desc_obs_bw_bs_mean_from_results(success_results)
+                cls.desc_obs_bw_bs_mean_from_results(results_recent)
             bwl = cls(node_id, bw, **kwargs)
             return bwl
         return None

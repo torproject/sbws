@@ -254,7 +254,8 @@ class V3BWLine(object):
         return self.bw_strv110
 
     @classmethod
-    def from_results(cls, results):
+    def from_results(cls, results, secs_recent=None, secs_away=None,
+                     min_num=0):
         """Convert sbws results to relays' Bandwidth Lines
 
         ``bs`` stands for Bytes/seconds

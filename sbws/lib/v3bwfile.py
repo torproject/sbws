@@ -445,6 +445,7 @@ class V3BWFile(object):
                      scaling_method=None, torflow_obs=TORFLOW_OBS_LAST,
                      torflow_cap=TORFLOW_BW_MARGIN,
                      torflow_round_digs=TORFLOW_ROUND_DIG,
+                     secs_recent=None, secs_away=None, min_num=0,
                      reverse=False):
         """Create V3BWFile class from sbws Results.
 

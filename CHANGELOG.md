@@ -9,8 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
-- Add system physical requirements, but do not warn (which requires to make
-  syscalls). (#26937)
+- Add system physical requirements section to INSTALL (#26937)
 
 ### Fixed
 

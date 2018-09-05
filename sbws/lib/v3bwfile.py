@@ -469,8 +469,9 @@ class V3BWFile(object):
         log.info('Processing results to generate a bandwidth list file.')
         header = V3BWHeader.from_results(results, state_fpath)
         bw_lines_raw = []
-        for fp in results.keys():
-            line = V3BWLine.from_results(results[fp])
+        for fp, values in results.items():
+            line = V3BWLine.from_results(values, secs_recent, secs_away,
+                                         min_num)
             if line is not None:
                 bw_lines_raw.append(line)
         if not bw_lines_raw:

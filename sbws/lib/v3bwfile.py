@@ -566,7 +566,7 @@ class V3BWFile(object):
                         'allowed', (1 - accuracy_ratio) * 100, margin * 100)
 
     @staticmethod
-    def bw_torflow_scale(bw_lines, desc_obs_bws=TORFLOW_OBS_LAST,
+    def bw_torflow_scale(bw_lines, desc_obs_bws=TORFLOW_OBS_MEAN,
                          cap=TORFLOW_BW_MARGIN,
                          num_round_dig=TORFLOW_ROUND_DIG, reverse=False):
         """

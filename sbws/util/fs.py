@@ -84,11 +84,15 @@ def sbws_required_disk_space(conf):
 
 
 def df(path):
+    # Not being used, since it makes a disk space system call and some
+    # systems might not allow it
     """Return space left on device where path is in MiB."""
     return round(shutil.disk_usage(path).free / (1024 ** 2))
 
 
 def is_low_space(conf):
+    # Not being used, since it makes a disk space system call and some
+    # systems might not allow it
     """Warn and return True when the space left on the device is less than
     what is needed for sbws and False otherwise needs.
     """

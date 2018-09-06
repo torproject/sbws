@@ -4,7 +4,7 @@ import sbws.core.generate
 import sbws.core.stats
 from sbws import __version__
 
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+from argparse import ArgumentParser, RawTextHelpFormatter
 import os
 
 
@@ -14,7 +14,7 @@ def _default_dot_sbws_dname():
 
 
 def create_parser():
-    p = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
+    p = ArgumentParser(formatter_class=RawTextHelpFormatter)
     p.add_argument(
         '--version', action='version', help='sbws version',
         version='{}'.format(__version__))

@@ -5,10 +5,13 @@
 `simple-bw-scanner` (also called `sbws`) is a Tor bandwidth scanner that
 produces bandwidth measurements files to be used by Directory Authorities.
 
-It doesn't get simpler than this, folks.
-
 The scanner builds two hop circuits consisting of the relay being measured and
-a fast exit. Over these circuits it measures RTT and download performance.
+a fast exit. Over these circuits it measures RTT and bandwidth.
+
+**WARNING**: This software is *only* intended to be run by Tor directory
+authorities or researches using a test Tor network, chutney or shadow.
+Please, do not run this software otherwise, since the measurements would not be
+used by Tor and would only create more traffic in the Tor network.
 
 See INSTALL for install instructions. See DEPLOY for deploy instructions. See
 LICENSE for license information. See CONTRIBUTING for coding standards and

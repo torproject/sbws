@@ -62,12 +62,6 @@ example, open an extra file into the past just in case it happens to include
 result lines that have timestamps that are still considered valid (of course,
 ignore results in the file that are no longer valid).
 
-**Strongly prefer putting new config options in ``sbws/config.default.ini``**
-instead of ``sbws/config.example.ini``. The former holds default values for
-approxmiately all sbws configuration options and can be changed with an sbws
-update. The latter is used as a starting point for generating a client's
-``config.ini`` and changes to it only affect newly generated config files.
-
 **Document your addition, fix, change, or whatever in the changelog**. See
 `keep a changelog`_ for the standard we follow. Of note, add Added, Changed,
 Deprecated, Removed, Fixed, and Security headings as needed in the Unreleased

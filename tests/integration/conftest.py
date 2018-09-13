@@ -50,9 +50,16 @@ def sbwshome_dir(sbwshome_empty):
 
 
 @pytest.fixture(scope='session')
-def args(sbwshome_dir, parser):
+def test_config_path(tmpdir):
+    """"""
+    config = tmpdir.join('.sbws.ini')
+    return config
+
+
+@pytest.fixture(scope='session')
+def args(sbwshome_empty, parser, test_config_path):
     """Args with sbws home in the tests tmp dir."""
-    args = _PseudoArguments(directory=sbwshome_dir, output=sbwshome_dir,
+    args = _PseudoArguments(config=test_config_path, output=sbwshome_empty,
                             scale=False, log_level='debug')
     return args
 

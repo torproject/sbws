@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Broken environment variable in default sbws config. To use envvar $FOO, write
   $$FOO in the config.
+- Stop using directory as argument in integration tests (#27342)
 
 ### Changed
 

@@ -4,7 +4,7 @@ import json
 import os.path
 
 from sbws import __version__ as version
-from sbws.globals import SPEC_VERSION
+from sbws.globals import SPEC_VERSION, SBWS_SCALING
 from sbws.lib.resultdump import Result, load_result_file
 from sbws.lib.v3bwfile import (V3BWHeader, V3BWLine, TERMINATOR, LINE_SEP,
                                KEYVALUE_SEP_V110, num_results_of_type,
@@ -37,7 +37,8 @@ header_extra_ls = [timestamp_l, version_l,
 header_extra_str = LINE_SEP.join(header_extra_ls) + LINE_SEP
 
 bwl_str = "bw=56 bw_bs_mean=61423 bw_bs_median=55656 "\
-    "desc_avg_bw_bs=1000000000 error_circ=0 error_misc=0 error_stream=1 " \
+    "desc_avg_bw_bs=1000000000 desc_obs_bw_bs_last=524288 "\
+    "desc_obs_bw_bs_mean=524288 error_circ=0 error_misc=0 error_stream=1 " \
     "master_key_ed25519=g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s " \
     "nick=A " \
     "node_id=$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA rtt=456 success=1 " \
@@ -135,3 +136,15 @@ def test_from_arg_results_write_read(datadir, tmpdir, conf, args):
     with open(output) as fd:
         v3bw = fd.read()
     assert v3bw == str(v3bwfile)
+
+
+def test_sbws_scale(datadir):
+    results = load_result_file(str(datadir.join("results.txt")))
+    v3bwfile = V3BWFile.from_results(results, scaling_method=SBWS_SCALING)
+    assert v3bwfile.bw_lines[0].bw == 8
+
+
+def test_torflow_scale(datadir):
+    results = load_result_file(str(datadir.join("results.txt")))
+    v3bwfile = V3BWFile.from_results(results, scaling_method=SBWS_SCALING)
+    assert v3bwfile.bw_lines[0].bw == 8

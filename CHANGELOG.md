@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Add system physical requirements section to INSTALL (#26937)
 - Warn when there is not enough disk space (#26937)
+- Implement Torflow scaling (#27108)
 
 ### Fixed
 

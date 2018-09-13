@@ -82,7 +82,7 @@ def main(args, conf):
     bw_file = V3BWFile.from_results(results, state_fpath, args.scale_constant,
                                     scaling_method,
                                     torflow_cap=args.torflow_bw_margin,
-                                    torflow_round_digs=args.torflow_round_digs,
+                                    torflow_round_digs=args.torflow_round_digs)
     output = args.output or \
         conf.getpath('paths', 'v3bw_fname').format(now_fname())
     bw_file.write(output)

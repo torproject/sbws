@@ -9,9 +9,8 @@ from statistics import median, mean
 
 from sbws import __version__
 from sbws.globals import (SPEC_VERSION, BW_LINE_SIZE, SBWS_SCALE_CONSTANT,
-                          TORFLOW_SCALING, SBWS_SCALING, TORFLOW_BW_MARGIN,
-                          TORFLOW_OBS_LAST, TORFLOW_OBS_MEAN,
-                          fail_hard)
+                          SBWS_SCALING, TORFLOW_BW_MARGIN, TORFLOW_SCALING,
+                          TORFLOW_OBS_LAST, TORFLOW_OBS_MEAN)
 from sbws.lib.resultdump import ResultSuccess, _ResultType
 from sbws.util.filelock import DirectoryLock
 from sbws.util.timestamp import now_isodt_str, unixts_to_isodt_str
@@ -412,9 +411,9 @@ class V3BWFile(object):
         header = V3BWHeader.from_results(results, state_fpath)
         bw_lines_raw = []
         for fp in results.keys():
-            l = V3BWLine.from_results(results[fp])
-            if l is not None:
-                bw_lines_raw.append(l)
+            line = V3BWLine.from_results(results[fp])
+            if line is not None:
+                bw_lines_raw.append(line)
         if not bw_lines_raw:
             return cls(header, [])
         if scaling_method == SBWS_SCALING:

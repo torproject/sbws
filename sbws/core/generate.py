@@ -1,5 +1,5 @@
 from sbws.globals import (fail_hard, SBWS_SCALE_CONSTANT, TORFLOW_SCALING,
-                          SBWS_SCALING)
+                          SBWS_SCALING, TORFLOW_BW_MARGIN)
 from sbws.lib.v3bwfile import V3BWFile
 from sbws.lib.resultdump import load_recent_results_in_datadir
 from argparse import ArgumentDefaultsHelpFormatter
@@ -40,6 +40,10 @@ def gen_parser(sub):
     p.add_argument('-t', '--scale_torflow', action='store_true',
                    help='If specified, do not use bandwidth values as they '
                    'are, but scale them in the way Torflow does.')
+    p.add_argument('-m', '--torflow-bw-margin', default=TORFLOW_BW_MARGIN,
+                   type=float,
+                   help="Cap maximum bw when scaling as Torflow. "
+                        "(Default: 0.05)")
 
 
 def main(args, conf):
@@ -50,6 +54,8 @@ def main(args, conf):
         fail_hard('%s does not exist', datadir)
     if args.scale_constant < 1:
         fail_hard('--scale-constant must be positive')
+    if args.torflow_bw_margin < 0:
+        fail_hard('toflow-bw-margin must be major than 0.')
     if args.scale_sbws:
         scaling_method = SBWS_SCALING
     elif args.scale_torflow:
@@ -70,7 +76,8 @@ def main(args, conf):
         return
     state_fpath = conf.getpath('paths', 'state_fname')
     bw_file = V3BWFile.from_results(results, state_fpath, args.scale_constant,
-                                    scaling_method)
+                                    scaling_method,
+                                    torflow_cap=args.torflow_bw_margin)
     output = args.output or \
         conf.getpath('paths', 'v3bw_fname').format(now_fname())
     bw_file.write(output)

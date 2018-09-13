@@ -14,7 +14,8 @@ from sbws.globals import (SPEC_VERSION, BW_LINE_SIZE, SBWS_SCALE_CONSTANT,
                           TORFLOW_ROUND_DIG)
 from sbws.lib.resultdump import ResultSuccess, _ResultType
 from sbws.util.filelock import DirectoryLock
-from sbws.util.timestamp import now_isodt_str, unixts_to_isodt_str
+from sbws.util.timestamp import (now_isodt_str, unixts_to_isodt_str,
+                                 now_unixts)
 from sbws.util.state import State
 
 log = logging.getLogger(__name__)
@@ -253,7 +254,8 @@ class V3BWLine(object):
         return self.bw_strv110
 
     @classmethod
-    def from_results(cls, results):
+    def from_results(cls, results, secs_recent=None, secs_away=None,
+                     min_num=0):
         """Convert sbws results to relays' Bandwidth Lines
 
         ``bs`` stands for Bytes/seconds
@@ -273,18 +275,27 @@ class V3BWLine(object):
         kwargs.update(cls.result_types_from_results(results))
         # useful args for scaling
         if success_results:
+            min_num_success_results = cls.min_num_results(success_results,
+                                                          min_num)
+            if not min_num_success_results:
+                return None
+            results_away = \
+                cls.results_away_each_other(min_num_success_results, secs_away)
+            results_recent = cls.results_recent_than(results_away, secs_recent)
+            if not results_recent:
+                return None
             # the most recent should be the last
             kwargs['desc_avg_bw_bs'] = \
-                success_results[-1].relay_average_bandwidth
-            kwargs['rtt'] = cls.rtt_from_results(success_results)
-            bw = cls.bw_bs_median_from_results(success_results)
-            kwargs['bw_bs_mean'] = cls.bw_bs_mean_from_results(success_results)
+                results_recent[-1].relay_average_bandwidth
+            kwargs['rtt'] = cls.rtt_from_results(results_recent)
+            bw = cls.bw_bs_median_from_results(results_recent)
+            kwargs['bw_bs_mean'] = cls.bw_bs_mean_from_results(results_recent)
             kwargs['bw_bs_median'] = cls.bw_bs_median_from_results(
-                success_results)
+                results_recent)
             kwargs['desc_obs_bw_bs_last'] = \
-                cls.desc_obs_bw_bs_last_from_results(success_results)
+                cls.desc_obs_bw_bs_last_from_results(results_recent)
             kwargs['desc_obs_bw_bs_mean'] = \
-                cls.desc_obs_bw_bs_mean_from_results(success_results)
+                cls.desc_obs_bw_bs_mean_from_results(results_recent)
             bwl = cls(node_id, bw, **kwargs)
             return bwl
         return None
@@ -309,6 +320,33 @@ class V3BWLine(object):
         del kwargs['bw']
         bw_line = cls(node_id, bw, **kwargs)
         return bw_line
+
+    @staticmethod
+    def min_num_results(results, min_num=0):
+        if len(results) > min_num:
+            return results
+        return None
+
+    @staticmethod
+    def results_away_each_other(results, secs_away=None):
+        if secs_away is None or len(results) < 2:
+            return results
+        # the last one should be the most recent
+        results_away = [results[-1]]
+        # iterate over the rest of the results in reverse order
+        for r in reversed(results[:-1]):
+            if abs(results_away[0].time - r.time) > secs_away:
+                results_away.insert(0, r)
+        return results_away
+
+    @staticmethod
+    def results_recent_than(results, secs_recent=None):
+        if secs_recent is None:
+            return results
+        results_recent = filter(
+                            lambda x: (now_unixts() - x.time) < secs_recent,
+                            results)
+        return list(results_recent)
 
     @staticmethod
     def bw_bs_median_from_results(results):
@@ -407,6 +445,7 @@ class V3BWFile(object):
                      scaling_method=None, torflow_obs=TORFLOW_OBS_LAST,
                      torflow_cap=TORFLOW_BW_MARGIN,
                      torflow_round_digs=TORFLOW_ROUND_DIG,
+                     secs_recent=None, secs_away=None, min_num=0,
                      reverse=False):
         """Create V3BWFile class from sbws Results.
 
@@ -430,8 +469,9 @@ class V3BWFile(object):
         log.info('Processing results to generate a bandwidth list file.')
         header = V3BWHeader.from_results(results, state_fpath)
         bw_lines_raw = []
-        for fp in results.keys():
-            line = V3BWLine.from_results(results[fp])
+        for fp, values in results.items():
+            line = V3BWLine.from_results(values, secs_recent, secs_away,
+                                         min_num)
             if line is not None:
                 bw_lines_raw.append(line)
         if not bw_lines_raw:
@@ -526,7 +566,7 @@ class V3BWFile(object):
                         'allowed', (1 - accuracy_ratio) * 100, margin * 100)
 
     @staticmethod
-    def bw_torflow_scale(bw_lines, desc_obs_bws=TORFLOW_OBS_LAST,
+    def bw_torflow_scale(bw_lines, desc_obs_bws=TORFLOW_OBS_MEAN,
                          cap=TORFLOW_BW_MARGIN,
                          num_round_dig=TORFLOW_ROUND_DIG, reverse=False):
         """
@@ -634,7 +674,6 @@ class V3BWFile(object):
             n.new_bw = n.desc_bw*n.ratio
 
         The descriptor observed bandwidth is multiplied by the ratio.
-        With empirical results this ratio is ~[0.9, 8.9]
 
         **Limit the bandwidth to a maximum**::
 
@@ -656,36 +695,45 @@ class V3BWFile(object):
         All of that can be expressed as:
 
         .. math::
+           :label:torflow_bwn_eq
 
-                bwnew_i &=
-                    max\\left(
-                        \\frac{bw_i}{\\mu},
-                        min \\left(
-                            bw_i,
-                            bw_i \\times \\mu
-                            \\right)
-                                \\times
-                                \\frac{bw}{\\sum_{i=1}^{n}
-                                min \\left(bw_i,
-                                    bw_i \\times \\mu
-                            \\right)}
-                        \\right)
-                    \\times bwdescobs_i \\
+            bwn_i =&
+                max\left(
+                    \frac{bw_i}{\mu},
+                    \frac{bwf_i}{\mu_{bwf}}
+                    \right)
+                \times bwobs_i\\
 
-                &=
-                    max\\left(
-                        \\frac{bw_i}{\\frac{\\sum_{i=1}^{n}bw_i}{n}},
-                        min \\left(
-                            bw_i,
-                            bw_i \\times \\frac{\\sum_{i=1}^{n}bw_i}{n}
-                            \\right)
-                                \\times
-                                \\frac{bw}{\\sum_{i=1}^{n}
-                                min \\left(bw_i,
-                                    bw_i \\times \\frac{\\sum_{i=1}^{n}bw_i}{n}
-                            \\right)}
-                        \\right)
-                    \\times bwdescobs_i
+        .. math::
+
+             bwn_i =&
+                max\left(
+                    \frac{bw_i}{\mu},
+                    min \left(
+                        bw_i,
+                        bw_i \times \mu
+                        \right)
+                            \times
+                            \frac{bw}{\sum_{i=1}^{n}
+                            min \left(bw_i,
+                                bw_i \times \mu
+                        \right)}
+                    \right)
+                \times bwobs_i \\
+              =&
+                max\left(
+                  \frac{bw_i}{\frac{\sum_{i=1}^{n}bw_i}{n}},
+                  min \left(
+                      bw_i,
+                      bw_i \times \frac{\sum_{i=1}^{n}bw_i}{n}
+                      \right)
+                          \times
+                          \frac{bw}{\sum_{i=1}^{n}
+                          min \left(bw_i,
+                              bw_i \times \frac{\sum_{i=1}^{n}bw_i}{n}
+                      \right)}
+                  \right)
+              \times bwobs_i
 
         """
         log.info("Calculating relays' bandwidth using Torflow method.")

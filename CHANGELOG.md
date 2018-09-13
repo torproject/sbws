@@ -15,6 +15,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Create methods to easy graph generation and obtain statistics
   to compare with current torflow results.(#27688)
 - Implement rounding bw in bandwidth files to 2 insignificant digits(#27337)
+- Filter results in order to include relays in the bandwidth file that:(#27338)
+  - have at least two measured bandwidths
+  - the measured bandwidths are within 24 hours of each other
+  - have at least two descriptor observed bandwidths
+  - the descriptor observed bandwidths are within 24 hours of each other
 
 ### Fixed
 

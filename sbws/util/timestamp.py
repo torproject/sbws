@@ -42,6 +42,10 @@ def unixts_to_isodt_str(unixts):
     return dt_obj_to_isodt_str(unixts_to_dt_obj(unixts))
 
 
+def now_unixts():
+    return datetime.utcnow().timestamp()
+
+
 def now_isodt_str():
     """Return datetime now as ISO 8601 string in UTC time zone."""
     return dt_obj_to_isodt_str(datetime.utcnow())

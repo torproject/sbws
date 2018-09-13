@@ -1,5 +1,6 @@
 from sbws.globals import (fail_hard, SBWS_SCALE_CONSTANT, TORFLOW_SCALING,
-                          SBWS_SCALING, TORFLOW_BW_MARGIN, TORFLOW_ROUND_DIG)
+                          SBWS_SCALING, TORFLOW_BW_MARGIN, TORFLOW_ROUND_DIG,
+                          DAY_SECS, NUM_MIN_RESULTS)
 from sbws.lib.v3bwfile import V3BWFile
 from sbws.lib.resultdump import load_recent_results_in_datadir
 from argparse import ArgumentDefaultsHelpFormatter
@@ -48,6 +49,16 @@ def gen_parser(sub):
                    type=int,
                    help="Number of most significant digits to round bw "
                         "when scaling as Torflow. (Default: 3)")
+    p.add_argument('-p', '--secs-recent', default=None,
+                   help="How many secs in the past are results being "
+                        "still considered. Note this value will supersede "
+                        "data_period in the configuration. (Default: None)")
+    p.add_argument('-a', '--secs-away', default=DAY_SECS,
+                   help="How many secs results have to be away from each "
+                        "other. (Default: 86400 - one day -)")
+    p.add_argument('-n', '--min-num', default=NUM_MIN_RESULTS,
+                   help="Mininum number of a results to consider them."
+                        "(Default: 2)")
 
 
 def main(args, conf):
@@ -82,7 +93,10 @@ def main(args, conf):
     bw_file = V3BWFile.from_results(results, state_fpath, args.scale_constant,
                                     scaling_method,
                                     torflow_cap=args.torflow_bw_margin,
-                                    torflow_round_digs=args.torflow_round_digs)
+                                    torflow_round_digs=args.torflow_round_digs,
+                                    secs_recent=args.secs_recent,
+                                    secs_away=args.secs_away,
+                                    min_num=args.min_num)
     output = args.output or \
         conf.getpath('paths', 'v3bw_fname').format(now_fname())
     bw_file.write(output)

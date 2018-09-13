@@ -146,5 +146,11 @@ def test_sbws_scale(datadir):
 
 def test_torflow_scale(datadir):
     results = load_result_file(str(datadir.join("results.txt")))
-    v3bwfile = V3BWFile.from_results(results, scaling_method=SBWS_SCALING)
-    assert v3bwfile.bw_lines[0].bw == 8
+    v3bwfile = V3BWFile.from_results(results, scaling_method=TORFLOW_SCALING)
+    assert v3bwfile.bw_lines[0].bw == 1000
+    v3bwfile = V3BWFile.from_results(results, scaling_method=TORFLOW_SCALING,
+                                     torflow_cap=0.0001)
+    assert v3bwfile.bw_lines[0].bw == 1000
+    v3bwfile = V3BWFile.from_results(results, scaling_method=TORFLOW_SCALING,
+                                     torflow_cap=1, torflow_round_digs=0)
+    assert v3bwfile.bw_lines[0].bw == 524

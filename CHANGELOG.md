@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Implement Torflow scaling (#27108)
 - Create methods to easy graph generation and obtain statistics
   to compare with current torflow results.(#27688)
+- Implement rounding bw in bandwidth files to 2 insignificant digits(#27337)
 
 ### Fixed
 

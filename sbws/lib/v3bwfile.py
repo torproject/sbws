@@ -461,7 +461,6 @@ class V3BWFile(object):
                           key=lambda l: l.bw)
         return cls(header, bw_lines)
 
-
     @staticmethod
     def bw_kb(bw_lines, reverse=False):
         bw_lines_scaled = copy.deepcopy(bw_lines)

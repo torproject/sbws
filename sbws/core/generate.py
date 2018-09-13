@@ -5,7 +5,6 @@ from argparse import ArgumentDefaultsHelpFormatter
 import os
 import logging
 from sbws.util.timestamp import now_fname
-from ..util.fs import is_low_space
 
 log = logging.getLogger(__name__)
 
@@ -41,8 +40,6 @@ def gen_parser(sub):
 
 def main(args, conf):
     os.makedirs(conf.getpath('paths', 'v3bw_dname'), exist_ok=True)
-    if is_low_space(conf):
-        exit(1)
 
     datadir = conf.getpath('paths', 'datadir')
     if not os.path.isdir(datadir):

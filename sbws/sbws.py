@@ -14,6 +14,8 @@ from requests.__version__ import __version__ as requests_version
 import platform
 import logging
 
+from sbws.util.fs import sbws_required_disk_space
+
 log = logging.getLogger(__name__)
 
 
@@ -51,6 +53,7 @@ def main():
             log.critical(e)
         exit(1)
     configure_logging(args, conf)
+    parser.description = sbws_required_disk_space(conf)
     def_args = [args, conf]
     def_kwargs = {}
     known_commands = {

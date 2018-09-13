@@ -76,8 +76,8 @@ def sbws_required_disk_space(conf):
     text_dict['mb_code'] = round(size_code_deps / 1000 ** 2)
     # Multiply per 2, just in case
     size_total = (results_max_space_after_delete +
-                  v3bw_max_space_after_delete + space_log_files + size_tor_dir +
-                  size_code_deps) * 2
+                  v3bw_max_space_after_delete + space_log_files +
+                  size_tor_dir + size_code_deps) * 2
     text_dict['mb_total'] = round(size_total / 1000 ** 2)
     space_text = DISK_SPACE_TEXT.format(**text_dict)
     return space_text

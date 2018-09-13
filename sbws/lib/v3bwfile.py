@@ -674,7 +674,6 @@ class V3BWFile(object):
             n.new_bw = n.desc_bw*n.ratio
 
         The descriptor observed bandwidth is multiplied by the ratio.
-        With empirical results this ratio is ~[0.9, 8.9]
 
         **Limit the bandwidth to a maximum**::
 
@@ -696,36 +695,45 @@ class V3BWFile(object):
         All of that can be expressed as:
 
         .. math::
+           :label:torflow_bwn_eq
 
-                bwnew_i &=
-                    max\\left(
-                        \\frac{bw_i}{\\mu},
-                        min \\left(
-                            bw_i,
-                            bw_i \\times \\mu
-                            \\right)
-                                \\times
-                                \\frac{bw}{\\sum_{i=1}^{n}
-                                min \\left(bw_i,
-                                    bw_i \\times \\mu
-                            \\right)}
-                        \\right)
-                    \\times bwdescobs_i \\
+            bwn_i =&
+                max\left(
+                    \frac{bw_i}{\mu},
+                    \frac{bwf_i}{\mu_{bwf}}
+                    \right)
+                \times bwobs_i\\
 
-                &=
-                    max\\left(
-                        \\frac{bw_i}{\\frac{\\sum_{i=1}^{n}bw_i}{n}},
-                        min \\left(
-                            bw_i,
-                            bw_i \\times \\frac{\\sum_{i=1}^{n}bw_i}{n}
-                            \\right)
-                                \\times
-                                \\frac{bw}{\\sum_{i=1}^{n}
-                                min \\left(bw_i,
-                                    bw_i \\times \\frac{\\sum_{i=1}^{n}bw_i}{n}
-                            \\right)}
-                        \\right)
-                    \\times bwdescobs_i
+        .. math::
+
+             bwn_i =&
+                max\left(
+                    \frac{bw_i}{\mu},
+                    min \left(
+                        bw_i,
+                        bw_i \times \mu
+                        \right)
+                            \times
+                            \frac{bw}{\sum_{i=1}^{n}
+                            min \left(bw_i,
+                                bw_i \times \mu
+                        \right)}
+                    \right)
+                \times bwobs_i \\
+              =&
+                max\left(
+                  \frac{bw_i}{\frac{\sum_{i=1}^{n}bw_i}{n}},
+                  min \left(
+                      bw_i,
+                      bw_i \times \frac{\sum_{i=1}^{n}bw_i}{n}
+                      \right)
+                          \times
+                          \frac{bw}{\sum_{i=1}^{n}
+                          min \left(bw_i,
+                              bw_i \times \frac{\sum_{i=1}^{n}bw_i}{n}
+                      \right)}
+                  \right)
+              \times bwobs_i
 
         """
         log.info("Calculating relays' bandwidth using Torflow method.")

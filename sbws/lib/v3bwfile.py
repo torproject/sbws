@@ -139,6 +139,17 @@ class V3BWHeader(object):
         assert isinstance(text, str)
         return self.from_lines_v110(text.split(LINE_SEP))
 
+    @classmethod
+    def from_lines_v100(cls, lines):
+        """
+        :param list lines: list of lines to parse
+        :returns: tuple of V3BWHeader object and non-header lines
+        """
+        assert isinstance(lines, list)
+        h = cls(lines[0])
+        # last line is new line
+        return h, lines[1:-1]
+
     @staticmethod
     def generator_started_from_file(state_fpath):
         '''
@@ -429,6 +440,27 @@ class V3BWFile(object):
         f = cls(header, bw_lines)
         return f
 
+    @classmethod
+    def from_v110_fpath(cls, fpath):
+        log.info('Parsing bandwidth file %s', fpath)
+        with open(fpath) as fd:
+            text = fd.read()
+        all_lines = text.split(LINE_SEP)
+        header, lines = V3BWHeader.from_lines_v110(all_lines)
+        bw_lines = [V3BWLine.from_bw_line_v110(line) for line in lines]
+        return cls(header, bw_lines)
+
+    @classmethod
+    def from_v100_fpath(cls, fpath):
+        log.info('Parsing bandwidth file %s', fpath)
+        with open(fpath) as fd:
+            text = fd.read()
+        all_lines = text.split(LINE_SEP)
+        header, lines = V3BWHeader.from_lines_v100(all_lines)
+        bw_lines = sorted([V3BWLine.from_bw_line_v110(l) for l in lines],
+                          key=lambda l: l.bw)
+        return cls(header, bw_lines)
+
     @staticmethod
     def bw_kb(bw_lines, reverse=False):
         bw_lines_scaled = copy.deepcopy(bw_lines)
@@ -690,6 +722,41 @@ class V3BWFile(object):
     @property
     def median_bw(self):
         return median([l.bw for l in self.bw_lines])
+
+    @property
+    def max_bw(self):
+        return max([l.bw for l in self.bw_lines])
+
+    @property
+    def min_bw(self):
+        return min([l.bw for l in self.bw_lines])
+
+    @property
+    def info_stats(self):
+        if not self.bw_lines:
+            return
+        [log.info(': '.join([attr, str(getattr(self, attr))])) for attr in
+         ['sum_bw', 'mean_bw', 'median_bw', 'num',
+          'max_bw', 'min_bw']]
+
+    def bw_line_for_node_id(self, node_id):
+        """Returns the bandwidth line for a given node fingerprint.
+
+        Used to combine data when plotting.
+        """
+        bwl = [l for l in self.bw_lines if l.node_id == node_id]
+        if bwl:
+            return bwl[0]
+        return None
+
+    def to_plt(self, attrs=['bw'], sorted_by=None):
+        """Return bandwidth data in a format useful for matplotlib.
+
+        Used from external tool to plot.
+        """
+        x = [i for i in range(0, self.num)]
+        ys = [[getattr(l, k) for l in self.bw_lines] for k in attrs]
+        return x, ys, attrs
 
     def write(self, output):
         if output == '/dev/stdout':

@@ -4,7 +4,7 @@ import json
 import os.path
 
 from sbws import __version__ as version
-from sbws.globals import SPEC_VERSION, SBWS_SCALING
+from sbws.globals import SPEC_VERSION, SBWS_SCALING, TORFLOW_SCALING
 from sbws.lib.resultdump import Result, load_result_file
 from sbws.lib.v3bwfile import (V3BWHeader, V3BWLine, TERMINATOR, LINE_SEP,
                                KEYVALUE_SEP_V110, num_results_of_type,

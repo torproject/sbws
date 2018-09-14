@@ -13,9 +13,9 @@ authorities or researches using a test Tor network, chutney or shadow.
 Please, do not run this software otherwise, since the measurements would not be
 used by Tor and would only create more traffic in the Tor network.
 
-See INSTALL for install instructions. See DEPLOY for deploy instructions. See
-LICENSE for license information. See CONTRIBUTING for coding standards and
-contribution guidelines.
+See ./INSTALL.rst) for install instructions,
+[./DEPLOY.rst](./DEPLOY.rst) for deploy instructions,
+[./CONTRIBUTING](./CONTRIBUTING.rst) for contribution guidelines.
 
 The sbws documentation can be found at [Read the Docs](https://sbws.readthedocs.io)
 and

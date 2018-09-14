@@ -1,8 +1,12 @@
 Contributing to Simple Bandwidth Scanner
 ----------------------------------------
 
-Thank you for your interest in Simple Bandwidth Scanner (sbws).
+Thank you for your interest in Simple Bandwidth Scanner (``sbws``).
 
+Examples of contributions include:
+
+* Bug reports
+* Code/documentation patches
 
 Pull requests are welcome, especially if they address open issues.
 

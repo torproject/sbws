@@ -93,6 +93,10 @@ Before release 1.0.0, some docstrigs do not have 3 double quotes ``"""``
 
 New features should add a corresponding documentation.
 
+Document your changes in ./CHANGELOG.rst following `keep a changelog`_.
+Reference the Tor Project Trac ticket (example: ``#12345``) or
+Github ticket (example: ``GH#123``).
+
 Timestamps must be in UTC. It is prefered to use ``datetime`` objects or
 Unix timestamps. Timestamps read by the user should be always formatted in
 `ISO 8601 <https://en.wikipedia.org/wiki/ISO_8601>`_
@@ -119,18 +123,6 @@ top of master or cherry-pick the changes.
 **Do not force push lightly** unless branches are clearly labeled as ones that
 may get overwritten (for example: "transient\_" prefix). Instead of overwriting
 a branch, add a version suffix (for example: "_02").
-
-Coding Guidelines
-=================
-
-
-**Document your addition, fix, change, or whatever in the changelog**. See
-`keep a changelog`_ for the standard we follow. Of note, add Added, Changed,
-Deprecated, Removed, Fixed, and Security headings as needed in the Unreleased
-section. **If your change has a trac or GitHub ticket, reference it** like
-``(GH#123)`` or ``(trac#22104)``. When it comes time to do a release, the
-person doing the release should (1) change the name of the Unreleased section
-and add a new one, and (2) update the links at the bottom.
 
 
 .. _commit-msg:

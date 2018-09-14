@@ -3,12 +3,6 @@ Contributing to Simple Bandwidth Scanner
 
 Thank you for your interest in Simple Bandwidth Scanner (sbws).
 
-.. note::
-
-    Simple Bandwidth Scanner is in the public domain according to its
-    :doc:`CC0 license </LICENSE>`. No one has copyright over sbws, though we
-    update the list of :doc:`authors </AUTHORS>` from time to time.
-
 
 Pull requests are welcome, especially if they address open issues.
 

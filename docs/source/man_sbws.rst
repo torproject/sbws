@@ -36,8 +36,8 @@ Optional arguments
 --log-level {debug,info,warning,error,critical}
    Override the sbws log level (default: None)
 
--d DIRECTORY, --directory DIRECTORY
-   Path to the sbws home directory (default: $HOME/.sbws)
+-c CONFIG, --config CONFIG
+   Path to the sbws configuration file (default: $HOME/.sbws.ini)
 
 EXAMPLES
 --------

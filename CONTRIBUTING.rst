@@ -93,6 +93,10 @@ Before release 1.0.0, some docstrigs do not have 3 double quotes ``"""``
 
 New features should add a corresponding documentation.
 
+Timestamps must be in UTC. It is prefered to use ``datetime`` objects or
+Unix timestamps. Timestamps read by the user should be always formatted in
+`ISO 8601 <https://en.wikipedia.org/wiki/ISO_8601>`_
+
 Git and GitHub Guidelines
 =========================
 
@@ -119,12 +123,6 @@ a branch, add a version suffix (for example: "_02").
 Coding Guidelines
 =================
 
-**Strongly prefer Unix timestamps or datetime objects in UTC** and always
-work in UTC for as long as possible. When reading/writing/manipulating results
-from some period of time in the past, always err on the side of caution. For
-example, open an extra file into the past just in case it happens to include
-result lines that have timestamps that are still considered valid (of course,
-ignore results in the file that are no longer valid).
 
 **Document your addition, fix, change, or whatever in the changelog**. See
 `keep a changelog`_ for the standard we follow. Of note, add Added, Changed,

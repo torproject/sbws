@@ -5,8 +5,17 @@ Thank you for your interest in Simple Bandwidth Scanner (``sbws``).
 
 Examples of contributions include:
 
-* Bug reports
+* Bug reports, feature requests
 * Code/documentation patches
+
+Bug reports
+------------
+
+Check that bug has not been already reported.
+To report bugs or request features, open a ticket in
+`Tor Project Trac <https://trac.torproject.org/projects/tor/newticket>`_
+and assign the component to ``Core Tor``/``sbws``.
+
 
 Pull requests are welcome, especially if they address open issues.
 

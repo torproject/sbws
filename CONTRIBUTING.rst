@@ -109,22 +109,53 @@ Commits
 
 Commit messages should follow the `Tim Pope`_ recommendations.
 
-**Prefer a rebase workflow instead of merge**. Incorporating PRs should be done
-with fast-forward merge, if easily possible. The larger the topic branch, the
-harder this may be, so merge commits are allowed.
+Workflow
+~~~~~~~~~
 
-If, while working on a topic branch, some changes are made to master that
-conflict with your work or that you need to incorporate into your work, **do
-not merge master into your topic branch**; instead, rebase your topic branch on
-top of master or cherry-pick the changes.
+In general, when you are modifying code that was not wrotten by yourself,
+try to keep changes to the minimum.
 
-**Do not force push lightly** unless branches are clearly labeled as ones that
-may get overwritten (for example: "transient\_" prefix). Instead of overwriting
-a branch, add a version suffix (for example: "_02").
+When a PR is being reviewed, new changes might be needed:
 
+- If the change does not modify a previous change, just commit and push.
+- If the change modifies a previous change and it's small,
+  `git commit fixup <https://git-scm.com/docs/git-commit#git-commit---fixupltcommitgt>`_
+  should be used. When it is agreed that the PR is ready, create a new branch
+  named ``mybranch_02`` and run::
 
+    rebase --autosquash
 
-.. _pull request: https://github.com/pastly/simple-bw-scanner/compare
+  push, create new PR and close old PR mentioning the number of the new PR.
+- If the review takes long and when it's ready code related to the PR has changed
+  in master, create a new branch named ``mybranch_02`` and run::
+
+    rebase master
+
+  push, create new PR and close old PR mentioning the number of the new PR.
+
+Reviewers: (see :ref:`reviewers`)
+
+- should not push code to your branch, unless you agree
+- should let you know when new changes are needed
+- should not merge your PR after changes are requested and you notify you did
+  via the PR or the ticket.
+- should not merge your PR and then inmediatly modify your code pushing
+  directly to master without informing you previously and without your consent.
+
+.. _reviewers:
+
+Reviewers
+----------
+
+At the moment, there is not any policy to decide who the reviewers are.
+They are the current people that has contributed to this code: pastly, teor,
+juga0.
+They should not push directly to master and they should peer-review their code.
+Currently, if a PR from a reviewer has not been peer-reviewd by other reviewer
+in a week, the reviewer can merge their/her/his own PR.
+
+They should merge PR to master. Instead of rebase. If needed, rebase should be
+done by the contributor before the merge.
 
 .. _tim pope: https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
 

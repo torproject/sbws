@@ -1,5 +1,5 @@
 Contributing to Simple Bandwidth Scanner
-----------------------------------------
+=========================================
 
 Thank you for your interest in Simple Bandwidth Scanner (``sbws``).
 

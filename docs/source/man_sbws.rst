@@ -6,7 +6,9 @@ SYNOPSIS
 
 sbws [**Optional arguments**] [**Positional arguments**]
 
-sbws [**-h**] [**--version**] [**--log-level** {**debug,info,warning,error,critical**}] [**-d** DIRECTORY] {**cleanup,scanner,generate,init,stats**}
+sbws [**-h**] [**--version**]
+[**--log-level** {**debug,info,warning,error,critical**}]
+[**-c** CONFIG] {**cleanup,scanner,generate,init,stats**}
 
 DESCRIPTION
 -----------

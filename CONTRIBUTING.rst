@@ -16,19 +16,30 @@ To report bugs or request features, open a ticket in
 `Tor Project Trac <https://trac.torproject.org/projects/tor/newticket>`_
 and assign the component to ``Core Tor``/``sbws``.
 
+Code/documentation patches
+---------------------------
 
-Pull requests are welcome, especially if they address open issues.
+The sbws canonical repository is https://gitweb.torproject.org/sbws.git,
+but we review patches using the Github canonical repository
+(https://github.com/torproject/sbws) Pull Requests (PR).
 
-#. Fork the repo on GitHub
-#. Clone a copy of sbws to your machine as per
-   :doc:`the install instructions </INSTALL>`, but use your repo.
-#. Fix that bug or implement that feature
-    - As part of this process, it would be appreciated (and might event help
-      you) if you wrote tests to catch the buggy behavior you're solving so it
-      won't break again.
-#. Make sure all tests pass when running ``tox``.
-#. Commit your changes and push them to a branch in your sbws GitHub repo
-#. Open a `pull request`_
+Steps:
+
+1. Create a ticket in Tor Project Trac as explained above
+2. Clone ``sbws`` via the Github web interface
+   https://github.com/torproject/sbws
+3. Clone the repository locally
+4. Install ``sbws`` as explained in ./INSTALL.rst and TESTING.rst
+   Use ``pip install -e <>``
+5. If needed install the documentation and build it as explained in
+   ./DOCUMENTATION.rst
+6. Create a new branch, named ``ticketXXX``.
+   Optionally, name it with a string explaining what it does,
+   ie ``ticketXXX_contributing``
+7. Write code, create tests, commit, etc.
+8. Ensure tests pass.
+9. Create a PR from your branch to https://github.com/torproject/sbws
+10. Change the ticket status to ``needs_review``
 
 We use flake8 to check some PEP8 errors/warnings. This will be checked with
 ``tox`` and Travis.

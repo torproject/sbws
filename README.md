@@ -49,3 +49,7 @@ We waive copyright and related rights in the work worldwide through the
 
 You can find a copy of the CC0 Public Domain Dedication along with this
 software in ./LICENSE.md
+
+## Authors
+
+See ./AUTHORS.md

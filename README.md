@@ -22,7 +22,7 @@ also online at https://sbws.readthedocs.io and
 [this onion service](http://d7pxflytfsmz6uh3x7i2jxzzwea6nbpmtsz5tmfkcin5edapaig5vpyd.onion/)
 ([v2](http://sdmb3rfvp3wadu6y.onion/)).
 
-## Layout of the sbws repo
+## Layout of `sbws` source code directory
 
 - `docs/` the source of the sbws documentation website.
 - `sbws/` the source code for sbws.

@@ -17,8 +17,8 @@ See ./INSTALL.rst) for install instructions,
 [./DEPLOY.rst](./DEPLOY.rst) for deploy instructions,
 [./CONTRIBUTING](./CONTRIBUTING.rst) for contribution guidelines.
 
-The sbws documentation can be found at [Read the Docs](https://sbws.readthedocs.io)
-and
+More extensive documentation can be found in the ./docs directory,
+also online at https://sbws.readthedocs.io and
 [this onion service](http://d7pxflytfsmz6uh3x7i2jxzzwea6nbpmtsz5tmfkcin5edapaig5vpyd.onion/)
 ([v2](http://sdmb3rfvp3wadu6y.onion/)).
 

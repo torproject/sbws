@@ -82,7 +82,7 @@ $HOME/.sbws/state.dat
    A file for storing state needed between ``sbws`` commands.
 
 $XDG_RUNTIME_DIR/sbws
-  Runtime directory for the tor process launched by ``sbws``.
+  Runtime directory for the tor process launched by ``sbws scanner``.
 
 SEE ALSO
 ---------

@@ -24,22 +24,6 @@ also online at https://sbws.readthedocs.io and
 [this onion service](http://d7pxflytfsmz6uh3x7i2jxzzwea6nbpmtsz5tmfkcin5edapaig5vpyd.onion/)
 ([v2](http://sdmb3rfvp3wadu6y.onion/)).
 
-## Layout of `sbws` source code directory
-
-- `docs/` the source of the sbws documentation website.
-- `sbws/` the source code for sbws.
-- `sbws/core/` each file contains code specific to a single sbws command.
-- `sbws/lib/` complex data structures and classes useful to one or more sbws
-  commands. If you're making a new class, it probably belongs here.
-- `sbws/util/` simplier, "make life easier" collections of functions.
-- `scripts/maint/` scripts for **maint**aining sbws and doing administrative
-  things like regenerating the website or updating the AUTHORS file.
-- `scripts/tools/` misc. scripts for users of sbws.
-  performing tests with them.
-- `tests/unit/` simple little tests that don't require Tor to be running
-- `tests/integration/` more complex tests and/or tests that require Tor to be running
-- `tests/testnets/` scripts and code for running mini Tor networks locally
-
 ## License
 
 This work is in the public domain within the United States.

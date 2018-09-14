@@ -24,7 +24,7 @@ def find_version():
 # -- Project information -----------------------------------------------------
 
 project = 'Simple Bandwidth Scanner'
-copyright = 'Public Domain'
+copyright = 'CC0'
 author = 'Matt Traudt [sirmatt at ksu dot edu], juga [juga at riseup dot net]'
 
 # The short X.Y version

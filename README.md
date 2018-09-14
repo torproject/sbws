@@ -39,3 +39,13 @@ also online at https://sbws.readthedocs.io and
 - `tests/unit/` simple little tests that don't require Tor to be running
 - `tests/integration/` more complex tests and/or tests that require Tor to be running
 - `tests/testnets/` scripts and code for running mini Tor networks locally
+
+## License
+
+This work is in the public domain within the United States.
+
+We waive copyright and related rights in the work worldwide through the
+[CC0-1.0 license](https://creativecommons.org/publicdomain/zero/1.0).
+
+You can find a copy of the CC0 Public Domain Dedication along with this
+software in ./LICENSE.md

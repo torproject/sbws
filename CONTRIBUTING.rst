@@ -101,15 +101,13 @@ Timestamps must be in UTC. It is prefered to use ``datetime`` objects or
 Unix timestamps. Timestamps read by the user should be always formatted in
 `ISO 8601 <https://en.wikipedia.org/wiki/ISO_8601>`_
 
-Git and GitHub Guidelines
-=========================
+Git workflow
+------------
 
-**Write good commit messages** that at least follow the spirit of
-:ref:`this example <commit-msg>`.
+Commits
+~~~~~~~~
 
-Strive to **write many small commits** each containing an atomic change instead
-of one large mega-commit. This not only makes code review easier, but it also
-makes commits that show up in ``git blame`` 10 years from now make more sense.
+Commit messages should follow the `Tim Pope`_ recommendations.
 
 **Prefer a rebase workflow instead of merge**. Incorporating PRs should be done
 with fast-forward merge, if easily possible. The larger the topic branch, the
@@ -123,39 +121,6 @@ top of master or cherry-pick the changes.
 **Do not force push lightly** unless branches are clearly labeled as ones that
 may get overwritten (for example: "transient\_" prefix). Instead of overwriting
 a branch, add a version suffix (for example: "_02").
-
-
-.. _commit-msg:
-
-Example commit message
-======================
-
-With thanks to `Tim Pope`_:
-
-
-::
-
-    Capitalized, short (50 chars or less) summary
-
-    More detailed explanatory text, if necessary.  Wrap it to about 72
-    characters or so.  In some contexts, the first line is treated as the
-    subject of an email and the rest of the text as the body.  The blank
-    line separating the summary from the body is critical (unless you omit
-    the body entirely); tools like rebase can get confused if you run the
-    two together.
-
-    Write your commit message in the imperative: "Fix bug" and not "Fixed bug"
-    or "Fixes bug."  This convention matches up with commit messages generated
-    by commands like git merge and git revert.
-
-    Further paragraphs come after blank lines.
-
-    - Bullet points are okay, too
-
-    - Typically a hyphen or asterisk is used for the bullet, followed by a
-      single space, with blank lines in between, but conventions vary here
-
-    - Use a hanging indent
 
 
 

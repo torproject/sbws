@@ -48,25 +48,6 @@ Install the python dependencies::
 ``sbws`` needs :term:`destination` s to request files from.
 Please, see :ref:`deploy` to know how to configure, deploy and run ``sbws``.
 
-Installing tests dependencies and running them
-------------------------------------------------
-
-To run the tests, extra Python depenencies are needed:
-
-- Flake8_
-- tox_
-- pytest_
-- coverage_
-
-To install them from ``sbws`` ::
-
-    pip install .[dev] && pip install .[test]
-
-To run the tests::
-
-    tox
-
-
 Installing documentation dependendencies and building it
 ---------------------------------------------------------
 

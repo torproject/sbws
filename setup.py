@@ -45,8 +45,8 @@ setup(
     description='Simple Bandwidth Scanner',
     long_description=long_description(),
     long_description_content_type="text/markdown",
-    author='Matt Traudt',
-    author_email='pastly@torproject.org',
+    author='Matt Traudt, juga',
+    author_email='{pastly, juga}@torproject.org',
     license='CC0',
     url="https://gitweb.torproject.org/sbws.git",
     classifiers=[

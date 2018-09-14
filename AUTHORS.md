@@ -5,5 +5,6 @@ Thank you for helping make Tor better.
 
 * juga0
 * Matt Traudt
+* teor
 
-*Last updated: 2018-04-05 on 2299e38*
+*Last updated: 2018-09-14 on 27766cc*

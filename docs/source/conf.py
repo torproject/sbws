@@ -23,7 +23,7 @@ def find_version():
 
 # -- Project information -----------------------------------------------------
 
-project = 'Simple Bandwidth Scanner'
+project = 'sbws'
 copyright = 'CC0'
 author = 'Matt Traudt [sirmatt at ksu dot edu], juga [juga at riseup dot net]'
 

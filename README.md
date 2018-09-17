@@ -13,14 +13,35 @@ authorities or researches using a test Tor network, chutney or shadow.
 Please, do not run this software otherwise, since the measurements would not be
 used by Tor and would only create more traffic in the Tor network.
 
-See ./INSTALL.rst) for install instructions,
-[./DEPLOY.rst](./DEPLOY.rst) for deploy instructions,
-[./CONTRIBUTING](./CONTRIBUTING.rst) for contribution guidelines.
-=======
-`sbws` will be considered production ready when version 1.0.0 will be releases.
+`sbws` will be considered production ready when version 1.0.0 will be released.
+
+Installing
+------------
+
+See ./INSTALL.rst (or  [INSTALL](./INSTALL.rst) or [INSTALL](./INSTALL.html) )
+
+Deploying and running
+---------------------
+
+See ./DEPLOY.rst (or  [DEPLOY](./DEPLOY.rst) or [DEPLOY](./DEPLOY.html) )
+
+Contributing
+--------------
+
+See ./CONTRIBUTING.rst (or  [CONTRIBUTING](./CONTRIBUTING.rst) or
+[CONTRIBUTING](./CONTRIBUTING.html) )
+
+Changelog
+--------------
+
+See ./CHANGELOG.rst (or  [CHANGELOG](./CHANGELOG.rst) or
+[CHANGELOG](./CHANGELOG.html) )
+
+Documentation
+--------------
 
 More extensive documentation can be found in the ./docs directory,
-also online at https://sbws.readthedocs.io and
+and online at [sbws.rtfd.io](https://sbws.readthedocs.io) and
 [this onion service](http://d7pxflytfsmz6uh3x7i2jxzzwea6nbpmtsz5tmfkcin5edapaig5vpyd.onion/)
 ([v2](http://sdmb3rfvp3wadu6y.onion/)).
 
@@ -36,4 +57,4 @@ software in ./LICENSE.md
 
 ## Authors
 
-See ./AUTHORS.md
+See ./AUTHORS.md (or  [AUTHORS](./AUTHORS.MD)

@@ -3,10 +3,18 @@
 Installing Simple Bandwidth Scanner
 ===================================
 
-The prefered method to install ``sbws`` is to install it from your system
+The recommended method  is to install it from your system
 distribution.
-Currently there is not any system distribution package.
-In the meantime, follow the following steps.
+
+In Debian/Ubuntu systems::
+
+    sudo apt install sbws
+
+To install also the documentation::
+
+    sudo apt install sbws-doc
+
+Continue reading to install ``sbws`` in other ways.
 
 System requirements
 --------------------
@@ -46,7 +54,9 @@ Install the python dependencies::
    an ``stem`` release > 1.6.0
 
 ``sbws`` needs :term:`destination` s to request files from.
-Please, see :ref:`deploy` to know how to configure, deploy and run ``sbws``.
+
+Please, see ./DEPLOY.rst (or `/DEPLOY.rst </DEPLOY.rst>`_ or :ref:`deploy`)
+to configure, deploy and run ``sbws``.
 
 System physical requirements
 -----------------------------
@@ -81,6 +91,3 @@ are 10MB and it will keep 50 rotated log files.
 .. _pytest: https://docs.pytest.org/
 .. _tox: https://tox.readthedocs.io
 .. _Coverage: https://coverage.readthedocs.io/
-.. _Sphinx: http://www.sphinx-doc.org
-.. _recommonmark: https://recommonmark.readthedocs.io/
-.. _Pylint: https://www.pylint.org/

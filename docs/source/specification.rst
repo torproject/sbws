@@ -89,23 +89,6 @@ Sbws uses the python library Stem_ to launch and control tor and the python
 library Requests_ to make HTTP(S) requests. Both are generally packaged for
 most major Linux distributions, and are always available in PyPI.
 
-Configuring the sbws scanner
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-At the time of writing, sbws sets the following torrc options for the following
-reasons when it launches Tor. You can find them in ``sbws/globals.py`` and
-``sbws/util/stem.py``.
-
-- ``SocksPort auto``: To proxy requests over Tor.
-- ``CookieAuthentication 1``: The easiest way to authenticate to Tor.
-- ``LearnCircuitBuildTimeout 0``: To keep circuit build timeouts static.
-- ``CircuitBuildTimeout 10``: To give up on struggling circuits sooner.
-- ``UseEntryGuards 0``: To avoid path bias warnings.
-- ``DataDirectory ...``: To set Tor's datadirectory to be inside sbws's.
-- ``PidFile ...``: To make it easier to tell if Tor is running.
-- ``ControlSocket ...``: To control Tor.
-- ``Log notice ...``: To know what the heck is going on.
-
 How it all works
 ----------------
 

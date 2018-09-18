@@ -22,7 +22,7 @@ How do sbws scanner results end up in the consensus?
 
 The :term:`sbws scanner` runs continuously to gather fresh data.
 
-The :term `sbws generate` command takes the fresh data and generates a
+The :term:`sbws generate` command takes the fresh data and generates a
 :term:`v3bw file`.
 
 The Tor :term:`directory authority` parses the v3bw file and includes bandwidth

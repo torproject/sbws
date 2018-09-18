@@ -3,17 +3,17 @@
 Deploying Simple Bandwidth Scanner
 =====================================
 
-So you want to run sbws for yourself. You will need
+To run sbws is needed:
 
 - A machine to run the :term:`scanner`.
 - One or more :term:`destination` (s) that serve a large file.
 
-Both :term:`scanner` and your :term:`destination` (s) should be on fast,
+Both the ``scanner`` and your the ``destination``(s) should be on fast,
 well connected machines.
 
 .. _destinations_requirements:
 
-:term:`destination` requirements
+destination requirements
 ------------------------------------
 
 - A Web server installed and running that supports HTTP GET, HEAD and
@@ -22,15 +22,15 @@ well connected machines.
 - Optional support for TLS
 - A large file; at the time of writing, at least 1 GiB in size
 
-:term:`scanner` setup
+scanner setup
 ----------------------
 
-Install sbws according to :doc:`/INSTALL`.
-
-``sbws scanner`` needs :term:`destination` (s) to request files from.
-They are not included by default.
+Install sbws according to ``./INSTALL.rst`` (or `/INSTALL.rst </INSTALL.rst>`_
+or :ref:`install`).
 
 To configure destinations, create a configuration file according to
-:doc:`man_sbws.ini`
+``./docs/source/man_sbws.ini.rst`` (or `/docs/source/man_sbws.ini.rst <man_sbws.ini>`_
+or :doc:`man_sbws.ini` or ``man sbws.ini``)
 
-See also :doc:`sbws.ini` manual page.
+See also ``/docs/source/man_sbws.rst`` (or `/docs/source/man_sbws.rst`_ or
+:doc:`man_sbws` or ``man sbws``) manual page.

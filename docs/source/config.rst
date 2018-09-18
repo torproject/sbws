@@ -1,5 +1,4 @@
-Simple Bandwidth Scanner Configuration Files
-============================================
+.. _config_internal:
 
 How sbws configuration works internally
 ----------------------------------------

@@ -1,10 +1,7 @@
 Frequently Asked Questions (FAQ)
 ==================================
 
-.. note:: even thought this questions should be answered by reading the
-   :doc:`specification`, here the answers should be short and clear.
-
-.. note:: You may also enjoy the :doc:`glossary`.
+.. seealso:: :doc:`glossary`.
 
 How many hops are the circuits used to perform the measurements?
 ----------------------------------------------------------------

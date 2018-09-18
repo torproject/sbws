@@ -6,40 +6,59 @@
 Welcome to Simple Bandwidth Scanner's documentation!
 ====================================================
 
-Contents
---------
+User main documentation
+------------------------
+
+Included in the
+`repository root <https://gitweb.torproject.org/sbws.git//tree/>`_
+and in ``sbws`` Debian package:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
-   specification
-   config
+   README
    INSTALL
    DEPLOY
-   README
+   CONTRIBUTING
+   CHANGELOG
+   AUTHORS
    man_sbws
    man_sbws.ini
-   CHANGELOG
-   CONTRIBUTING
-   AUTHORS
-   LICENSE
-   faq
-   glossary
-   diagrams
-   state
-   sbws
 
-Proposals
----------
+.. _dev_doc:
+
+Developer/technical documentation
+----------------------------------
+
+Included in the
+`docs directory <https://gitweb.torproject.org/sbws.git/tree/docs>`_ and in
+``sbws-doc`` Debian package:
 
 .. toctree::
-   :glob:
    :maxdepth: 1
+
+   specification
+   faq
+   glossary
+   layout
+   config_tor
+   testing
+   documenting
+   state
+   config
+   diagrams
+   sbws
+
+Proposals:
+
+.. toctree::
+   :maxdepth: 1
+   :glob:
 
    proposals/*
 
 Indices and tables
-==================
+-------------------
 
 * :ref:`genindex`
 * :ref:`modindex`

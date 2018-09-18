@@ -182,3 +182,4 @@ To support running in parallel with the legacy torflow_, **XXX Explain scaling**
 .. _torflow: https://gitweb.torproject.org/torflow.git
 .. _stem: https://stem.torproject.org
 .. _requests: https://docs.python-requests.org/
+.. _peerflow: https://www.nrl.navy.mil/itd/chacs/sites/www.nrl.navy.mil.itd.chacs/files/pdfs/16-1231-4353.pdf

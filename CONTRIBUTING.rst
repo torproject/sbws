@@ -23,29 +23,75 @@ The sbws canonical repository is https://gitweb.torproject.org/sbws.git,
 but we review patches using the Github canonical repository
 (https://github.com/torproject/sbws) Pull Requests (PR).
 
-Steps:
+To know more about ``sbws`` code,
 
-1. Create a ticket in Tor Project Trac as explained above
+.. seealso::
+
+  - :ref:`dev_doc`
+  - ``./docs/source/testing.rst`` (or `testing </docs/source/testing.rst>`_
+    or :ref:`testing`).
+  - ``./docs/source/documenting.rst`` (or `documenting </docs/source/documenting.rst>`_
+    or :ref:`documenting`).
+
+The following are guidelines we aim to follow.
+
+Steps to create a PR
+~~~~~~~~~~~~~~~~~~~~~
+
+1. Create a ticket in Tor Project Trac (:ref:`Open ticket <ticket-ref>`)
 2. Clone ``sbws`` via the Github web interface
    https://github.com/torproject/sbws
 3. Clone the repository locally
-4. Install ``sbws`` as explained in ./INSTALL.rst and TESTING.rst
+4. Install ``sbws`` as explained in ./INSTALL.rst and ./TESTING.rst
    Use ``pip install -e <>``
 5. If needed install the documentation and build it as explained in
    ./DOCUMENTATION.rst
 6. Create a new branch, named ``ticketXXX``.
    Optionally, name it with a string explaining what it does,
    ie ``ticketXXX_contributing``
-7. Write code, create tests, commit, etc.
-8. Ensure tests pass.
-9. Create a PR from your branch to https://github.com/torproject/sbws
-10. Change the ticket status to ``needs_review``
+7. Write code (:ref:`codestyle-ref`), tests, documentation,
+   extra files (:ref:`extrafiles-ref`), commit (:ref:`commits-ref`), etc.
+8. Ensure tests pass (./TESTING.rst).
+9. Push your branch to your repository. If you have an account in Travis,
+   you can see whether it pass the tests in Github and in
+   https://travis-ci.org/youruser/sbws/
+10. Create a PR from your branch to https://github.com/torproject/sbws
+11. Change the Trac ticket status to ``needs_review``
 
-We use flake8 to check some PEP8 errors/warnings. This will be checked with
-``tox`` and Travis.
+.. _codestyle-ref:
 
-Simple Bandwidth Scanner is moving towards 100% test coverage. Please help us
-reach that goal, or at least not move us away from it.
+Code style
+~~~~~~~~~~
+
+Follow the Zen of Python (:pep:`20`)
+
+.. code-block:: pycon
+
+    >>> import this
+    The Zen of Python, by Tim Peters
+
+    Beautiful is better than ugly.
+    Explicit is better than implicit.
+    Simple is better than complex.
+    Complex is better than complicated.
+    Flat is better than nested.
+    Sparse is better than dense.
+    Readability counts.
+
+Code should adhere to the :pep:`8` guidelines.
+Before release 1.0.0, some guidelines have not been followed,
+such as the ordering the inputs (:pep:`8#imports`).
+
+Any non-trivial change should contain tests. See ./TESTING.rst.
+When running tests, currently ``flake8`` informs on some PEP8 errors/warnings,
+but not all.
+
+All functions, methods and classes should have :pep:`0257`
+(except ``__repr__`` and ``__str__``).
+Before release 1.0.0, some docstrigs do not have 3 double quotes ``"""``
+(:pep:`0257#id15`).
+
+New features should add a corresponding documentation.
 
 Git and GitHub Guidelines
 =========================

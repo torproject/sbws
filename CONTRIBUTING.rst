@@ -1,3 +1,5 @@
+.. _contributing:
+
 Contributing to Simple Bandwidth Scanner
 =========================================
 

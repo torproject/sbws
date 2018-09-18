@@ -98,6 +98,9 @@ External link: `Documentation <https://docs.python-guide.org/writing/documentati
 
 New features should add a corresponding documentation in /docs.
 
+An editor compatible with `EditorConfig <https://editorconfig.org/>`_ will
+help you to follow the general formatting code style.
+
 Timestamps must be in UTC. It is prefered to use ``datetime`` objects or
 Unix timestamps. Timestamps read by the user should be always formatted in
 `ISO 8601 <https://en.wikipedia.org/wiki/ISO_8601>`_

@@ -1,0 +1,27 @@
+# this should work for all editors that support .editorconfig!
+#
+# on debian, emacs users should install elpa-editorconfig and vim
+# users should install vim-editorconfig.
+
+root = true
+
+[*]
+indent_style = space
+# this remove EOF new line with some editors
+# insert_final_newline = true
+trim_trailing_whitespace = true
+end_of_line = lf
+charset = utf-8
+max_line_length = 79
+
+[*.py]
+indent_size = 4
+
+[Makefile]
+indent_style = tab
+
+[*.ini]
+indent_size = 4
+
+[*.yml]
+indent_size = 2

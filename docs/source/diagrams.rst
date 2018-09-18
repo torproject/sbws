@@ -1,7 +1,7 @@
-Diagrams
-=========
+UML diagrams
+=============
 
-UML Class Diagram
+Class Diagram
 --------------------
 
 .. image:: ./images/classes_sbws.*

@@ -13,10 +13,13 @@ Examples of contributions include:
 Bug reports or feature requests
 ---------------------------------
 
-Check that bug has not been already reported.
-To report bugs or request features, open a ticket in
-`Tor Project Trac <https://trac.torproject.org/projects/tor/newticket>`_
-and assign the component to ``Core Tor``/``sbws``.
+* Check that it has not been already reported.
+
+.. _ticket-ref:
+
+* Open a ticket in
+  `Tor Project Trac <https://trac.torproject.org/projects/tor/newticket>`_
+  and assign the component to ``Core Tor``/``sbws``.
 
 Code/documentation patches
 ---------------------------

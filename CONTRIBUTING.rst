@@ -10,8 +10,8 @@ Examples of contributions include:
 * Bug reports, feature requests
 * Code/documentation patches
 
-Bug reports
-------------
+Bug reports or feature requests
+---------------------------------
 
 Check that bug has not been already reported.
 To report bugs or request features, open a ticket in

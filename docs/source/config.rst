@@ -1,20 +1,6 @@
 Simple Bandwidth Scanner Configuration Files
 ============================================
 
-How to create user customized configuration files
---------------------------------------------------
-``sbws`` use internal configuration files.
-These are **not** intented to be modified by a user.
-If a user needs a customized configuration file, the user needs to create it.
-There's an example configuration file with the minimum data that a user
-probably needs to edit in ``examples``. For more advanced configuration options see
-documentation below.
-``sbws`` will check by default whether there's a user customized file in
-``~/.sbws.ini`` and use it when it exists.
-The user can store a customized configuration file anywhere else in the file
-system and and provide ``sbws`` with the path to it via the ``-c`` or
-``--config`` cli option.
-
 How sbws configuration works internally
 ----------------------------------------
 Sbws has two default config files it reads: on general, and one specific to

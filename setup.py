@@ -81,7 +81,8 @@ setup(
         "git+https://git.torproject.org/stem.git#egg=stem-1.6.0.dev0",
     ],
     extras_require={
-        'dev': ['flake8'],
+        # vulture: find unused code
+        'dev': ['flake8', 'vulture'],
         'test': ['tox', 'pytest', 'coverage'],
         # recommonmark: to make sphinx render markdown
         'doc': ['sphinx', 'recommonmark', 'pylint'],

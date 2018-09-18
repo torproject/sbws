@@ -40,6 +40,7 @@ Included in the
    specification
    faq
    glossary
+   roadmap
    layout
    config_tor
    testing

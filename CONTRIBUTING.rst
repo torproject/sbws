@@ -87,81 +87,203 @@ Code should adhere to the :pep:`8` guidelines.
 Before release 1.0.0, some guidelines have not been followed,
 such as the ordering the inputs (:pep:`8#imports`).
 
-Any non-trivial change should contain tests. See ./TESTING.rst.
-When running tests, currently ``flake8`` informs on some PEP8 errors/warnings,
-but not all.
+External link: `Code Style <https://docs.python-guide.org/writing/style/>`_
 
 All functions, methods and classes should have :pep:`0257`
 (except ``__repr__`` and ``__str__``).
 Before release 1.0.0, some docstrigs do not have 3 double quotes ``"""``
 (:pep:`0257#id15`).
 
-New features should add a corresponding documentation.
+External link: `Documentation <https://docs.python-guide.org/writing/documentation/>`_
 
-Document your changes in ./CHANGELOG.rst following `keep a changelog`_.
-Reference the Tor Project Trac ticket (example: ``#12345``) or
-Github ticket (example: ``GH#123``).
+New features should add a corresponding documentation in /docs.
 
 Timestamps must be in UTC. It is prefered to use ``datetime`` objects or
 Unix timestamps. Timestamps read by the user should be always formatted in
 `ISO 8601 <https://en.wikipedia.org/wiki/ISO_8601>`_
 
-Git workflow
-------------
+Functional style is prefered:
+
+- use list comprenhensions lambda, map, reduce
+- avoid reasigigning variables, instead create new ones
+- use ``deepcopy`` when passing list of objects to a function/method
+- classes should change attributes only in one method (other than __init__?)
+
+[FUNC]_
+
+In general, do not reinvent the wheel, use Python native modules as ``logging``,
+instead of implementing similar functionality.
+Or use other packages when the new dependency can be extra, for instance
+`vulture`_.
+
+.. _`extrafiles-ref`:
+
+Extra required files
+~~~~~~~~~~~~~~~~~~~~~
+
+Any non-trivial change should contain tests. See ./TESTING.rst.
+When running tests, currently ``flake8`` informs on some PEP8 errors/warnings,
+but not all.
+
+Document your changes in ./CHANGELOG.rst following `keep a changelog`_.
+Reference the Tor Project Trac ticket (example: ``#12345``) or
+Github ticket (example: ``GH#123``).
+
+.. _commits-ref:
 
 Commits
-~~~~~~~~
-
-Commit messages should follow the `Tim Pope`_ recommendations.
-
-Workflow
 ~~~~~~~~~
 
-In general, when you are modifying code that was not wrotten by yourself,
-try to keep changes to the minimum.
+Try to make each commit a logically separate changes.::
+
+  As a general rule, your messages should start with a single line that’s
+  o more than about 50 characters and that describes the changeset concisely,
+  followed by a blank line, followed by a more detailed explanation.
+  The Git project requires that the more detailed explanation include
+  your motivation for the change and contrast its implementation with
+  previous behavior — this is a good guideline to follow.
+  It’s also a good idea to use the imperative present tense in these messages.
+  In other words, use commands.
+  Instead of "I added tests for" or "Adding tests for," use "Add tests for."
+
+[DIST]_
+
+Template originally written by `Tim Pope`_: :ref:`example commit <commit-msg>`
+
+Code being reviewed workflow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When a PR is being reviewed, new changes might be needed:
 
-- If the change does not modify a previous change, just commit and push.
+- If the change does not modify a previous change, create new commits and push.
 - If the change modifies a previous change and it's small,
   `git commit fixup <https://git-scm.com/docs/git-commit#git-commit---fixupltcommitgt>`_
   should be used. When it is agreed that the PR is ready, create a new branch
-  named ``mybranch_02`` and run::
+  named ``mybranch_02`` and run:
+
+  .. code-block:: bash
 
     rebase --autosquash
 
   push, create new PR and close old PR mentioning the number of the new PR.
 - If the review takes long and when it's ready code related to the PR has changed
-  in master, create a new branch named ``mybranch_02`` and run::
+  in master, create a new branch named ``mybranch_02`` and run:
+
+  .. code-block:: bash
 
     rebase master
 
   push, create new PR and close old PR mentioning the number of the new PR.
 
-Reviewers: (see :ref:`reviewers`)
+[MERG]_
 
-- should not push code to your branch, unless you agree
-- should let you know when new changes are needed
-- should not merge your PR after changes are requested and you notify you did
-  via the PR or the ticket.
-- should not merge your PR and then inmediatly modify your code pushing
-  directly to master without informing you previously and without your consent.
+.. _review-ref:
 
-.. _reviewers:
+Reviewing code
+----------------
 
-Reviewers
+All code should be peer-reviewed. Two reasons for this are::
+
+    Because a developer cannot think of everything at once;
+    Because a fresh pair of eyes may spot an error, a corner-case in the code,
+    insufficient documentation, a missing consistency check, etc.
+
+[REVI]_
+
+Reviewers:
+
+- Should let the contributor know what to improve/change.
+- Should not push code to the contributor's branch.
+- Should wait for contributor's changes or feedback after changes are requested,
+  before merging or closing a PR.
+- Should merge (not rebase) the PR.
+- If rebase is needed due to changes in master, the contributor should create
+  a new branch named `xxx_rebased` based on the reviewed branch, rebase and
+  create a new PR from it, as explained above.
+- If new changes are needed when the contributor's branch is ready to merge,
+  the reviewer can create a new branch based on the contributor's branch,
+  push the changes and merge that PR.
+  The contributor should be notified about it.
+- If the reviewer realize that new changes are needed after the PR has been
+  merged, the reviewer can push to master, notifying the contributor about the
+  changes.
+- Because currently there are not many reviewers, reviewers can merge their own
+  PR if there was not any feedback after a week.
+- Should not push directly to master, unless changes are trivial (typos,
+  extra spaces, etc.)
+- Should not push to master new features while there are open PRs to review.
+
+Currently, the reviewers are the persons that have contributed to the code:
+pastly, teor, juga.
+
+.. _releases-ref:
+
+Releases
 ----------
 
-At the moment, there is not any policy to decide who the reviewers are.
-They are the current people that has contributed to this code: pastly, teor,
-juga0.
-They should not push directly to master and they should peer-review their code.
-Currently, if a PR from a reviewer has not been peer-reviewd by other reviewer
-in a week, the reviewer can merge their/her/his own PR.
+Releases follow `semantic versioning`_.
+Until release 1.0.0 is reached, this project is not considered production
+ready.
 
-They should merge PR to master. Instead of rebase. If needed, rebase should be
-done by the contributor before the merge.
+Currently development happens in master, this might change from release 1.0.0
 
+so that master has the last release changes, and development happens in the
+next release branch.
+
+Before major releases, ensure that:
+
+- Installation from scratch, as specified in ./INSTALL.md, must success.
+- All tests must pass.
+- Tor must be able to parse the produced bw files
+  (current way is manual)
+
+  .. todo::
+
+    Test that run Tor as dirauth and parse the files
+
+- Bandwidth files must produce graphs compatible with Torflow
+  (current way to test it is manual)
+
+  .. todo::
+
+    Implement something to compare error with current consensus.
+- A dirauth should be able to understand the documentation, otherwise the
+  documentation should be clarified.
+
+
+.. _commit-msg:
+
+Example commit message
+-----------------------
+
+::
+
+  Short (50 chars or less) summary of changes
+
+  More detailed explanatory text, if necessary.  Wrap it to
+  about 72 characters or so.  In some contexts, the first
+  line is treated as the subject of an email and the rest of
+  the text as the body.  The blank line separating the
+  summary from the body is critical (unless you omit the body
+  entirely); tools like rebase can get confused if you run
+  the two together.
+
+  Further paragraphs come after blank lines.
+
+    - Bullet points are okay, too
+
+    - Typically a hyphen or asterisk is used for the bullet,
+      preceded by a single space, with blank lines in
+      between, but conventions vary here
+
+
+.. rubric:: External eferences
+
+.. [DIST] https://git-scm.com/book/en/v2/Distributed-Git-Contributing-to-a-Project
+.. [MERG] https://www.atlassian.com/git/tutorials/merging-vs-rebasing
+.. [REVI] https://doc.sagemath.org/html/en/developer/reviewer_checklist.html
+.. [FUNC] https://medium.com/@rohanrony/functional-programming-in-python-1-lambda-map-filter-reduce-zip-8739ea144186
 .. _tim pope: https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
-
 .. _`keep a changelog`: https://keepachangelog.com/en/1.0.0/
+.. _`semantic versioning`: https://semver.org/
+.. _`vulture`: https://pypi.org/project/vulture/

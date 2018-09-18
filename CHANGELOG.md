@@ -41,6 +41,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - refactor v3bwfile (#27386): move scaling method inside class
 - use custom ``install_command`` to test installation commands while
   ``dependency_links`` is needed until #26914 is fixed. (#27704)
+- documentation cleanup (#27773)
+  - split, merge, simplify, extend, reorganize sections and files
 
 ## [0.7.0] - 2018-08-09
 

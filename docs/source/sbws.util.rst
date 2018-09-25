@@ -29,7 +29,7 @@ sbws.util.parser module
     :show-inheritance:
 
 sbws.util.state module
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: sbws.util.state
     :members:

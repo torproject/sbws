@@ -91,7 +91,8 @@ class Relay:
         """Obtain ed25519 master key of the relay in server descriptors.
 
         :returns: str, the ed25519 master key base 64 encoded without
-        trailing '='s.
+                  trailing '='s.
+
         """
         # Even if this key is called master-key-ed25519 in dir-spec.txt,
         # it seems that stem parses it as ed25519_master_key

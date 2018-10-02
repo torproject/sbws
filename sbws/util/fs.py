@@ -65,7 +65,7 @@ def sbws_required_disk_space(conf):
     space_log_files = 0
     if conf.getboolean('logging', 'to_file'):
         size_log_file = conf.getint('logging', 'to_file_max_bytes')
-        num_log_files = conf.geting('logging', 'to_file_num_backups')
+        num_log_files = conf.getint('logging', 'to_file_num_backups')
         space_log_files = size_log_file * num_log_files
     text_dict['mb_log'] = space_log_files
     # roughly, size of a current tor dir

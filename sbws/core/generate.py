@@ -43,22 +43,20 @@ def gen_parser(sub):
                    'are, but scale them in the way Torflow does.')
     p.add_argument('-m', '--torflow-bw-margin', default=TORFLOW_BW_MARGIN,
                    type=float,
-                   help="Cap maximum bw when scaling as Torflow. "
-                        "(Default: 0.05)")
+                   help="Cap maximum bw when scaling as Torflow.")
     p.add_argument('-r', '--torflow-round-digs', default=TORFLOW_ROUND_DIG,
                    type=int,
                    help="Number of most significant digits to round bw "
-                        "when scaling as Torflow. (Default: 3)")
+                        "when scaling as Torflow.")
     p.add_argument('-p', '--secs-recent', default=None,
                    help="How many secs in the past are results being "
                         "still considered. Note this value will supersede "
-                        "data_period in the configuration. (Default: None)")
+                        "data_period in the configuration.")
     p.add_argument('-a', '--secs-away', default=DAY_SECS,
                    help="How many secs results have to be away from each "
-                        "other. (Default: 86400 - one day -)")
+                        "other.")
     p.add_argument('-n', '--min-num', default=NUM_MIN_RESULTS,
-                   help="Mininum number of a results to consider them."
-                        "(Default: 2)")
+                   help="Mininum number of a results to consider them.")
 
 
 def main(args, conf):

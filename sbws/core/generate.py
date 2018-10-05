@@ -33,12 +33,12 @@ def gen_parser(sub):
     p.add_argument('--scale-constant', default=SBWS_SCALE_CONSTANT, type=int,
                    help='When scaling bw weights, scale them using this const '
                    'multiplied by the number of measured relays')
-    p.add_argument('--scale_sbws', action='store_true',
+    p.add_argument('--scale-sbws', action='store_true',
                    help='If specified, do not use bandwidth values as they '
                    'are, but scale them such that we have a budget of '
                    'scale_constant * num_measured_relays = bandwidth to give '
                    'out, and we do so proportionally')
-    p.add_argument('-t', '--scale_torflow', action='store_true',
+    p.add_argument('-t', '--scale-torflow', action='store_true',
                    help='If specified, do not use bandwidth values as they '
                    'are, but scale them in the way Torflow does.')
     p.add_argument('-m', '--torflow-bw-margin', default=TORFLOW_BW_MARGIN,

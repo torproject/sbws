@@ -49,6 +49,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - documentation cleanup (#27773)
   - split, merge, simplify, extend, reorganize sections and files
 - generate scales as Torflow by default (#27976)
+- Replace stem ``dependency_links`` by stem 1.7.0 (#27705). This also eliminates
+  the need for custom ``install_command`` in tox.
 
 ## [0.7.0] - 2018-08-09
 

@@ -74,11 +74,8 @@ setup(
         ]
     },
     install_requires=[
-        'stem==1.6.0.dev0',
+        'stem>=1.7.0',
         'requests[socks]',
-    ],
-    dependency_links=[
-        "git+https://git.torproject.org/stem.git#egg=stem-1.6.0.dev0",
     ],
     extras_require={
         # vulture: find unused code

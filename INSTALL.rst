@@ -31,7 +31,7 @@ In Debian::
 Python dependencies
 --------------------
 
-- Stem_ > 1.6.0
+- Stem_ >= 1.7.0
 - Requests_ (with socks_ support) >= 2.10.0
 
 To install the Python dependencies, create a ``virtualenv`` first
@@ -47,11 +47,7 @@ Clone ``sbws``::
 
 Install the python dependencies::
 
-    cd sbws && pip install --process-dependency-links .
-
-.. note:: ``process-dependency-links`` will clone ``stem`` from master and
-   install it. It's deprecated, but it won't be needed as soon as there is
-   an ``stem`` release > 1.6.0
+    cd sbws && pip install .
 
 ``sbws`` needs :term:`destination` s to request files from.
 

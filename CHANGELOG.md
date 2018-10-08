@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Set int type to new arguments that otherwise would be string (#27918)
 - Stop printing arguments default values, since they are printed by default
   (#27916)
+- Use dash instead of underscore in new cli argument names (#27917)
 
 ### Changed
 

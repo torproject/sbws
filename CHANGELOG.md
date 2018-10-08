@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Stop using directory as argument in integration tests (#27342)
 - Fix typo getting configuration option to allow logging to file (#27960)
 - Set int type to new arguments that otherwise would be string (#27918)
+- Stop printing arguments default values, since they are printed by default
+  (#27916)
 
 ### Changed
 

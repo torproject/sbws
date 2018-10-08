@@ -38,9 +38,13 @@ def gen_parser(sub):
                    'are, but scale them such that we have a budget of '
                    'scale_constant * num_measured_relays = bandwidth to give '
                    'out, and we do so proportionally')
-    p.add_argument('-t', '--scale-torflow', action='store_true',
+    p.add_argument('-t', '--scale-torflow', action='store_const',
+                   default=True, const=False,
                    help='If specified, do not use bandwidth values as they '
                    'are, but scale them in the way Torflow does.')
+    p.add_argument('-w', '--raw', action='store_true',
+                   help='If specified, do use bandwidth raw measurements '
+                   'without any scaling.')
     p.add_argument('-m', '--torflow-bw-margin', default=TORFLOW_BW_MARGIN,
                    type=float,
                    help="Cap maximum bw when scaling as Torflow. ")
@@ -71,10 +75,10 @@ def main(args, conf):
         fail_hard('toflow-bw-margin must be major than 0.')
     if args.scale_sbws:
         scaling_method = SBWS_SCALING
-    elif args.scale_torflow:
-        scaling_method = TORFLOW_SCALING
-    else:
+    elif args.raw:
         scaling_method = None
+    else:
+        scaling_method = TORFLOW_SCALING
 
     fresh_days = conf.getint('general', 'data_period')
     reset_bw_ipv4_changes = conf.getboolean('general', 'reset_bw_ipv4_changes')

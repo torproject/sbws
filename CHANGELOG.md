@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.8.0] - 2018-10-08
+
+**Important changes**:
+
+- Implement Torflow scaling/aggregation to be able to substitute Torflow with
+  sbws without affecting the bandwidth files results.
+- Change stem dependency to 1.7.0, which removes the need for `dependency_links``
+- Update and cleanup documentation
+
 ### Added
 
 - Add system physical requirements section to INSTALL (#26937)

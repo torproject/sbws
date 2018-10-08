@@ -8,10 +8,11 @@ produces bandwidth measurements files to be used by Directory Authorities.
 The scanner builds two hop circuits consisting of the relay being measured and
 a fast exit. Over these circuits it measures RTT and bandwidth.
 
-**WARNING**: This software is *only* intended to be run by Tor directory
-authorities or researches using a test Tor network, chutney or shadow.
-Please, do not run this software otherwise, since the measurements would not be
-used by Tor and would only create more traffic in the Tor network.
+**WARNING**: This software is intended to be run by researchers using a test
+Tor network, such as chutney or shadow, or by the Tor bandwidth authorities
+on the public Tor network.
+Please do not run this software on the public Tor network unless you are one
+of the Tor bandwidth authorities, to avoid creating unnecessary traffic.
 
 `sbws` will be considered production ready when version 1.0.0 will be released.
 

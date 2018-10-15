@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Fixed
+
+- Update python minimal version in setup (#28043)
+
 ## [0.8.0] - 2018-10-08
 
 **Important changes**:

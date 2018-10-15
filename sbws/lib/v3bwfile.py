@@ -339,6 +339,10 @@ class V3BWLine(object):
         for r in reversed(results[:-1]):
             if abs(results_away[0].time - r.time) > secs_away:
                 results_away.insert(0, r)
+        # if there is only 1 result, is the one inserted at the beginning,
+        # so there are no results away from each other
+        if len(results_away) < 2:
+            return None
         return results_away
 
     @staticmethod

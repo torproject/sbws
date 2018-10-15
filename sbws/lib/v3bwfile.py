@@ -280,7 +280,11 @@ class V3BWLine(object):
                           '{} results.'.format(min_num))
                 return None
             results_away = \
-                cls.results_away_each_other(min_num_success_results, secs_away)
+                cls.results_away_each_other(success_results, secs_away)
+            if not results_away:
+                log.debug("There are no results with relays' results away from"
+                          " each other {}".format(secs_away))
+                return None
             results_recent = cls.results_recent_than(results_away, secs_recent)
             if not results_recent:
                 return None

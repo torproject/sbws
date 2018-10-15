@@ -276,8 +276,7 @@ class V3BWLine(object):
         # useful args for scaling
         if success_results:
             if not len(success_results) >= min_num:
-                # log.debug('There are no results with relays that have at least'
-                #           '{} results.'.format(min_num))
+                # log.debug('The number of results is les than %s', min_num)
                 return None
             results_away = \
                 cls.results_away_each_other(success_results, secs_away)

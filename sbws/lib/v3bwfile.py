@@ -322,12 +322,6 @@ class V3BWLine(object):
         return bw_line
 
     @staticmethod
-    def min_num_results(results, min_num=0):
-        if len(results) > min_num:
-            return results
-        return None
-
-    @staticmethod
     def results_away_each_other(results, secs_away=None):
         if secs_away is None or len(results) < 2:
             return results

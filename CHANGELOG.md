@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Fixed
+
+- Number of results comparison and number of results away from each other are
+  incorrect (#28041)
+
 ## [0.8.0] - 2018-10-08
 
 **Important changes**:

@@ -287,6 +287,8 @@ class V3BWLine(object):
                 return None
             results_recent = cls.results_recent_than(results_away, secs_recent)
             if not results_recent:
+                log.debug("There are no results that are more recent than {}"
+                          " secs".format(secs_recent))
                 return None
             # the most recent should be the last
             kwargs['desc_avg_bw_bs'] = \

@@ -276,8 +276,8 @@ class V3BWLine(object):
         # useful args for scaling
         if success_results:
             if not len(success_results) >= min_num:
-                log.debug('There are no results with relays that have at least'
-                          '{} results.'.format(min_num))
+                # log.debug('There are no results with relays that have at least'
+                #           '{} results.'.format(min_num))
                 return None
             results_away = \
                 cls.results_away_each_other(success_results, secs_away)
@@ -329,6 +329,8 @@ class V3BWLine(object):
 
     @staticmethod
     def results_away_each_other(results, secs_away=None):
+        # log.debug("Checking whether results are away from each other in %s "
+        #           "secs.", secs_away)
         if secs_away is None or len(results) < 2:
             return results
         # the last one should be the most recent

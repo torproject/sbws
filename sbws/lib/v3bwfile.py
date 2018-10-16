@@ -842,6 +842,17 @@ class V3BWFile(object):
         ys = [[getattr(l, k) for l in self.bw_lines] for k in attrs]
         return x, ys, attrs
 
+    def rm_link(self, output):
+        """"""
+        out_dir = os.path.dirname(output)
+        out_link = os.path.join(out_dir, 'latest.v3bw')
+        log.info('Removing %s link.', output)
+        with DirectoryLock(out_dir):
+            try:
+                os.unlink(out_link)
+            except FileNotFoundError:
+                pass
+
     def write(self, output):
         if output == '/dev/stdout':
             log.info("Writing to stdout is not supported.")

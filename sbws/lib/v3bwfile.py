@@ -6,12 +6,13 @@ import copy
 import logging
 import os
 from statistics import median, mean
+from stem.descriptor import parse_file
 
 from sbws import __version__
 from sbws.globals import (SPEC_VERSION, BW_LINE_SIZE, SBWS_SCALE_CONSTANT,
                           TORFLOW_SCALING, SBWS_SCALING, TORFLOW_BW_MARGIN,
                           TORFLOW_OBS_LAST, TORFLOW_OBS_MEAN,
-                          TORFLOW_ROUND_DIG)
+                          TORFLOW_ROUND_DIG, MIN_REPORT)
 from sbws.lib.resultdump import ResultSuccess, _ResultType
 from sbws.util.filelock import DirectoryLock
 from sbws.util.timestamp import (now_isodt_str, unixts_to_isodt_str,
@@ -63,6 +64,22 @@ def num_results_of_type(results, type_str):
 # Better way to use enums?
 def result_type_to_key(type_str):
     return type_str.replace('-', '_')
+
+
+def is_min_percent_measured(consensus_path):
+    """"""
+    # cached-consensus should be updated every time that scanner get the
+    # network status or descriptors?
+    # It will not be updated to the last consensus, but the list of measured
+    # relays is not either.
+    descs = parse_file(consensus_path)
+    num_relays_net = len(list(descs))
+    if num_relays_net * MIN_REPORT / 100:
+        log.warning('The percentage of the measured relays is less than the %s'
+                    '%% of the relays in the network (%s).',
+                    MIN_REPORT, num_relays_net)
+        return False
+    return True
 
 
 class V3BWHeader(object):
@@ -700,7 +717,7 @@ class V3BWFile(object):
         All of that can be expressed as:
 
         .. math::
-        
+
             bwn_i &=
                 max\\left(
                     \\frac{bw_i}{\\mu},
@@ -724,7 +741,7 @@ class V3BWFile(object):
                             \\right)}
                     \\right)
                 \\times bwobs_i \\
-        
+
              &=
                 max\\left(
                     \\frac{bw_i}{\\frac{\\sum_{i=1}^{n}bw_i}{n}},

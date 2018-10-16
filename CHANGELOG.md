@@ -17,6 +17,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Number of results comparison and number of results away from each other are
   incorrect (#28041)
 
+## Added
+
+- Write bw file only when the percentage of measured relays is bigger than 60%
+  (#28062)
+
 ## [0.8.0] - 2018-10-08
 
 **Important changes**:

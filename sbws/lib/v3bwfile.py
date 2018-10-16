@@ -275,14 +275,19 @@ class V3BWLine(object):
         kwargs.update(cls.result_types_from_results(results))
         # useful args for scaling
         if success_results:
-            min_num_success_results = cls.min_num_results(success_results,
-                                                          min_num)
-            if not min_num_success_results:
+            if not len(success_results) >= min_num:
+                # log.debug('The number of results is les than %s', min_num)
                 return None
             results_away = \
-                cls.results_away_each_other(min_num_success_results, secs_away)
+                cls.results_away_each_other(success_results, secs_away)
+            if not results_away:
+                log.debug("There are no results with relays' results away from"
+                          " each other {}".format(secs_away))
+                return None
             results_recent = cls.results_recent_than(results_away, secs_recent)
             if not results_recent:
+                log.debug("There are no results that are more recent than {}"
+                          " secs".format(secs_recent))
                 return None
             # the most recent should be the last
             kwargs['desc_avg_bw_bs'] = \
@@ -322,13 +327,9 @@ class V3BWLine(object):
         return bw_line
 
     @staticmethod
-    def min_num_results(results, min_num=0):
-        if len(results) > min_num:
-            return results
-        return None
-
-    @staticmethod
     def results_away_each_other(results, secs_away=None):
+        # log.debug("Checking whether results are away from each other in %s "
+        #           "secs.", secs_away)
         if secs_away is None or len(results) < 2:
             return results
         # the last one should be the most recent
@@ -337,6 +338,10 @@ class V3BWLine(object):
         for r in reversed(results[:-1]):
             if abs(results_away[0].time - r.time) > secs_away:
                 results_away.insert(0, r)
+        # if there is only 1 result, is the one inserted at the beginning,
+        # so there are no results away from each other
+        if len(results_away) < 2:
+            return None
         return results_away
 
     @staticmethod

@@ -28,7 +28,7 @@ def get_package_data():
 
 
 def get_data_files():
-    return [('examples', [os.path.join('examples', 'config.example.ini')])]
+    pass
 
 
 def find_version():

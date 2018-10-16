@@ -1,7 +1,7 @@
 from sbws.globals import (fail_hard, SBWS_SCALE_CONSTANT, TORFLOW_SCALING,
                           SBWS_SCALING, TORFLOW_BW_MARGIN, TORFLOW_ROUND_DIG,
                           DAY_SECS, NUM_MIN_RESULTS)
-from sbws.lib.v3bwfile import V3BWFile
+from sbws.lib.v3bwfile import V3BWFile, is_min_percent_measured
 from sbws.lib.resultdump import load_recent_results_in_datadir
 from argparse import ArgumentDefaultsHelpFormatter
 import os
@@ -99,7 +99,14 @@ def main(args, conf):
                                     secs_recent=args.secs_recent,
                                     secs_away=args.secs_away,
                                     min_num=args.min_num)
+
     output = args.output or \
         conf.getpath('paths', 'v3bw_fname').format(now_fname())
-    bw_file.write(output)
+    # Check percentage of measured relays.
+    consensus_path = os.path.join(conf.getpath('tor', 'datadir'),
+                                  "cached-consensus")
+    if is_min_percent_measured(consensus_path):
+        bw_file.write(output)
+    else:
+        bw_file.rm_link(output)
     bw_file.info_stats

@@ -229,6 +229,11 @@ class V3BWHeader(object):
     def num_lines(self):
         return len(self.__str__().split(LINE_SEP))
 
+    def add_stats(self, **kwargs):
+        # Using kwargs because attributes might chage.
+        [setattr(self, k, str(v)) for k, v in kwargs.items()
+         if k in STATS_KEYVALUES]
+
 
 class V3BWLine(object):
     """

@@ -27,8 +27,13 @@ KEYVALUE_SEP_V200 = ' '
 # List of the extra KeyValues accepted by the class
 EXTRA_ARG_KEYVALUES = ['software', 'software_version', 'file_created',
                        'earliest_bandwidth', 'generator_started']
+STATS_KEYVALUES = ['num_measured_relays', 'num_target_relays',
+                   'num_net_relays', 'perc_measured_relays',
+                   'perc_measured_targed']
+KEYVALUES_INT = STATS_KEYVALUES
 # List of all unordered KeyValues currently being used to generate the file
-UNORDERED_KEYVALUES = EXTRA_ARG_KEYVALUES + ['latest_bandwidth']
+UNORDERED_KEYVALUES = EXTRA_ARG_KEYVALUES + STATS_KEYVALUES + \
+                      ['latest_bandwidth']
 # List of all the KeyValues currently being used to generate the file
 ALL_KEYVALUES = ['version'] + UNORDERED_KEYVALUES
 TERMINATOR = '===='

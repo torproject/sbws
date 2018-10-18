@@ -61,6 +61,9 @@ def gen_parser(sub):
                         "other.")
     p.add_argument('-n', '--min-num', default=NUM_MIN_RESULTS, type=int,
                    help="Mininum number of a results to consider them.")
+    p.add_argument('-l', '--rm-link', action='store_true',
+                   help='If specified, remove latest.v3bw link when there '
+                        'are no relays to include in it.')
 
 
 def main(args, conf):

@@ -1,3 +1,5 @@
+from math import ceil
+
 from sbws.globals import (fail_hard, SBWS_SCALE_CONSTANT, TORFLOW_SCALING,
                           SBWS_SCALING, TORFLOW_BW_MARGIN, TORFLOW_ROUND_DIG,
                           DAY_SECS, NUM_MIN_RESULTS)
@@ -79,8 +81,10 @@ def main(args, conf):
         scaling_method = None
     else:
         scaling_method = TORFLOW_SCALING
-
-    fresh_days = conf.getint('general', 'data_period')
+    if args.secs_recent:
+        fresh_days = ceil(args.secs_recent / 24 / 60 / 60)
+    else:
+        fresh_days = conf.getint('general', 'data_period')
     reset_bw_ipv4_changes = conf.getboolean('general', 'reset_bw_ipv4_changes')
     reset_bw_ipv6_changes = conf.getboolean('general', 'reset_bw_ipv6_changes')
     results = load_recent_results_in_datadir(

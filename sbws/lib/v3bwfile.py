@@ -462,7 +462,7 @@ class V3BWFile(object):
                      torflow_cap=TORFLOW_BW_MARGIN,
                      torflow_round_digs=TORFLOW_ROUND_DIG,
                      secs_recent=None, secs_away=None, min_num=0,
-                     reverse=False):
+                     consensus_path=None, reverse=False):
         """Create V3BWFile class from sbws Results.
 
         :param dict results: see below
@@ -500,6 +500,14 @@ class V3BWFile(object):
             bw_lines = cls.bw_torflow_scale(bw_lines_raw, torflow_obs,
                                             torflow_cap, torflow_round_digs)
             # log.debug(bw_lines[-1])
+            if consensus_path is not None:
+                statsd, success = cls.measured_progress_stats(bw_lines,
+                                                              consensus_path)
+            # add statistics about progress only when there are not enough
+            # measured relays. Should some stats be added always?
+                if not success:
+                    header.add_stats(**statsd)
+                    bw_lines = []
         else:
             bw_lines = cls.bw_kb(bw_lines_raw)
             # log.debug(bw_lines[-1])
@@ -887,9 +895,12 @@ class V3BWFile(object):
             except FileNotFoundError:
                 pass
 
-    def write(self, output):
+    def write(self, output, rm_link=False):
         if output == '/dev/stdout':
             log.info("Writing to stdout is not supported.")
+            return
+        if not self.is_min_perc and rm_link:
+            self.rm_link(output)
             return
         log.info('Writing v3bw file to %s', output)
         # To avoid inconsistent reads, the bandwidth data is written to an

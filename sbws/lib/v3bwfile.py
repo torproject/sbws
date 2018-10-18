@@ -267,6 +267,7 @@ class V3BWLine(object):
         bw = data (Bytes) / time (seconds)
         """
         success_results = [r for r in results if isinstance(r, ResultSuccess)]
+        # log.debug("Len success_results %s", len(success_results))
         node_id = '$' + results[0].fingerprint
         kwargs = dict()
         kwargs['nick'] = results[0].nickname
@@ -282,9 +283,9 @@ class V3BWLine(object):
             results_away = \
                 cls.results_away_each_other(success_results, secs_away)
             if not results_away:
-                log.debug("There are no results with relays' results away from"
-                          " each other {}".format(secs_away))
                 return None
+            # log.debug("Results away from each other: %s",
+            #           [unixts_to_isodt_str(r.time) for r in results_away])
             results_recent = cls.results_recent_than(results_away, secs_recent)
             if not results_recent:
                 log.debug("There are no results that are more recent than {}"
@@ -471,6 +472,7 @@ class V3BWFile(object):
         header = V3BWHeader.from_results(results, state_fpath)
         bw_lines_raw = []
         for fp, values in results.items():
+            # log.debug("Relay fp %s", fp)
             line = V3BWLine.from_results(values, secs_recent, secs_away,
                                          min_num)
             if line is not None:

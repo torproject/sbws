@@ -5,6 +5,7 @@
 import copy
 import logging
 import os
+from itertools import combinations
 from statistics import median, mean
 
 from sbws import __version__
@@ -332,17 +333,12 @@ class V3BWLine(object):
         #           "secs.", secs_away)
         if secs_away is None or len(results) < 2:
             return results
-        # the last one should be the most recent
-        results_away = [results[-1]]
-        # iterate over the rest of the results in reverse order
-        for r in reversed(results[:-1]):
-            if abs(results_away[0].time - r.time) > secs_away:
-                results_away.insert(0, r)
-        # if there is only 1 result, is the one inserted at the beginning,
-        # so there are no results away from each other
-        if len(results_away) < 2:
-            return None
-        return results_away
+        for a, b in combinations(results, 2):
+            if abs(a.time - b.time) > secs_away:
+                return results
+        # log.debug("Results are NOT away from each other in at least %ss: %s",
+        #           secs_away, [unixts_to_isodt_str(r.time) for r in results])
+        return None
 
     @staticmethod
     def results_recent_than(results, secs_recent=None):

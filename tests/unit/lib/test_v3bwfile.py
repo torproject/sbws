@@ -5,7 +5,7 @@ import os.path
 
 from sbws import __version__ as version
 from sbws.globals import SPEC_VERSION, SBWS_SCALING, TORFLOW_SCALING
-from sbws.lib.resultdump import Result, load_result_file
+from sbws.lib.resultdump import Result, load_result_file, ResultSuccess
 from sbws.lib.v3bwfile import (V3BWHeader, V3BWLine, TERMINATOR, LINE_SEP,
                                KEYVALUE_SEP_V110, num_results_of_type,
                                V3BWFile)
@@ -154,3 +154,31 @@ def test_torflow_scale(datadir):
     v3bwfile = V3BWFile.from_results(results, scaling_method=TORFLOW_SCALING,
                                      torflow_cap=1, torflow_round_digs=0)
     assert v3bwfile.bw_lines[0].bw == 524
+
+
+def test_results_away_each_other(datadir):
+    min_num = 2
+    secs_away = 86400  # 1d
+    results = load_result_file(str(datadir.join("results_away.txt")))
+    # A has 4 results, 3 are success, 2 are 1 day away, 1 is 12h away
+    values = results["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"]
+    success_results = [r for r in values if isinstance(r, ResultSuccess)]
+    assert len(success_results) >= min_num
+    results_away = V3BWLine.results_away_each_other(success_results, secs_away)
+    assert len(results_away) == 3
+    # B has 2 results, 12h away from each other
+    values = results["BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"]
+    success_results = [r for r in values if isinstance(r, ResultSuccess)]
+    assert len(success_results) >= min_num
+    results_away = V3BWLine.results_away_each_other(success_results, secs_away)
+    assert results_away is None
+    secs_away = 43200  # 12h
+    values = results["BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"]
+    success_results = [r for r in values if isinstance(r, ResultSuccess)]
+    assert len(success_results) >= min_num
+    results_away = V3BWLine.results_away_each_other(success_results, secs_away)
+    assert len(results_away) == 2
+    # C has 1 result
+    values = results["CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"]
+    success_results = [r for r in values if isinstance(r, ResultSuccess)]
+    assert len(success_results) < min_num

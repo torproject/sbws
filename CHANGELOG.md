@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Move ``examples/`` to ``docs/`` (#28040)
 - Number of results comparison and number of results away from each other are
   incorrect (#28041)
+- Use secs-away when provided instead of data_period (#28105)
 
 ## [0.8.0] - 2018-10-08
 

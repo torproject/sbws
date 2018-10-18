@@ -71,22 +71,6 @@ def result_type_to_key(type_str):
     return type_str.replace('-', '_')
 
 
-def is_min_percent_measured(consensus_path):
-    """"""
-    # cached-consensus should be updated every time that scanner get the
-    # network status or descriptors?
-    # It will not be updated to the last consensus, but the list of measured
-    # relays is not either.
-    descs = parse_file(consensus_path)
-    num_relays_net = len(list(descs))
-    if num_relays_net * MIN_REPORT / 100:
-        log.warning('The percentage of the measured relays is less than the %s'
-                    '%% of the relays in the network (%s).',
-                    MIN_REPORT, num_relays_net)
-        return False
-    return True
-
-
 class V3BWHeader(object):
     """
     Create a bandwidth measurements (V3bw) header
@@ -795,6 +779,46 @@ class V3BWFile(object):
             # remove decimals and avoid 0
             l.bw = max(round(bw_new), 1)
         return sorted(bw_lines_tf, key=lambda x: x.bw, reverse=reverse)
+
+    @staticmethod
+    def measured_progress_stats(bw_lines, consensus_path):
+        """ Statistics about measurements progress,
+        to be included in the header.
+
+        :param list bw_lines: the bw_lines after scaling and applying filters.
+        :param str consensus_path: the path to the cached consensus file.
+        :returns dict, bool: Statistics about the progress made with
+            measurements and whether the percentage of measured relays has been
+            reached.
+
+        """
+        # cached-consensus should be updated every time that scanner get the
+        # network status or descriptors?
+        # It will not be updated to the last consensus, but the list of
+        # measured relays is not either.
+        assert isinstance(consensus_path, str)
+        assert isinstance(bw_lines, list)
+        statsd = {}
+        statsd['num_measured_relays'] = len(bw_lines)
+        statsd['num_net_relays'] = len(list(parse_file(consensus_path)))
+        statsd['num_target_relays'] = round(statsd['num_net_relays']
+                                            * MIN_REPORT / 100)
+        statsd['perc_measured_relays'] = round(len(bw_lines) * 100
+                                               / statsd['num_target_relays'])
+        statsd['perc_measured_targed'] = MIN_REPORT
+        if statsd['num_measured_relays'] < statsd['num_target_relays']:
+            log.warning('The percentage of the measured relays is less than'
+                        ' the %s%% of the relays in the network (%s).',
+                        MIN_REPORT, statsd['num_net_relays'])
+            return statsd, False
+        return statsd, True
+
+    @property
+    def is_min_perc(self):
+        if getattr(self.header, 'num_measured_relays', 0) \
+                < getattr(self.header, 'num_target_relays', 0):
+            return False
+        return True
 
     @property
     def sum_bw(self):

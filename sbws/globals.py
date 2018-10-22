@@ -69,7 +69,7 @@ def resolve(hostname, ipv4_only=False, ipv6_only=False):
     assert not (ipv4_only and ipv6_only)
     results = []
     try:
-        results = socket.getaddrinfo(hostname, 0):
+        results = socket.getaddrinfo(hostname, 0)
     except socket.gaierror:
         log.warn(
             'Unable to resolve %s hostname. Returning empty list of addresses',

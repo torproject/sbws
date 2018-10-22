@@ -120,7 +120,10 @@ class Relay:
             #
             # Also, only use the first ipv4/6 we get even if there is more than
             # one.
-            host = resolve(host)[0]
+            results = resolve(host)
+            if not len(results):
+                return False
+            host = results[0]
         assert is_valid_ipv4_address(host) or is_valid_ipv6_address(host)
         return self.exit_policy.can_exit_to(host, port)
 

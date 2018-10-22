@@ -288,10 +288,7 @@ class V3BWLine(object):
             #           [unixts_to_isodt_str(r.time) for r in results_away])
             results_recent = cls.results_recent_than(results_away, secs_recent)
             if not results_recent:
-                log.debug("There are no results that are more recent than {}"
-                          " secs".format(secs_recent))
                 return None
-            # the most recent should be the last
             kwargs['desc_avg_bw_bs'] = \
                 results_recent[-1].relay_average_bandwidth
             kwargs['rtt'] = cls.rtt_from_results(results_recent)
@@ -345,10 +342,14 @@ class V3BWLine(object):
     def results_recent_than(results, secs_recent=None):
         if secs_recent is None:
             return results
-        results_recent = filter(
+        results_recent = list(filter(
                             lambda x: (now_unixts() - x.time) < secs_recent,
-                            results)
-        return list(results_recent)
+                            results))
+        # if not results_recent:
+        #     log.debug("Results are NOT more recent than %ss: %s",
+        #               secs_recent,
+        #               [unixts_to_isodt_str(r.time) for r in results])
+        return results_recent
 
     @staticmethod
     def bw_bs_median_from_results(results):

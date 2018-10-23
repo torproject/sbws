@@ -7,12 +7,13 @@ import logging
 import os
 from itertools import combinations
 from statistics import median, mean
+from stem.descriptor import parse_file
 
 from sbws import __version__
 from sbws.globals import (SPEC_VERSION, BW_LINE_SIZE, SBWS_SCALE_CONSTANT,
                           TORFLOW_SCALING, SBWS_SCALING, TORFLOW_BW_MARGIN,
                           TORFLOW_OBS_LAST, TORFLOW_OBS_MEAN,
-                          TORFLOW_ROUND_DIG)
+                          TORFLOW_ROUND_DIG, MIN_REPORT)
 from sbws.lib.resultdump import ResultSuccess, _ResultType
 from sbws.util.filelock import DirectoryLock
 from sbws.util.timestamp import (now_isodt_str, unixts_to_isodt_str,
@@ -27,8 +28,13 @@ KEYVALUE_SEP_V200 = ' '
 # List of the extra KeyValues accepted by the class
 EXTRA_ARG_KEYVALUES = ['software', 'software_version', 'file_created',
                        'earliest_bandwidth', 'generator_started']
+STATS_KEYVALUES = ['num_measured_relays', 'num_target_relays',
+                   'num_net_relays', 'perc_measured_relays',
+                   'perc_measured_targed']
+KEYVALUES_INT = STATS_KEYVALUES
 # List of all unordered KeyValues currently being used to generate the file
-UNORDERED_KEYVALUES = EXTRA_ARG_KEYVALUES + ['latest_bandwidth']
+UNORDERED_KEYVALUES = EXTRA_ARG_KEYVALUES + STATS_KEYVALUES + \
+                      ['latest_bandwidth']
 # List of all the KeyValues currently being used to generate the file
 ALL_KEYVALUES = ['version'] + UNORDERED_KEYVALUES
 TERMINATOR = '===='
@@ -223,6 +229,11 @@ class V3BWHeader(object):
     @property
     def num_lines(self):
         return len(self.__str__().split(LINE_SEP))
+
+    def add_stats(self, **kwargs):
+        # Using kwargs because attributes might chage.
+        [setattr(self, k, str(v)) for k, v in kwargs.items()
+         if k in STATS_KEYVALUES]
 
 
 class V3BWLine(object):
@@ -449,7 +460,7 @@ class V3BWFile(object):
                      torflow_cap=TORFLOW_BW_MARGIN,
                      torflow_round_digs=TORFLOW_ROUND_DIG,
                      secs_recent=None, secs_away=None, min_num=0,
-                     reverse=False):
+                     consensus_path=None, reverse=False):
         """Create V3BWFile class from sbws Results.
 
         :param dict results: see below
@@ -488,6 +499,14 @@ class V3BWFile(object):
             bw_lines = cls.bw_torflow_scale(bw_lines_raw, torflow_obs,
                                             torflow_cap, torflow_round_digs)
             # log.debug(bw_lines[-1])
+            if consensus_path is not None:
+                statsd, success = cls.measured_progress_stats(bw_lines,
+                                                              consensus_path)
+            # add statistics about progress only when there are not enough
+            # measured relays. Should some stats be added always?
+                if not success:
+                    header.add_stats(**statsd)
+                    bw_lines = []
         else:
             bw_lines = cls.bw_kb(bw_lines_raw)
             # log.debug(bw_lines[-1])
@@ -699,7 +718,7 @@ class V3BWFile(object):
         All of that can be expressed as:
 
         .. math::
-        
+
             bwn_i &=
                 max\\left(
                     \\frac{bw_i}{\\mu},
@@ -723,7 +742,7 @@ class V3BWFile(object):
                             \\right)}
                     \\right)
                 \\times bwobs_i \\
-        
+
              &=
                 max\\left(
                     \\frac{bw_i}{\\frac{\\sum_{i=1}^{n}bw_i}{n}},
@@ -772,6 +791,46 @@ class V3BWFile(object):
             # remove decimals and avoid 0
             l.bw = max(round(bw_new), 1)
         return sorted(bw_lines_tf, key=lambda x: x.bw, reverse=reverse)
+
+    @staticmethod
+    def measured_progress_stats(bw_lines, consensus_path):
+        """ Statistics about measurements progress,
+        to be included in the header.
+
+        :param list bw_lines: the bw_lines after scaling and applying filters.
+        :param str consensus_path: the path to the cached consensus file.
+        :returns dict, bool: Statistics about the progress made with
+            measurements and whether the percentage of measured relays has been
+            reached.
+
+        """
+        # cached-consensus should be updated every time that scanner get the
+        # network status or descriptors?
+        # It will not be updated to the last consensus, but the list of
+        # measured relays is not either.
+        assert isinstance(consensus_path, str)
+        assert isinstance(bw_lines, list)
+        statsd = {}
+        statsd['num_measured_relays'] = len(bw_lines)
+        statsd['num_net_relays'] = len(list(parse_file(consensus_path)))
+        statsd['num_target_relays'] = round(statsd['num_net_relays']
+                                            * MIN_REPORT / 100)
+        statsd['perc_measured_relays'] = round(len(bw_lines) * 100
+                                               / statsd['num_net_relays'])
+        statsd['perc_measured_targed'] = MIN_REPORT
+        if statsd['num_measured_relays'] < statsd['num_target_relays']:
+            log.warning('The percentage of the measured relays is less than'
+                        ' the %s%% of the relays in the network (%s).',
+                        MIN_REPORT, statsd['num_net_relays'])
+            return statsd, False
+        return statsd, True
+
+    @property
+    def is_min_perc(self):
+        if getattr(self.header, 'num_measured_relays', 0) \
+                < getattr(self.header, 'num_target_relays', 0):
+            return False
+        return True
 
     @property
     def sum_bw(self):

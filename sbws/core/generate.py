@@ -96,14 +96,18 @@ def main(args, conf):
                     'ran sbws scanner recently?)')
         return
     state_fpath = conf.getpath('paths', 'state_fname')
+    consensus_path = os.path.join(conf.getpath('tor', 'datadir'),
+                                  "cached-consensus")
     bw_file = V3BWFile.from_results(results, state_fpath, args.scale_constant,
                                     scaling_method,
                                     torflow_cap=args.torflow_bw_margin,
                                     torflow_round_digs=args.torflow_round_digs,
                                     secs_recent=args.secs_recent,
                                     secs_away=args.secs_away,
-                                    min_num=args.min_num)
+                                    min_num=args.min_num,
+                                    consensus_path=consensus_path)
+
     output = args.output or \
         conf.getpath('paths', 'v3bw_fname').format(now_fname())
-    bw_file.write(output)
+    bw_file.write(output, args.rm_link)
     bw_file.info_stats

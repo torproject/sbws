@@ -236,7 +236,7 @@ def _validate_scanner(conf):
     sec = 'scanner'
     err_tmpl = Template('$sec/$key ($val): $e')
     ints = {
-        'num_rtts': {'minimum': 1, 'maximum': 100},
+        'num_rtts': {'minimum': 0, 'maximum': 100},
         'num_downloads': {'minimum': 1, 'maximum': 100},
         'initial_read_request': {'minimum': 1, 'maximum': None},
         'measurement_threads': {'minimum': 1, 'maximum': None},

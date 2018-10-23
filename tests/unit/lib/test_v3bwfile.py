@@ -182,3 +182,33 @@ def test_results_away_each_other(datadir):
     values = results["CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"]
     success_results = [r for r in values if isinstance(r, ResultSuccess)]
     assert len(success_results) < min_num
+
+
+def test_measured_progress_stats(datadir):
+    num_net_relays = 3
+    bw_lines_raw = []
+    statsd_exp = {'perc_measured_relays': 100, 'perc_measured_targed': 60,
+                  'num_net_relays': 3, 'num_target_relays': 2,
+                  'num_measured_relays': 3}
+    min_perc_reached_before = None
+    results = load_result_file(str(datadir.join("results_away.txt")))
+    for fp, values in results.items():
+        # log.debug("Relay fp %s", fp)
+        line = V3BWLine.from_results(values)
+        if line is not None:
+            bw_lines_raw.append(line)
+    assert len(bw_lines_raw) == 3
+    bw_lines = V3BWFile.bw_torflow_scale(bw_lines_raw)
+    assert len(bw_lines) == 3
+    statsd, success = V3BWFile.measured_progress_stats(bw_lines,
+        num_net_relays, min_perc_reached_before)
+    assert success
+    assert statsd == statsd_exp
+    num_net_relays = 6
+    statsd, success = V3BWFile.measured_progress_stats(bw_lines,
+        num_net_relays, min_perc_reached_before)
+    assert not success
+    statsd_exp = {'perc_measured_relays': 50, 'perc_measured_targed': 60,
+                  'num_net_relays': 6, 'num_target_relays': 4,
+                  'num_measured_relays': 3}
+    assert statsd_exp == statsd

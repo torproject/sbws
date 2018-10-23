@@ -884,12 +884,9 @@ class V3BWFile(object):
         ys = [[getattr(l, k) for l in self.bw_lines] for k in attrs]
         return x, ys, attrs
 
-    def write(self, output, rm_link=False):
+    def write(self, output):
         if output == '/dev/stdout':
             log.info("Writing to stdout is not supported.")
-            return
-        if not self.is_min_perc and rm_link:
-            self.rm_link(output)
             return
         log.info('Writing v3bw file to %s', output)
         # To avoid inconsistent reads, the bandwidth data is written to an

@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - When the percentage of measured relays is less than the 60%, do not include 
   the relays in the bandwidth file and instead include some statistics in the 
   header (#28076)
+- When the percentage of measured relays is less than the 60% and it was more
+  before, warn about it (#28155)
 
 ## [0.8.0] - 2018-10-08
 

@@ -817,7 +817,7 @@ class V3BWFile(object):
         statsd['num_target_relays'] = round(statsd['num_net_relays']
                                             * MIN_REPORT / 100)
         statsd['perc_measured_relays'] = round(len(bw_lines) * 100
-                                               / statsd['num_target_relays'])
+                                               / statsd['num_net_relays'])
         statsd['perc_measured_targed'] = MIN_REPORT
         if statsd['num_measured_relays'] < statsd['num_target_relays']:
             log.warning('The percentage of the measured relays is less than'

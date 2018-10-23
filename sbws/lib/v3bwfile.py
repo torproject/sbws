@@ -795,11 +795,10 @@ class V3BWFile(object):
     def read_num_net_relays(consensus_path):
         """Read the number of relays in the Network from the cached consensus
         file."""
-        assert isinstance(consensus_path, str)
         num = None
         try:
             num = len(list(parse_file(consensus_path)))
-        except FileNotFoundError:
+        except (FileNotFoundError, AttributeError):
             log.info("It is not possible to obtain statistics about the "
                      "percentage of measured relays because the cached "
                      "consensus file is not found.")

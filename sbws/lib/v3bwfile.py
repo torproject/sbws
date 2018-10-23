@@ -483,6 +483,7 @@ class V3BWFile(object):
         log.info('Processing results to generate a bandwidth list file.')
         header = V3BWHeader.from_results(results, state_fpath)
         bw_lines_raw = []
+        num_net_relays = cls.read_num_net_relays(consensus_path)
         for fp, values in results.items():
             # log.debug("Relay fp %s", fp)
             line = V3BWLine.from_results(values, secs_recent, secs_away,
@@ -500,7 +501,7 @@ class V3BWFile(object):
             bw_lines = cls.bw_torflow_scale(bw_lines_raw, torflow_obs,
                                             torflow_cap, torflow_round_digs)
             # log.debug(bw_lines[-1])
-            if consensus_path is not None:
+            if num_net_relays is not None:
                 statsd, success = cls.measured_progress_stats(bw_lines,
                     consensus_path, state_fpath)
                 # add statistics about progress only when there are not enough
@@ -794,8 +795,22 @@ class V3BWFile(object):
         return sorted(bw_lines_tf, key=lambda x: x.bw, reverse=reverse)
 
     @staticmethod
+    def read_num_net_relays(consensus_path):
+        """Read the number of relays in the Network from the cached consensus
+        file."""
+        assert isinstance(consensus_path, str)
+        num = None
+        try:
+            num = len(list(parse_file(consensus_path)))
+        except FileNotFoundError:
+            log.info("It is not possible to obtain statistics about the "
+                     "percentage of measured relays because the cached "
+                     "consensus file is not found.")
+        log.debug("Number of relays in the network %s", num)
+        return num
+
     @staticmethod
-    def measured_progress_stats(bw_lines, consensus_path, state_fpath):
+    def measured_progress_stats(bw_lines, num_net_relays, state_fpath):
         """ Statistics about measurements progress,
         to be included in the header.
 
@@ -811,13 +826,13 @@ class V3BWFile(object):
         # network status or descriptors?
         # It will not be updated to the last consensus, but the list of
         # measured relays is not either.
-        assert isinstance(consensus_path, str)
+        assert isinstance(num_net_relays, int)
         assert isinstance(bw_lines, list)
         assert isinstance(state_fpath, str)
         state = State(state_fpath)
         statsd = {}
         statsd['num_measured_relays'] = len(bw_lines)
-        statsd['num_net_relays'] = len(list(parse_file(consensus_path)))
+        statsd['num_net_relays'] = num_net_relays
         statsd['num_target_relays'] = round(statsd['num_net_relays']
                                             * MIN_REPORT / 100)
         statsd['perc_measured_relays'] = round(len(bw_lines) * 100

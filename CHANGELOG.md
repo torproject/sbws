@@ -21,8 +21,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Write bw file only when the percentage of measured relays is bigger than 60%
   (#28062)
-- Add option to remove link when the percentage of measured relays is less than
-  the 60% and instead include some statistics in the header (#28076)
+- When the percentage of measured relays is less than the 60%, do not include 
+  the relays in the bandwidth file and instead include some statistics in the 
+  header (#28076)
 
 ## [0.8.0] - 2018-10-08
 

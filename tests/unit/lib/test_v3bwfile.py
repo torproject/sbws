@@ -185,11 +185,13 @@ def test_results_away_each_other(datadir):
 
 
 def test_measured_progress_stats(datadir):
-    num_net_relays = 3
+    number_consensus_relays = 3
     bw_lines_raw = []
-    statsd_exp = {'perc_measured_relays': 100, 'perc_measured_targed': 60,
-                  'num_net_relays': 3, 'num_target_relays': 2,
-                  'num_measured_relays': 3}
+    statsd_exp = {'percent_eligible_relays': 100,
+                  'minimum_percent_eligible_relays': 60,
+                  'number_consensus_relays': 3,
+                  'minimum_number_eligible_relays': 2,
+                  'number_eligible_relays': 3}
     min_perc_reached_before = None
     results = load_result_file(str(datadir.join("results_away.txt")))
     for fp, values in results.items():
@@ -201,22 +203,24 @@ def test_measured_progress_stats(datadir):
     bw_lines = V3BWFile.bw_torflow_scale(bw_lines_raw)
     assert len(bw_lines) == 3
     statsd, success = V3BWFile.measured_progress_stats(
-        bw_lines, num_net_relays, min_perc_reached_before)
+        bw_lines, number_consensus_relays, min_perc_reached_before)
     assert success
     assert statsd == statsd_exp
-    num_net_relays = 6
+    number_consensus_relays = 6
     statsd, success = V3BWFile.measured_progress_stats(
-        bw_lines, num_net_relays, min_perc_reached_before)
+        bw_lines, number_consensus_relays, min_perc_reached_before)
     assert not success
-    statsd_exp = {'perc_measured_relays': 50, 'perc_measured_targed': 60,
-                  'num_net_relays': 6, 'num_target_relays': 4,
-                  'num_measured_relays': 3}
+    statsd_exp = {'percent_eligible_relays': 50,
+                  'minimum_percent_eligible_relays': 60,
+                  'number_consensus_relays': 6,
+                  'minimum_number_eligible_relays': 4,
+                  'number_eligible_relays': 3}
     assert statsd_exp == statsd
 
 
 def test_update_progress(datadir, tmpdir):
     bw_lines_raw = []
-    num_net_relays = 6
+    number_consensus_relays = 6
     state = {}
     header = V3BWHeader(str(now_unixts()))
     results = load_result_file(str(datadir.join("results_away.txt")))
@@ -226,11 +230,13 @@ def test_update_progress(datadir, tmpdir):
         if line is not None:
             bw_lines_raw.append(line)
     bwfile = V3BWFile(header, [])
-    bwfile.update_progress(bw_lines_raw, header, num_net_relays, state)
-    assert header.perc_measured_relays == '50'
+    bwfile.update_progress(bw_lines_raw, header, number_consensus_relays,
+                           state)
+    assert header.percent_eligible_relays == '50'
     assert state.get('min_perc_reached') is None
-    num_net_relays = 3
+    number_consensus_relays = 3
     header = V3BWHeader(str(now_unixts()))
-    bwfile.update_progress(bw_lines_raw, header, num_net_relays, state)
+    bwfile.update_progress(bw_lines_raw, header, number_consensus_relays,
+                           state)
     assert state.get('min_perc_reached') == now_isodt_str()
-    assert not hasattr(header, 'perc_measured_relays')
+    assert not hasattr(header, 'percent_eligible_relays')

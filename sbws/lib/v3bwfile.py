@@ -28,9 +28,9 @@ KEYVALUE_SEP_V200 = ' '
 # List of the extra KeyValues accepted by the class
 EXTRA_ARG_KEYVALUES = ['software', 'software_version', 'file_created',
                        'earliest_bandwidth', 'generator_started']
-STATS_KEYVALUES = ['num_measured_relays', 'num_target_relays',
-                   'num_net_relays', 'perc_measured_relays',
-                   'perc_measured_targed']
+STATS_KEYVALUES = ['number_eligible_relays', 'minimum_number_eligible_relays',
+                   'number_consensus_relays', 'percent_eligible_relays',
+                   'minimum_percent_eligible_relays']
 KEYVALUES_INT = STATS_KEYVALUES
 # List of all unordered KeyValues currently being used to generate the file
 UNORDERED_KEYVALUES = EXTRA_ARG_KEYVALUES + STATS_KEYVALUES + \
@@ -483,7 +483,8 @@ class V3BWFile(object):
         log.info('Processing results to generate a bandwidth list file.')
         header = V3BWHeader.from_results(results, state_fpath)
         bw_lines_raw = []
-        num_net_relays = cls.read_num_net_relays(consensus_path)
+        number_consensus_relays = cls.read_number_consensus_relays(
+            consensus_path)
         state = State(state_fpath)
         for fp, values in results.items():
             # log.debug("Relay fp %s", fp)
@@ -494,8 +495,8 @@ class V3BWFile(object):
         if not bw_lines_raw:
             log.info("After applying restrictions to the raw results, "
                      "there is not any. Scaling can not be applied.")
-            cls.update_progress(cls, bw_lines_raw, header, num_net_relays,
-                                state)
+            cls.update_progress(
+                cls, bw_lines_raw, header, number_consensus_relays, state)
             return cls(header, [])
         if scaling_method == SBWS_SCALING:
             bw_lines = cls.bw_sbws_scale(bw_lines_raw, scale_constant)
@@ -505,7 +506,8 @@ class V3BWFile(object):
             bw_lines = cls.bw_torflow_scale(bw_lines_raw, torflow_obs,
                                             torflow_cap, torflow_round_digs)
             # log.debug(bw_lines[-1])
-            cls.update_progress(cls, bw_lines, header, num_net_relays, state)
+            cls.update_progress(
+                cls, bw_lines, header, number_consensus_relays, state)
         else:
             bw_lines = cls.bw_kb(bw_lines_raw)
             # log.debug(bw_lines[-1])
@@ -792,7 +794,7 @@ class V3BWFile(object):
         return sorted(bw_lines_tf, key=lambda x: x.bw, reverse=reverse)
 
     @staticmethod
-    def read_num_net_relays(consensus_path):
+    def read_number_consensus_relays(consensus_path):
         """Read the number of relays in the Network from the cached consensus
         file."""
         num = None
@@ -806,7 +808,7 @@ class V3BWFile(object):
         return num
 
     @staticmethod
-    def measured_progress_stats(bw_lines, num_net_relays,
+    def measured_progress_stats(bw_lines, number_consensus_relays,
                                 min_perc_reached_before):
         """ Statistics about measurements progress,
         to be included in the header.
@@ -823,34 +825,35 @@ class V3BWFile(object):
         # network status or descriptors?
         # It will not be updated to the last consensus, but the list of
         # measured relays is not either.
-        assert isinstance(num_net_relays, int)
+        assert isinstance(number_consensus_relays, int)
         assert isinstance(bw_lines, list)
         statsd = {}
-        statsd['num_measured_relays'] = len(bw_lines)
-        statsd['num_net_relays'] = num_net_relays
-        statsd['num_target_relays'] = round(statsd['num_net_relays']
-                                            * MIN_REPORT / 100)
-        statsd['perc_measured_relays'] = round(len(bw_lines) * 100
-                                               / statsd['num_net_relays'])
-        statsd['perc_measured_targed'] = MIN_REPORT
-        if statsd['num_measured_relays'] < statsd['num_target_relays']:
+        statsd['number_eligible_relays'] = len(bw_lines)
+        statsd['number_consensus_relays'] = number_consensus_relays
+        statsd['minimum_number_eligible_relays'] = round(
+            statsd['number_consensus_relays'] * MIN_REPORT / 100)
+        statsd['percent_eligible_relays'] = round(
+            len(bw_lines) * 100 / statsd['number_consensus_relays'])
+        statsd['minimum_percent_eligible_relays'] = MIN_REPORT
+        if statsd['number_eligible_relays'] < \
+                statsd['minimum_number_eligible_relays']:
             # if min percent was was reached before, warn
             # otherwise, debug
             if min_perc_reached_before is not None:
                 log.warning('The percentage of the measured relays is less '
                             'than the %s%% of the relays in the network (%s).',
-                            MIN_REPORT, statsd['num_net_relays'])
+                            MIN_REPORT, statsd['number_consensus_relays'])
             else:
                 log.info('The percentage of the measured relays is less '
                          'than the %s%% of the relays in the network (%s).',
-                         MIN_REPORT, statsd['num_net_relays'])
+                         MIN_REPORT, statsd['number_consensus_relays'])
             return statsd, False
         return statsd, True
 
     @property
     def is_min_perc(self):
-        if getattr(self.header, 'num_measured_relays', 0) \
-                < getattr(self.header, 'num_target_relays', 0):
+        if getattr(self.header, 'number_eligible_relays', 0) \
+                < getattr(self.header, 'minimum_number_eligible_relays', 0):
             return False
         return True
 
@@ -886,11 +889,12 @@ class V3BWFile(object):
          ['sum_bw', 'mean_bw', 'median_bw', 'num',
           'max_bw', 'min_bw']]
 
-    def update_progress(self, bw_lines, header, num_net_relays, state):
+    def update_progress(self, bw_lines, header, number_consensus_relays,
+                        state):
         min_perc_reached_before = state.get('min_perc_reached')
-        if num_net_relays is not None:
+        if number_consensus_relays is not None:
             statsd, success = self.measured_progress_stats(
-                bw_lines, num_net_relays, min_perc_reached_before)
+                bw_lines, number_consensus_relays, min_perc_reached_before)
             # add statistics about progress only when there are not enough
             # measured relays. Should some stats be added always?
             if not success:

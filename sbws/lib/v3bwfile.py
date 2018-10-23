@@ -503,8 +503,8 @@ class V3BWFile(object):
             if consensus_path is not None:
                 statsd, success = cls.measured_progress_stats(bw_lines,
                                                               consensus_path)
-            # add statistics about progress only when there are not enough
-            # measured relays. Should some stats be added always?
+                # add statistics about progress only when there are not enough
+                # measured relays. Should some stats be added always?
                 if not success:
                     header.add_stats(**statsd)
                     bw_lines = []

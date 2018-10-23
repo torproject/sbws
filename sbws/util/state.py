@@ -63,6 +63,13 @@ class State:
         self._state = self._read()
         return self._state.__len__()
 
+    def get(self, key):
+        if not isinstance(key, str):
+            raise TypeError(
+                'Keys must be strings. %s is a %s' % (key, type(key)))
+        self._state = self._read()
+        return self._state.get(key)
+
     def __getitem__(self, key):
         if not isinstance(key, str):
             raise TypeError(

@@ -109,5 +109,5 @@ def main(args, conf):
 
     output = args.output or \
         conf.getpath('paths', 'v3bw_fname').format(now_fname())
-    bw_file.write(output, args.rm_link)
+    bw_file.write(output)
     bw_file.info_stats

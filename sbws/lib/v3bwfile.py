@@ -490,6 +490,7 @@ class V3BWFile(object):
             if line is not None:
                 bw_lines_raw.append(line)
         if not bw_lines_raw:
+            log.info("There are not enough raw results to apply any scaling.")
             return cls(header, [])
         if scaling_method == SBWS_SCALING:
             bw_lines = cls.bw_sbws_scale(bw_lines_raw, scale_constant)
@@ -501,9 +502,9 @@ class V3BWFile(object):
             # log.debug(bw_lines[-1])
             if consensus_path is not None:
                 statsd, success = cls.measured_progress_stats(bw_lines,
-                                                              consensus_path)
-            # add statistics about progress only when there are not enough
-            # measured relays. Should some stats be added always?
+                    consensus_path, state_fpath)
+                # add statistics about progress only when there are not enough
+                # measured relays. Should some stats be added always?
                 if not success:
                     header.add_stats(**statsd)
                     bw_lines = []
@@ -793,12 +794,14 @@ class V3BWFile(object):
         return sorted(bw_lines_tf, key=lambda x: x.bw, reverse=reverse)
 
     @staticmethod
-    def measured_progress_stats(bw_lines, consensus_path):
+    @staticmethod
+    def measured_progress_stats(bw_lines, consensus_path, state_fpath):
         """ Statistics about measurements progress,
         to be included in the header.
 
         :param list bw_lines: the bw_lines after scaling and applying filters.
         :param str consensus_path: the path to the cached consensus file.
+        :param str state_fpath: the path to the state file
         :returns dict, bool: Statistics about the progress made with
             measurements and whether the percentage of measured relays has been
             reached.
@@ -810,6 +813,8 @@ class V3BWFile(object):
         # measured relays is not either.
         assert isinstance(consensus_path, str)
         assert isinstance(bw_lines, list)
+        assert isinstance(state_fpath, str)
+        state = State(state_fpath)
         statsd = {}
         statsd['num_measured_relays'] = len(bw_lines)
         statsd['num_net_relays'] = len(list(parse_file(consensus_path)))
@@ -819,10 +824,25 @@ class V3BWFile(object):
                                                / statsd['num_net_relays'])
         statsd['perc_measured_targed'] = MIN_REPORT
         if statsd['num_measured_relays'] < statsd['num_target_relays']:
-            log.warning('The percentage of the measured relays is less than'
-                        ' the %s%% of the relays in the network (%s).',
-                        MIN_REPORT, statsd['num_net_relays'])
+            # the min percent of measured relays is not reached,
+            # write None in the state file and obtain whether it was reached
+            # before
+            min_perc_reached_before = state.get('min_perc_reached')
+            state['min_perc_reached'] = None
+            # if it was reached before, warn
+            # otherwise, debug
+            if min_perc_reached_before is not None:
+                log.warning('The percentage of the measured relays is less '
+                            'than the %s%% of the relays in the network (%s).',
+                            MIN_REPORT, statsd['num_net_relays'])
+            else:
+                log.info('The percentage of the measured relays is less '
+                         'than the %s%% of the relays in the network (%s).',
+                         MIN_REPORT, statsd['num_net_relays'])
             return statsd, False
+        # write in the state file the date the min percent of measured
+        # relays has been reached
+        state['min_perc_reached'] = now_isodt_str()
         return statsd, True
 
     @property

@@ -484,6 +484,7 @@ class V3BWFile(object):
         header = V3BWHeader.from_results(results, state_fpath)
         bw_lines_raw = []
         num_net_relays = cls.read_num_net_relays(consensus_path)
+        state = State(state_fpath)
         for fp, values in results.items():
             # log.debug("Relay fp %s", fp)
             line = V3BWLine.from_results(values, secs_recent, secs_away,
@@ -493,12 +494,8 @@ class V3BWFile(object):
         if not bw_lines_raw:
             log.info("After applying restrictions to the raw results, "
                      "there is not any. Scaling can not be applied.")
-            if num_net_relays is not None:
-                statsd, success = cls.measured_progress_stats(bw_lines_raw,
-                    num_net_relays, state_fpath)
-                if not success:
-                    header.add_stats(**statsd)
-                    bw_lines = []
+            cls.update_progress(cls, bw_lines_raw, header, num_net_relays,
+                                state)
             return cls(header, [])
         if scaling_method == SBWS_SCALING:
             bw_lines = cls.bw_sbws_scale(bw_lines_raw, scale_constant)
@@ -508,14 +505,7 @@ class V3BWFile(object):
             bw_lines = cls.bw_torflow_scale(bw_lines_raw, torflow_obs,
                                             torflow_cap, torflow_round_digs)
             # log.debug(bw_lines[-1])
-            if num_net_relays is not None:
-                statsd, success = cls.measured_progress_stats(bw_lines,
-                    consensus_path, state_fpath)
-                # add statistics about progress only when there are not enough
-                # measured relays. Should some stats be added always?
-                if not success:
-                    header.add_stats(**statsd)
-                    bw_lines = []
+            cls.update_progress(cls, bw_lines, header, num_net_relays, state)
         else:
             bw_lines = cls.bw_kb(bw_lines_raw)
             # log.debug(bw_lines[-1])
@@ -817,7 +807,8 @@ class V3BWFile(object):
         return num
 
     @staticmethod
-    def measured_progress_stats(bw_lines, num_net_relays, state_fpath):
+    def measured_progress_stats(bw_lines, num_net_relays,
+                                min_perc_reached_before):
         """ Statistics about measurements progress,
         to be included in the header.
 
@@ -835,8 +826,6 @@ class V3BWFile(object):
         # measured relays is not either.
         assert isinstance(num_net_relays, int)
         assert isinstance(bw_lines, list)
-        assert isinstance(state_fpath, str)
-        state = State(state_fpath)
         statsd = {}
         statsd['num_measured_relays'] = len(bw_lines)
         statsd['num_net_relays'] = num_net_relays
@@ -846,12 +835,7 @@ class V3BWFile(object):
                                                / statsd['num_net_relays'])
         statsd['perc_measured_targed'] = MIN_REPORT
         if statsd['num_measured_relays'] < statsd['num_target_relays']:
-            # the min percent of measured relays is not reached,
-            # write None in the state file and obtain whether it was reached
-            # before
-            min_perc_reached_before = state.get('min_perc_reached')
-            state['min_perc_reached'] = None
-            # if it was reached before, warn
+            # if min percent was was reached before, warn
             # otherwise, debug
             if min_perc_reached_before is not None:
                 log.warning('The percentage of the measured relays is less '
@@ -862,9 +846,6 @@ class V3BWFile(object):
                          'than the %s%% of the relays in the network (%s).',
                          MIN_REPORT, statsd['num_net_relays'])
             return statsd, False
-        # write in the state file the date the min percent of measured
-        # relays has been reached
-        state['min_perc_reached'] = now_isodt_str()
         return statsd, True
 
     @property
@@ -905,6 +886,21 @@ class V3BWFile(object):
         [log.info(': '.join([attr, str(getattr(self, attr))])) for attr in
          ['sum_bw', 'mean_bw', 'median_bw', 'num',
           'max_bw', 'min_bw']]
+
+    def update_progress(self, bw_lines, header, num_net_relays, state):
+        min_perc_reached_before = state.get('min_perc_reached')
+        if num_net_relays is not None:
+            statsd, success = self.measured_progress_stats(
+                bw_lines, num_net_relays, min_perc_reached_before)
+            # add statistics about progress only when there are not enough
+            # measured relays. Should some stats be added always?
+            if not success:
+                header.add_stats(**statsd)
+                bw_lines = []
+                state['min_perc_reached'] = None
+            else:
+                state['min_perc_reached'] = now_isodt_str()
+        return bw_lines
 
     def bw_line_for_node_id(self, node_id):
         """Returns the bandwidth line for a given node fingerprint.

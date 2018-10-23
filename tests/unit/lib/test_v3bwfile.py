@@ -9,7 +9,7 @@ from sbws.lib.resultdump import Result, load_result_file, ResultSuccess
 from sbws.lib.v3bwfile import (V3BWHeader, V3BWLine, TERMINATOR, LINE_SEP,
                                KEYVALUE_SEP_V110, num_results_of_type,
                                V3BWFile)
-from sbws.util.timestamp import now_fname
+from sbws.util.timestamp import now_fname, now_isodt_str, now_unixts
 
 timestamp = 1523974147
 timestamp_l = str(timestamp)
@@ -200,15 +200,37 @@ def test_measured_progress_stats(datadir):
     assert len(bw_lines_raw) == 3
     bw_lines = V3BWFile.bw_torflow_scale(bw_lines_raw)
     assert len(bw_lines) == 3
-    statsd, success = V3BWFile.measured_progress_stats(bw_lines,
-        num_net_relays, min_perc_reached_before)
+    statsd, success = V3BWFile.measured_progress_stats(
+        bw_lines, num_net_relays, min_perc_reached_before)
     assert success
     assert statsd == statsd_exp
     num_net_relays = 6
-    statsd, success = V3BWFile.measured_progress_stats(bw_lines,
-        num_net_relays, min_perc_reached_before)
+    statsd, success = V3BWFile.measured_progress_stats(
+        bw_lines, num_net_relays, min_perc_reached_before)
     assert not success
     statsd_exp = {'perc_measured_relays': 50, 'perc_measured_targed': 60,
                   'num_net_relays': 6, 'num_target_relays': 4,
                   'num_measured_relays': 3}
     assert statsd_exp == statsd
+
+
+def test_update_progress(datadir, tmpdir):
+    bw_lines_raw = []
+    num_net_relays = 6
+    state = {}
+    header = V3BWHeader(str(now_unixts()))
+    results = load_result_file(str(datadir.join("results_away.txt")))
+    for fp, values in results.items():
+        # log.debug("Relay fp %s", fp)
+        line = V3BWLine.from_results(values)
+        if line is not None:
+            bw_lines_raw.append(line)
+    bwfile = V3BWFile(header, [])
+    bwfile.update_progress(bw_lines_raw, header, num_net_relays, state)
+    assert header.perc_measured_relays == '50'
+    assert state.get('min_perc_reached') is None
+    num_net_relays = 3
+    header = V3BWHeader(str(now_unixts()))
+    bwfile.update_progress(bw_lines_raw, header, num_net_relays, state)
+    assert state.get('min_perc_reached') == now_isodt_str()
+    assert not hasattr(header, 'perc_measured_relays')

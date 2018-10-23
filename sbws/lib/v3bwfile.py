@@ -491,7 +491,14 @@ class V3BWFile(object):
             if line is not None:
                 bw_lines_raw.append(line)
         if not bw_lines_raw:
-            log.info("There are not enough raw results to apply any scaling.")
+            log.info("After applying restrictions to the raw results, "
+                     "there is not any. Scaling can not be applied.")
+            if num_net_relays is not None:
+                statsd, success = cls.measured_progress_stats(bw_lines_raw,
+                    num_net_relays, state_fpath)
+                if not success:
+                    header.add_stats(**statsd)
+                    bw_lines = []
             return cls(header, [])
         if scaling_method == SBWS_SCALING:
             bw_lines = cls.bw_sbws_scale(bw_lines_raw, scale_constant)

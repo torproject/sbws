@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 
 - Update python minimal version in setup (#28043)
+- Catch unhandled exception when we fail to resolve a domain name (#28141)
 
 ### Changed
 

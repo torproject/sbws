@@ -36,9 +36,9 @@ header_extra_ls = [timestamp_l, version_l,
                    software_l, software_version_l, TERMINATOR]
 header_extra_str = LINE_SEP.join(header_extra_ls) + LINE_SEP
 
-bwl_str = "bw=56 bw_bs_mean=61423 bw_bs_median=55656 "\
-    "desc_avg_bw_bs=1000000000 desc_obs_bw_bs_last=524288 "\
-    "desc_obs_bw_bs_mean=524288 error_circ=0 error_misc=0 error_stream=1 " \
+bwl_str = "bw=56 bw_mean=61423 bw_median=55656 "\
+    "desc_bw_avg=1000000000 desc_bw_obs_last=524288 "\
+    "desc_bw_obs_mean=524288 error_circ=0 error_misc=0 error_stream=1 " \
     "master_key_ed25519=g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s " \
     "nick=A " \
     "node_id=$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA rtt=456 success=1 " \

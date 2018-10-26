@@ -49,8 +49,8 @@ BW_KEYVALUES_BASIC = ['node_id', 'bw']
 BW_KEYVALUES_FILE = BW_KEYVALUES_BASIC + \
                     ['master_key_ed25519', 'nick', 'rtt', 'time',
                      'success', 'error_stream', 'error_circ', 'error_misc']
-BW_KEYVALUES_EXTRA_BWS = ['bw_bs_median', 'bw_bs_mean', 'desc_avg_bw_bs',
-                          'desc_obs_bw_bs_last', 'desc_obs_bw_bs_mean']
+BW_KEYVALUES_EXTRA_BWS = ['bw_median', 'bw_mean', 'desc_bw_avg',
+                          'desc_bw_obs_last', 'desc_bw_obs_mean']
 BW_KEYVALUES_EXTRA = BW_KEYVALUES_FILE + BW_KEYVALUES_EXTRA_BWS
 BW_KEYVALUES_INT = ['bw', 'rtt', 'success', 'error_stream',
                     'error_circ', 'error_misc'] + BW_KEYVALUES_EXTRA_BWS
@@ -271,7 +271,7 @@ class V3BWLine(object):
         """Convert sbws results to relays' Bandwidth Lines
 
         ``bs`` stands for Bytes/seconds
-        ``bw_bs_mean`` means the bw is obtained from the mean of the all the
+        ``bw_mean`` means the bw is obtained from the mean of the all the
         downloads' bandwidth.
         Downloads' bandwidth are calculated as the amount of data received
         divided by the the time it took to received.
@@ -300,17 +300,17 @@ class V3BWLine(object):
             results_recent = cls.results_recent_than(results_away, secs_recent)
             if not results_recent:
                 return None
-            kwargs['desc_avg_bw_bs'] = \
+            kwargs['desc_bw_avg'] = \
                 results_recent[-1].relay_average_bandwidth
             kwargs['rtt'] = cls.rtt_from_results(results_recent)
-            bw = cls.bw_bs_median_from_results(results_recent)
-            kwargs['bw_bs_mean'] = cls.bw_bs_mean_from_results(results_recent)
-            kwargs['bw_bs_median'] = cls.bw_bs_median_from_results(
+            bw = cls.bw_median_from_results(results_recent)
+            kwargs['bw_mean'] = cls.bw_mean_from_results(results_recent)
+            kwargs['bw_median'] = cls.bw_median_from_results(
                 results_recent)
-            kwargs['desc_obs_bw_bs_last'] = \
-                cls.desc_obs_bw_bs_last_from_results(results_recent)
-            kwargs['desc_obs_bw_bs_mean'] = \
-                cls.desc_obs_bw_bs_mean_from_results(results_recent)
+            kwargs['desc_bw_obs_last'] = \
+                cls.desc_bw_obs_last_from_results(results_recent)
+            kwargs['desc_bw_obs_mean'] = \
+                cls.desc_bw_obs_mean_from_results(results_recent)
             bwl = cls(node_id, bw, **kwargs)
             return bwl
         return None
@@ -363,12 +363,12 @@ class V3BWLine(object):
         return results_recent
 
     @staticmethod
-    def bw_bs_median_from_results(results):
+    def bw_median_from_results(results):
         return max(round(median([dl['amount'] / dl['duration']
                                  for r in results for dl in r.downloads])), 1)
 
     @staticmethod
-    def bw_bs_mean_from_results(results):
+    def bw_mean_from_results(results):
         return max(round(mean([dl['amount'] / dl['duration']
                                for r in results for dl in r.downloads])), 1)
 
@@ -391,17 +391,17 @@ class V3BWLine(object):
         return rt_dict
 
     @staticmethod
-    def desc_obs_bw_bs_mean_from_results(results):
-        desc_obs_bws = []
+    def desc_bw_obs_mean_from_results(results):
+        desc_bw_obs_ls = []
         for r in results:
             if r.relay_observed_bandwidth is not None:
-                desc_obs_bws.append(r.relay_observed_bandwidth)
-        if desc_obs_bws:
-            return max(round(mean(desc_obs_bws)), 1)
+                desc_bw_obs_ls.append(r.relay_observed_bandwidth)
+        if desc_bw_obs_ls:
+            return max(round(mean(desc_bw_obs_ls)), 1)
         return None
 
     @staticmethod
-    def desc_obs_bw_bs_last_from_results(results):
+    def desc_bw_obs_last_from_results(results):
         # the last is at the end of the list
         for r in reversed(results):
             if r.relay_observed_bandwidth is not None:
@@ -573,7 +573,7 @@ class V3BWFile(object):
         for l in bw_lines_scaled:
             # min is to limit the bw to descriptor average-bandwidth
             # max to avoid bandwidth with 0 value
-            l.bw = max(round(min(l.desc_avg_bw_bs,
+            l.bw = max(round(min(l.desc_bw_avg,
                                  l.bw * scale_constant / m)
                              / 1000), 1)
         return sorted(bw_lines_scaled, key=lambda x: x.bw, reverse=reverse)
@@ -590,7 +590,7 @@ class V3BWFile(object):
                         'allowed', (1 - accuracy_ratio) * 100, margin * 100)
 
     @staticmethod
-    def bw_torflow_scale(bw_lines, desc_obs_bws=TORFLOW_OBS_MEAN,
+    def bw_torflow_scale(bw_lines, desc_bw_obs_type=TORFLOW_OBS_MEAN,
                          cap=TORFLOW_BW_MARGIN,
                          num_round_dig=TORFLOW_ROUND_DIG, reverse=False):
         """
@@ -763,11 +763,11 @@ class V3BWFile(object):
         log.info("Calculating relays' bandwidth using Torflow method.")
         bw_lines_tf = copy.deepcopy(bw_lines)
         # mean (Torflow's strm_avg)
-        mu = mean([l.bw_bs_mean for l in bw_lines])
+        mu = mean([l.bw_mean for l in bw_lines])
         # filtered mean (Torflow's filt_avg)
-        muf = mean([min(l.bw_bs_mean, mu) for l in bw_lines])
+        muf = mean([min(l.bw_mean, mu) for l in bw_lines])
         # bw sum (Torflow's tot_net_bw or tot_sbw)
-        sum_bw = sum([l.bw_bs_mean for l in bw_lines])
+        sum_bw = sum([l.bw_mean for l in bw_lines])
         # Torflow's clipping
         hlimit = sum_bw * TORFLOW_BW_MARGIN
         log.debug('sum %s', sum_bw)
@@ -775,16 +775,16 @@ class V3BWFile(object):
         log.debug('muf %s', muf)
         log.debug('hlimit %s', hlimit)
         for l in bw_lines_tf:
-            if desc_obs_bws == TORFLOW_OBS_LAST:
-                desc_obs_bw = l.desc_obs_bw_bs_last
-            elif desc_obs_bws == TORFLOW_OBS_MEAN:
-                desc_obs_bw = l.desc_obs_bw_bs_mean
+            if desc_bw_obs_type == TORFLOW_OBS_LAST:
+                desc_bw_obs = l.desc_bw_obs_last
+            elif desc_bw_obs_type == TORFLOW_OBS_MEAN:
+                desc_bw_obs = l.desc_bw_obs_mean
             # just applying the formula above:
             bw_new = kb_round_x_sig_dig(
                 max(
-                    l.bw_bs_mean / mu,  # ratio
-                    min(l.bw_bs_mean, mu) / muf  # ratio filtered
-                    ) * desc_obs_bw, \
+                    l.bw_mean / mu,  # ratio
+                    min(l.bw_mean, mu) / muf  # ratio filtered
+                    ) * desc_bw_obs, \
                 digits=num_round_dig)  # convert to KB
             # Cap maximum bw
             if cap is not None:

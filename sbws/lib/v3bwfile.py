@@ -763,7 +763,7 @@ class V3BWFile(object):
         # mean (Torflow's strm_avg)
         mu = mean([l.bw_bs_mean for l in bw_lines])
         # filtered mean (Torflow's filt_avg)
-        muf = mean([min(l.bw_bs_mean, mu) for l in bw_lines])
+        muf = mean([max(l.bw_bs_mean, mu) for l in bw_lines])
         # bw sum (Torflow's tot_net_bw or tot_sbw)
         sum_bw = sum([l.bw_bs_mean for l in bw_lines])
         # Torflow's clipping
@@ -781,7 +781,7 @@ class V3BWFile(object):
             bw_new = kb_round_x_sig_dig(
                 max(
                     l.bw_bs_mean / mu,  # ratio
-                    min(l.bw_bs_mean, mu) / muf  # ratio filtered
+                    max(l.bw_bs_mean, mu) / muf  # ratio filtered
                     ) * desc_obs_bw, \
                 digits=num_round_dig)  # convert to KB
             # Cap maximum bw

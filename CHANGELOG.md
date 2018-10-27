@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Update python minimal version in setup (#28043)
 - Catch unhandled exception when we fail to resolve a domain name (#28141)
+- Bandwidth filtered is the maximum between the bandwidth measurements and
+  their mean, not the minimum (#28215)
 
 ### Changed
 
@@ -24,8 +26,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Write bw file only when the percentage of measured relays is bigger than 60%
   (#28062)
-- When the percentage of measured relays is less than the 60%, do not include 
-  the relays in the bandwidth file and instead include some statistics in the 
+- When the percentage of measured relays is less than the 60%, do not include
+  the relays in the bandwidth file and instead include some statistics in the
   header (#28076)
 - When the percentage of measured relays is less than the 60% and it was more
   before, warn about it (#28155)

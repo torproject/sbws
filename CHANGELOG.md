@@ -24,11 +24,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Write bw file only when the percentage of measured relays is bigger than 60%
   (#28062)
-- When the percentage of measured relays is less than the 60%, do not include 
-  the relays in the bandwidth file and instead include some statistics in the 
+- When the percentage of measured relays is less than the 60%, do not include
+  the relays in the bandwidth file and instead include some statistics in the
   header (#28076)
 - When the percentage of measured relays is less than the 60% and it was more
   before, warn about it (#28155)
+- When the difference between the total consensus bandwidth and the total
+  in the bandwidth lines is larger than 50%, warn (#28216)
 
 ## [0.8.0] - 2018-10-08
 

@@ -41,6 +41,9 @@ TORFLOW_ROUND_DIG = 3
 DAY_SECS = 86400
 NUM_MIN_RESULTS = 2
 MIN_REPORT = 60
+# Maximum difference between the total consensus bandwidth and the total in
+# in the bandwidth lines in percentage
+MAX_BW_DIFF_PERC = 50
 
 BW_LINE_SIZE = 510
 

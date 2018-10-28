@@ -344,7 +344,10 @@ def run_speedtest(args, conf):
     pool = Pool(max_pending_results)
     pending_results = []
     while True:
+        num_relays = 0
+        loop_tstart = time.time()
         for target in rp.best_priority():
+            num_relays += 1
             log.debug('Measuring %s %s', target.nickname,
                       target.fingerprint[0:8])
             callback = result_putter(rd)
@@ -360,6 +363,9 @@ def run_speedtest(args, conf):
         while len(pending_results) > 0:
             time.sleep(5)
             pending_results = [r for r in pending_results if not r.ready()]
+        loop_tstop = time.time()
+        loop_tdelta = (loop_tstop - loop_tstart) / 60
+        log.debug("Measured %s relays in %s minutes", num_relays, loop_tdelta)
 
 
 def gen_parser(sub):

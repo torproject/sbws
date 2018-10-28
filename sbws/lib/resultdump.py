@@ -476,7 +476,7 @@ class ResultSuccess(Result):
     def from_dict(d):
         assert isinstance(d, dict)
         return ResultSuccess(
-            d['rtts'], d['downloads'],
+            d['rtts'] or [], d['downloads'],
             Result.Relay(
                 d['fingerprint'], d['nickname'], d['address'],
                 d['master_key_ed25519'], d['relay_average_bandwidth'],

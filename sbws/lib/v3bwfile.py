@@ -302,7 +302,9 @@ class V3BWLine(object):
                 return None
             kwargs['desc_avg_bw_bs'] = \
                 results_recent[-1].relay_average_bandwidth
-            kwargs['rtt'] = cls.rtt_from_results(results_recent)
+            rtt = cls.rtt_from_results(results_recent)
+            if rtt:
+                kwargs['rtt'] = rtt
             bw = cls.bw_bs_median_from_results(results_recent)
             kwargs['bw_bs_mean'] = cls.bw_bs_mean_from_results(results_recent)
             kwargs['bw_bs_median'] = cls.bw_bs_median_from_results(
@@ -380,7 +382,7 @@ class V3BWLine(object):
     def rtt_from_results(results):
         # convert from miliseconds to seconds
         rtts = [(round(rtt * 1000)) for r in results for rtt in r.rtts]
-        rtt = round(median(rtts))
+        rtt = round(median(rtts)) if rtts else None
         return rtt
 
     @staticmethod

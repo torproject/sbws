@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   incorrect (#28041)
 - Stop removing results that are not away from some other X secs (#28103)
 - Use secs-away when provided instead of data_period (#28105)
+- Disable measuring RTTs (#28159)
 
 ## Added
 

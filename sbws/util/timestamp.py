@@ -24,7 +24,7 @@ def unixts_to_dt_obj(unixts):
     if isinstance(unixts, str):
         try:
             unixts = int(unixts)
-        except ValueError as e:
+        except ValueError:
             unixts = float(unixts)
     if isinstance(unixts, float):
         unixts = int(unixts)

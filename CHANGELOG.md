@@ -20,13 +20,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Stop removing results that are not away from some other X secs (#28103)
 - Use secs-away when provided instead of data_period (#28105)
 - Disable measuring RTTs (#28159)
+- Rename bandwidth file keyvalues (#28197)
 
 ## Added
 
 - Write bw file only when the percentage of measured relays is bigger than 60%
   (#28062)
-- When the percentage of measured relays is less than the 60%, do not include 
-  the relays in the bandwidth file and instead include some statistics in the 
+- When the percentage of measured relays is less than the 60%, do not include
+  the relays in the bandwidth file and instead include some statistics in the
   header (#28076)
 - When the percentage of measured relays is less than the 60% and it was more
   before, warn about it (#28155)

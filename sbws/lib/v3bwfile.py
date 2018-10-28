@@ -28,9 +28,9 @@ KEYVALUE_SEP_V200 = ' '
 # List of the extra KeyValues accepted by the class
 EXTRA_ARG_KEYVALUES = ['software', 'software_version', 'file_created',
                        'earliest_bandwidth', 'generator_started']
-STATS_KEYVALUES = ['num_measured_relays', 'num_target_relays',
-                   'num_net_relays', 'perc_measured_relays',
-                   'perc_measured_targed']
+STATS_KEYVALUES = ['number_eligible_relays', 'minimum_number_eligible_relays',
+                   'number_consensus_relays', 'percent_eligible_relays',
+                   'minimum_percent_eligible_relays']
 KEYVALUES_INT = STATS_KEYVALUES
 # List of all unordered KeyValues currently being used to generate the file
 UNORDERED_KEYVALUES = EXTRA_ARG_KEYVALUES + STATS_KEYVALUES + \
@@ -49,8 +49,8 @@ BW_KEYVALUES_BASIC = ['node_id', 'bw']
 BW_KEYVALUES_FILE = BW_KEYVALUES_BASIC + \
                     ['master_key_ed25519', 'nick', 'rtt', 'time',
                      'success', 'error_stream', 'error_circ', 'error_misc']
-BW_KEYVALUES_EXTRA_BWS = ['bw_bs_median', 'bw_bs_mean', 'desc_avg_bw_bs',
-                          'desc_obs_bw_bs_last', 'desc_obs_bw_bs_mean']
+BW_KEYVALUES_EXTRA_BWS = ['bw_median', 'bw_mean', 'desc_bw_avg',
+                          'desc_bw_obs_last', 'desc_bw_obs_mean']
 BW_KEYVALUES_EXTRA = BW_KEYVALUES_FILE + BW_KEYVALUES_EXTRA_BWS
 BW_KEYVALUES_INT = ['bw', 'rtt', 'success', 'error_stream',
                     'error_circ', 'error_misc'] + BW_KEYVALUES_EXTRA_BWS
@@ -271,7 +271,7 @@ class V3BWLine(object):
         """Convert sbws results to relays' Bandwidth Lines
 
         ``bs`` stands for Bytes/seconds
-        ``bw_bs_mean`` means the bw is obtained from the mean of the all the
+        ``bw_mean`` means the bw is obtained from the mean of the all the
         downloads' bandwidth.
         Downloads' bandwidth are calculated as the amount of data received
         divided by the the time it took to received.
@@ -300,19 +300,19 @@ class V3BWLine(object):
             results_recent = cls.results_recent_than(results_away, secs_recent)
             if not results_recent:
                 return None
-            kwargs['desc_avg_bw_bs'] = \
+            kwargs['desc_bw_avg'] = \
                 results_recent[-1].relay_average_bandwidth
             rtt = cls.rtt_from_results(results_recent)
             if rtt:
                 kwargs['rtt'] = rtt
-            bw = cls.bw_bs_median_from_results(results_recent)
-            kwargs['bw_bs_mean'] = cls.bw_bs_mean_from_results(results_recent)
-            kwargs['bw_bs_median'] = cls.bw_bs_median_from_results(
+            bw = cls.bw_median_from_results(results_recent)
+            kwargs['bw_mean'] = cls.bw_mean_from_results(results_recent)
+            kwargs['bw_median'] = cls.bw_median_from_results(
                 results_recent)
-            kwargs['desc_obs_bw_bs_last'] = \
-                cls.desc_obs_bw_bs_last_from_results(results_recent)
-            kwargs['desc_obs_bw_bs_mean'] = \
-                cls.desc_obs_bw_bs_mean_from_results(results_recent)
+            kwargs['desc_bw_obs_last'] = \
+                cls.desc_bw_obs_last_from_results(results_recent)
+            kwargs['desc_bw_obs_mean'] = \
+                cls.desc_bw_obs_mean_from_results(results_recent)
             bwl = cls(node_id, bw, **kwargs)
             return bwl
         return None
@@ -365,12 +365,12 @@ class V3BWLine(object):
         return results_recent
 
     @staticmethod
-    def bw_bs_median_from_results(results):
+    def bw_median_from_results(results):
         return max(round(median([dl['amount'] / dl['duration']
                                  for r in results for dl in r.downloads])), 1)
 
     @staticmethod
-    def bw_bs_mean_from_results(results):
+    def bw_mean_from_results(results):
         return max(round(mean([dl['amount'] / dl['duration']
                                for r in results for dl in r.downloads])), 1)
 
@@ -393,17 +393,17 @@ class V3BWLine(object):
         return rt_dict
 
     @staticmethod
-    def desc_obs_bw_bs_mean_from_results(results):
-        desc_obs_bws = []
+    def desc_bw_obs_mean_from_results(results):
+        desc_bw_obs_ls = []
         for r in results:
             if r.relay_observed_bandwidth is not None:
-                desc_obs_bws.append(r.relay_observed_bandwidth)
-        if desc_obs_bws:
-            return max(round(mean(desc_obs_bws)), 1)
+                desc_bw_obs_ls.append(r.relay_observed_bandwidth)
+        if desc_bw_obs_ls:
+            return max(round(mean(desc_bw_obs_ls)), 1)
         return None
 
     @staticmethod
-    def desc_obs_bw_bs_last_from_results(results):
+    def desc_bw_obs_last_from_results(results):
         # the last is at the end of the list
         for r in reversed(results):
             if r.relay_observed_bandwidth is not None:
@@ -485,7 +485,8 @@ class V3BWFile(object):
         log.info('Processing results to generate a bandwidth list file.')
         header = V3BWHeader.from_results(results, state_fpath)
         bw_lines_raw = []
-        num_net_relays = cls.read_num_net_relays(consensus_path)
+        number_consensus_relays = cls.read_number_consensus_relays(
+            consensus_path)
         state = State(state_fpath)
         for fp, values in results.items():
             # log.debug("Relay fp %s", fp)
@@ -496,8 +497,8 @@ class V3BWFile(object):
         if not bw_lines_raw:
             log.info("After applying restrictions to the raw results, "
                      "there is not any. Scaling can not be applied.")
-            cls.update_progress(cls, bw_lines_raw, header, num_net_relays,
-                                state)
+            cls.update_progress(
+                cls, bw_lines_raw, header, number_consensus_relays, state)
             return cls(header, [])
         if scaling_method == SBWS_SCALING:
             bw_lines = cls.bw_sbws_scale(bw_lines_raw, scale_constant)
@@ -507,7 +508,8 @@ class V3BWFile(object):
             bw_lines = cls.bw_torflow_scale(bw_lines_raw, torflow_obs,
                                             torflow_cap, torflow_round_digs)
             # log.debug(bw_lines[-1])
-            cls.update_progress(cls, bw_lines, header, num_net_relays, state)
+            cls.update_progress(
+                cls, bw_lines, header, number_consensus_relays, state)
         else:
             bw_lines = cls.bw_kb(bw_lines_raw)
             # log.debug(bw_lines[-1])
@@ -573,7 +575,7 @@ class V3BWFile(object):
         for l in bw_lines_scaled:
             # min is to limit the bw to descriptor average-bandwidth
             # max to avoid bandwidth with 0 value
-            l.bw = max(round(min(l.desc_avg_bw_bs,
+            l.bw = max(round(min(l.desc_bw_avg,
                                  l.bw * scale_constant / m)
                              / 1000), 1)
         return sorted(bw_lines_scaled, key=lambda x: x.bw, reverse=reverse)
@@ -590,7 +592,7 @@ class V3BWFile(object):
                         'allowed', (1 - accuracy_ratio) * 100, margin * 100)
 
     @staticmethod
-    def bw_torflow_scale(bw_lines, desc_obs_bws=TORFLOW_OBS_MEAN,
+    def bw_torflow_scale(bw_lines, desc_bw_obs_type=TORFLOW_OBS_MEAN,
                          cap=TORFLOW_BW_MARGIN,
                          num_round_dig=TORFLOW_ROUND_DIG, reverse=False):
         """
@@ -763,11 +765,11 @@ class V3BWFile(object):
         log.info("Calculating relays' bandwidth using Torflow method.")
         bw_lines_tf = copy.deepcopy(bw_lines)
         # mean (Torflow's strm_avg)
-        mu = mean([l.bw_bs_mean for l in bw_lines])
+        mu = mean([l.bw_mean for l in bw_lines])
         # filtered mean (Torflow's filt_avg)
-        muf = mean([min(l.bw_bs_mean, mu) for l in bw_lines])
+        muf = mean([min(l.bw_mean, mu) for l in bw_lines])
         # bw sum (Torflow's tot_net_bw or tot_sbw)
-        sum_bw = sum([l.bw_bs_mean for l in bw_lines])
+        sum_bw = sum([l.bw_mean for l in bw_lines])
         # Torflow's clipping
         hlimit = sum_bw * TORFLOW_BW_MARGIN
         log.debug('sum %s', sum_bw)
@@ -775,16 +777,16 @@ class V3BWFile(object):
         log.debug('muf %s', muf)
         log.debug('hlimit %s', hlimit)
         for l in bw_lines_tf:
-            if desc_obs_bws == TORFLOW_OBS_LAST:
-                desc_obs_bw = l.desc_obs_bw_bs_last
-            elif desc_obs_bws == TORFLOW_OBS_MEAN:
-                desc_obs_bw = l.desc_obs_bw_bs_mean
+            if desc_bw_obs_type == TORFLOW_OBS_LAST:
+                desc_bw_obs = l.desc_bw_obs_last
+            elif desc_bw_obs_type == TORFLOW_OBS_MEAN:
+                desc_bw_obs = l.desc_bw_obs_mean
             # just applying the formula above:
             bw_new = kb_round_x_sig_dig(
                 max(
-                    l.bw_bs_mean / mu,  # ratio
-                    min(l.bw_bs_mean, mu) / muf  # ratio filtered
-                    ) * desc_obs_bw, \
+                    l.bw_mean / mu,  # ratio
+                    min(l.bw_mean, mu) / muf  # ratio filtered
+                    ) * desc_bw_obs, \
                 digits=num_round_dig)  # convert to KB
             # Cap maximum bw
             if cap is not None:
@@ -794,7 +796,7 @@ class V3BWFile(object):
         return sorted(bw_lines_tf, key=lambda x: x.bw, reverse=reverse)
 
     @staticmethod
-    def read_num_net_relays(consensus_path):
+    def read_number_consensus_relays(consensus_path):
         """Read the number of relays in the Network from the cached consensus
         file."""
         num = None
@@ -808,7 +810,7 @@ class V3BWFile(object):
         return num
 
     @staticmethod
-    def measured_progress_stats(bw_lines, num_net_relays,
+    def measured_progress_stats(bw_lines, number_consensus_relays,
                                 min_perc_reached_before):
         """ Statistics about measurements progress,
         to be included in the header.
@@ -825,34 +827,35 @@ class V3BWFile(object):
         # network status or descriptors?
         # It will not be updated to the last consensus, but the list of
         # measured relays is not either.
-        assert isinstance(num_net_relays, int)
+        assert isinstance(number_consensus_relays, int)
         assert isinstance(bw_lines, list)
         statsd = {}
-        statsd['num_measured_relays'] = len(bw_lines)
-        statsd['num_net_relays'] = num_net_relays
-        statsd['num_target_relays'] = round(statsd['num_net_relays']
-                                            * MIN_REPORT / 100)
-        statsd['perc_measured_relays'] = round(len(bw_lines) * 100
-                                               / statsd['num_net_relays'])
-        statsd['perc_measured_targed'] = MIN_REPORT
-        if statsd['num_measured_relays'] < statsd['num_target_relays']:
+        statsd['number_eligible_relays'] = len(bw_lines)
+        statsd['number_consensus_relays'] = number_consensus_relays
+        statsd['minimum_number_eligible_relays'] = round(
+            statsd['number_consensus_relays'] * MIN_REPORT / 100)
+        statsd['percent_eligible_relays'] = round(
+            len(bw_lines) * 100 / statsd['number_consensus_relays'])
+        statsd['minimum_percent_eligible_relays'] = MIN_REPORT
+        if statsd['number_eligible_relays'] < \
+                statsd['minimum_number_eligible_relays']:
             # if min percent was was reached before, warn
             # otherwise, debug
             if min_perc_reached_before is not None:
                 log.warning('The percentage of the measured relays is less '
                             'than the %s%% of the relays in the network (%s).',
-                            MIN_REPORT, statsd['num_net_relays'])
+                            MIN_REPORT, statsd['number_consensus_relays'])
             else:
                 log.info('The percentage of the measured relays is less '
                          'than the %s%% of the relays in the network (%s).',
-                         MIN_REPORT, statsd['num_net_relays'])
+                         MIN_REPORT, statsd['number_consensus_relays'])
             return statsd, False
         return statsd, True
 
     @property
     def is_min_perc(self):
-        if getattr(self.header, 'num_measured_relays', 0) \
-                < getattr(self.header, 'num_target_relays', 0):
+        if getattr(self.header, 'number_eligible_relays', 0) \
+                < getattr(self.header, 'minimum_number_eligible_relays', 0):
             return False
         return True
 
@@ -888,11 +891,12 @@ class V3BWFile(object):
          ['sum_bw', 'mean_bw', 'median_bw', 'num',
           'max_bw', 'min_bw']]
 
-    def update_progress(self, bw_lines, header, num_net_relays, state):
+    def update_progress(self, bw_lines, header, number_consensus_relays,
+                        state):
         min_perc_reached_before = state.get('min_perc_reached')
-        if num_net_relays is not None:
+        if number_consensus_relays is not None:
             statsd, success = self.measured_progress_stats(
-                bw_lines, num_net_relays, min_perc_reached_before)
+                bw_lines, number_consensus_relays, min_perc_reached_before)
             # add statistics about progress only when there are not enough
             # measured relays. Should some stats be added always?
             if not success:

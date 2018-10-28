@@ -171,15 +171,37 @@ state of the Tor network.  The bandwidth authorities need to use the results
 that have been gathered to inform their vote about relays' bandwidths. To do
 this they use sbws generate.
 
-This command gathers all recent valid results and organizes them by relay. For
-each relay, it first simply calculates the median bandwidth and median RTT of
-all its successful results. This is the final RTT value for the relay (it's
-only used for informational purposes anyway), but we aren't necessarily done
-with the bandwidth values.
+The relays' bandwidth measurements (``Results``) to be added to the Bandwidth
+File MUST be first selected and MUST be then then scaled.
 
-To support running in parallel with the legacy torflow_, **XXX Explain scaling***
+Selecting bandwidth measurements
+:::::::::::::::::::::::::::::::::::
+
+Each relay bandwidth measurements are selected in the following way:
+
+1. At least two bandwidth measurements (``Result`` s) MUST have been obtained
+   within an arbitrary number of seconds (currently one day).
+   If they are not, the relay MUST NOT be included in the Bandwith File.
+2. The measurements than are are older than an arbitrary number of senconds
+   in the past MUST be discarded.
+   Currently this number is the same as ``data_period`` (5 days).
+
+If the number of relays to include in the Bandwidth File are less than
+a percententage (currently 60%) than the number of relays in the consensus,
+additional Header Lines MUST be added (see XXX) to the Bandwith File and the
+relays SHOULD NOT be included.
+
+Scaling bandwidth measurements
+:::::::::::::::::::::::::::::::::
+
+Consensus bandwidth obtained by new implementations MUST be comparable to the
+consensus bandwidth, therefore they MUST implement torflow_scaling_.
+The bandwidth_file_spec_ appendix B describes torflow scaling and a linear
+scaling method.
 
 .. _torflow: https://gitweb.torproject.org/torflow.git
 .. _stem: https://stem.torproject.org
 .. _requests: https://docs.python-requests.org/
 .. _peerflow: https://www.nrl.navy.mil/itd/chacs/sites/www.nrl.navy.mil.itd.chacs/files/pdfs/16-1231-4353.pdf
+.. _torflow_scaling: https://gitweb.torproject.org/torflow.git/tree/NetworkScanners/BwAuthority/README.spec.txt#n298
+.. _bandwidth_file_spec: https://gitweb.torproject.org/torspec.git/tree/bandwidth-file-spec.txt

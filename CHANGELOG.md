@@ -36,6 +36,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   before, warn about it (#28155)
 - When the difference between the total consensus bandwidth and the total
   in the bandwidth lines is larger than 50%, warn (#28216)
+- Add documentation about how the bandwidth measurements are selected and
+  scaled before writing them to the Bandwidth File (#27692)
 
 ## [0.8.0] - 2018-10-08
 

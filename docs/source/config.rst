@@ -27,7 +27,7 @@ The user example config file provided by ``sbws`` might look like this.
 
 .. _init-config:
 
-.. literalinclude:: examples/config.example.ini
+.. literalinclude:: /examples/config.example.ini
     :caption: Example config.example.ini
 
 **No other configuration files are read.**

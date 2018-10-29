@@ -33,6 +33,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   header (#28076)
 - When the percentage of measured relays is less than the 60% and it was more
   before, warn about it (#28155)
+- When the difference between the total consensus bandwidth and the total
+  in the bandwidth lines is larger than 50%, warn (#28216)
 
 ## [0.8.0] - 2018-10-08
 

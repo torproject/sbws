@@ -13,7 +13,7 @@ from sbws import __version__
 from sbws.globals import (SPEC_VERSION, BW_LINE_SIZE, SBWS_SCALE_CONSTANT,
                           TORFLOW_SCALING, SBWS_SCALING, TORFLOW_BW_MARGIN,
                           TORFLOW_OBS_LAST, TORFLOW_OBS_MEAN,
-                          TORFLOW_ROUND_DIG, MIN_REPORT)
+                          TORFLOW_ROUND_DIG, MIN_REPORT, MAX_BW_DIFF_PERC)
 from sbws.lib.resultdump import ResultSuccess, _ResultType
 from sbws.util.filelock import DirectoryLock
 from sbws.util.timestamp import (now_isodt_str, unixts_to_isodt_str,
@@ -462,7 +462,8 @@ class V3BWFile(object):
                      torflow_cap=TORFLOW_BW_MARGIN,
                      torflow_round_digs=TORFLOW_ROUND_DIG,
                      secs_recent=None, secs_away=None, min_num=0,
-                     consensus_path=None, reverse=False):
+                     consensus_path=None, max_bw_diff_perc=MAX_BW_DIFF_PERC,
+                     reverse=False):
         """Create V3BWFile class from sbws Results.
 
         :param dict results: see below
@@ -513,6 +514,8 @@ class V3BWFile(object):
         else:
             bw_lines = cls.bw_kb(bw_lines_raw)
             # log.debug(bw_lines[-1])
+        # Not using the result for now, just warning
+        cls.is_max_bw_diff_perc_reached(bw_lines, max_bw_diff_perc)
         f = cls(header, bw_lines)
         return f
 
@@ -590,6 +593,21 @@ class V3BWFile(object):
         if accuracy_ratio < 1 - margin or accuracy_ratio > 1 + margin:
             log.warning('There was %f%% error and only +/- %f%% is '
                         'allowed', (1 - accuracy_ratio) * 100, margin * 100)
+
+    @staticmethod
+    def is_max_bw_diff_perc_reached(bw_lines,
+                                    max_bw_diff_perc=MAX_BW_DIFF_PERC):
+        sum_consensus_bw = sum([l.desc_bw_obs_last for l in bw_lines])
+        sum_bw = sum([l.bw for l in bw_lines])
+        diff = min(sum_consensus_bw, sum_bw) / max(sum_consensus_bw, sum_bw)
+        diff_perc = diff * 100
+        log.info("The difference between the total consensus bandwidth "
+                 "and the total measured bandwidth is %s%% percent",
+                 diff_perc)
+        if diff_perc > MAX_BW_DIFF_PERC:
+            log.warning("It is more than %s%%", max_bw_diff_perc)
+            return True
+        return False
 
     @staticmethod
     def bw_torflow_scale(bw_lines, desc_bw_obs_type=TORFLOW_OBS_MEAN,

@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Update python minimal version in setup (#28043)
 - Catch unhandled exception when we fail to resolve a domain name (#28141)
+- Bandwidth filtered is the maximum between the bandwidth measurements and
+  their mean, not the minimum (#28215)
 
 ### Changed
 

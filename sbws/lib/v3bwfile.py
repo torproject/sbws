@@ -740,44 +740,25 @@ class V3BWFile(object):
 
         .. math::
 
-            bwn_i &=
-                max\\left(
-                    \\frac{bw_i}{\\mu},
-                    \\frac{bwf_i}{\\mu_{bwf}}
-                    \\right)
-                \\times bwobs_i
+           bwn_i =& min\\left(bwnew_i,
+                      \\sum_{i=1}^{n}bwnew_i \\times 0.05\\right) \\
 
-        .. math::
+                 &= min\\left(
+                      \\left(bwobs_i \\times r_i\\right),
+                        \\sum_{i=1}^{n}\\left(bwobs_i \\times r_i\\right)
+                        \\times 0.05\\right)\\
 
-             bwn_i &=
-                max\\left(
-                    \\frac{bw_i}{\\mu},
-                    min \\left(
-                        bw_i,
-                        bw_i \\times \\mu
-                        \\right)
-                            \\times
-                            \\frac{bw_i}{\\sum_{i=1}^{n}
-                            min \\left(bw_i,
-                                bw_i \\times \\mu
-                            \\right)}
-                    \\right)
-                \\times bwobs_i \\
+                 &= min\\left(
+                      \\left(bwobs_i \\times max\\left(rf_i, rs_i\\right)\\right),
+                        \\sum_{i=1}^{n}\\left(bwobs_i \\times
+                          max\\left(rf_i, rs_i\\right)\\right) \\times 0.05\\right)\\
 
-             &=
-                max\\left(
-                    \\frac{bw_i}{\\frac{\\sum_{i=1}^{n}bw_i}{n}},
-                    min \\left(
-                        bw_i,
-                        bw_i \\times \\frac{\\sum_{i=1}^{n}bw_i}{n}
-                        \\right)
-                            \\times
-                            \\frac{bw_i}{\\sum_{i=1}^{n}
-                            min \\left(bw_i,
-                                bw_i \\times \\frac{\\sum_{i=1}^{n}bw_i}{n}
-                            \\right)}
-                    \\right)
-                \\times bwobs_i
+                 &= min\\left(
+                      \\left(bwobs_i \\times max\\left(\\frac{bwfilt_i}{bwfilt},
+                          \\frac{bw_i}{bwstrm}\\right)\\right),
+                        \\sum_{i=1}^{n}\\left(bwobs_i \\times
+                          max\\left(\\frac{bwfilt_i}{bwfilt},
+                            \\frac{bw_i}{bwstrm}\\right)\\right) \\times 0.05\\right)
 
         """
         log.info("Calculating relays' bandwidth using Torflow method.")

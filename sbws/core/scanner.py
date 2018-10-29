@@ -357,6 +357,9 @@ def run_speedtest(args, conf):
             while len(pending_results) >= max_pending_results:
                 time.sleep(5)
                 pending_results = [r for r in pending_results if not r.ready()]
+        while len(pending_results) > 0:
+            time.sleep(5)
+            pending_results = [r for r in pending_results if not r.ready()]
 
 
 def gen_parser(sub):

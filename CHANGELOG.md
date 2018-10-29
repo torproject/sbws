@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Catch unhandled exception when we fail to resolve a domain name (#28141)
 - Bandwidth filtered is the maximum between the bandwidth measurements and
   their mean, not the minimum (#28215)
+- Stop measuring the same relay by two threads(#28061)
 
 ### Changed
 

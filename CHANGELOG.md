@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [1.0.0] - 2018-10-29
+
+**Important changes**:
+
+- `generate` includes extra statistics header lines when the number of
+  eligible relays to include is less than the 60% of the network.
+  It does not include the relays' lines.
+- Speed up `scanner` by disabling RTT measurements and waiting for
+  measurement threads before prioritizing again the list of relays to measure.
+
+
 ### Fixed
 
 - Update python minimal version in setup (#28043)

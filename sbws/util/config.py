@@ -9,7 +9,8 @@ from urllib.parse import urlparse
 from string import Template
 from tempfile import NamedTemporaryFile
 from sbws.globals import (DEFAULT_CONFIG_PATH, DEFAULT_LOG_CONFIG_PATH,
-                          USER_CONFIG_PATH, SUPERVISED_RUN_DPATH, fail_hard)
+                          USER_CONFIG_PATH, SUPERVISED_RUN_DPATH,
+                          SUPERVISED_USER_CONFIG_PATH, fail_hard)
 
 _ALPHANUM = 'abcdefghijklmnopqrstuvwxyz'
 _ALPHANUM += _ALPHANUM.upper()
@@ -47,6 +48,12 @@ def _get_default_config():
     return _extend_config(conf, DEFAULT_CONFIG_PATH)
 
 
+def _obtain_user_conf_path():
+    if os.environ.get("SUPERVISED") == "1":
+        return SUPERVISED_USER_CONFIG_PATH
+    return USER_CONFIG_PATH
+
+
 def _get_user_config(args, conf=None):
     """Get user configuration.
     Search for user configuration in the default path or the path passed as
@@ -61,8 +68,9 @@ def _get_user_config(args, conf=None):
         if not os.path.isfile(args.config):
             fail_hard('Configuration file %s not found.', args.config)
         return _extend_config(conf, args.config)
-    if os.path.isfile(USER_CONFIG_PATH):
-        return _extend_config(conf, USER_CONFIG_PATH)
+    user_config_path = _obtain_user_conf_path()
+    if os.path.isfile(user_config_path):
+        return _extend_config(conf, user_config_path)
     log.debug('No user config found.')
     return conf
 

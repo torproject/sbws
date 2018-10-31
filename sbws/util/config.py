@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 from string import Template
 from tempfile import NamedTemporaryFile
 from sbws.globals import (DEFAULT_CONFIG_PATH, DEFAULT_LOG_CONFIG_PATH,
-                          USER_CONFIG_PATH, fail_hard)
+                          USER_CONFIG_PATH, SUPERVISED_RUN_DPATH, fail_hard)
 
 _ALPHANUM = 'abcdefghijklmnopqrstuvwxyz'
 _ALPHANUM += _ALPHANUM.upper()
@@ -217,6 +217,15 @@ def _validate_general(conf):
     return errors
 
 
+def _obtain_run_dpath(conf):
+    """Set runtime directory when sbws is run by a system service."""
+    xdg = os.environ.get('XDG_RUNTIME_DIR')
+    if os.environ.get('SUPERVISED') == "1":
+        conf['tor']['run_dpath'] = SUPERVISED_RUN_DPATH
+    elif xdg is not None:
+        conf['tor']['run_dpath'] = os.path.join(xdg, 'sbws', 'tor')
+
+
 def _validate_paths(conf):
     errors = []
     sec = 'paths'
@@ -262,6 +271,7 @@ def _validate_scanner(conf):
 
 
 def _validate_tor(conf):
+    _obtain_run_dpath(conf)
     errors = []
     sec = 'tor'
     err_tmpl = Template('$sec/$key ($val): $e')

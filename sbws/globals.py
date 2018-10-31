@@ -28,6 +28,8 @@ DEFAULT_CONFIG_PATH = os.path.join(PKG_DIR, 'config.default.ini')
 DEFAULT_LOG_CONFIG_PATH = os.path.join(PKG_DIR, 'config.log.default.ini')
 USER_CONFIG_PATH = os.path.join(os.path.expanduser('~'), '.sbws.ini')
 
+SUPERVISED_RUN_DPATH = "/run/sbws/tor"
+
 SOCKET_TIMEOUT = 60  # seconds
 
 SBWS_SCALE_CONSTANT = 7500

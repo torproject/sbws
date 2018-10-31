@@ -24,6 +24,9 @@ Positional arguments
 
 {**cleanup,scanner,generate,init,stats**}
 
+These arguments can have additional optional arguments.
+To obtain information about them, run: 'sbws <positional argument> --help'.
+
 Optional arguments
 ~~~~~~~~~~~~~~~~~~
 

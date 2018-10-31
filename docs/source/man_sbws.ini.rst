@@ -8,7 +8,9 @@ Tor bandwidth scanner configuration file.
 
 **sbws** (1) ``scanner`` command requires a configuration file with a
 "[destinations]" section.
+
 It is the only section that does not have a default value.
+
 It is recommended, but not required to configure "nickname" in the "[scanner]"
 section.
 

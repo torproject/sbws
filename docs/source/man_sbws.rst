@@ -16,6 +16,9 @@ DESCRIPTION
 Tor bandwidth scanner that generates bandwidth measurements files to be read by
 the Directory Authorities.
 
+The **scanner** requires a configuration file (see **sbws.ini** (5)) with a
+with a '[destinations]' section.
+
 OPTIONS
 -------
 

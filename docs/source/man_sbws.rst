@@ -108,7 +108,8 @@ SEE ALSO
 ---------
 
 **sbws.ini** (5), https://sbws.readthedocs.org,
-https://gitweb.torproject.org/torspec.git/tree/bandwidth-file-spec.txt.
+https://gitweb.torproject.org/torspec.git/tree/bandwidth-file-spec.txt,
+**tor** (1).
 
 BUGS
 ----

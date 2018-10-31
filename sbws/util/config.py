@@ -225,6 +225,13 @@ def _validate_general(conf):
     return errors
 
 
+def _obtain_sbws_home(conf):
+    sbws_home = conf.getpath('paths', 'sbws_home')
+    # No need for .sbws when this is the default home
+    if sbws_home == "/var/lib/sbws/.sbws":
+        conf['paths']['sbws_home'] = os.path.dirname(sbws_home)
+
+
 def _obtain_run_dpath(conf):
     """Set runtime directory when sbws is run by a system service."""
     xdg = os.environ.get('XDG_RUNTIME_DIR')
@@ -235,6 +242,7 @@ def _obtain_run_dpath(conf):
 
 
 def _validate_paths(conf):
+    _obtain_sbws_home(conf)
     errors = []
     sec = 'paths'
     err_tmpl = Template('$sec/$key ($val): $e')

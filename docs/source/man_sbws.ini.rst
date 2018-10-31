@@ -34,6 +34,10 @@ general
     NOT implemented for IPv6.
 
 paths
+
+  When **sbws** is run as a system service, `~/.sbws` is changed to
+  `/var/lib/sbws`.
+
   sbws_home = STR
     sbws home directory. (Default: ~/.sbws)
   datadir = STR
@@ -67,13 +71,17 @@ destinations.STR
     It can use both http or https.
 
 tor
+
+  When **sbws** is run as a system service `~/.sbws/tor` is replaced by
+  `/run/sbws/tor`.
+
   datadir = STR
     sbws' owned tor directory. (Default: ~/.sbws/tor)
   control_socket = STR
     sbws's owned tor control socket file.
-    (Default: $XDG_RUNTIME_DIR/sbws/control)
+    (Default: ~/.sbws/tor/sbws/control)
   pid = STR
-    sbws's owned tor pid file. (Default: $XDG_RUNTIME_DIR/sbws/tor.pid)
+    sbws's owned tor pid file. (Default: ~/.sbws/tor/sbws/tor.pid)
   log = STR
     sbws's owned tor directory log files. (Default: ~/.sbws/tor/log)
   extra_lines =

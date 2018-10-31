@@ -43,10 +43,10 @@ Optional arguments
    Show help message and exit.
 
 --version
-   sbws version
+   Show **sbws** version and exit.
 
 --log-level {debug,info,warning,error,critical}
-   Override the sbws log level (default: None)
+   Override the sbws log level (default: info).
 
 -c CONFIG, --config CONFIG
    Path to the sbws configuration file (default: $HOME/.sbws.ini)

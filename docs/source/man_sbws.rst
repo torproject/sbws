@@ -49,22 +49,22 @@ Optional arguments
    Override the sbws log level (default: info).
 
 -c CONFIG, --config CONFIG
-   Path to the sbws configuration file (default: $HOME/.sbws.ini)
+   Path to a custom configuration file.
 
 EXAMPLES
 --------
 
 sbws scanner
-    Run the scanner using the configuration file in ~/.sbws.ini
+    Run the scanner using **sbws** defaults.
 
 sbws -c ~/.sbwsrc scanner
-    Run the scanner using the configuration file in ~/.sbwsrc
+    Run the scanner using the configuration file in `~/.sbwsrc`
 
 sbws --log-level debug generate
-    Generate v3bw file in the default v3bw directory (~/.sbws/v3bw)
+    Generate v3bw file in the default v3bw directory.
 
 sbws cleanup
-    Cleanup datadir and v3bw files older than XX in the default v3bw directory (~/.sbws/)
+    Cleanup datadir and v3bw files older than XX in the default v3bw directory.
 
 FILES
 -----

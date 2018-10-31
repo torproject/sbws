@@ -19,6 +19,12 @@ the Directory Authorities.
 The **scanner** requires a configuration file (see **sbws.ini** (5)) with a
 with a '[destinations]' section.
 
+**sbws** can be run a python script or a system service.
+The later is recommended.
+The default locations of the files that **sbws** reads or generate depend on
+on how it is run.
+See the section **FILES** to know which are the default locations.
+
 OPTIONS
 -------
 

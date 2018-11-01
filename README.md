@@ -14,8 +14,6 @@ on the public Tor network.
 Please do not run this software on the public Tor network unless you are one
 of the Tor bandwidth authorities, to avoid creating unnecessary traffic.
 
-`sbws` will be considered production ready when version 1.0.0 will be released.
-
 Installing
 ------------
 

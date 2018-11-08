@@ -106,7 +106,7 @@ class V3BWHeader(object):
          if k in EXTRA_ARG_KEYVALUES]
 
     def __str__(self):
-        if self.version == '1.1.0':
+        if self.version.startswith('1.'):
             return self.strv110
         return self.strv200
 

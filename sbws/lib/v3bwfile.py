@@ -896,10 +896,9 @@ class V3BWFile(object):
         if number_consensus_relays is not None:
             statsd, success = self.measured_progress_stats(
                 bw_lines, number_consensus_relays, min_perc_reached_before)
-            # add statistics about progress only when there are not enough
-            # measured relays. Should some stats be added always?
+            # add statistics about progress always
+            header.add_stats(**statsd)
             if not success:
-                header.add_stats(**statsd)
                 bw_lines = []
                 state['min_perc_reached'] = None
             else:

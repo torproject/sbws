@@ -4,7 +4,8 @@ import json
 import os.path
 
 from sbws import __version__ as version
-from sbws.globals import SPEC_VERSION, SBWS_SCALING, TORFLOW_SCALING
+from sbws.globals import (SPEC_VERSION, SBWS_SCALING, TORFLOW_SCALING,
+                          MIN_REPORT)
 from sbws.lib.resultdump import Result, load_result_file, ResultSuccess
 from sbws.lib.v3bwfile import (V3BWHeader, V3BWLine, TERMINATOR, LINE_SEP,
                                KEYVALUE_SEP_V110, num_results_of_type,
@@ -234,9 +235,15 @@ def test_update_progress(datadir, tmpdir):
                            state)
     assert header.percent_eligible_relays == '50'
     assert state.get('min_perc_reached') is None
+    # Test that the headers are also included when there are enough eligible
+    # relays
     number_consensus_relays = 3
     header = V3BWHeader(str(now_unixts()))
     bwfile.update_progress(bw_lines_raw, header, number_consensus_relays,
                            state)
     assert state.get('min_perc_reached') == now_isodt_str()
-    assert not hasattr(header, 'percent_eligible_relays')
+    assert header.minimum_number_eligible_relays == '2'
+    assert header.minimum_percent_eligible_relays == str(MIN_REPORT)
+    assert header.number_consensus_relays == '3'
+    assert header.number_eligible_relays == '3'
+    assert header.percent_eligible_relays == '100'

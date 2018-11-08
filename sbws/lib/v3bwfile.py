@@ -23,8 +23,8 @@ from sbws.util.state import State
 log = logging.getLogger(__name__)
 
 LINE_SEP = '\n'
-KEYVALUE_SEP_V110 = '='
-KEYVALUE_SEP_V200 = ' '
+KEYVALUE_SEP_V1 = '='
+KEYVALUE_SEP_V2 = ' '
 # List of the extra KeyValues accepted by the class
 EXTRA_ARG_KEYVALUES = ['software', 'software_version', 'file_created',
                        'earliest_bandwidth', 'generator_started']
@@ -38,12 +38,12 @@ UNORDERED_KEYVALUES = EXTRA_ARG_KEYVALUES + STATS_KEYVALUES + \
 # List of all the KeyValues currently being used to generate the file
 ALL_KEYVALUES = ['version'] + UNORDERED_KEYVALUES
 TERMINATOR = '===='
-# Num header lines in v1.1.0 using all the KeyValues
-NUM_LINES_HEADER_V110 = len(ALL_KEYVALUES) + 2
+# Num header lines in v1.X.X using all the KeyValues
+NUM_LINES_HEADER_V1 = len(ALL_KEYVALUES) + 2
 LINE_TERMINATOR = TERMINATOR + LINE_SEP
 
 # KeyValue separator in Bandwidth Lines
-BW_KEYVALUE_SEP_V110 = ' '
+BW_KEYVALUE_SEP_V1 = ' '
 # not inclding in the files the extra bws for now
 BW_KEYVALUES_BASIC = ['node_id', 'bw']
 BW_KEYVALUES_FILE = BW_KEYVALUES_BASIC + \
@@ -75,7 +75,7 @@ def result_type_to_key(type_str):
 class V3BWHeader(object):
     """
     Create a bandwidth measurements (V3bw) header
-    following bandwidth measurements document spec version 1.1.0.
+    following bandwidth measurements document spec version 1.X.X.
 
     :param str timestamp: timestamp in Unix Epoch seconds of the most recent
         generator result.
@@ -107,8 +107,8 @@ class V3BWHeader(object):
 
     def __str__(self):
         if self.version.startswith('1.'):
-            return self.strv110
-        return self.strv200
+            return self.strv1
+        return self.strv2
 
     @classmethod
     def from_results(cls, results, state_fpath=''):
@@ -125,7 +125,7 @@ class V3BWHeader(object):
         return h
 
     @classmethod
-    def from_lines_v110(cls, lines):
+    def from_lines_v1(cls, lines):
         """
         :param list lines: list of lines to parse
         :returns: tuple of V3BWHeader object and non-header lines
@@ -138,21 +138,21 @@ class V3BWHeader(object):
             log.warn('Terminator is not in lines')
             return None
         ts = lines[0]
-        kwargs = dict([l.split(KEYVALUE_SEP_V110)
+        kwargs = dict([l.split(KEYVALUE_SEP_V1)
                        for l in lines[:index_terminator]
-                       if l.split(KEYVALUE_SEP_V110)[0] in ALL_KEYVALUES])
+                       if l.split(KEYVALUE_SEP_V1)[0] in ALL_KEYVALUES])
         h = cls(ts, **kwargs)
         # last line is new line
         return h, lines[index_terminator + 1:-1]
 
     @classmethod
-    def from_text_v110(self, text):
+    def from_text_v1(self, text):
         """
         :param str text: text to parse
         :returns: tuple of V3BWHeader object and non-header lines
         """
         assert isinstance(text, str)
-        return self.from_lines_v110(text.split(LINE_SEP))
+        return self.from_lines_v1(text.split(LINE_SEP))
 
     @classmethod
     def from_lines_v100(cls, lines):
@@ -199,30 +199,30 @@ class V3BWHeader(object):
         return [('version', self.version)] + self.keyvalue_unordered_tuple_ls
 
     @property
-    def keyvalue_v110str_ls(self):
-        """Return KeyValue list of strings following spec v1.1.0."""
-        keyvalues = [self.timestamp] + [KEYVALUE_SEP_V110.join([k, v])
+    def keyvalue_v1str_ls(self):
+        """Return KeyValue list of strings following spec v1.X.X."""
+        keyvalues = [self.timestamp] + [KEYVALUE_SEP_V1.join([k, v])
                                         for k, v in self.keyvalue_tuple_ls]
         return keyvalues
 
     @property
-    def strv110(self):
-        """Return header string following spec v1.1.0."""
-        header_str = LINE_SEP.join(self.keyvalue_v110str_ls) + LINE_SEP + \
+    def strv1(self):
+        """Return header string following spec v1.X.X."""
+        header_str = LINE_SEP.join(self.keyvalue_v1str_ls) + LINE_SEP + \
             LINE_TERMINATOR
         return header_str
 
     @property
-    def keyvalue_v200_ls(self):
-        """Return KeyValue list of strings following spec v2.0.0."""
-        keyvalue = [self.timestamp] + [KEYVALUE_SEP_V200.join([k, v])
+    def keyvalue_v2_ls(self):
+        """Return KeyValue list of strings following spec v2.X.X."""
+        keyvalue = [self.timestamp] + [KEYVALUE_SEP_V2.join([k, v])
                                        for k, v in self.keyvalue_tuple_ls]
         return keyvalue
 
     @property
-    def strv200(self):
-        """Return header string following spec v2.0.0."""
-        header_str = LINE_SEP.join(self.keyvalue_v200_ls) + LINE_SEP + \
+    def strv2(self):
+        """Return header string following spec v2.X.X."""
+        header_str = LINE_SEP.join(self.keyvalue_v2_ls) + LINE_SEP + \
             LINE_TERMINATOR
         return header_str
 
@@ -238,7 +238,7 @@ class V3BWHeader(object):
 
 class V3BWLine(object):
     """
-    Create a Bandwidth List line following the spec version 1.1.0.
+    Create a Bandwidth List line following the spec version 1.X.X.
 
     :param str node_id:
     :param int bw:
@@ -263,7 +263,7 @@ class V3BWLine(object):
          if k in BW_KEYVALUES_EXTRA]
 
     def __str__(self):
-        return self.bw_strv110
+        return self.bw_strv1
 
     @classmethod
     def from_results(cls, results, secs_recent=None, secs_away=None,
@@ -323,11 +323,11 @@ class V3BWLine(object):
         return cls.from_results(data[fingerprint])
 
     @classmethod
-    def from_bw_line_v110(cls, line):
+    def from_bw_line_v1(cls, line):
         assert isinstance(line, str)
-        kwargs = dict([kv.split(KEYVALUE_SEP_V110)
-                       for kv in line.split(BW_KEYVALUE_SEP_V110)
-                       if kv.split(KEYVALUE_SEP_V110)[0] in BW_KEYVALUES])
+        kwargs = dict([kv.split(KEYVALUE_SEP_V1)
+                       for kv in line.split(BW_KEYVALUE_SEP_V1)
+                       if kv.split(KEYVALUE_SEP_V1)[0] in BW_KEYVALUES])
         for k, v in kwargs.items():
             if k in BW_KEYVALUES_INT:
                 kwargs[k] = int(v)
@@ -419,19 +419,19 @@ class V3BWLine(object):
         return keyvalue_tuple_ls
 
     @property
-    def bw_keyvalue_v110str_ls(self):
+    def bw_keyvalue_v1str_ls(self):
         """Return list of KeyValue Bandwidth Line strings following
-        spec v1.1.0.
+        spec v1.X.X.
         """
-        bw_keyvalue_str = [KEYVALUE_SEP_V110 .join([k, str(v)])
+        bw_keyvalue_str = [KEYVALUE_SEP_V1 .join([k, str(v)])
                            for k, v in self.bw_keyvalue_tuple_ls]
         return bw_keyvalue_str
 
     @property
-    def bw_strv110(self):
-        """Return Bandwidth Line string following spec v1.1.0."""
-        bw_line_str = BW_KEYVALUE_SEP_V110.join(
-                        self.bw_keyvalue_v110str_ls) + LINE_SEP
+    def bw_strv1(self):
+        """Return Bandwidth Line string following spec v1.X.X."""
+        bw_line_str = BW_KEYVALUE_SEP_V1.join(
+                        self.bw_keyvalue_v1str_ls) + LINE_SEP
         if len(bw_line_str) > BW_LINE_SIZE:
             # if this is the case, probably there are too many KeyValues,
             # or the limit needs to be changed in Tor
@@ -442,7 +442,7 @@ class V3BWLine(object):
 
 class V3BWFile(object):
     """
-    Create a Bandwidth List file following spec version 1.1.0
+    Create a Bandwidth List file following spec version 1.X.X
 
     :param V3BWHeader v3bwheader: header
     :param list v3bwlines: V3BWLines
@@ -520,13 +520,13 @@ class V3BWFile(object):
         return f
 
     @classmethod
-    def from_v110_fpath(cls, fpath):
+    def from_v1_fpath(cls, fpath):
         log.info('Parsing bandwidth file %s', fpath)
         with open(fpath) as fd:
             text = fd.read()
         all_lines = text.split(LINE_SEP)
-        header, lines = V3BWHeader.from_lines_v110(all_lines)
-        bw_lines = [V3BWLine.from_bw_line_v110(line) for line in lines]
+        header, lines = V3BWHeader.from_lines_v1(all_lines)
+        bw_lines = [V3BWLine.from_bw_line_v1(line) for line in lines]
         return cls(header, bw_lines)
 
     @classmethod
@@ -536,7 +536,7 @@ class V3BWFile(object):
             text = fd.read()
         all_lines = text.split(LINE_SEP)
         header, lines = V3BWHeader.from_lines_v100(all_lines)
-        bw_lines = sorted([V3BWLine.from_bw_line_v110(l) for l in lines],
+        bw_lines = sorted([V3BWLine.from_bw_line_v1(l) for l in lines],
                           key=lambda l: l.bw)
         return cls(header, bw_lines)
 

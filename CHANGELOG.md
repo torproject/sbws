@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [1.0.2] - 2018-11-10
+
 ### Fixed
 
 - Update bandwidth file specification version in the `generator` (#28366).
@@ -32,7 +34,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   It does not include the relays' lines.
 - Speed up `scanner` by disabling RTT measurements and waiting for
   measurement threads before prioritizing again the list of relays to measure.
-
 
 ### Fixed
 

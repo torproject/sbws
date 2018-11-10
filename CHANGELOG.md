@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 
 - Update bandwidth file specification version in the `generator` (#28366).
+- Use 5 "=" characters as terminator in the bandwidth files (#28379)
 
 ### Changed
 

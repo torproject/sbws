@@ -37,7 +37,7 @@ UNORDERED_KEYVALUES = EXTRA_ARG_KEYVALUES + STATS_KEYVALUES + \
                       ['latest_bandwidth']
 # List of all the KeyValues currently being used to generate the file
 ALL_KEYVALUES = ['version'] + UNORDERED_KEYVALUES
-TERMINATOR = '===='
+TERMINATOR = '====='
 # Num header lines in v1.X.X using all the KeyValues
 NUM_LINES_HEADER_V1 = len(ALL_KEYVALUES) + 2
 LINE_TERMINATOR = TERMINATOR + LINE_SEP

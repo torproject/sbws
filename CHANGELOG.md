@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 
 - Change default directories when sbws is run from a system service (#28268).
+- Include the headers about eligible relays in all the bandwidth files,
+  not only in the ones that does not have enough eligible relays (#28365).
 
 ## [1.0.0] - 2018-10-29
 

@@ -65,7 +65,6 @@ def test_v3bwheader_extra_str():
 
 
 def test_v3bwheader_from_lines():
-    """"""
     header_obj = V3BWHeader(timestamp_l,
                             file_created=file_created,
                             generator_started=generator_started,
@@ -75,7 +74,6 @@ def test_v3bwheader_from_lines():
 
 
 def test_v3bwheader_from_text():
-    """"""
     header_obj = V3BWHeader(timestamp_l,
                             file_created=file_created,
                             generator_started=generator_started,

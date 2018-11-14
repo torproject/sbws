@@ -103,11 +103,10 @@ def assert_round_sig_dig_any_digits_error(n, elp_fraction=0.5):
     max_digits_int64 = int(math.ceil(math.log10(2**64 - 1))) + 1
     for d in range(1, max_digits_int64 + 1):
         error_fraction = elp_fraction * (10.0 ** -(d - 1))
-        e = n * error_fraction
-        # use ceil and floor rather than round, to avoid floating-point
-        # errors
-        assert(round_sig_dig(n, digits=d) >= n - int(math.ceil(e)))
-        assert(round_sig_dig(n, digits=d) <= n + int(math.floor(e)))
+        # use ceil rather than round, to work around floating-point inaccuracy
+        e = int(math.ceil(n * error_fraction))
+        assert(round_sig_dig(n, digits=d) >= n - e)
+        assert(round_sig_dig(n, digits=d) <= n + e)
 
 
 def test_round_sig_dig():

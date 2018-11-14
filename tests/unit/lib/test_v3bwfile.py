@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Test generation of bandwidth measurements document (v3bw)"""
 import json
+import math
 import os.path
 
 from sbws import __version__ as version
@@ -9,7 +10,7 @@ from sbws.globals import (SPEC_VERSION, SBWS_SCALING, TORFLOW_SCALING,
 from sbws.lib.resultdump import Result, load_result_file, ResultSuccess
 from sbws.lib.v3bwfile import (V3BWHeader, V3BWLine, TERMINATOR, LINE_SEP,
                                KEYVALUE_SEP_V1, num_results_of_type,
-                               V3BWFile)
+                               V3BWFile, round_sig_dig)
 from sbws.util.timestamp import now_fname, now_isodt_str, now_unixts
 
 timestamp = 1523974147
@@ -88,6 +89,103 @@ def test_num_results_of_type(result_success, result_error_stream):
     assert num_results_of_type([result_error_stream], 'success') == 0
     assert num_results_of_type([result_success], 'error-stream') == 0
     assert num_results_of_type([result_error_stream], 'error-stream') == 1
+
+
+def assert_round_sig_dig_any_digits(n, result):
+    """Test that rounding n to any reasonable number of significant digits
+       produces result."""
+    max_digits_int64 = int(math.ceil(math.log10(2**64 - 1))) + 1
+    for d in range(1, max_digits_int64 + 1):
+        assert(round_sig_dig(n, digits=d) == result)
+
+
+def assert_round_sig_dig_any_digits_error(n, elp_fraction=0.5):
+    """Test that rounding n to any reasonable number of significant digits
+       produces a result within elp_fraction * 10.0 ** -(digits - 1)."""
+    max_digits_int64 = int(math.ceil(math.log10(2**64 - 1))) + 1
+    for d in range(1, max_digits_int64 + 1):
+        error_fraction = elp_fraction * (10.0 ** -(d - 1))
+        e = n * error_fraction
+        # use ceil and floor rather than round, to avoid floating-point
+        # errors
+        assert(round_sig_dig(n, digits=d) >= n - int(math.ceil(e)))
+        assert(round_sig_dig(n, digits=d) <= n + int(math.floor(e)))
+
+
+def test_round_sig_dig():
+    """Test rounding to a number of significant digits."""
+    # Expected values
+    assert(round_sig_dig(11, 1) == 10)
+    assert(round_sig_dig(11, 2) == 11)
+
+    assert(round_sig_dig(15, 1) == 20)
+    assert(round_sig_dig(15, 2) == 15)
+
+    assert(round_sig_dig(54, 1) == 50)
+    assert(round_sig_dig(54, 2) == 54)
+
+    assert(round_sig_dig(96, 1) == 100)
+    assert(round_sig_dig(96, 2) == 96)
+
+    assert(round_sig_dig(839, 1) == 800)
+    assert(round_sig_dig(839, 2) == 840)
+    assert(round_sig_dig(839, 3) == 839)
+
+    assert(round_sig_dig(5789, 1) == 6000)
+    assert(round_sig_dig(5789, 2) == 5800)
+    assert(round_sig_dig(5789, 3) == 5790)
+    assert(round_sig_dig(5789, 4) == 5789)
+
+    assert(round_sig_dig(24103, 1) == 20000)
+    assert(round_sig_dig(24103, 2) == 24000)
+    assert(round_sig_dig(24103, 3) == 24100)
+    assert(round_sig_dig(24103, 4) == 24100)
+    assert(round_sig_dig(24103, 5) == 24103)
+
+    # Floating-point values
+
+    # Must round based on fractions, must not double-round
+    assert(round_sig_dig(14, 1) == 10)
+    assert(round_sig_dig(14.0, 1) == 10)
+    assert(round_sig_dig(14.9, 1) == 10)
+    assert(round_sig_dig(15.0, 1) == 20)
+    assert(round_sig_dig(15.1, 1) == 20)
+
+    assert(round_sig_dig(14, 2) == 14)
+    assert(round_sig_dig(14.0, 2) == 14)
+    assert(round_sig_dig(14.9, 2) == 15)
+    assert(round_sig_dig(15.0, 2) == 15)
+    assert(round_sig_dig(15.1, 2) == 15)
+
+    # Must round to integer
+    assert(round_sig_dig(14, 3) == 14)
+    assert(round_sig_dig(14.0, 3) == 14)
+    assert(round_sig_dig(14.9, 3) == 15)
+    assert(round_sig_dig(15.0, 3) == 15)
+    assert(round_sig_dig(15.1, 3) == 15)
+
+    # Small integers
+    assert_round_sig_dig_any_digits(0, 1)
+    assert_round_sig_dig_any_digits(1, 1)
+    assert_round_sig_dig_any_digits(2, 2)
+    assert_round_sig_dig_any_digits(9, 9)
+    assert_round_sig_dig_any_digits(10, 10)
+
+    # Large values
+    assert_round_sig_dig_any_digits_error(2**30)
+    assert_round_sig_dig_any_digits_error(2**31)
+    assert_round_sig_dig_any_digits_error(2**32)
+
+    # the floating-point accuracy limit is 2**73 on some machines
+    assert_round_sig_dig_any_digits_error(2**62)
+    assert_round_sig_dig_any_digits_error(2**63)
+    assert_round_sig_dig_any_digits_error(2**64)
+
+    # Out of range values: must round to 1
+    assert_round_sig_dig_any_digits(-0.01, 1)
+    assert_round_sig_dig_any_digits(-1, 1)
+    assert_round_sig_dig_any_digits(-10.5, 1)
+    assert_round_sig_dig_any_digits(-(2**31), 1)
 
 
 def test_v3bwline_from_results_file(datadir):

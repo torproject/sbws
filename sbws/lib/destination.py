@@ -4,7 +4,7 @@ import time
 import os
 from threading import RLock
 import requests
-from urllib.parse import urlparse
+from urllib3.util.url import parse_url
 from stem.control import EventType
 import sbws.util.stem as stem_utils
 import sbws.util.requests as requests_utils
@@ -97,10 +97,10 @@ def connect_to_destination_over_circuit(dest, circ_id, session, cont, max_dl):
 class Destination:
     def __init__(self, url, max_dl, verify):
         self._max_dl = max_dl
-        u = urlparse(url)
+        u = parse_url(url)
         # these things should have been verified in verify_config
         assert u.scheme in ['http', 'https']
-        assert u.netloc
+        assert u.port
         self._url = u
         self._verify = verify
 
@@ -117,7 +117,7 @@ class Destination:
 
     @property
     def url(self):
-        return self._url.geturl()
+        return self._url.url
 
     @property
     def verify(self):
@@ -129,17 +129,7 @@ class Destination:
 
     @property
     def port(self):
-        p = self._url.port
-        scheme = self._url.scheme
-        if p is None:
-            if scheme == 'http':
-                p = 80
-            elif scheme == 'https':
-                p = 443
-            else:
-                assert None, 'Unreachable. Unknown scheme {}'.format(scheme)
-        assert p is not None
-        return p
+        return self._url.port
 
     @staticmethod
     def from_config(conf_section, max_dl):

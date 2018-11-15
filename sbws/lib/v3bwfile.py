@@ -14,7 +14,7 @@ from sbws import __version__
 from sbws.globals import (SPEC_VERSION, BW_LINE_SIZE, SBWS_SCALE_CONSTANT,
                           TORFLOW_SCALING, SBWS_SCALING, TORFLOW_BW_MARGIN,
                           TORFLOW_OBS_LAST, TORFLOW_OBS_MEAN,
-                          TORFLOW_ROUND_DIG, MIN_REPORT, MAX_BW_DIFF_PERC)
+                          PROP276_ROUND_DIG, MIN_REPORT, MAX_BW_DIFF_PERC)
 from sbws.lib.resultdump import ResultSuccess, _ResultType
 from sbws.util.filelock import DirectoryLock
 from sbws.util.timestamp import (now_isodt_str, unixts_to_isodt_str,
@@ -66,17 +66,17 @@ def round_sig_dig(n, digits=TORFLOW_ROUND_DIG):
        digits must be greater than 0.
        n must be less than or equal to 2**73, to avoid floating point errors.
        """
+    digits = int(digits)
     assert digits >= 1
     if n <= 1:
         return 1
-    digits = int(digits)
     digits_in_n = int(math.log10(n)) + 1
     round_digits = max(digits_in_n - digits, 0)
     rounded_n = round(n, -round_digits)
     return int(rounded_n)
 
 
-def kb_round_x_sig_dig(bw_bs, digits=TORFLOW_ROUND_DIG):
+def kb_round_x_sig_dig(bw_bs, digits=PROP276_ROUND_DIG):
     """Convert bw_bs from bytes to kilobytes, and round the result to
        'digits' significant digits.
        Results less than or equal to 1 are rounded up to 1.
@@ -487,7 +487,7 @@ class V3BWFile(object):
                      scale_constant=SBWS_SCALE_CONSTANT,
                      scaling_method=None, torflow_obs=TORFLOW_OBS_LAST,
                      torflow_cap=TORFLOW_BW_MARGIN,
-                     torflow_round_digs=TORFLOW_ROUND_DIG,
+                     torflow_round_digs=PROP276_ROUND_DIG,
                      secs_recent=None, secs_away=None, min_num=0,
                      consensus_path=None, max_bw_diff_perc=MAX_BW_DIFF_PERC,
                      reverse=False):
@@ -497,7 +497,7 @@ class V3BWFile(object):
         :param str state_fpath: path to the state file
         :param int scaling_method:
             Scaling method to obtain the bandwidth
-            Posiable values: {NONE, SBWS_SCALING, TORFLOW_SCALING} = {0, 1, 2}
+            Possible values: {None, SBWS_SCALING, TORFLOW_SCALING} = {0, 1, 2}
         :param int scale_constant: sbws scaling constant
         :param int torflow_obs: method to choose descriptor observed bandwidth
         :param bool reverse: whether to sort the bw lines descending or not
@@ -639,7 +639,7 @@ class V3BWFile(object):
     @staticmethod
     def bw_torflow_scale(bw_lines, desc_bw_obs_type=TORFLOW_OBS_MEAN,
                          cap=TORFLOW_BW_MARGIN,
-                         num_round_dig=TORFLOW_ROUND_DIG, reverse=False):
+                         num_round_dig=PROP276_ROUND_DIG, reverse=False):
         """
         Obtain final bandwidth measurements applying Torflow's scaling
         method.

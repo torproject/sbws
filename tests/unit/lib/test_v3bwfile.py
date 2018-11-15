@@ -185,8 +185,17 @@ def test_round_sig_dig():
     assert_round_sig_dig_any_digits(-10.5, 1)
     assert_round_sig_dig_any_digits(-(2**31), 1)
 
-    # exhaustively test the entire supported range
-    for n in range(1, 10**6):
+    # test the transition points in the supported range
+    # testing the entire range up to 1 million takes 100s
+    for n in range(1, 20000):
+        assert_round_sig_dig_any_digits_error(n)
+
+    # use a step that is relatively prime, to increase the chance of
+    # detecting errors
+    for n in range(90000, 200000, 9):
+        assert_round_sig_dig_any_digits_error(n)
+
+    for n in range(900000, 2000000, 99):
         assert_round_sig_dig_any_digits_error(n)
 
 

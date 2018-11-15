@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Make sbws round to 3 significant figures in torflow rounding mode, rather
   than rounding to the nearest 1000 kilobytes (#28442).
+- Make sbws round to 2 significant figures by default. This implements part
+  of proposal 276 (#28451).
 
 ## [1.0.2] - 2018-11-10
 

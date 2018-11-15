@@ -100,7 +100,6 @@ class Destination:
         u = parse_url(url)
         # these things should have been verified in verify_config
         assert u.scheme in ['http', 'https']
-        assert u.port
         self._url = u
         self._verify = verify
 
@@ -129,7 +128,12 @@ class Destination:
 
     @property
     def port(self):
-        return self._url.port
+        # urllib3 does not get any port if it is not in the url itself
+        if self._url.port is not None:
+            return self._url.port
+        if self._url.scheme == 'http':
+            return 80
+        return 443
 
     @staticmethod
     def from_config(conf_section, max_dl):

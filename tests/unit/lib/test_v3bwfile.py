@@ -185,6 +185,10 @@ def test_round_sig_dig():
     assert_round_sig_dig_any_digits(-10.5, 1)
     assert_round_sig_dig_any_digits(-(2**31), 1)
 
+    # exhaustively test the entire supported range
+    for n in range(1, 10**6):
+        assert_round_sig_dig_any_digits_error(n)
+
 
 def test_v3bwline_from_results_file(datadir):
     lines = datadir.readlines('results.txt')

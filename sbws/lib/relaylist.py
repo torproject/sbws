@@ -195,7 +195,7 @@ class RelayList:
         return self.rng.choice(self.relays)
 
     def exits_allowing_port(self, port):
-        log.debug("Choosing exits that can exit to port %s", port)
+        # log.debug("Choosing exits that can exit to port %s", port)
         return [r for r in self.exits if r.can_exit_to_port(port)]
 
     def non_bad_exits_allowing_port(self, port):

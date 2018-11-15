@@ -58,7 +58,7 @@ BW_KEYVALUES_INT = ['bw', 'rtt', 'success', 'error_stream',
 BW_KEYVALUES = BW_KEYVALUES_BASIC + BW_KEYVALUES_EXTRA
 
 
-def round_sig_dig(n, digits=TORFLOW_ROUND_DIG):
+def round_sig_dig(n, digits=PROP276_ROUND_DIG):
     """Round n to 'digits' significant digits in front of the decimal point.
        Results less than or equal to 1 are rounded to 1.
        Returns an integer.

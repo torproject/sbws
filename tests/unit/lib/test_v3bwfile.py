@@ -173,7 +173,8 @@ def test_round_sig_dig():
     assert_round_sig_dig_any_digits_error(2**31)
     assert_round_sig_dig_any_digits_error(2**32)
 
-    # the floating-point accuracy limit is 2**73 on some machines
+    # the floating-point accuracy limit for this function is 2**73
+    # on some machines
     assert_round_sig_dig_any_digits_error(2**62)
     assert_round_sig_dig_any_digits_error(2**63)
     assert_round_sig_dig_any_digits_error(2**64)

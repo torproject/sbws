@@ -176,6 +176,10 @@ class RelayList:
         return self._relays_with_flag(Flag.BADEXIT)
 
     @property
+    def non_bad_exits(self):
+        return [r for r in self.exits if r not in self.bad_exits]
+
+    @property
     def non_exits(self):
         return self._relays_without_flag(Flag.EXIT)
 
@@ -192,6 +196,9 @@ class RelayList:
 
     def exits_allowing_port(self, port):
         log.debug("Choosing exits that can exit to port %s", port)
+        return [r for r in self.exits if r.can_exit_to_port(port)]
+
+    def non_bad_exits_allowing_port(self, port):
         return [r for r in self.exits if r.can_exit_to_port(port)]
 
     def _relays_with_flag(self, flag):

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Fixed
+
+- Stop trying to resolve destination domain locally and stop using non exits
+  as the second hop (#28458)
+
 ## [1.0.2] - 2018-11-10
 
 ### Fixed

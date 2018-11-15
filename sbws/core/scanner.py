@@ -130,14 +130,17 @@ def measure_bandwidth_to_server(session, conf, dest, content_length):
     return results
 
 
-def _pick_ideal_second_hop(relay, dest, rl, cont, is_exit):
+def _pick_ideal_second_hop(relay, dest, rl, cont, is_exit=True, port=None):
     '''
     Sbws builds two hop circuits. Given the **relay** to measure with
     destination **dest**, pick a second relay that is or is not an exit
     according to **is_exit**.
     '''
-    candidates = []
-    candidates.extend(rl.exits if is_exit else rl.non_exits)
+    if port is None:
+        # log.debug("Choosing exits that allows port %s", port)
+        candidates = rl.non_bad_exits if is_exit else rl.non_exits
+    else:
+        candidates = rl.non_bad_exits_allowing_port(port)
     if not len(candidates):
         return None
     log.debug('Picking a 2nd hop to measure %s from %d choices. is_exit=%s',
@@ -175,24 +178,15 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         return None
     # Pick a relay to help us measure the given relay. If the given relay is an
     # exit, then pick a non-exit. Otherwise pick an exit.
-    helper = None
     circ_fps = None
-    if relay not in rl.bad_exits:
-        helper = _pick_ideal_second_hop(
-            relay, dest, rl, cb.controller, is_exit=True)
-        if helper:
-            circ_fps = [helper.fingerprint, relay.fingerprint]
-    else:
-        helper = _pick_ideal_second_hop(
-            relay, dest, rl, cb.controller, is_exit=True)
-        if helper:
-            circ_fps = [relay.fingerprint, helper.fingerprint]
+    helper = _pick_ideal_second_hop(relay, dest, rl, cb.controller,
+                                    port=dest.port)
     if not helper:
         # TODO: Return ResultError of some sort
         log.warning('Unable to pick a 2nd hop to help measure %s %s',
                     relay.nickname, relay.fingerprint[0:8])
         return None
-    assert helper
+    circ_fps = [relay.fingerprint, helper.fingerprint]
     assert circ_fps is not None and len(circ_fps) == 2
     # Build the circuit
     our_nick = conf['scanner']['nickname']

@@ -4,6 +4,7 @@
 
 import copy
 import logging
+import math
 import os
 from itertools import combinations
 from statistics import median, mean
@@ -57,10 +58,36 @@ BW_KEYVALUES_INT = ['bw', 'rtt', 'success', 'error_stream',
 BW_KEYVALUES = BW_KEYVALUES_BASIC + BW_KEYVALUES_EXTRA
 
 
+def round_sig_dig(n, digits=TORFLOW_ROUND_DIG):
+    """Round n to 'digits' significant digits in front of the decimal point.
+       Results less than or equal to 1 are rounded to 1.
+       Returns an integer.
+
+       digits must be greater than 0.
+       n must be less than or equal to 2**73, to avoid floating point errors.
+       """
+    assert digits >= 1
+    if n <= 1:
+        return 1
+    digits = int(digits)
+    digits_in_n = int(math.log10(n)) + 1
+    round_digits = max(digits_in_n - digits, 0)
+    rounded_n = round(n, -round_digits)
+    return int(rounded_n)
+
+
 def kb_round_x_sig_dig(bw_bs, digits=TORFLOW_ROUND_DIG):
-    """Convert bw to KB and round to x most significat digits."""
-    bw_kb = bw_bs / 1000
-    return max(int(round(bw_kb, -digits)), 1)
+    """Convert bw_bs from bytes to kilobytes, and round the result to
+       'digits' significant digits.
+       Results less than or equal to 1 are rounded up to 1.
+       Returns an integer.
+
+       digits must be greater than 0.
+       n must be less than or equal to 2**82, to avoid floating point errors.
+       """
+    # avoid double-rounding by using floating-point
+    bw_kb = bw_bs / 1000.0
+    return round_sig_dig(bw_kb, digits=digits)
 
 
 def num_results_of_type(results, type_str):

@@ -9,8 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
-- Stop trying to resolve destination domain locally, stop using non exits
-  as the second hop and stop obtaining url port from scheme.(#28458)
+- Stop trying to resolve destination domain locally, check same flags for the exit and obtain the port from ":port" if it's included in the URL.(#28458)
 
 ## [1.0.2] - 2018-11-10
 

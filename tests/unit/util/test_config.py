@@ -230,3 +230,8 @@ def test_nickname():
         d = {'n': nick}
         valid, reason = con._validate_nickname(d, 'n')
         assert not valid, reason
+
+
+def test_config_arg_provided_but_no_found(args, conf):
+    args.config = 'non_existing_file'
+    con._get_user_config(args, conf=None)

@@ -10,7 +10,7 @@ from string import Template
 from tempfile import NamedTemporaryFile
 from sbws.globals import (DEFAULT_CONFIG_PATH, DEFAULT_LOG_CONFIG_PATH,
                           USER_CONFIG_PATH, SUPERVISED_RUN_DPATH,
-                          SUPERVISED_USER_CONFIG_PATH, fail_hard)
+                          SUPERVISED_USER_CONFIG_PATH)
 
 _ALPHANUM = 'abcdefghijklmnopqrstuvwxyz'
 _ALPHANUM += _ALPHANUM.upper()
@@ -66,8 +66,11 @@ def _get_user_config(args, conf=None):
         assert isinstance(conf, ConfigParser)
     if args.config:
         if not os.path.isfile(args.config):
-            fail_hard('Configuration file %s not found.', args.config)
-        return _extend_config(conf, args.config)
+            # XXX: The logger is not configured at this stage,
+            # sbws should start with a logger before reading configurations.
+            print('Configuration file %s not found, using defaults.' %
+                  args.config)
+        return conf
     user_config_path = _obtain_user_conf_path()
     if os.path.isfile(user_config_path):
         return _extend_config(conf, user_config_path)

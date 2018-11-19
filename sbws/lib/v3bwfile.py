@@ -509,8 +509,6 @@ class V3BWFile(object):
              'relay_fp2': [Result1, Result2, ...]}
 
         """
-        # TODO: change scaling_method to TORFLOW_SCALING before getting this
-        # in production
         log.info('Processing results to generate a bandwidth list file.')
         header = V3BWHeader.from_results(results, state_fpath)
         bw_lines_raw = []

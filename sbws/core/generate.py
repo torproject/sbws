@@ -81,6 +81,8 @@ def main(args, conf):
     elif args.raw:
         scaling_method = None
     else:
+        # sbws will scale as torflow until we have a better algorithm for
+        # scaling (#XXX)
         scaling_method = TORFLOW_SCALING
     if args.secs_recent:
         fresh_days = ceil(args.secs_recent / 24 / 60 / 60)

@@ -22,7 +22,9 @@ def gen_parser(sub):
         '(latest.v3bw is an atomically created symlink in the same '\
         'directory as output.) '\
         'If the file is transferred to another host, it should be written to '\
-        'a temporary path, then renamed to the V3BandwidthsFile path.'
+        'a temporary path, then renamed to the V3BandwidthsFile path.\n'\
+        'The default scaling method is torflow\'s one. To use different'\
+        'scaling methods or no scaling, see the options.'
     p = sub.add_parser('generate', description=d,
                        formatter_class=ArgumentDefaultsHelpFormatter)
     p.add_argument('--output', default=None, type=str,

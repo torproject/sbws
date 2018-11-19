@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Changed
+
+- Remove option to scale as torflow since it's the default and ensure torflow
+  is the default scaling (#28446).
+
 ### Fixed
 
 - Make sbws round to 3 significant figures in torflow rounding mode, rather

@@ -485,7 +485,8 @@ class V3BWFile(object):
     @classmethod
     def from_results(cls, results, state_fpath='',
                      scale_constant=SBWS_SCALE_CONSTANT,
-                     scaling_method=None, torflow_obs=TORFLOW_OBS_LAST,
+                     scaling_method=TORFLOW_SCALING,
+                     torflow_obs=TORFLOW_OBS_LAST,
                      torflow_cap=TORFLOW_BW_MARGIN,
                      torflow_round_digs=PROP276_ROUND_DIG,
                      secs_recent=None, secs_away=None, min_num=0,

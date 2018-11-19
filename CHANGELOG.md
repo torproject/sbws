@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Changed
+
+- Ensure de default scaling method is torflow, leave cli option but ignore it,
+  update documentation reflecting this. (#28446).
+
 ### Fixed
 
 - Make sbws round to 3 significant figures in torflow rounding mode, rather

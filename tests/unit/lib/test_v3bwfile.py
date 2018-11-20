@@ -139,6 +139,8 @@ def test_round_sig_dig():
     assert(round_sig_dig(24103, 4) == 24100)
     assert(round_sig_dig(24103, 5) == 24103)
 
+    assert(round_sig_dig(300000, 1) == 300000)
+
     # Floating-point values
 
     # Must round based on fractions, must not double-round
@@ -165,6 +167,12 @@ def test_round_sig_dig():
     assert_round_sig_dig_any_digits(0, 1)
     assert_round_sig_dig_any_digits(1, 1)
     assert_round_sig_dig_any_digits(2, 2)
+    assert_round_sig_dig_any_digits(3, 3)
+    assert_round_sig_dig_any_digits(4, 4)
+    assert_round_sig_dig_any_digits(5, 5)
+    assert_round_sig_dig_any_digits(6, 6)
+    assert_round_sig_dig_any_digits(7, 7)
+    assert_round_sig_dig_any_digits(8, 8)
     assert_round_sig_dig_any_digits(9, 9)
     assert_round_sig_dig_any_digits(10, 10)
 
@@ -257,10 +265,10 @@ def test_sbws_scale(datadir):
 def test_torflow_scale(datadir):
     results = load_result_file(str(datadir.join("results.txt")))
     v3bwfile = V3BWFile.from_results(results, scaling_method=TORFLOW_SCALING)
-    assert v3bwfile.bw_lines[0].bw == 524
+    assert v3bwfile.bw_lines[0].bw == 520
     v3bwfile = V3BWFile.from_results(results, scaling_method=TORFLOW_SCALING,
                                      torflow_cap=0.0001)
-    assert v3bwfile.bw_lines[0].bw == 524
+    assert v3bwfile.bw_lines[0].bw == 520
     v3bwfile = V3BWFile.from_results(results, scaling_method=TORFLOW_SCALING,
                                      torflow_cap=1, torflow_round_digs=1)
     assert v3bwfile.bw_lines[0].bw == 500

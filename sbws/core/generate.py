@@ -1,7 +1,7 @@
 from math import ceil
 
 from sbws.globals import (fail_hard, SBWS_SCALE_CONSTANT, TORFLOW_SCALING,
-                          SBWS_SCALING, TORFLOW_BW_MARGIN, TORFLOW_ROUND_DIG,
+                          SBWS_SCALING, TORFLOW_BW_MARGIN, PROP276_ROUND_DIG,
                           DAY_SECS, NUM_MIN_RESULTS)
 from sbws.lib.v3bwfile import V3BWFile
 from sbws.lib.resultdump import load_recent_results_in_datadir
@@ -50,10 +50,9 @@ def gen_parser(sub):
     p.add_argument('-m', '--torflow-bw-margin', default=TORFLOW_BW_MARGIN,
                    type=float,
                    help="Cap maximum bw when scaling as Torflow. ")
-    p.add_argument('-r', '--torflow-round-digs', default=TORFLOW_ROUND_DIG,
-                   type=int,
-                   help="Number of most significant digits to round bw "
-                        "when scaling as Torflow.")
+    p.add_argument('-r', '--round-digs', '--torflow-round-digs',
+                   default=PROP276_ROUND_DIG, type=int,
+                   help="Number of most significant digits to round bw.")
     p.add_argument('-p', '--secs-recent', default=None, type=int,
                    help="How many secs in the past are results being "
                         "still considered. Note this value will supersede "

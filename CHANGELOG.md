@@ -9,8 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 
-- Remove option to scale as torflow since it's the default and ensure torflow
-  is the default scaling (#28446).
+- Ensure de default scaling method is torflow, leave cli option but ignore it,
+  update documentation reflecting this. (#28446).
 
 ### Fixed
 

@@ -42,6 +42,12 @@ def gen_parser(sub):
                    'are, but scale them such that we have a budget of '
                    'scale_constant * num_measured_relays = bandwidth to give '
                    'out, and we do so proportionally')
+    p.add_argument('-t', '--scale-torflow', action='store_true',
+                   default=True,
+                   help='If specified, scale measurements using torflow\'s '
+                   'method. This option is kept for compatibility with older '
+                   'versions and it is silently ignored, since it is the '
+                   'default.')
     p.add_argument('-w', '--raw', action='store_true',
                    help='If specified, do use bandwidth raw measurements '
                    'without any scaling.')

@@ -224,7 +224,7 @@ def test_from_results_read(datadir, tmpdir, conf, args):
     expected_bwls[0].bw = round(expected_bwls[0].bw / 1000)
     expected_f = V3BWFile(expected_header, expected_bwls)
     # This way is going to convert bw to KB
-    v3bwfile = V3BWFile.from_results(results)
+    v3bwfile = V3BWFile.from_results(results, scaling_method=None)
     assert str(expected_f)[1:] == str(v3bwfile)[1:]
     output = os.path.join(args.output, now_fname())
     v3bwfile.write(output)

@@ -227,9 +227,10 @@ def test_from_results_read(datadir, tmpdir, conf, args):
     expected_header = V3BWHeader(timestamp_l,
                                  earliest_bandwidth=earliest_bandwidth,
                                  latest_bandwidth=latest_bandwidth)
-    expected_bwls = [V3BWLine.from_results(results[fp]) for fp in results]
-    # bw store now B, not KB
-    expected_bwls[0].bw = round(expected_bwls[0].bw / 1000)
+    raw_bwls = [V3BWLine.from_results(results[fp]) for fp in results]
+    # Scale BWLines using torflow method, since it's the default and BWLines
+    # bandwidth is the raw bandwidth.
+    expected_bwls = V3BWFile.bw_torflow_scale(raw_bwls)
     expected_f = V3BWFile(expected_header, expected_bwls)
     # This way is going to convert bw to KB
     v3bwfile = V3BWFile.from_results(results)

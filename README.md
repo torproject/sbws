@@ -8,7 +8,8 @@ produces bandwidth files to be used by Directory Authorities.
 The scanner builds two hop circuits consisting of the relay being measured and
 a fast exit. Over these circuits it measures bandwidth and store the results.
 
-The generator read the measurement results, scales them using torflow's scaling method and creates the bandwidth file.
+The generator read the measurement results, scales them using torflow's
+scaling method and creates the bandwidth file.
 
 **WARNING**: This software is intended to be run by researchers using a test
 Tor network, such as chutney or shadow, or by the Tor bandwidth authorities

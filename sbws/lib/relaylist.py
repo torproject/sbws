@@ -127,6 +127,17 @@ class Relay:
         assert is_valid_ipv4_address(host) or is_valid_ipv6_address(host)
         return self.exit_policy.can_exit_to(host, port)
 
+    def can_exit_to_port(self, port):
+        """
+        Returns True if the relay has an exit policy and the policy accepts
+        exiting to the given portself or False otherwise.
+        """
+        assert isinstance(port, int)
+        # if dind't get the descriptor, there isn't exit policy
+        if not self.exit_policy:
+            return False
+        return self.exit_policy.can_exit_to(port=port)
+
 
 class RelayList:
     ''' Keeps a list of all relays in the current Tor network and updates it

@@ -230,3 +230,8 @@ class RelayList:
     def _refresh(self):
         self._relays = self._init_relays()
         self._last_refresh = time.time()
+
+
+    def exits_not_bad_allowing_port(self, port):
+        return [r for r in self.exits
+                if r.is_exit_not_bad_allowing_port(port)]

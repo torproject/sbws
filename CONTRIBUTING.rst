@@ -128,14 +128,13 @@ Any non-trivial change should contain tests. See ./TESTING.rst.
 When running tests, currently ``flake8`` informs on some PEP8 errors/warnings,
 but not all.
 
-Document your changes in ./CHANGELOG.rst following `keep a changelog`_.
-Reference the Tor Project Trac ticket (example: ``#12345``) or
-Github ticket (example: ``GH#123``).
-
 .. _commits-ref:
 
 Commits
 ~~~~~~~~~
+
+Each commit should reference the Tor Project Trac ticket (example: ``#12345``)
+and possibly the bugfix version.
 
 Try to make each commit a logically separate changes.::
 
@@ -253,6 +252,12 @@ Before major releases, ensure that:
 - A dirauth should be able to understand the documentation, otherwise the
   documentation should be clarified.
 
+.. _changelog:
+
+Create a ./CHANGELOG.rst file.
+Each entry should reference the Tor Project Trac ticket (example: ``#12345``)
+and possibly the bugfix version.
+Until version 1.0.2 we have followed `keep a changelog`_ format.
 
 .. _commit-msg:
 

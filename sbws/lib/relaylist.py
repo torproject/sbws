@@ -138,6 +138,11 @@ class Relay:
             return False
         return self.exit_policy.can_exit_to(port=port)
 
+    def is_exit_not_bad_allowing_port(self, port):
+        return (Flag.BADEXIT not in self.flags and
+                Flag.EXIT in self.flags and
+                self.can_exit_to_port(port))
+
 
 class RelayList:
     ''' Keeps a list of all relays in the current Tor network and updates it

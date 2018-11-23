@@ -272,7 +272,7 @@ def test_torflow_scale(datadir):
                                      torflow_cap=0.0001)
     assert v3bwfile.bw_lines[0].bw == 520
     v3bwfile = V3BWFile.from_results(results, scaling_method=TORFLOW_SCALING,
-                                     torflow_cap=1, torflow_round_digs=1)
+                                     torflow_cap=1, round_digs=1)
     assert v3bwfile.bw_lines[0].bw == 500
 
 

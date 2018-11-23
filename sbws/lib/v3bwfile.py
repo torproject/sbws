@@ -743,12 +743,15 @@ class V3BWFile(object):
 
         **desc_bw**:
 
-        It is the ``observed bandwidth`` in the descriptor, NOT the ``average
-        bandwidth``::
+        It is the minimum of all the descriptor bandwidth values::
+
+            bws = map(int, g)
+            bw_observed = min(bws)
 
             return Router(ns.idhex, ns.nickname, bw_observed, dead, exitpolicy,
             ns.flags, ip, version, os, uptime, published, contact, rate_limited,  # NOQA
             ns.orhash, ns.bandwidth, extra_info_digest, ns.unmeasured)
+
             self.desc_bw = max(bw,1) # Avoid div by 0
 
         **new_bw**::
@@ -788,19 +791,19 @@ class V3BWFile(object):
                       \\sum_{i=1}^{n}bwnew_i \\times 0.05\\right) \\
 
                  &= min\\left(
-                      \\left(bwobs_i \\times r_i\\right),
-                        \\sum_{i=1}^{n}\\left(bwobs_i \\times r_i\\right)
+                      \\left(min\\left(bwobs_i, bwavg_i, bwbur_i \\right) \\times r_i\\right),
+                        \\sum_{i=1}^{n}\\left(min\\left(bwobs_i, bwavg_i, bwbur_i \\right) \\times r_i\\right)
                         \\times 0.05\\right)\\
 
                  &= min\\left(
-                      \\left(bwobs_i \\times max\\left(rf_i, rs_i\\right)\\right),
-                        \\sum_{i=1}^{n}\\left(bwobs_i \\times
+                      \\left(min\\left(bwobs_i, bwavg_i, bwbur_i \\right) \\times max\\left(rf_i, rs_i\\right)\\right),
+                        \\sum_{i=1}^{n}\\left(min\\left(bwobs_i, bwavg_i, bwbur_i \\right) \\times
                           max\\left(rf_i, rs_i\\right)\\right) \\times 0.05\\right)\\
 
                  &= min\\left(
-                      \\left(bwobs_i \\times max\\left(\\frac{bwfilt_i}{bwfilt},
+                      \\left(min\\left(bwobs_i, bwavg_i, bwbur_i \\right) \\times max\\left(\\frac{bwfilt_i}{bwfilt},
                           \\frac{bw_i}{bwstrm}\\right)\\right),
-                        \\sum_{i=1}^{n}\\left(bwobs_i \\times
+                        \\sum_{i=1}^{n}\\left(min\\left(bwobs_i, bwavg_i, bwbur_i \\right) \\times
                           max\\left(\\frac{bwfilt_i}{bwfilt},
                             \\frac{bw_i}{bwstrm}\\right)\\right) \\times 0.05\\right)
 
@@ -825,11 +828,12 @@ class V3BWFile(object):
             elif desc_bw_obs_type == TORFLOW_OBS_MEAN:
                 desc_bw_obs = l.desc_bw_obs_mean
             # just applying the formula above:
+            desc_bw = min(desc_bw_obs, l.desc_bw_bur, l.desc_bw_avg)
             bw_new = kb_round_x_sig_dig(
                 max(
                     l.bw_mean / mu,  # ratio
                     max(l.bw_mean, mu) / muf  # ratio filtered
-                    ) * desc_bw_obs, \
+                    ) * desc_bw, \
                 digits=num_round_dig)  # convert to KB
             # Cap maximum bw
             if cap is not None:

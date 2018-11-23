@@ -40,7 +40,7 @@ header_extra_str = LINE_SEP.join(header_extra_ls) + LINE_SEP
 
 # Line produced without any scaling.
 raw_bwl_str = "bw=56 bw_mean=61423 bw_median=55656 "\
-    "desc_bw_avg=1000000000 desc_bw_bur=1000000000 desc_bw_obs_last=524288 "\
+    "desc_bw_avg=1000000000 desc_bw_bur=123456 desc_bw_obs_last=524288 "\
     "desc_bw_obs_mean=524288 error_circ=0 error_misc=0 error_stream=1 " \
     "master_key_ed25519=g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s " \
     "nick=A " \
@@ -267,13 +267,13 @@ def test_sbws_scale(datadir):
 def test_torflow_scale(datadir):
     results = load_result_file(str(datadir.join("results.txt")))
     v3bwfile = V3BWFile.from_results(results, scaling_method=TORFLOW_SCALING)
-    assert v3bwfile.bw_lines[0].bw == 520
+    assert v3bwfile.bw_lines[0].bw == 120
     v3bwfile = V3BWFile.from_results(results, scaling_method=TORFLOW_SCALING,
                                      torflow_cap=0.0001)
-    assert v3bwfile.bw_lines[0].bw == 520
+    assert v3bwfile.bw_lines[0].bw == 120
     v3bwfile = V3BWFile.from_results(results, scaling_method=TORFLOW_SCALING,
                                      torflow_cap=1, torflow_round_digs=1)
-    assert v3bwfile.bw_lines[0].bw == 500
+    assert v3bwfile.bw_lines[0].bw == 100
 
 
 def test_results_away_each_other(datadir):

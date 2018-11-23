@@ -315,9 +315,6 @@ class V3BWLine(object):
         kwargs.update(cls.result_types_from_results(results))
         # useful args for scaling
         if success_results:
-            if not len(success_results) >= min_num:
-                # log.debug('The number of results is les than %s', min_num)
-                return None
             results_away = \
                 cls.results_away_each_other(success_results, secs_away)
             if not results_away:
@@ -326,6 +323,9 @@ class V3BWLine(object):
             #           [unixts_to_isodt_str(r.time) for r in results_away])
             results_recent = cls.results_recent_than(results_away, secs_recent)
             if not results_recent:
+                return None
+            if not len(results_recent) >= min_num:
+                # log.debug('The number of results is less than %s', min_num)
                 return None
             kwargs['desc_bw_avg'] = \
                 results_recent[-1].relay_average_bandwidth

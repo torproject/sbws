@@ -327,8 +327,6 @@ class V3BWLine(object):
             if not len(results_recent) >= min_num:
                 # log.debug('The number of results is less than %s', min_num)
                 return None
-            kwargs['desc_bw_avg'] = \
-                results_recent[-1].relay_average_bandwidth
             rtt = cls.rtt_from_results(results_recent)
             if rtt:
                 kwargs['rtt'] = rtt
@@ -336,6 +334,8 @@ class V3BWLine(object):
             kwargs['bw_mean'] = cls.bw_mean_from_results(results_recent)
             kwargs['bw_median'] = cls.bw_median_from_results(
                 results_recent)
+            kwargs['desc_bw_avg'] = \
+                cls.desc_bw_avg_from_results(results_recent)
             kwargs['desc_bw_obs_last'] = \
                 cls.desc_bw_obs_last_from_results(results_recent)
             kwargs['desc_bw_obs_mean'] = \
@@ -418,6 +418,14 @@ class V3BWLine(object):
                          num_results_of_type(results, rt.value))
                         for rt in _ResultType])
         return rt_dict
+
+    @staticmethod
+    def desc_bw_avg_from_results(results):
+        """Obtain the last descriptor bandwidth average from the results."""
+        for r in reversed(results):
+            if r.relay_average_bandwidth is not None:
+                return r.relay_average_bandwidth
+        return None
 
     @staticmethod
     def desc_bw_obs_mean_from_results(results):

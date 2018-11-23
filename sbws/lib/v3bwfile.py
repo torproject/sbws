@@ -605,17 +605,6 @@ class V3BWFile(object):
             the bandwidth to obtain the new bandwidth
         :returns list: V3BwLine list
         """
-        # If a relay has MaxAdvertisedBandwidth set, they may be capable of
-        # some large amount of bandwidth but prefer if they didn't receive it.
-        # We also could have managed to measure them faster than their
-        # {,Relay}BandwidthRate somehow.
-        #
-        # See https://github.com/pastly/simple-bw-scanner/issues/155 and
-        # https://trac.torproject.org/projects/tor/ticket/8494
-        #
-        # Note how this isn't some measured-by-us average of bandwidth. It's
-        # the first value on the 'bandwidth' line in the relay's server
-        # descriptor.
         log.debug('Scaling bandwidth using sbws method.')
         m = median([l.bw for l in bw_lines])
         bw_lines_scaled = copy.deepcopy(bw_lines)
@@ -827,6 +816,15 @@ class V3BWFile(object):
                 desc_bw_obs = l.desc_bw_obs_last
             elif desc_bw_obs_type == TORFLOW_OBS_MEAN:
                 desc_bw_obs = l.desc_bw_obs_mean
+            # Excerpt from bandwidth-file-spec.txt section 2.3
+            # A relay's MaxAdvertisedBandwidth limits the bandwidth-avg in its
+            # descriptor.
+            # Therefore generators MUST limit a relay's measured bandwidth to
+            # its descriptor's bandwidth-avg.
+            # Generators SHOULD NOT limit measured bandwidths based on
+            # descriptors' bandwidth-observed, because that penalises new
+            # relays.
+            # See https://trac.torproject.org/projects/tor/ticket/8494
             # just applying the formula above:
             desc_bw = min(desc_bw_obs, l.desc_bw_bur, l.desc_bw_avg)
             bw_new = kb_round_x_sig_dig(

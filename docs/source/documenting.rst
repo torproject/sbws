@@ -35,13 +35,15 @@ To convert the ``LaTeX`` mathematical formulae to images, extra system dependenc
 are needed:
 
 - Core and Extra Tex_ Live packages
+- dvipng_
 
 They are included in most distributions. In Debian install them running::
 
-    apt install texlive-latex-extra
+    apt install texlive-latex-extra dvpipng
 
 
 .. _Sphinx: http://www.sphinx-doc.org
 .. _recommonmark: https://recommonmark.readthedocs.io/
 .. _Pylint: https://www.pylint.org/
 .. _Tex: http://www.tug.org/texlive/acquire.html
+.. _dvipng: https://www.nongnu.org/dvipng/

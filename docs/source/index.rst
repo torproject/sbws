@@ -41,7 +41,6 @@ Included in the
    faq
    glossary
    roadmap
-   layout
    config_tor
    testing
    documenting

@@ -42,7 +42,7 @@ They are included in most distributions. In Debian install them running::
     apt install texlive-latex-extra dvpipng
 
 
-.. _Sphinx: http://www.sphinx-doc.org
+.. _Sphinx: https://www.sphinx-doc.org
 .. _recommonmark: https://recommonmark.readthedocs.io/
 .. _Pylint: https://www.pylint.org/
 .. _Tex: http://www.tug.org/texlive/acquire.html

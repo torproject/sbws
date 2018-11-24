@@ -1,0 +1,13 @@
+# .readthedocs.yml
+
+build:
+  image: latest
+
+python:
+  version: 3.5
+  # To run "pip install ." in rtfd.io
+  pip_install: true
+
+# To run "pip install .[docs]" in rtfd.io
+extra_requirements:
+  - docs

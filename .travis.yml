@@ -22,3 +22,10 @@ notifications:
     template:
       - "%{repository_slug} %{branch} %{commit} - %{author}: %{commit_subject}"
       - "Build #%{build_number} %{result}. Details: %{build_url}"
+
+# To build the docs
+addons:
+  apt:
+    packages:
+    - texlive-latex-extra
+    - dvipng

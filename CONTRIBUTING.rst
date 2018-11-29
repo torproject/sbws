@@ -18,7 +18,7 @@ Bug reports or feature requests
 .. _ticket-ref:
 
 * Open a ticket in
-  `Tor Project Trac <https://trac.torproject.org/projects/tor/newticket>`_
+  `Tor Project Trac <https://trac.torproject.org>`_
   and assign the component to ``Core Tor``/``sbws``.
 
 Code/documentation patches

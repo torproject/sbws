@@ -18,7 +18,7 @@ To run the tests::
 
     tox
 
-.. _Flake8: http://flake8.pycqa.org/
+.. _Flake8: https://flake8.readthedocs.io/
 .. _pytest: https://docs.pytest.org/
 .. _tox: https://tox.readthedocs.io
 .. _Coverage: https://coverage.readthedocs.io/

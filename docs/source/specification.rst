@@ -201,7 +201,8 @@ scaling method.
 
 .. _torflow: https://gitweb.torproject.org/torflow.git
 .. _stem: https://stem.torproject.org
-.. _requests: https://docs.python-requests.org/
+.. https://github.com/requests/requests/issues/4885
+.. _requests: http://docs.python-requests.org/
 .. _peerflow: https://www.nrl.navy.mil/itd/chacs/sites/www.nrl.navy.mil.itd.chacs/files/pdfs/16-1231-4353.pdf
 .. _torflow_scaling: https://gitweb.torproject.org/torflow.git/tree/NetworkScanners/BwAuthority/README.spec.txt#n298
 .. _bandwidth_file_spec: https://gitweb.torproject.org/torspec.git/tree/bandwidth-file-spec.txt

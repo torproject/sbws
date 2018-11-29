@@ -82,8 +82,11 @@ are 10MB and it will keep 50 rotated log files.
 .. _virtualenv: https://virtualenv.pypa.io/en/stable/installation/
 .. _Stem: https://stem.torproject.org/
 .. _socks: http://docs.python-requests.org/en/master/user/advanced/#socks
+.. https://readthedocs.org/projects/requests/ redirect to this, but the
+.. certificate of this signed by rtd
 .. _Requests: http://docs.python-requests.org/
-.. _Flake8: http://flake8.pycqa.org/
+.. http://flake8.pycqa.org/ certificate is signed by rtf
+.. _Flake8: https://flake8.readthedocs.org/
 .. _pytest: https://docs.pytest.org/
 .. _tox: https://tox.readthedocs.io
 .. _Coverage: https://coverage.readthedocs.io/

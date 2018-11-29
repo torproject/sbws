@@ -21,6 +21,10 @@ TORRC_STARTING_POINT = {
     # Because we need things from full server descriptors (namely for now: the
     # bandwidth line)
     'UseMicrodescriptors': '0',
+    # useful logging options for clients that don't care about anonymity
+    'SafeLogging': '0',
+    'LogTimeGranularity': '1',
+    'ProtocolWarnings': '1',
 }
 
 PKG_DIR = os.path.abspath(os.path.dirname(__file__))

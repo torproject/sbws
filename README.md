@@ -29,29 +29,31 @@ It can also be read after installing the Debian package ``sbws-doc`` in
 Installing
 ------------
 
-See ./INSTALL.rst (or  [INSTALL](./INSTALL.rst) or [INSTALL](./INSTALL.html) )
+See [./INSTALL.rst](INSTALL.rst) (in local directory or GitHub) or
+[INSTALL.html](INSTALL.html) (local build or Read the Docs).
 
 Deploying and running
 ---------------------
 
-See ./DEPLOY.rst (or  [DEPLOY](./DEPLOY.rst) or [DEPLOY](./DEPLOY.html) )
+See [./DEPLOY.rst](DEPLOY.rst) (in local directory or GitHub) or
+[DEPLOY.html](DEPLOY.html) (local build or Read the Docs).
 
 Contributing
 --------------
 
-See ./CONTRIBUTING.rst (or  [CONTRIBUTING](./CONTRIBUTING.rst) or
-[CONTRIBUTING](./CONTRIBUTING.html) )
+See [./CONTRIBUTING.rst](CONTRIBUTING.rst) (in local directory or GitHub) or
+[CONTRIBUTING.html](CONTRIBUTING.html) (local build or Read the Docs).
 
 Changelog
 --------------
 
-See ./CHANGELOG.rst (or  [CHANGELOG](./CHANGELOG.rst) or
-[CHANGELOG](./CHANGELOG.html) )
+See [./CHANGELOG.rst](CHANGELOG.rst) (in local directory or GitHub) or
+[CHANGELOG.html](CHANGELOG.html)  (local build or Read the Docs).
 
 Documentation
 --------------
 
-More extensive documentation can be found in the ./docs directory,
+More extensive documentation can be found in the ``./docs`` directory,
 and online at [sbws.rtfd.io](https://sbws.readthedocs.io) and
 [this onion service](http://d7pxflytfsmz6uh3x7i2jxzzwea6nbpmtsz5tmfkcin5edapaig5vpyd.onion/)
 ([v2](http://sdmb3rfvp3wadu6y.onion/)).
@@ -68,4 +70,5 @@ software in ./LICENSE.md
 
 ## Authors
 
-See ./AUTHORS.md (or  [AUTHORS](./AUTHORS.MD)
+See [./AUTHORS.md](AUTHORS.md) (in local directory or GitHub) or
+[AUTHORS.html](AUTHORS.html) (local build or Read the Docs).

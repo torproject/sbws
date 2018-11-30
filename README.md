@@ -17,6 +17,15 @@ on the public Tor network.
 Please do not run this software on the public Tor network unless you are one
 of the Tor bandwidth authorities, to avoid creating unnecessary traffic.
 
+**ADVICE**: It is recommended to read this documentation at
+[Read the Docs](https://sbws.rtfd.io). In
+[Github](http://github.com/torproject/sbws) some links won't be properly
+rendered.
+It can also be read after installing the Debian package ``sbws-doc`` in
+``/usr/share/doc/sbws`` or after building it locally as explained in
+``./docs/source/documenting.rst``.
+
+
 Installing
 ------------
 

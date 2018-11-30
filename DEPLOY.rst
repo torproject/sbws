@@ -28,7 +28,19 @@ scanner setup
 Install sbws according to ``./INSTALL.rst`` (or `/INSTALL.rst </INSTALL.rst>`_
 or :ref:`install`).
 
-To configure destinations, create a configuration file according to
+To run the ``scanner`` it is mandatory to create a configuration file with at
+least one ``destination``.
+
+If ``sbws`` is installed from the Debian package, then create a file in
+``/etc/sbws/sbws.ini`` like in the following example:
+
+.. literalinclude:: /examples/sbws.example.ini
+    :caption: Example sbws.example.ini
+
+If ``sbws`` is installed from the sources as a non-root user then create the
+file in ``~/.sbws.ini``.
+
+More details about the configuration file can be found in
 ``./docs/source/man_sbws.ini.rst`` (or `/docs/source/man_sbws.ini.rst <man_sbws.ini>`_
 or :doc:`man_sbws.ini` or ``man sbws.ini``)
 

@@ -295,8 +295,3 @@ So fix that.
 - `earliest_bandwidth` being the newest bw not the oldest (thanks juga0)
 - `node_id` was missing the character "$" at the beginning
 
-[Unreleased]: https://github.com/pastly/simple-bw-scanner/compare/v0.7.0...master
-[0.7.0]: https://github.com/pastly/simple-bw-scanner/compare/v0.6.0...v0.7.0
-[0.6.0]: https://github.com/pastly/simple-bw-scanner/compare/v0.5.0...v0.6.0
-[0.5.0]: https://github.com/pastly/simple-bw-scanner/compare/v0.4.1...v0.5.0
-[0.4.1]: https://github.com/pastly/simple-bw-scanner/compare/v0.4.0...v0.4.1

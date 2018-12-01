@@ -868,8 +868,8 @@ class V3BWFile(object):
             # Cap maximum bw
             if cap is not None:
                 bw_new = min(hlimit, bw_new)
-            # remove decimals and avoid 0
-            l.bw = max(round(bw_new), 1)
+            # avoid 0
+            l.bw = max(bw_new, 1)
         return sorted(bw_lines_tf, key=lambda x: x.bw, reverse=reverse)
 
     @staticmethod

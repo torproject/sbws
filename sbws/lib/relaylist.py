@@ -87,6 +87,13 @@ class Relay:
         return self._from_ns('bandwidth')
 
     @property
+    def is_unmeasured(self):
+        # measured appears only votes, unmeasured appears in consensus
+        # therefore is_unmeasured is needed to know whether the bandwidth
+        # value in consensus is comming from bwauth measurements or not.
+        return self._from_ns('is_unmeasured')
+
+    @property
     def address(self):
         return self._from_ns('address')
 

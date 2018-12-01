@@ -65,10 +65,13 @@ SCANNER = "test"
 AVG_BW = 966080
 BUR_BW = 1048576
 OBS_BW = 524288
+BW = 600000
+UNMEASURED = False
 
 RELAY1 = Result.Relay(FP1, NICK1, IP1, ED25519,
                       average_bandwidth=AVG_BW, burst_bandwidth=BUR_BW,
-                      observed_bandwidth=OBS_BW)
+                      observed_bandwidth=OBS_BW, consensus_bandwidth=BW,
+                      consensus_bandwidth_is_unmeasured=UNMEASURED)
 RELAY2 = Result.Relay(FP2, NICK2, IP2, ED25519)
 
 RESULT = Result(RELAY1, CIRC12, DEST_URL, SCANNER, t=TIME1)
@@ -89,7 +92,9 @@ RELAY_DICT = {
     "master_key_ed25519": ED25519,
     "relay_average_bandwidth": AVG_BW,
     "relay_burst_bandwidth": BUR_BW,
-    "relay_observed_bandwidth": OBS_BW
+    "relay_observed_bandwidth": OBS_BW,
+    "consensus_bandwidth": BW,
+    "consensus_bandwidth_is_unmeasured": UNMEASURED,
 }
 
 BASE_RESULT_NO_RELAY_DICT = {

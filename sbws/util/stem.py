@@ -125,6 +125,7 @@ def launch_tor(conf):
     # Bare minimum things, more or less
     torrc = copy.deepcopy(TORRC_STARTING_POINT)
     # Very important and/or common settings that we don't know until runtime
+    # The rest of the settings are in globals.py
     torrc.update({
         'DataDirectory': conf.getpath('tor', 'datadir'),
         'PidFile': conf.getpath('tor', 'pid'),

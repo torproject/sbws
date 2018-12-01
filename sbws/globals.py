@@ -10,6 +10,8 @@ SPEC_VERSION = '1.2.0'
 
 # This is a dictionary of torrc options we always want to set when launching
 # Tor and that do not depend on any runtime configuration
+# Options that are known at runtime (from configuration file) are added
+# in utils/stem.py launch_tor
 TORRC_STARTING_POINT = {
     # We will find out via the ControlPort and not setting something static
     # means a lower chance of conflict

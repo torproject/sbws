@@ -848,11 +848,19 @@ class V3BWFile(object):
             # See https://trac.torproject.org/projects/tor/ticket/8494
             # just applying the formula above:
             desc_bw = min(desc_bw_obs, l.desc_bw_bur, l.desc_bw_avg)
+            if l.cons_is_unmeasured:
+                min_desc_cons_bw = desc_bw
+            # If the relay is measured, use the minimum between the descriptors
+            # bandwidth and the consensus bandwidth
+            # The consensus bandwidth in a measured relay has been obtained
+            # doing the same calculation as here
+            else:
+                min_desc_cons_bw = min(desc_bw, l.cons_bw)
             bw_new = kb_round_x_sig_dig(
                 max(
                     l.bw_mean / mu,  # ratio
                     max(l.bw_mean, mu) / muf  # ratio filtered
-                    ) * desc_bw, \
+                    ) * min_desc_cons_bw, \
                 digits=num_round_dig)  # convert to KB
             # Cap maximum bw
             if cap is not None:

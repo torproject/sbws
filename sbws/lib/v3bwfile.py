@@ -51,7 +51,8 @@ BW_KEYVALUES_FILE = BW_KEYVALUES_BASIC + \
                     ['master_key_ed25519', 'nick', 'rtt', 'time',
                      'success', 'error_stream', 'error_circ', 'error_misc']
 BW_KEYVALUES_EXTRA_BWS = ['bw_median', 'bw_mean', 'desc_bw_avg', 'desc_bw_bur',
-                          'desc_bw_obs_last', 'desc_bw_obs_mean']
+                          'desc_bw_obs_last', 'desc_bw_obs_mean',
+                          'cons_bw', 'cons_is_unmeasured']
 BW_KEYVALUES_EXTRA = BW_KEYVALUES_FILE + BW_KEYVALUES_EXTRA_BWS
 BW_KEYVALUES_INT = ['bw', 'rtt', 'success', 'error_stream',
                     'error_circ', 'error_misc'] + BW_KEYVALUES_EXTRA_BWS
@@ -338,6 +339,10 @@ class V3BWLine(object):
                 cls.desc_bw_avg_from_results(results_recent)
             kwargs['desc_bw_bur'] = \
                 cls.desc_bw_bur_from_results(results_recent)
+            kwargs['cons_bw'] = \
+                cls.cons_bw_from_results(results_recent)
+            kwargs['cons_is_unmeasured'] = \
+                cls.cons_is_unmeasured_from_results(results_recent)
             kwargs['desc_bw_obs_last'] = \
                 cls.desc_bw_obs_last_from_results(results_recent)
             kwargs['desc_bw_obs_mean'] = \
@@ -435,6 +440,22 @@ class V3BWLine(object):
         for r in reversed(results):
             if r.relay_burst_bandwidth is not None:
                 return r.relay_burst_bandwidth
+        return None
+
+    @staticmethod
+    def cons_bw_from_results(results):
+        """Obtain the last descriptor bandwidth burst from the results."""
+        for r in reversed(results):
+            if r.relay_bandwidth is not None:
+                return r.relay_bandwidth
+        return None
+
+    @staticmethod
+    def cons_is_unmeasured_from_results(results):
+        """Obtain the last descriptor bandwidth burst from the results."""
+        for r in reversed(results):
+            if r.relay_is_unmeasured is not None:
+                return r.relay_is_unmeasured
         return None
 
     @staticmethod

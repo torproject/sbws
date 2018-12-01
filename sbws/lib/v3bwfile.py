@@ -51,7 +51,9 @@ BW_KEYVALUES_FILE = BW_KEYVALUES_BASIC + \
                     ['master_key_ed25519', 'nick', 'rtt', 'time',
                      'success', 'error_stream', 'error_circ', 'error_misc']
 BW_KEYVALUES_EXTRA_BWS = ['bw_median', 'bw_mean', 'desc_bw_avg', 'desc_bw_bur',
-                          'desc_bw_obs_last', 'desc_bw_obs_mean']
+                          'desc_bw_obs_last', 'desc_bw_obs_mean',
+                          'consensus_bandwidth',
+                          'consensus_bandwidth_is_unmeasured']
 BW_KEYVALUES_EXTRA = BW_KEYVALUES_FILE + BW_KEYVALUES_EXTRA_BWS
 BW_KEYVALUES_INT = ['bw', 'rtt', 'success', 'error_stream',
                     'error_circ', 'error_misc'] + BW_KEYVALUES_EXTRA_BWS
@@ -338,6 +340,11 @@ class V3BWLine(object):
                 cls.desc_bw_avg_from_results(results_recent)
             kwargs['desc_bw_bur'] = \
                 cls.desc_bw_bur_from_results(results_recent)
+            kwargs['consensus_bandwidth'] = \
+                cls.consensus_bandwidth_from_results(results_recent)
+            kwargs['consensus_bandwidth_is_unmeasured'] = \
+                cls.consensus_bandwidth_is_unmeasured_from_results(
+                    results_recent)
             kwargs['desc_bw_obs_last'] = \
                 cls.desc_bw_obs_last_from_results(results_recent)
             kwargs['desc_bw_obs_mean'] = \
@@ -435,6 +442,22 @@ class V3BWLine(object):
         for r in reversed(results):
             if r.relay_burst_bandwidth is not None:
                 return r.relay_burst_bandwidth
+        return None
+
+    @staticmethod
+    def consensus_bandwidth_from_results(results):
+        """Obtain the last consensus bandwidth from the results."""
+        for r in reversed(results):
+            if r.consensus_bandwidth is not None:
+                return r.consensus_bandwidth
+        return None
+
+    @staticmethod
+    def consensus_bandwidth_is_unmeasured_from_results(results):
+        """Obtain the last consensus unmeasured flag from the results."""
+        for r in reversed(results):
+            if r.consensus_bandwidth_is_unmeasured is not None:
+                return r.consensus_bandwidth_is_unmeasured
         return None
 
     @staticmethod
@@ -825,14 +848,23 @@ class V3BWFile(object):
             # descriptors' bandwidth-observed, because that penalises new
             # relays.
             # See https://trac.torproject.org/projects/tor/ticket/8494
-            # just applying the formula above:
             desc_bw = min(desc_bw_obs, l.desc_bw_bur, l.desc_bw_avg)
-            bw_new = kb_round_x_sig_dig(
-                max(
-                    l.bw_mean / mu,  # ratio
-                    max(l.bw_mean, mu) / muf  # ratio filtered
-                    ) * desc_bw, \
-                digits=num_round_dig)  # convert to KB
+            if l.consensus_bandwidth_is_unmeasured:
+                min_bandwidth = desc_bw
+            # If the relay is measured, use the minimum between the descriptors
+            # bandwidth and the consensus bandwidth, so that
+            # MaxAdvertisedBandwidth limits the consensus weight
+            # The consensus bandwidth in a measured relay has been obtained
+            # doing the same calculation as here
+            else:
+                min_bandwidth = min(desc_bw, l.consensus_bandwidth)
+            # Torflow's scaling
+            ratio_stream = l.bw_mean / mu
+            ratio_stream_filtered = max(l.bw_mean, mu) / muf
+            ratio = max(ratio_stream, ratio_stream_filtered)
+            bw_scaled = ratio * min_bandwidth
+            # round and convert to KB
+            bw_new = kb_round_x_sig_dig(bw_scaled, digits=num_round_dig)
             # Cap maximum bw
             if cap is not None:
                 bw_new = min(hlimit, bw_new)

@@ -143,7 +143,7 @@ def _pick_ideal_second_hop(relay, dest, rl, cont, is_exit):
     log.debug('Picking a 2nd hop to measure %s from %d choices. is_exit=%s',
               relay.nickname, len(candidates), is_exit)
     for min_bw_factor in [2, 1.75, 1.5, 1.25, 1]:
-        min_bw = relay.bandwidth * min_bw_factor
+        min_bw = relay.consensus_bandwidth * min_bw_factor
         new_candidates = stem_utils.only_relays_with_bandwidth(
             cont, candidates, min_bw=min_bw)
         if len(new_candidates) > 0:
@@ -152,15 +152,15 @@ def _pick_ideal_second_hop(relay, dest, rl, cont, is_exit):
                 'Found %d candidate 2nd hops with at least %sx the bandwidth '
                 'of %s. Returning %s (bw=%s).',
                 len(new_candidates), min_bw_factor, relay.nickname,
-                chosen.nickname, chosen.bandwidth)
+                chosen.nickname, chosen.consensus_bandwidth)
             return chosen
     candidates = sorted(candidates, key=lambda r: r.bandwidth, reverse=True)
     chosen = candidates[0]
     log.debug(
         'Didn\'t find any 2nd hops at least as fast as %s (bw=%s). It\'s '
         'probably really fast. Returning %s (bw=%s), the fastest '
-        'candidate we have.', relay.nickname, relay.bandwidth,
-        chosen.nickname, chosen.bandwidth)
+        'candidate we have.', relay.nickname, relay.consensus_bandwidth,
+        chosen.nickname, chosen.consensus_bandwidth)
     return chosen
 
 

@@ -230,10 +230,10 @@ def only_relays_with_bandwidth(controller, relays, min_bw=None, max_bw=None):
     assert max_bw is None or max_bw >= 0
     ret = []
     for relay in relays:
-        assert hasattr(relay, 'bandwidth')
-        if min_bw is not None and relay.bandwidth < min_bw:
+        assert hasattr(relay, 'consensus_bandwidth')
+        if min_bw is not None and relay.consensus_bandwidth < min_bw:
             continue
-        if max_bw is not None and relay.bandwidth > max_bw:
+        if max_bw is not None and relay.consensus_bandwidth > max_bw:
             continue
         ret.append(relay)
     return ret

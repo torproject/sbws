@@ -201,7 +201,8 @@ class Result:
         Result class to be happy '''
         def __init__(self, fingerprint, nickname, address, master_key_ed25519,
                      average_bandwidth=None, burst_bandwidth=None,
-                     observed_bandwidth=None):
+                     observed_bandwidth=None, consensus_bandwidth=None,
+                     consensus_bandwidth_is_unmeasured=None):
             self.fingerprint = fingerprint
             self.nickname = nickname
             self.address = address
@@ -209,13 +210,18 @@ class Result:
             self.average_bandwidth = average_bandwidth
             self.burst_bandwidth = burst_bandwidth
             self.observed_bandwidth = observed_bandwidth
+            self.consensus_bandwidth = consensus_bandwidth
+            self.consensus_bandwidth_is_unmeasured = \
+                consensus_bandwidth_is_unmeasured
 
     def __init__(self, relay, circ, dest_url, scanner_nick, t=None):
         self._relay = Result.Relay(relay.fingerprint, relay.nickname,
                                    relay.address, relay.master_key_ed25519,
                                    relay.average_bandwidth,
                                    relay.burst_bandwidth,
-                                   relay.observed_bandwidth)
+                                   relay.observed_bandwidth,
+                                   relay.consensus_bandwidth,
+                                   relay.consensus_bandwidth_is_unmeasured)
         self._circ = circ
         self._dest_url = dest_url
         self._scanner = scanner_nick
@@ -236,6 +242,14 @@ class Result:
     @property
     def relay_observed_bandwidth(self):
         return self._relay.observed_bandwidth
+
+    @property
+    def consensus_bandwidth(self):
+        return self._relay.consensus_bandwidth
+
+    @property
+    def consensus_bandwidth_is_unmeasured(self):
+        return self._relay.consensus_bandwidth_is_unmeasured
 
     @property
     def fingerprint(self):
@@ -487,7 +501,9 @@ class ResultSuccess(Result):
             Result.Relay(
                 d['fingerprint'], d['nickname'], d['address'],
                 d['master_key_ed25519'], d['relay_average_bandwidth'],
-                d['relay_burst_bandwidth'], d['relay_observed_bandwidth']),
+                d['relay_burst_bandwidth'], d['relay_observed_bandwidth'],
+                d['consensus_bandwidth'],
+                d['consensus_bandwidth_is_unmeasured']),
             d['circ'], d['dest_url'], d['scanner'],
             t=d['time'])
 
@@ -499,6 +515,9 @@ class ResultSuccess(Result):
             'relay_average_bandwidth': self.relay_average_bandwidth,
             'relay_burst_bandwidth': self.relay_burst_bandwidth,
             'relay_observed_bandwidth': self.relay_observed_bandwidth,
+            'consensus_bandwidth': self.consensus_bandwidth,
+            'consensus_bandwidth_is_unmeasured':
+                self.consensus_bandwidth_is_unmeasured,
         })
         return d
 

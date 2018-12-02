@@ -444,7 +444,7 @@ class V3BWLine(object):
 
     @staticmethod
     def cons_bw_from_results(results):
-        """Obtain the last descriptor bandwidth burst from the results."""
+        """Obtain the last consensus bandwidth from the results."""
         for r in reversed(results):
             if r.relay_bandwidth is not None:
                 return r.relay_bandwidth
@@ -452,7 +452,7 @@ class V3BWLine(object):
 
     @staticmethod
     def cons_is_unmeasured_from_results(results):
-        """Obtain the last descriptor bandwidth burst from the results."""
+        """Obtain the last consensus unmeasured flag from the results."""
         for r in reversed(results):
             if r.relay_is_unmeasured is not None:
                 return r.relay_is_unmeasured

@@ -851,7 +851,8 @@ class V3BWFile(object):
             if l.cons_is_unmeasured:
                 min_desc_cons_bw = desc_bw
             # If the relay is measured, use the minimum between the descriptors
-            # bandwidth and the consensus bandwidth
+            # bandwidth and the consensus bandwidth, so that
+            # MaxAdvertisedBandwidth limits the consensus weight
             # The consensus bandwidth in a measured relay has been obtained
             # doing the same calculation as here
             else:

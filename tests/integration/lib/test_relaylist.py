@@ -11,7 +11,7 @@ def test_relay_properties(persistent_launch_tor):
     assert 'Authority' in relay.flags
     assert not relay.exit_policy or not relay.exit_policy.is_exiting_allowed()
     assert relay.average_bandwidth == 1073741824
-    assert relay.bandwidth == 0
+    assert relay.consensus_bandwidth == 0
     assert relay.address == '127.10.0.1'
     assert relay.master_key_ed25519 == \
         'wLglSEw9/DHfpNrlrqjVRSnGLVWfnm0vYxkryH4aT6Q'

@@ -184,7 +184,8 @@ class DestinationList:
             # Keep the fastest 10% of exits, or 3, whichever is larger
             num_keep = int(max(3, len(possible_exits) * 0.1))
             possible_exits = sorted(
-                possible_exits, key=lambda e: e.bandwidth, reverse=True)
+                possible_exits, key=lambda e: e.consensus_bandwidth,
+                reverse=True)
             exits = possible_exits[0:num_keep]
             if len(exits) < 1:
                 log.warning("There are no exits to perform usability tests.")

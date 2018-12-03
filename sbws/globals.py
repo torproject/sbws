@@ -25,6 +25,12 @@ TORRC_STARTING_POINT = {
     'SafeLogging': '0',
     'LogTimeGranularity': '1',
     'ProtocolWarnings': '1',
+    # To do not waste bandwidth and improve accuracy.
+    # No need to avoid netflow logs.
+    # This option is only supported by Tor 0.3.3 or later.
+    # In util/stemp.py, if it's not possible to launch tor because this option
+    # is not supported, it's removed.
+    'ConnectionPadding': '0',
 }
 
 PKG_DIR = os.path.abspath(os.path.dirname(__file__))

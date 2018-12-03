@@ -190,10 +190,29 @@ def launch_tor(conf):
     try:
         stem.process.launch_tor_with_config(
             torrc, init_msg_handler=log.debug, take_ownership=True)
-    except Exception as e:
-        fail_hard('Error trying to launch tor: %s', e)
+    except OSError as e:
+        if "ConnectionPadding" in e.args[0]:
+            # Only Tor 0.3.3 started to support ConnectionPadding option.
+            # If the exception happens because the option is not supported,
+            # remove it and try to launch tor again.
+            torrc.pop('ConnectionPadding')
+            try:
+                stem.process.launch_tor_with_config(
+                    torrc, init_msg_handler=log.debug, take_ownership=True)
+            except OSError as e:
+                fail_hard('Error trying to launch tor: %s', e)
+        else:
+            fail_hard('Error trying to launch tor: %s', e)
     # And return a controller to it
     cont = _init_controller_socket(conf.getpath('tor', 'control_socket'))
+
+    # Having launched tor, is now possible to know the version.
+    tor_version = cont.get_version()
+    if (tor_version.minor == 3 and tor_version.micro < 3) \
+            or tor_version.minor < 3:
+        log.debug("Tor version is minor than 0.3.3. It does not support "
+                  "ConnectionPadding option.")
+
     # Because we build things by hand and can't set these before Tor bootstraps
     try:
         cont.set_conf('__DisablePredictedCircuits', '1')

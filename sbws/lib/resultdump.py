@@ -501,9 +501,9 @@ class ResultSuccess(Result):
             Result.Relay(
                 d['fingerprint'], d['nickname'], d['address'],
                 d['master_key_ed25519'], d['relay_average_bandwidth'],
-                d['relay_burst_bandwidth'], d['relay_observed_bandwidth'],
-                d['consensus_bandwidth'],
-                d['consensus_bandwidth_is_unmeasured']),
+                d.get('relay_burst_bandwidth'), d['relay_observed_bandwidth'],
+                d.get('consensus_bandwidth'),
+                d.get('consensus_bandwidth_is_unmeasured')),
             d['circ'], d['dest_url'], d['scanner'],
             t=d['time'])
 

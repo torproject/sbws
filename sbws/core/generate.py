@@ -54,7 +54,7 @@ def gen_parser(sub):
     p.add_argument('-m', '--torflow-bw-margin', default=TORFLOW_BW_MARGIN,
                    type=float,
                    help="Cap maximum bw when scaling as Torflow. ")
-    p.add_argument('-r', '--round-digs', '--torflow-round-digs',
+    p.add_argument('-r', '--torflow-round-digs',
                    default=PROP276_ROUND_DIG, type=int,
                    help="Number of most significant digits to round bw.")
     p.add_argument('-p', '--secs-recent', default=None, type=int,

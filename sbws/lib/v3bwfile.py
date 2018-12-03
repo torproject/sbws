@@ -848,8 +848,15 @@ class V3BWFile(object):
             # descriptors' bandwidth-observed, because that penalises new
             # relays.
             # See https://trac.torproject.org/projects/tor/ticket/8494
-            desc_bw = min(desc_bw_obs, l.desc_bw_bur, l.desc_bw_avg)
-            if l.consensus_bandwidth_is_unmeasured:
+            if l.desc_bw_bur is not None:
+                # Because in previous versions results were not storing
+                # desc_bw_bur
+                desc_bw = min(desc_bw_obs, l.desc_bw_bur, l.desc_bw_avg)
+            else:
+                desc_bw = min(desc_bw_obs, l.desc_bw_avg)
+            # In previous versions results were not storing consensus_bandwidth
+            if l.consensus_bandwidth_is_unmeasured \
+                    or l.consensus_bandwidth is None:
                 min_bandwidth = desc_bw
             # If the relay is measured, use the minimum between the descriptors
             # bandwidth and the consensus bandwidth, so that

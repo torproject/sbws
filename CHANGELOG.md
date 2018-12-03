@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   but not found (#28500).
 - Make sbws round to 2 significant figures by default. This implements part
   of proposal 276 (#28451).
+- Stop trying to resolve destination domain locally and unify criteria to
+  choose relays as exits (#28458, #28471). Bugfix 1.0.4
 
 ## [1.0.2] - 2018-11-10
 

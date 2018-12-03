@@ -136,8 +136,8 @@ def _pick_ideal_second_hop(relay, dest, rl, cont, is_exit):
     destination **dest**, pick a second relay that is or is not an exit
     according to **is_exit**.
     '''
-    candidates = []
-    candidates.extend(rl.exits if is_exit else rl.non_exits)
+    candidates = rl.exits_not_bad_allowing_port(dest.port) if is_exit \
+        else rl.non_exits
     if not len(candidates):
         return None
     log.debug('Picking a 2nd hop to measure %s from %d choices. is_exit=%s',
@@ -177,8 +177,7 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     # exit, then pick a non-exit. Otherwise pick an exit.
     helper = None
     circ_fps = None
-    if relay.can_exit_to(dest.hostname, dest.port) and \
-            relay not in rl.bad_exits:
+    if relay.is_exit_not_bad_allowing_port(dest.port):
         helper = _pick_ideal_second_hop(
             relay, dest, rl, cb.controller, is_exit=False)
         if helper:

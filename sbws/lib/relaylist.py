@@ -1,12 +1,9 @@
 from stem.descriptor.router_status_entry import RouterStatusEntryV3
 from stem.descriptor.server_descriptor import ServerDescriptor
 from stem import Flag, DescriptorUnavailable, ControllerError
-from stem.util.connection import is_valid_ipv4_address
-from stem.util.connection import is_valid_ipv6_address
 import random
 import time
 import logging
-from sbws.globals import resolve
 from threading import Lock
 
 log = logging.getLogger(__name__)
@@ -112,31 +109,21 @@ class Relay:
             return None
         return key.rstrip('=')
 
-    def can_exit_to(self, host, port):
-        '''
-        Returns if this relay can MOST LIKELY exit to the given host:port.
-        **host** can be a hostname, but be warned that we will resolve it
-        locally and use the first (arbitrary/unknown order) result when
-        checking exit policies, which is different than what other parts of the
-        code may do (leaving it up to the exit to resolve the name).
-        '''
+    def can_exit_to_port(self, port):
+        """
+        Returns True if the relay has an exit policy and the policy accepts
+        exiting to the given portself or False otherwise.
+        """
+        assert isinstance(port, int)
+        # if dind't get the descriptor, there isn't exit policy
         if not self.exit_policy:
             return False
-        assert isinstance(host, str)
-        assert isinstance(port, int)
-        if not is_valid_ipv4_address(host) and not is_valid_ipv6_address(host):
-            # It certainly isn't perfect trying to guess if an exit can connect
-            # to an ipv4/6 address based on the DNS result we got locally. But
-            # it's the best we can do.
-            #
-            # Also, only use the first ipv4/6 we get even if there is more than
-            # one.
-            results = resolve(host)
-            if not len(results):
-                return False
-            host = results[0]
-        assert is_valid_ipv4_address(host) or is_valid_ipv6_address(host)
-        return self.exit_policy.can_exit_to(host, port)
+        return self.exit_policy.can_exit_to(port=port)
+
+    def is_exit_not_bad_allowing_port(self, port):
+        return (Flag.BADEXIT not in self.flags and
+                Flag.EXIT in self.flags and
+                self.can_exit_to_port(port))
 
 
 class RelayList:
@@ -225,3 +212,7 @@ class RelayList:
     def _refresh(self):
         self._relays = self._init_relays()
         self._last_refresh = time.time()
+
+    def exits_not_bad_allowing_port(self, port):
+        return [r for r in self.exits
+                if r.is_exit_not_bad_allowing_port(port)]

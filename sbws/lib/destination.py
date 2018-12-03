@@ -179,8 +179,7 @@ class DestinationList:
         session = requests_utils.make_session(cont, timeout)
         usable_dests = []
         for dest in self._all_dests:
-            possible_exits = [e for e in self._rl.exits
-                              if e.can_exit_to(dest.hostname, dest.port)]
+            possible_exits = self._rl.exits_not_bad_allowing_port(dest.port)
             # Keep the fastest 10% of exits, or 3, whichever is larger
             num_keep = int(max(3, len(possible_exits) * 0.1))
             possible_exits = sorted(

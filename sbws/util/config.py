@@ -70,7 +70,7 @@ def _get_user_config(args, conf=None):
             # sbws should start with a logger before reading configurations.
             print('Configuration file %s not found, using defaults.' %
                   args.config)
-        return conf
+        return _extend_config(conf, args.config)
     user_config_path = _obtain_user_conf_path()
     if os.path.isfile(user_config_path):
         return _extend_config(conf, user_config_path)

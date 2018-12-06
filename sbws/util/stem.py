@@ -145,20 +145,9 @@ def parse_user_torrc_config(torrc, torrc_text):
         # It's really easy to add to the torrc if the key doesn't exist
         if key not in torrc:
             torrc.update({key: value})
-        # But if it does, we have to make a list of values. For example, say
-        # the user wants to add a SocksPort and we already have
-        # 'SocksPort auto' in the torrc. We'll go from
-        #     torrc['SocksPort'] == 'auto'
-        # to
-        #     torrc['SocksPort'] == ['auto', '9050']
         else:
-            existing_val = torrc[key]
-            if isinstance(existing_val, str):
-                torrc.update({key: [existing_val, value]})
-            else:
-                assert isinstance(existing_val, list)
-                existing_val.append(value)
-                torrc.update({key: existing_val})
+            log.warn("The torrc option %s in `extra_lines` can not be set "
+                     "because it was already set.", line)
     return torrc
 
 

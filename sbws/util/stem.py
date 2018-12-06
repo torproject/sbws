@@ -117,44 +117,17 @@ def _init_controller_socket(socket):
     return c
 
 
-def launch_tor(conf):
-    assert isinstance(conf, ConfigParser)
-    os.makedirs(conf.getpath('tor', 'datadir'), mode=0o700, exist_ok=True)
-    os.makedirs(conf.getpath('tor', 'log'), exist_ok=True)
-    os.makedirs(conf.getpath('tor', 'run_dpath'), mode=0o700, exist_ok=True)
-    # Bare minimum things, more or less
-    torrc = copy.deepcopy(TORRC_STARTING_POINT)
-    # Very important and/or common settings that we don't know until runtime
-    torrc.update({
-        'DataDirectory': conf.getpath('tor', 'datadir'),
-        'PidFile': conf.getpath('tor', 'pid'),
-        'ControlSocket': conf.getpath('tor', 'control_socket'),
-        'Log': [
-            'NOTICE file {}'.format(os.path.join(conf.getpath('tor', 'log'),
-                                                 'notice.log')),
-        ],
-        # Things needed to make circuits fail a little faster. We get the
-        # circuit_timeout as a string instead of an int on purpose: stem only
-        # accepts strings.
-        'LearnCircuitBuildTimeout': '0',
-        'CircuitBuildTimeout': conf['general']['circuit_timeout'],
-    })
-    # This block of code reads additional torrc lines from the user's
-    # config.ini so they can add arbitrary additional options.
-    #
-    # The user can't replace our options, only add to them. For example,
-    # there's no way to remove 'SocksPort auto' (if it is still in
-    # TORRC_STARTING_POINT). If you add a SocksPort in your config.ini, you'll
-    # open two socks ports.
-    #
-    # As an example, maybe the user hates their HDD and wants to fill it with
-    # debug logs, and wants to tell Tor to use only 1 CPU core.
-    #
-    #     [tor]
-    #     extra_lines =
-    #         Log debug file /tmp/tor-debug.log
-    #         NumCPUs 1
-    for line in conf['tor']['extra_lines'].split('\n'):
+def parse_user_torrc_config(torrc, torrc_text):
+    """Parse the user configuration torrc text call `extra_lines`
+    to a dictionary suitable to use with stem and update the existing torrc.
+    Example:
+        [tor]
+        extra_lines =
+            Log debug file /tmp/tor-debug.log
+            NumCPUs 1
+    """
+
+    for line in torrc_text.split('\n'):
         # Remove leading and trailing whitespace, if any
         line = line.strip()
         # Ignore blank lines
@@ -186,6 +159,34 @@ def launch_tor(conf):
                 assert isinstance(existing_val, list)
                 existing_val.append(value)
                 torrc.update({key: existing_val})
+    return torrc
+
+
+def launch_tor(conf):
+    assert isinstance(conf, ConfigParser)
+    os.makedirs(conf.getpath('tor', 'datadir'), mode=0o700, exist_ok=True)
+    os.makedirs(conf.getpath('tor', 'log'), exist_ok=True)
+    os.makedirs(conf.getpath('tor', 'run_dpath'), mode=0o700, exist_ok=True)
+    # Bare minimum things, more or less
+    torrc = copy.deepcopy(TORRC_STARTING_POINT)
+    # Very important and/or common settings that we don't know until runtime
+    torrc.update({
+        'DataDirectory': conf.getpath('tor', 'datadir'),
+        'PidFile': conf.getpath('tor', 'pid'),
+        'ControlSocket': conf.getpath('tor', 'control_socket'),
+        'Log': [
+            'NOTICE file {}'.format(os.path.join(conf.getpath('tor', 'log'),
+                                                 'notice.log')),
+        ],
+        # Things needed to make circuits fail a little faster. We get the
+        # circuit_timeout as a string instead of an int on purpose: stem only
+        # accepts strings.
+        'LearnCircuitBuildTimeout': '0',
+        'CircuitBuildTimeout': conf['general']['circuit_timeout'],
+    })
+
+    torrc = parse_user_torrc_config(torrc, conf['tor']['extra_lines'])
+
     # Finally launch Tor
     try:
         stem.process.launch_tor_with_config(

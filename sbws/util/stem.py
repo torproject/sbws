@@ -140,8 +140,6 @@ def parse_user_torrc_config(torrc, torrc_text):
             fail_hard('All torrc lines must have 2 or more words. "%s" has '
                       'fewer', line)
         key, value = kv
-        log.info('Adding "%s %s" to torrc with which we are launching Tor',
-                 key, value)
         # It's really easy to add to the torrc if the key doesn't exist
         if key not in torrc:
             torrc.update({key: value})

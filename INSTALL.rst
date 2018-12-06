@@ -43,7 +43,7 @@ To install the Python dependencies, create a ``virtualenv`` first
 
 Clone ``sbws``::
 
-    git clone https://gitweb.torproject.org/sbws.git
+    git clone https://git.torproject.org/sbws.git
 
 Install the python dependencies::
 

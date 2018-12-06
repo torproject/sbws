@@ -119,14 +119,15 @@ def _init_controller_socket(socket):
 
 def parse_user_torrc_config(torrc, torrc_text):
     """Parse the user configuration torrc text call `extra_lines`
-    to a dictionary suitable to use with stem and update the existing torrc.
+    to a dictionary suitable to use with stem and return a new torrc
+    dictionary that merges that dictionary with the existing torrc.
     Example:
         [tor]
         extra_lines =
             Log debug file /tmp/tor-debug.log
             NumCPUs 1
     """
-
+    torrc_dict = torrc.copy()
     for line in torrc_text.split('\n'):
         # Remove leading and trailing whitespace, if any
         line = line.strip()
@@ -144,7 +145,7 @@ def parse_user_torrc_config(torrc, torrc_text):
                  key, value)
         # It's really easy to add to the torrc if the key doesn't exist
         if key not in torrc:
-            torrc.update({key: value})
+            torrc_dict.update({key: value})
         # But if it does, we have to make a list of values. For example, say
         # the user wants to add a SocksPort and we already have
         # 'SocksPort auto' in the torrc. We'll go from
@@ -154,12 +155,12 @@ def parse_user_torrc_config(torrc, torrc_text):
         else:
             existing_val = torrc[key]
             if isinstance(existing_val, str):
-                torrc.update({key: [existing_val, value]})
+                torrc_dict.update({key: [existing_val, value]})
             else:
                 assert isinstance(existing_val, list)
                 existing_val.append(value)
-                torrc.update({key: existing_val})
-    return torrc
+                torrc_dict.update({key: existing_val})
+    return torrc_dict
 
 
 def launch_tor(conf):
@@ -186,7 +187,6 @@ def launch_tor(conf):
     })
 
     torrc = parse_user_torrc_config(torrc, conf['tor']['extra_lines'])
-
     # Finally launch Tor
     try:
         stem.process.launch_tor_with_config(

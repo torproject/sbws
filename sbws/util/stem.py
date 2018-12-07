@@ -122,10 +122,10 @@ def set_torrc_runtime_options(cont):
     try:
         cont.set_conf('__DisablePredictedCircuits', '1')
         cont.set_conf('__LeaveStreamsUnattached', '1')
-    except (ControllerError, InvalidArguments, InvalidRequest) as e:
-        log.exception("Error trying to launch tor: %s. "
-                      "Maybe the tor directory is being used by other "
-                      "sbws instance?", e)
+    # Only the first option that fails will be logged here.
+    # Just log stem's exceptions.
+    except (ControllerError, InvalidRequest, InvalidArguments) as e:
+        log.exception(e)
         exit(1)
 
 

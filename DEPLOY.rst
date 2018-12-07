@@ -25,12 +25,13 @@ destination requirements
 scanner setup
 ----------------------
 
-Install sbws according to ``./INSTALL.rst`` (or `/INSTALL.rst </INSTALL.rst>`_
-or :ref:`install`).
+Install sbws according to `<INSTALL.rst>`_ (in the local directory or GitHub)
+or `<INSTALL.html>`_  (local build or Read the Docs).
 
 To configure destinations, create a configuration file according to
-``./docs/source/man_sbws.ini.rst`` (or `/docs/source/man_sbws.ini.rst <man_sbws.ini>`_
-or :doc:`man_sbws.ini` or ``man sbws.ini``)
+``./docs/source/man_sbws.ini.rst`` (in the local directory or GitHub) or
+`<man_sbws.ini.html>`_  (local build or Read the Docs) or
+``man sbws.ini`` (Debian).
 
-See also ``./docs/source/man_sbws.rst`` (or `/docs/source/man_sbws.rst <man_sbws>`_ or
-:doc:`man_sbws` or ``man sbws``) manual page.
+See also ``./docs/source/man_sbws.rst`` (in the local directory or GitHub) or
+`<man_sbws.html>`_ (local build or Read the Docs) or ``man sbws`` (Debian).

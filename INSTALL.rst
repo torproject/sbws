@@ -51,7 +51,8 @@ Install the python dependencies::
 
 ``sbws`` needs :term:`destination` s to request files from.
 
-Please, see ./DEPLOY.rst (or `/DEPLOY.rst </DEPLOY.rst>`_ or :ref:`deploy`)
+Please, see `<DEPLOY.rst>`_ (in the local directory or GitHub) or
+`<DEPLOY.html>`_ (local build or Read the Docs)
 to configure, deploy and run ``sbws``.
 
 System physical requirements

@@ -134,15 +134,13 @@ def parse_user_torrc_config(torrc, torrc_text):
         # Ignore blank lines
         if len(line) < 1:
             continue
-        # The way stem handles configuring Tor with a dictionary is the first
-        # word is a key and the remaining words are the value.
+        # Some torrc options are only a key, some are a key value pair.
         kv = line.split(None, 1)
-        if len(kv) < 2:
-            fail_hard('All torrc lines must have 2 or more words. "%s" has '
-                      'fewer', line)
-        key, value = kv
-        log.debug('Adding "%s %s" to torrc with which we are launching Tor',
-                  key, value)
+        if len(kv) > 1:
+            key, value = kv
+        else:
+            key = kv[0]
+            value = None
         # It's really easy to add to the torrc if the key doesn't exist
         if key not in torrc:
             torrc_dict.update({key: value})
@@ -160,6 +158,8 @@ def parse_user_torrc_config(torrc, torrc_text):
                 assert isinstance(existing_val, list)
                 existing_val.append(value)
                 torrc_dict.update({key: existing_val})
+        log.debug('Adding "%s %s" to torrc with which we are launching Tor',
+                  key, value)
     return torrc_dict
 
 

@@ -26,3 +26,11 @@ def test_parse_user_torrc_config_existing_keyvalue_options_fail(caplog):
 
     # but it does not contain the new option
     assert config_torrc_extra_lines.strip() in caplog.records[-1].getMessage()
+
+
+def test_parse_user_torrc_config_new_key_option_success():
+    config_torrc_extra_lines = """
+    LongLivedPorts
+    """
+    torrc_dict = parse_user_torrc_config({}, config_torrc_extra_lines)
+    assert torrc_dict == {'LongLivedPorts': None}

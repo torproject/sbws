@@ -12,7 +12,7 @@ import copy
 import logging
 import os
 from sbws.globals import fail_hard
-from sbws.globals import TORRC_STARTING_POINT
+from sbws.globals import TORRC_STARTING_POINT, TORRC_RUNTIME_OPTIONS
 
 log = logging.getLogger(__name__)
 stream_building_lock = RLock()
@@ -74,8 +74,12 @@ def init_controller(port=None, path=None, set_custom_stream_settings=True):
             return None, 'Unable to reach tor on control socket'
     assert c is not None
     if set_custom_stream_settings:
-        c.set_conf('__DisablePredictedCircuits', '1')
-        c.set_conf('__LeaveStreamsUnattached', '1')
+        # These options are also set in launch_tor.
+        # In a future refactor they could be set in the case they are not
+        # already in the running instance. This way the controller_port
+        # could also be used.
+        set_torrc_options_can_fail(c)
+        set_torrc_runtime_options(c)
     return c, ''
 
 
@@ -165,6 +169,16 @@ def parse_user_torrc_config(torrc, torrc_text):
     return torrc_dict
 
 
+def set_torrc_runtime_options(controller):
+    """Set torrc options at runtime."""
+    try:
+        controller.set_options(TORRC_RUNTIME_OPTIONS)
+    except (ControllerError, InvalidArguments, InvalidRequest) as e:
+        log.exception("Error trying to launch tor: %s. "
+                      "Maybe the tor directory is being used by other "
+                      "sbws instance?", e)
+        exit(1)
+
 def launch_tor(conf):
     assert isinstance(conf, ConfigParser)
     os.makedirs(conf.getpath('tor', 'datadir'), mode=0o700, exist_ok=True)
@@ -197,15 +211,9 @@ def launch_tor(conf):
         fail_hard('Error trying to launch tor: %s', e)
     # And return a controller to it
     cont = _init_controller_socket(conf.getpath('tor', 'control_socket'))
-    # Because we build things by hand and can't set these before Tor bootstraps
-    try:
-        cont.set_conf('__DisablePredictedCircuits', '1')
-        cont.set_conf('__LeaveStreamsUnattached', '1')
-    except (ControllerError, InvalidArguments, InvalidRequest) as e:
-        log.exception("Error trying to launch tor: %s. "
-                      "Maybe the tor directory is being used by other "
-                      "sbws instance?", e)
-        exit(1)
+
+    set_torrc_runtime_options(cont)
+
     log.info('Started and connected to Tor %s via %s', cont.get_version(),
              conf.getpath('tor', 'control_socket'))
     return cont

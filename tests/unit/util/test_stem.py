@@ -24,3 +24,11 @@ def test_parse_user_torrc_config_existing_keyvalue_options_fail(caplog):
     # the existing value and the new value
     assert torrc_dict_new != torrc_dict
     assert torrc_dict_new == {'SocksPort': ['auto', '9050']}
+
+
+def test_parse_user_torrc_config_new_key_option_success():
+    config_torrc_extra_lines = """
+    LongLivedPorts
+    """
+    torrc_dict = parse_user_torrc_config({}, config_torrc_extra_lines)
+    assert torrc_dict == {'LongLivedPorts': None}

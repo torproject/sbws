@@ -117,6 +117,18 @@ def _init_controller_socket(socket):
     return c
 
 
+def set_torrc_runtime_options(cont):
+    """Set torrc options at runtime."""
+    try:
+        cont.set_conf('__DisablePredictedCircuits', '1')
+        cont.set_conf('__LeaveStreamsUnattached', '1')
+    except (ControllerError, InvalidArguments, InvalidRequest) as e:
+        log.exception("Error trying to launch tor: %s. "
+                      "Maybe the tor directory is being used by other "
+                      "sbws instance?", e)
+        exit(1)
+
+
 def launch_tor(conf):
     assert isinstance(conf, ConfigParser)
     os.makedirs(conf.getpath('tor', 'datadir'), mode=0o700, exist_ok=True)
@@ -194,15 +206,9 @@ def launch_tor(conf):
         fail_hard('Error trying to launch tor: %s', e)
     # And return a controller to it
     cont = _init_controller_socket(conf.getpath('tor', 'control_socket'))
-    # Because we build things by hand and can't set these before Tor bootstraps
-    try:
-        cont.set_conf('__DisablePredictedCircuits', '1')
-        cont.set_conf('__LeaveStreamsUnattached', '1')
-    except (ControllerError, InvalidArguments, InvalidRequest) as e:
-        log.exception("Error trying to launch tor: %s. "
-                      "Maybe the tor directory is being used by other "
-                      "sbws instance?", e)
-        exit(1)
+
+    set_torrc_runtime_options(cont)
+
     log.info('Started and connected to Tor %s via %s', cont.get_version(),
              conf.getpath('tor', 'control_socket'))
     return cont

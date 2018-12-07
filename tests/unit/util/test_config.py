@@ -237,4 +237,12 @@ def test_nickname():
 
 def test_config_arg_provided_but_no_found(args, conf):
     args.config = 'non_existing_file'
-    con._get_user_config(args, conf=None)
+    user_conf = con._get_user_config(args, conf)
+    # since the user configuration is not found, it is the same as conf
+    assert conf.__dict__.items() == user_conf.__dict__.items()
+
+
+def test_config_arg_provided(args, conf, datadir):
+    args.config = datadir.join('user_sbws.ini')
+    user_conf = con._get_user_config(args, conf)
+    assert user_conf['paths']['sbws_home'] == '/tmp/.sbws'

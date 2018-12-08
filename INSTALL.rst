@@ -58,7 +58,7 @@ to configure, deploy and run ``sbws``.
 System physical requirements
 -----------------------------
 
-- Bandwidth: at least 20MB/s (160 Mbit/s). The more the better.
+- Bandwidth: at least 12.5MB/s (100 Mbit/s).
 - Free RAM: at least 1.5GB
 - Free disk: at least 3GB
 

@@ -53,6 +53,8 @@ MAX_BW_DIFF_PERC = 50
 
 BW_LINE_SIZE = 510
 
+DESTINATION_VERIFY_CERTIFICATE = True
+
 
 def fail_hard(*a, **kw):
     ''' Log something ... and then exit as fast as possible '''

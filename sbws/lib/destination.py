@@ -6,6 +6,8 @@ from threading import RLock
 import requests
 from urllib.parse import urlparse
 from stem.control import EventType
+
+from sbws.globals import DESTINATION_VERIFY_CERTIFICATE
 import sbws.util.stem as stem_utils
 import sbws.util.requests as requests_utils
 
@@ -14,7 +16,7 @@ log = logging.getLogger(__name__)
 
 def _parse_verify_option(conf_section):
     if 'verify' not in conf_section:
-        return True
+        return DESTINATION_VERIFY_CERTIFICATE
     try:
         return conf_section.getboolean('verify')
     except ValueError:

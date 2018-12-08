@@ -69,6 +69,9 @@ destinations.STR
   url = STR
     The URL to the destination. It must include a file path.
     It can use both http or https.
+  verify = BOOL
+    Whether or not to verify the destination certificate.
+    (Default: True)
 
 tor
 

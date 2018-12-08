@@ -18,7 +18,7 @@ def _parse_verify_option(conf_section):
     if 'verify' not in conf_section:
         return DESTINATION_VERIFY_CERTIFICATE
     try:
-        return conf_section.getboolean('verify')
+        verify = conf_section.getboolean('verify')
     except ValueError:
         log.warning(
             'Currently sbws only supports verify=true/false, not a CA bundle '
@@ -28,6 +28,11 @@ def _parse_verify_option(conf_section):
             'of testing. So we will allow this, but expect Requests to throw '
             'SSLError exceptions later. Have fun!', conf_section['verify'])
         return conf_section['verify']
+    if not verify:
+        # disable urllib3 warning: InsecureRequestWarning
+        import urllib3
+        urllib3.disable_warnings()
+    return verify
 
 
 def connect_to_destination_over_circuit(dest, circ_id, session, cont, max_dl):

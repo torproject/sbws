@@ -78,8 +78,8 @@ def measure_rtt_to_server(session, conf, dest, content_length):
     be made, return None. Otherwise return a list of the RTTs (in seconds). '''
     rtts = []
     size = conf.getint('scanner', 'min_download_size')
-    log.debug('Measuring RTT to %s', dest.url)
     for _ in range(0, conf.getint('scanner', 'num_rtts')):
+        log.debug('Measuring RTT to %s', dest.url)
         random_range = get_random_range_string(content_length, size)
         success, data = timed_recv_from_server(session, dest, random_range)
         if not success:

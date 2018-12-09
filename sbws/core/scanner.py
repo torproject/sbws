@@ -196,7 +196,7 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     assert circ_fps is not None and len(circ_fps) == 2
     # Build the circuit
     our_nick = conf['scanner']['nickname']
-    circ_id = cb.build_circuit(circ_fps)
+    circ_id, reason = cb.build_circuit(circ_fps)
     if not circ_id:
         log.warning('Could not build circuit involving %s', relay.nickname)
         msg = 'Unable to complete circuit'

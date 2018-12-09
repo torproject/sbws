@@ -133,6 +133,8 @@ def load_recent_results_in_datadir(fresh_days, datadir, success_only=False,
     Results as a list '''
     assert isinstance(fresh_days, int)
     assert os.path.isdir(datadir)
+    # Inform the results are being loaded, since it takes some seconds.
+    log.info("Reading and processing previous measurements.")
     results = {}
     today = datetime.utcfromtimestamp(time.time())
     data_period = fresh_days + 2

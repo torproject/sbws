@@ -84,9 +84,9 @@ def measure_rtt_to_server(session, conf, dest, content_length):
         success, data = timed_recv_from_server(session, dest, random_range)
         if not success:
             # data is an exception
-            log.warning('While measuring the RTT to %s we hit an exception '
-                        '(does the webserver support Range requests?): %s',
-                        dest.url, data)
+            log.debug('While measuring the RTT to %s we hit an exception '
+                      '(does the webserver support Range requests?): %s',
+                      dest.url, data)
             return None
         assert success
         # data is an RTT
@@ -114,9 +114,9 @@ def measure_bandwidth_to_server(session, conf, dest, content_length):
         success, data = timed_recv_from_server(session, dest, random_range)
         if not success:
             # data is an exception
-            log.warning('While measuring the bandwidth to %s we hit an '
-                        'exception (does the webserver support Range '
-                        'requests?): %s', dest.url, data)
+            log.debug('While measuring the bandwidth to %s we hit an '
+                      'exception (does the webserver support Range '
+                      'requests?): %s', dest.url, data)
             return None
         assert success
         # data is a download time
@@ -170,8 +170,8 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     # Pick a destionation
     dest = destinations.next()
     if not dest:
-        log.warning('Unable to get destination to measure %s %s',
-                    relay.nickname, relay.fingerprint[0:8])
+        log.debug('Unable to get destination to measure %s %s',
+                  relay.nickname, relay.fingerprint[0:8])
         return None
     # Pick a relay to help us measure the given relay. If the given relay is an
     # exit, then pick a non-exit. Otherwise pick an exit.
@@ -189,7 +189,7 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
             circ_fps = [relay.fingerprint, helper.fingerprint]
     if not helper:
         # TODO: Return ResultError of some sort
-        log.warning('Unable to pick a 2nd hop to help measure %s %s',
+        log.debug('Unable to pick a 2nd hop to help measure %s %s',
                     relay.nickname, relay.fingerprint[0:8])
         return None
     assert helper
@@ -198,7 +198,7 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     our_nick = conf['scanner']['nickname']
     circ_id, reason = cb.build_circuit(circ_fps)
     if not circ_id:
-        log.warning('Could not build circuit involving %s', relay.nickname)
+        log.debug('Could not build circuit involving %s', relay.nickname)
         msg = 'Unable to complete circuit'
         return [
             ResultErrorCircuit(relay, circ_fps, dest.url, our_nick, msg=msg),
@@ -210,9 +210,9 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     # still help us measure
     is_usable, usable_data = dest.is_usable(circ_id, s, cb.controller)
     if not is_usable:
-        log.warning('When measuring %s %s the destination seemed to have '
-                    'stopped being usable: %s', relay.nickname,
-                    relay.fingerprint[0:8], usable_data)
+        log.debug('When measuring %s %s the destination seemed to have '
+                  'stopped being usable: %s', relay.nickname,
+                  relay.fingerprint[0:8], usable_data)
         cb.close_circuit(circ_id)
         # TODO: Return a different/new type of ResultError?
         msg = 'The destination seemed to have stopped being usable'
@@ -224,8 +224,8 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     # FIRST: measure RTT
     rtts = measure_rtt_to_server(s, conf, dest, usable_data['content_length'])
     if rtts is None:
-        log.warning('Unable to measure RTT to %s via relay %s %s',
-                    dest.url, relay.nickname, relay.fingerprint[0:8])
+        log.debug('Unable to measure RTT to %s via relay %s %s',
+                  dest.url, relay.nickname, relay.fingerprint[0:8])
         cb.close_circuit(circ_id)
         # TODO: Return a different/new type of ResultError?
         msg = 'Something bad happened while measuring RTTs'
@@ -236,8 +236,8 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     bw_results = measure_bandwidth_to_server(
         s, conf, dest, usable_data['content_length'])
     if bw_results is None:
-        log.warning('Unable to measure bandwidth to %s via relay %s %s',
-                    dest.url, relay.nickname, relay.fingerprint[0:8])
+        log.debug('Unable to measure bandwidth to %s via relay %s %s',
+                  dest.url, relay.nickname, relay.fingerprint[0:8])
         cb.close_circuit(circ_id)
         # TODO: Return a different/new type of ResultError?
         msg = 'Something bad happened while measuring bandwidth'

@@ -567,8 +567,17 @@ class ResultDump:
             return
         self.store_result(result)
         write_result_to_datadir(result, self.datadir)
-        log.info('%s %s finished measurement with %s', nick, fp[0:8],
-                 type(result).__name__)
+        if result.type == "success":
+            msg = "Success measuring {} ({}) via circuit {} and " \
+                  "destination {}".format(
+                    result.fingerprint, result.nickname, result.circ,
+                    result.dest_url)
+        else:
+            msg = "Error measuring {} ({}) via circuit {} and " \
+                  "destination {}: {}".format(
+                    result.fingerprint, result.nickname, result.circ,
+                    result.dest_url, result.msg)
+        log.info(msg)
 
     def enter(self):
         ''' Main loop for the ResultDump thread '''

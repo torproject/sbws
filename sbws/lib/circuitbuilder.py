@@ -76,7 +76,7 @@ class CircuitBuilder:
             raise PathLengthException()
         c = self.controller
         timeout = self.circuit_timeout
-        fp_path = '[' + ' -> '.join([p[0:8] for p in path]) + ']'
+        fp_path = '[' + ' -> '.join([p for p in path]) + ']'
         log.debug('Building %s', fp_path)
         error = None
         for _ in range(0, 3):

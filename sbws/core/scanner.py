@@ -180,8 +180,9 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     # Pick a destionation
     dest = destinations.next()
     if not dest:
+        # XXX: this should return a ResultError
         log.debug('Unable to get destination to measure %s %s',
-                  relay.nickname, relay.fingerprint[0:8])
+                  relay.nickname, relay.fingerprint)
         return None
     # Pick a relay to help us measure the given relay. If the given relay is an
     # exit, then pick a non-exit. Otherwise pick an exit.
@@ -202,8 +203,8 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
             nicknames = [relay.nickname, helper.nickname]
     if not helper:
         # TODO: Return ResultError of some sort
-        log.debug('Unable to pick a 2nd hop to help measure %s %s',
-                    relay.nickname, relay.fingerprint[0:8])
+        log.debug('Unable to pick a 2nd relay to help measure %s (%s)',
+                  relay.fingerprint, relay.nickname)
         return None
     assert helper
     assert circ_fps is not None and len(circ_fps) == 2
@@ -260,7 +261,7 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     cb.close_circuit(circ_id)
     # Finally: store result
     log.debug('Success measurement for %s (%s) via circuit %s (%s) to %s',
-             relay.fingerprint, relay.nickname, circ_fps, nicknames, dest.url)
+              relay.fingerprint, relay.nickname, circ_fps, nicknames, dest.url)
     return [
         ResultSuccess(rtts, bw_results, relay, circ_fps, dest.url, our_nick),
     ]

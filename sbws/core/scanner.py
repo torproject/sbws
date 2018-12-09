@@ -211,7 +211,8 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         log.debug('Could not build circuit involving %s', relay.nickname)
         msg = 'Unable to complete circuit'
         return [
-            ResultErrorCircuit(relay, circ_fps, dest.url, our_nick, msg=msg),
+            ResultErrorCircuit(relay, circ_fps, dest.url, our_nick,
+                               msg=reason),
         ]
     log.debug('Built circ %s %s for relay %s %s', circ_id,
               stem_utils.circuit_str(cb.controller, circ_id), relay.nickname,
@@ -238,10 +239,9 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         log.debug('Unable to measure RTT to %s via relay %s %s',
                   dest.url, relay.nickname, relay.fingerprint[0:8])
         cb.close_circuit(circ_id)
-        # TODO: Return a different/new type of ResultError?
-        msg = 'Something bad happened while measuring RTTs'
         return [
-            ResultErrorStream(relay, circ_fps, dest.url, our_nick, msg=msg),
+            ResultErrorStream(relay, circ_fps, dest.url, our_nick,
+                              msg=str(reason)),
         ]
     # SECOND: measure bandwidth
     bw_results, reason = measure_bandwidth_to_server(
@@ -250,10 +250,9 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         log.debug('Unable to measure bandwidth to %s via relay %s %s',
                   dest.url, relay.nickname, relay.fingerprint[0:8])
         cb.close_circuit(circ_id)
-        # TODO: Return a different/new type of ResultError?
-        msg = 'Something bad happened while measuring bandwidth'
         return [
-            ResultErrorStream(relay, circ_fps, dest.url, our_nick, msg=msg),
+            ResultErrorStream(relay, circ_fps, dest.url, our_nick,
+                              msg=str(reason)),
         ]
     cb.close_circuit(circ_id)
     # Finally: store result

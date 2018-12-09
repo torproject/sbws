@@ -200,7 +200,7 @@ class DestinationList:
                     break
             if not circ_id:
                 log.warning('Unable to build a circuit to test the usability '
-                            'of %s. Assuming it isn\'t usable.', dest.url)
+                            'of %s, %s', dest.url, reason)
                 continue
             log.debug('Built circ %s %s to test usability of %s', circ_id,
                       stem_utils.circuit_str(cont, circ_id), dest.url)

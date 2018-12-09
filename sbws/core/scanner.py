@@ -75,7 +75,12 @@ def measure_rtt_to_server(session, conf, dest, content_length):
     ''' Make multiple end-to-end RTT measurements by making small HTTP requests
     over a circuit + stream that should already exist, persist, and not need
     rebuilding. If something goes wrong and not all of the RTT measurements can
-    be made, return None. Otherwise return a list of the RTTs (in seconds). '''
+    be made, return None. Otherwise return a list of the RTTs (in seconds).
+
+    :returns tuple: results or None if the if the measurement fail.
+        None or exception if the measurement fail.
+
+    '''
     rtts = []
     size = conf.getint('scanner', 'min_download_size')
     for _ in range(0, conf.getint('scanner', 'num_rtts')):
@@ -87,15 +92,20 @@ def measure_rtt_to_server(session, conf, dest, content_length):
             log.debug('While measuring the RTT to %s we hit an exception '
                       '(does the webserver support Range requests?): %s',
                       dest.url, data)
-            return None
+            return None, data
         assert success
         # data is an RTT
         assert isinstance(data, float) or isinstance(data, int)
         rtts.append(data)
-    return rtts
+    return rtts, None
 
 
 def measure_bandwidth_to_server(session, conf, dest, content_length):
+    """
+    :returns tuple: results or None if the if the measurement fail.
+        None or exception if the measurement fail.
+
+    """
     results = []
     num_downloads = conf.getint('scanner', 'num_downloads')
     expected_amount = conf.getint('scanner', 'initial_read_request')
@@ -117,7 +127,7 @@ def measure_bandwidth_to_server(session, conf, dest, content_length):
             log.debug('While measuring the bandwidth to %s we hit an '
                       'exception (does the webserver support Range '
                       'requests?): %s', dest.url, data)
-            return None
+            return None, data
         assert success
         # data is a download time
         assert isinstance(data, float) or isinstance(data, int)
@@ -127,7 +137,7 @@ def measure_bandwidth_to_server(session, conf, dest, content_length):
                 'duration': data, 'amount': expected_amount})
         expected_amount = _next_expected_amount(
             expected_amount, data, download_times, min_dl, max_dl)
-    return results
+    return results, None
 
 
 def _pick_ideal_second_hop(relay, dest, rl, cont, is_exit):
@@ -222,7 +232,8 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     assert is_usable
     assert 'content_length' in usable_data
     # FIRST: measure RTT
-    rtts = measure_rtt_to_server(s, conf, dest, usable_data['content_length'])
+    rtts, reason = measure_rtt_to_server(s, conf, dest,
+                                         usable_data['content_length'])
     if rtts is None:
         log.debug('Unable to measure RTT to %s via relay %s %s',
                   dest.url, relay.nickname, relay.fingerprint[0:8])
@@ -233,7 +244,7 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
             ResultErrorStream(relay, circ_fps, dest.url, our_nick, msg=msg),
         ]
     # SECOND: measure bandwidth
-    bw_results = measure_bandwidth_to_server(
+    bw_results, reason = measure_bandwidth_to_server(
         s, conf, dest, usable_data['content_length'])
     if bw_results is None:
         log.debug('Unable to measure bandwidth to %s via relay %s %s',

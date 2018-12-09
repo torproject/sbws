@@ -195,7 +195,7 @@ class DestinationList:
                 # Pick a random exit
                 exit = self._rng.choice(exits)
                 circ_id, reason = \
-                        self._cb.build_circuit([None, exit.fingerprint])
+                    self._cb.build_circuit([None, exit.fingerprint])
                 if circ_id:
                     break
             if not circ_id:

@@ -192,11 +192,14 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
             relay, dest, rl, cb.controller, is_exit=False)
         if helper:
             circ_fps = [helper.fingerprint, relay.fingerprint]
+            # stored for debugging
+            nicknames = [helper.nickname, relay.nickname]
     else:
         helper = _pick_ideal_second_hop(
             relay, dest, rl, cb.controller, is_exit=True)
         if helper:
             circ_fps = [relay.fingerprint, helper.fingerprint]
+            nicknames = [relay.nickname, helper.nickname]
     if not helper:
         # TODO: Return ResultError of some sort
         log.debug('Unable to pick a 2nd hop to help measure %s %s',
@@ -208,22 +211,20 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     our_nick = conf['scanner']['nickname']
     circ_id, reason = cb.build_circuit(circ_fps)
     if not circ_id:
-        log.debug('Could not build circuit involving %s', relay.nickname)
-        msg = 'Unable to complete circuit'
+        log.debug('Could not build circuit with path %s (%s): %s ',
+                  circ_fps, nicknames, reason)
         return [
             ResultErrorCircuit(relay, circ_fps, dest.url, our_nick,
                                msg=reason),
         ]
-    log.debug('Built circ %s %s for relay %s %s', circ_id,
-              stem_utils.circuit_str(cb.controller, circ_id), relay.nickname,
-              relay.fingerprint[0:8])
+    log.debug('Built circuit with path %s (%s) to measure %s (%s)',
+              circ_fps, nicknames, relay.fingerprint, relay.nickname)
     # Make a connection to the destionation webserver and make sure it can
     # still help us measure
     is_usable, usable_data = dest.is_usable(circ_id, s, cb.controller)
     if not is_usable:
-        log.debug('When measuring %s %s the destination seemed to have '
-                  'stopped being usable: %s', relay.nickname,
-                  relay.fingerprint[0:8], usable_data)
+        log.debug('Destination %s unusable via circuit %s (%s), %s',
+                  dest.url, circ_fps, nicknames, usable_data)
         cb.close_circuit(circ_id)
         # TODO: Return a different/new type of ResultError?
         msg = 'The destination seemed to have stopped being usable'
@@ -236,8 +237,9 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     rtts, reason = measure_rtt_to_server(s, conf, dest,
                                          usable_data['content_length'])
     if rtts is None:
-        log.debug('Unable to measure RTT to %s via relay %s %s',
-                  dest.url, relay.nickname, relay.fingerprint[0:8])
+        log.debug('Unable to measure RTT for %s (%s) to %s via circuit '
+                  '%s (%s): %s', relay.fingerprint, relay.nickname,
+                  dest.url, circ_fps, nicknames, reason)
         cb.close_circuit(circ_id)
         return [
             ResultErrorStream(relay, circ_fps, dest.url, our_nick,
@@ -247,8 +249,9 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     bw_results, reason = measure_bandwidth_to_server(
         s, conf, dest, usable_data['content_length'])
     if bw_results is None:
-        log.debug('Unable to measure bandwidth to %s via relay %s %s',
-                  dest.url, relay.nickname, relay.fingerprint[0:8])
+        log.debug('Unable to measure bandwidth for %s (%s) to %s via circuit '
+                  '%s (%s): %s', relay.fingerprint, relay.nickname,
+                  dest.url, circ_fps, nicknames, reason)
         cb.close_circuit(circ_id)
         return [
             ResultErrorStream(relay, circ_fps, dest.url, our_nick,
@@ -256,6 +259,8 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         ]
     cb.close_circuit(circ_id)
     # Finally: store result
+    log.debug('Success measurement for %s (%s) via circuit %s (%s) to %s',
+             relay.fingerprint, relay.nickname, circ_fps, nicknames, dest.url)
     return [
         ResultSuccess(rtts, bw_results, relay, circ_fps, dest.url, our_nick),
     ]

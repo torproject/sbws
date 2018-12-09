@@ -119,6 +119,8 @@ def _init_controller_socket(socket):
 
 def launch_tor(conf):
     assert isinstance(conf, ConfigParser)
+    # Inform Tor is being launched, since it takes some seconds.
+    log.info("Launching Tor...")
     os.makedirs(conf.getpath('tor', 'datadir'), mode=0o700, exist_ok=True)
     os.makedirs(conf.getpath('tor', 'log'), exist_ok=True)
     os.makedirs(conf.getpath('tor', 'run_dpath'), mode=0o700, exist_ok=True)

@@ -9,7 +9,7 @@ from ..lib.relayprioritizer import RelayPrioritizer
 from ..lib.destination import DestinationList
 from ..util.timestamp import now_isodt_str
 from ..util.state import State
-from sbws.globals import fail_hard
+from sbws.globals import fail_hard, HTTP_GET_HEADERS
 import sbws.util.stem as stem_utils
 import sbws.util.requests as requests_utils
 from argparse import ArgumentDefaultsHelpFormatter
@@ -31,14 +31,15 @@ def timed_recv_from_server(session, dest, byte_range):
     ''' Request the **byte_range** from the URL at **dest**. If successful,
     return True and the time it took to download. Otherwise return False and an
     exception. '''
-    headers = {'Range': byte_range, 'Accept-Encoding': 'identity'}
+
     start_time = time.time()
+    HTTP_GET_HEADERS['Range'] = byte_range
     # TODO:
     # - What other exceptions can this throw?
     # - Do we have to read the content, or did requests already do so?
     try:
         # headers are merged with the session ones, not overwritten.
-        session.get(dest.url, headers=headers, verify=dest.verify)
+        session.get(dest.url, headers=HTTP_GET_HEADERS, verify=dest.verify)
     except requests.exceptions.ConnectionError as e:
         return False, e
     except requests.exceptions.ReadTimeout as e:

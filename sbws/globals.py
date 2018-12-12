@@ -53,6 +53,11 @@ MAX_BW_DIFF_PERC = 50
 
 BW_LINE_SIZE = 510
 
+HTTP_GET_HEADERS = {
+    'Range': '{}',
+    'Accept-Encoding': 'identity',
+}
+
 
 def fail_hard(*a, **kw):
     ''' Log something ... and then exit as fast as possible '''

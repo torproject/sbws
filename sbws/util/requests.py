@@ -1,4 +1,6 @@
 import requests
+
+from sbws import settings
 import sbws.util.stem as stem_utils
 
 
@@ -10,4 +12,5 @@ def make_session(controller, timeout):
         'https': 'socks5h://{}:{}'.format(*socks_info),
     }
     s.timeout = timeout
+    s.headers = settings.HTTP_HEADERS
     return s

@@ -1,5 +1,7 @@
 ''' Measure the relays. '''
 
+import uuid
+
 from ..lib.circuitbuilder import GapsCircuitBuilder as CB
 from ..lib.resultdump import ResultDump
 from ..lib.resultdump import ResultSuccess, ResultErrorCircuit
@@ -20,6 +22,8 @@ import os
 import logging
 import requests
 import random
+
+from sbws import settings
 
 
 rng = random.SystemRandom()
@@ -335,6 +339,14 @@ def run_speedtest(args, conf):
             'even lead to messed up results.',
             conf.getpath('tor', 'control_socket'))
         time.sleep(15)
+
+    # When there will be a refactor where conf is global, this can be removed
+    # from here.
+    state = State(conf.getpath('paths', 'state_fname'))
+    # Call only once to initialize http_headers
+    settings.init_http_headers(conf.get('scanner', 'nickname'), state['uuid'],
+                               str(controller.get_version()))
+
     rl = RelayList(args, conf, controller)
     cb = CB(args, conf, controller, rl)
     rd = ResultDump(args, conf, end_event)
@@ -394,6 +406,9 @@ def main(args, conf):
 
     state = State(conf.getpath('paths', 'state_fname'))
     state['scanner_started'] = now_isodt_str()
+    # Generate an unique identifier for each scanner
+    if 'uuid' not in state:
+        state['uuid'] = str(uuid.uuid4())
 
     try:
         run_speedtest(args, conf)

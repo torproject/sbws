@@ -40,9 +40,8 @@ def timed_recv_from_server(session, dest, byte_range):
     try:
         # headers are merged with the session ones, not overwritten.
         session.get(dest.url, headers=HTTP_GET_HEADERS, verify=dest.verify)
-    except requests.exceptions.ConnectionError as e:
-        return False, e
-    except requests.exceptions.ReadTimeout as e:
+    except (requests.exceptions.ConnectionError,
+            requests.exceptions.ReadTimeout) as e:
         return False, e
     end_time = time.time()
     return True, end_time - start_time

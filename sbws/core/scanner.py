@@ -36,7 +36,11 @@ def timed_recv_from_server(session, dest, byte_range):
     HTTP_GET_HEADERS['Range'] = byte_range
     # TODO:
     # - What other exceptions can this throw?
-    # - Do we have to read the content, or did requests already do so?
+    # - response.elapsed "measures the time taken between sending the first
+    #   byte of the request and finishing parsing the headers.
+    #   It is therefore unaffected by consuming the response content"
+    #   If this mean that the content has arrived, elapsed could be used to
+    #   know the time it took.
     try:
         # headers are merged with the session ones, not overwritten.
         session.get(dest.url, headers=HTTP_GET_HEADERS, verify=dest.verify)

@@ -45,5 +45,5 @@ They are included in most distributions. In Debian install them running::
 .. _Sphinx: https://www.sphinx-doc.org
 .. _recommonmark: https://recommonmark.readthedocs.io/
 .. _Pylint: https://www.pylint.org/
-.. _Tex: http://www.tug.org/texlive/acquire.html
+.. _Tex: https://www.tug.org/texlive/acquire.html
 .. _dvipng: https://www.nongnu.org/dvipng/

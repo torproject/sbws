@@ -18,3 +18,11 @@ def test_set_torrc_runtime_invalidrequest_option_fail(persistent_launch_tor):
         controller.set_conf('ControlSocket', '/tmp/dummy')
     except stem_utils.InvalidRequest as e:
         assert "Unable to set option" in e.message
+
+
+def test_set_torrc_options_can_fail_option_fail(persistent_launch_tor):
+    controller = persistent_launch_tor
+    try:
+        controller.set_conf('BadOption', '0')
+    except stem_utils.InvalidArguments as e:
+        assert "Unknown option" in e.message

@@ -8,6 +8,9 @@ from stem import __version__ as stem_version
 from sbws import __version__
 
 
+from collections import OrderedDict
+
+
 log = logging.getLogger(__name__)
 
 RESULT_VERSION = 4
@@ -32,11 +35,22 @@ TORRC_STARTING_POINT = {
     'LogTimeGranularity': '1',
     'ProtocolWarnings': '1',
 }
-
+# Options that need to be set at runtime.
 TORRC_RUNTIME_OPTIONS = {
+    # The scanner builds the circuits to download the data itself,
+    # so do not let Tor to build them.
     '__DisablePredictedCircuits': '1',
+    # The scanner attach the streams to the circuit itself,
+    # so do not let Tor to attache them.
     '__LeaveStreamsUnattached': '1',
 }
+# Options that can be set at runtime and can fail with some Tor versions
+# The ones that fail will be ignored..
+TORRC_OPTIONS_CAN_FAIL = OrderedDict({
+    # Since currently scanner anonymity is not the goal, ConnectionPadding
+    # is disable to do not send extra traffic
+    'ConnectionPadding': '0'
+    })
 
 PKG_DIR = os.path.abspath(os.path.dirname(__file__))
 DEFAULT_CONFIG_PATH = os.path.join(PKG_DIR, 'config.default.ini')

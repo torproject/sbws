@@ -12,7 +12,8 @@ import copy
 import logging
 import os
 from sbws.globals import fail_hard
-from sbws.globals import TORRC_STARTING_POINT, TORRC_RUNTIME_OPTIONS
+from sbws.globals import (TORRC_STARTING_POINT, TORRC_RUNTIME_OPTIONS,
+                          TORRC_OPTIONS_CAN_FAIL)
 
 log = logging.getLogger(__name__)
 stream_building_lock = RLock()
@@ -179,6 +180,22 @@ def set_torrc_runtime_options(controller):
         log.exception(e)
         exit(1)
 
+
+def set_torrc_options_can_fail(controller):
+    """Set options that can fail, at runtime.
+
+    They can be set at launch, but since the may fail because they are not
+    supported in some Tor versions, it's easier to try one by one at runtime
+    and ignore the ones that fail.
+    """
+    for k, v in TORRC_OPTIONS_CAN_FAIL.items():
+        try:
+            controller.set_conf(k, v)
+        except InvalidArguments as error:
+            log.debug('Ignoring option not supported by this Tor version. %s',
+                      error)
+
+
 def launch_tor(conf):
     assert isinstance(conf, ConfigParser)
     os.makedirs(conf.getpath('tor', 'datadir'), mode=0o700, exist_ok=True)
@@ -211,7 +228,9 @@ def launch_tor(conf):
         fail_hard('Error trying to launch tor: %s', e)
     # And return a controller to it
     cont = _init_controller_socket(conf.getpath('tor', 'control_socket'))
-
+    # Set options that can fail at runtime
+    set_torrc_options_can_fail(cont)
+    # Set runtime options
     set_torrc_runtime_options(cont)
 
     log.info('Started and connected to Tor %s via %s', cont.get_version(),

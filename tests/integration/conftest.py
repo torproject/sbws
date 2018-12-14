@@ -72,6 +72,9 @@ def conf(sbwshome_dir):
     conf['tor']['run_dpath'] = os.path.join(sbwshome_dir, 'tor', 'run')
     conf['destinations']['foo'] = 'on'
     conf['destinations.foo'] = {}
+    # The test server is not using TLS. Ideally it should also support TLS
+    # If the url would start with https but the request is not using TLS,
+    # the request would hang.
     conf['destinations.foo']['url'] = 'http://127.0.0.1:28888/sbws.bin'
     conf['tor']['extra_lines'] = """  # noqa: E501
 DirAuthority auth1 orport=2002 no-v2 v3ident=D7DBC517EFD2BA1A5012CF1BD0BB38F17C8160BD 127.10.0.1:2003 AA45C13025C037F056E734169891878ED0880231

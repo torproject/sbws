@@ -516,12 +516,16 @@ def _validate_enum(section, key, choices):
 
 def _validate_url(section, key):
     value = section[key]
-    if not value.startswith(('http://', 'https://')):
-        return False, 'Must start with http:// or https://'
     url = urlparse(value)
-    assert url.scheme in ['http', 'https']
     if not url.netloc:
         return False, 'Does not appear to contain a hostname'
+    # It should be possible to have an URL that starts by http:// that uses
+    # TLS,but python requests is just checking the scheme starts by https
+    # when verifying certificate:
+    # https://github.com/requests/requests/blob/master/requests/adapters.py#L215  # noqa
+    # When the scheme is https but the protocol is not TLS, requests will hang.
+    if url.scheme != 'https' and not url.netloc.startswith('127.0.0.1'):
+        return False, 'URL scheme must be HTTPS (except for the test server)'
     return True, ''
 
 

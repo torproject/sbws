@@ -42,14 +42,12 @@ class Relay:
     def _from_desc(self, attr):
         if not self._desc:
             return None
-        assert hasattr(self._desc, attr)
-        return getattr(self._desc, attr)
+        return getattr(self._desc, attr, None)
 
     def _from_ns(self, attr):
         if not self._ns:
             return None
-        assert hasattr(self._ns, attr)
-        return getattr(self._ns, attr)
+        return getattr(self._ns, attr, None)
 
     @property
     def nickname(self):

@@ -66,6 +66,7 @@ def gen_parser(sub):
                         "other.")
     p.add_argument('-n', '--min-num', default=NUM_MIN_RESULTS, type=int,
                    help="Mininum number of a results to consider them.")
+    return p
 
 
 def main(args, conf):

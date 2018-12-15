@@ -6,7 +6,7 @@ import os.path
 
 from sbws import __version__ as version
 from sbws.globals import (SPEC_VERSION, SBWS_SCALING, TORFLOW_SCALING,
-                          MIN_REPORT)
+                          MIN_REPORT, TORFLOW_ROUND_DIG, PROP276_ROUND_DIG)
 from sbws.lib.resultdump import Result, load_result_file, ResultSuccess
 from sbws.lib.v3bwfile import (V3BWHeader, V3BWLine, TERMINATOR, LINE_SEP,
                                KEYVALUE_SEP_V1, num_results_of_type,
@@ -266,14 +266,21 @@ def test_sbws_scale(datadir):
 
 def test_torflow_scale(datadir):
     results = load_result_file(str(datadir.join("results.txt")))
-    v3bwfile = V3BWFile.from_results(results, scaling_method=TORFLOW_SCALING)
-    assert v3bwfile.bw_lines[0].bw == 520
     v3bwfile = V3BWFile.from_results(results, scaling_method=TORFLOW_SCALING,
-                                     torflow_cap=0.0001)
-    assert v3bwfile.bw_lines[0].bw == 520
+                                     round_digs=TORFLOW_ROUND_DIG)
+    assert v3bwfile.bw_lines[0].bw == 524
     v3bwfile = V3BWFile.from_results(results, scaling_method=TORFLOW_SCALING,
-                                     torflow_cap=1, round_digs=1)
-    assert v3bwfile.bw_lines[0].bw == 500
+                                     torflow_cap=0.0001,
+                                     round_digs=TORFLOW_ROUND_DIG)
+    assert v3bwfile.bw_lines[0].bw == 524
+    v3bwfile = V3BWFile.from_results(results, scaling_method=TORFLOW_SCALING,
+                                     torflow_cap=1,
+                                     round_digs=TORFLOW_ROUND_DIG)
+    assert v3bwfile.bw_lines[0].bw == 524
+    v3bwfile = V3BWFile.from_results(results, scaling_method=TORFLOW_SCALING,
+                                     torflow_cap=1,
+                                     round_digs=PROP276_ROUND_DIG)
+    assert v3bwfile.bw_lines[0].bw == 520
 
 
 def test_results_away_each_other(datadir):

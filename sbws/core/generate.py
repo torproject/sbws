@@ -2,7 +2,7 @@ from math import ceil
 
 from sbws.globals import (fail_hard, SBWS_SCALE_CONSTANT, TORFLOW_SCALING,
                           SBWS_SCALING, TORFLOW_BW_MARGIN, PROP276_ROUND_DIG,
-                          DAY_SECS, NUM_MIN_RESULTS, TORFLOW_ROUND_DIG)
+                          DAY_SECS, NUM_MIN_RESULTS)
 from sbws.lib.v3bwfile import V3BWFile
 from sbws.lib.resultdump import load_recent_results_in_datadir
 from argparse import ArgumentDefaultsHelpFormatter
@@ -54,13 +54,8 @@ def gen_parser(sub):
     p.add_argument('-m', '--torflow-bw-margin', default=TORFLOW_BW_MARGIN,
                    type=float,
                    help="Cap maximum bw when scaling as Torflow. ")
-    p.add_argument('-r', '--torflow-round-digs', default=TORFLOW_ROUND_DIG,
-                   type=int,
-                   help="Number of most significant digits to round "
-                        "bw in Torflow. This option is kept for compatibility "
-                        "with 1.0.x versions but it's silently ignored."
-                        "Use --round-digs instead.")
-    p.add_argument('-d', '--round-digs', default=PROP276_ROUND_DIG, type=int,
+    p.add_argument('-r', '--round-digs', '--torflow-round-digs',
+                   default=PROP276_ROUND_DIG, type=int,
                    help="Number of most significant digits to round bw.")
     p.add_argument('-p', '--secs-recent', default=None, type=int,
                    help="How many secs in the past are results being "

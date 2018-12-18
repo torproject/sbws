@@ -67,6 +67,10 @@ class RelayPrioritizer:
         relays = set(copy.deepcopy(self.relay_list.relays))
         if not self.measure_authorities:
             relays = relays.difference(set(self.relay_list.authorities))
+        # Since there will be new measurements every time this method is called
+        # again, update the list of results.
+        # In a future refactor with other data structure there should not be
+        # needed.
         rd = self.result_dump
         for relay in relays:
             results = rd.results_for_relay(relay)

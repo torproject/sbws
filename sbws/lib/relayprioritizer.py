@@ -81,11 +81,11 @@ class RelayPrioritizer:
                 # is no longer valid
                 freshness = result.time - oldest_allowed
                 if isinstance(result, ResultError) \
-                    and prioritize_result_error is True:
-                    log.debug('Cutting freshness for a %s result by %d%% for '
-                              '%s', result.type.value,
-                              result.freshness_reduction_factor * 100,
-                              relay.nickname)
+                        and prioritize_result_error is True:
+                    # log.debug('Cutting freshness for a %s result by %d%% for'
+                    #           ' %s', result.type.value,
+                    #           result.freshness_reduction_factor * 100,
+                    #           relay.nickname)
                     # result.freshness_reduction_factor are hard-coded values
                     # on how much prioritize measurements that failed
                     # depending on the type of error.

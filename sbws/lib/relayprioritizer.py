@@ -1,6 +1,5 @@
 from decimal import Decimal
 from ..lib.resultdump import ResultDump
-from ..lib.resultdump import Result
 from ..lib.resultdump import ResultError
 from ..lib.relaylist import RelayList
 import copy
@@ -75,7 +74,6 @@ class RelayPrioritizer:
             # The time before which we do not consider results valid anymore
             oldest_allowed = time.time() - self.fresh_seconds
             for result in results:
-                assert isinstance(result, Result)
                 # Ignore results that are too far in the past
                 if result.time < oldest_allowed:
                     continue

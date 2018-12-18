@@ -23,28 +23,45 @@ class RelayPrioritizer:
         self.fraction_to_return = conf.getfloat(
             'relayprioritizer', 'fraction_relays')
 
-    def best_priority(self, prioritize_result_error=False):
-        """
-        Return a generator of a new list of relays ordereded by priority to
-        be measured. The relays that were measured farther away in the past,
-        get prioritized (lowest priority number, first in the generator).
+    def best_priority(self, prioritize_result_error=False,
+                      return_fraction=True):
+        """Yields a new ordered list of relays to be measured next.
 
+        The relays that were measured farther away in the past,
+        get prioritized (lowest priority number, first in the list).
         The relays that were measured more recently get lower priority (last in
-        the generator, higher priority number).
+        the list, higher priority number).
 
-        Optionally, the measurements that failed can be prioritized (be
-        measured first).
-        However, unstable relays that often fail to be measured, might fail
+        Optionally, the relays which measurements failed can be prioritized
+        (first in the list).
+        However, unstable relays that fail often to be measured, might fail
         again and stable relays will get measured only when their measurements
         become old enough.
         The opposite might be more suitable: give lower priority to the relays
         that are unstable, to don't spend time measuring relays that might fail
         to be measured.
 
+        Optionally, return only a fraction of all the relays in the network.
+        Since there could be new relays in the network while measuring the
+        list of relays returned by this method, this method is run again
+        before all the relays in the network are measured.
+
+        .. note::
+
+            In a future refactor, instead of having a static fraction of relays
+            to be measured, this method could be call when it's known that
+            there're X number of new relays in the network.
+
         Since measurements made before than X days ago (too old) are not
         considered, and the initial list of past measurements is only filtered
         when the scanner starts, it's needed to filter here again to discard
-        those measurements that are too old.
+        those measurements.
+
+        :param bool prioritize_result_error: whether prioritize or not
+            measurements that did not succed.
+        :param bool return_fraction: whether to return only a fraction of the
+            relays seen in the network or return all.
+        return: a generator of the new ordered list of relays to measure next.
 
         """
         fn_tstart = Decimal(time.time())
@@ -82,14 +99,17 @@ class RelayPrioritizer:
         # Sort the relays by their priority, with the smallest (best) priority
         # relays at the front
         relays = sorted(relays, key=lambda r: r.priority)
-        cutoff = max(int(len(relays) * self.fraction_to_return),
-                     self.min_to_return)
+
         fn_tstop = Decimal(time.time())
         fn_tdelta = (fn_tstop - fn_tstart) * 1000
         log.info('Spent %f msecs calculating relay best priority', fn_tdelta)
-        # Finally, slowly return the relays to the caller (after removing the
-        # priority member we polluted the variable with ...)
-        for relay in relays[0:cutoff]:
+
+        # Return a fraction of relays in the network if return_fraction is
+        # True, otherwise return all.
+        cutoff = max(int(len(relays) * self.fraction_to_return),
+                     self.min_to_return)
+        upper_limit = cutoff if return_fraction else len(relays)
+        for relay in relays[0:upper_limit]:
             log.debug('Returning next relay %s with priority %f',
                       relay.nickname, relay.priority)
             del(relay.priority)

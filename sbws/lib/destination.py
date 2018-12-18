@@ -159,7 +159,8 @@ class DestinationList:
         self._cb = circuit_builder
         self._rl = relay_list
         self._all_dests = dests
-        self._usable_dests = []
+        # Inially all destionations are usable until proven otherwise.
+        self._usable_dests = self._all_dests
         self._last_usability_test = 0
         self._usability_test_interval = \
             conf.getint('destinations', 'usability_test_interval')
@@ -168,8 +169,10 @@ class DestinationList:
         self._usability_lock = RLock()
 
     def _should_perform_usability_test(self):
-        return self._last_usability_test + self._usability_test_interval <\
-            time.time()
+        # Until bigger refactor, do not perform usability test.
+        # Every time a measurement is done, it already performs what usability
+        # test does.
+        return False
 
     def _perform_usability_test(self):
         self._usability_lock.acquire()
@@ -245,23 +248,10 @@ class DestinationList:
         '''
         Returns the next destination that should be used in a measurement
         '''
-        with self._usability_lock:
-            while True:
-                if self._should_perform_usability_test():
-                    self._perform_usability_test()
-                    log.debug('%s/%s of our configured destinations are '
-                              'usable at this time', len(self._usable_dests),
-                              len(self._all_dests))
-                if len(self._usable_dests) > 0:
-                    break
-                time_till_next_check = self._usability_test_interval + 0.0001
-                log.warning(
-                    'Of our %d configured destinations, none are usable at '
-                    'this time. Sleeping %f seconds on this blocking call '
-                    'to DestinationList.next() until we can check for a '
-                    'usable destination again.', len(self._all_dests),
-                    time_till_next_check)
-                time.sleep(time_till_next_check)
-
-        self._rng.shuffle(self._usable_dests)
-        return self._usable_dests[0]
+        # Do not perform usability tests since a destination is already proven
+        # usable or not in every measurement, and it should depend on a X
+        # number of failures.
+        # This removes the need for an extra lock for every measurement.
+        # Do not change the order of the destinations, just return a
+        # destination.
+        return self._rng.choice(self._usable_dests)

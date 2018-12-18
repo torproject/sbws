@@ -6,7 +6,8 @@ from ..lib.resultdump import ResultSuccess, ResultErrorCircuit
 from ..lib.resultdump import ResultErrorStream
 from ..lib.relaylist import RelayList
 from ..lib.relayprioritizer import RelayPrioritizer
-from ..lib.destination import DestinationList
+from ..lib.destination import (DestinationList,
+                               connect_to_destination_over_circuit)
 from ..util.timestamp import now_isodt_str
 from ..util.state import State
 from sbws.globals import fail_hard
@@ -206,9 +207,9 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     log.debug('Built circ %s %s for relay %s %s', circ_id,
               stem_utils.circuit_str(cb.controller, circ_id), relay.nickname,
               relay.fingerprint[0:8])
-    # Make a connection to the destionation webserver and make sure it can
-    # still help us measure
-    is_usable, usable_data = dest.is_usable(circ_id, s, cb.controller)
+    # Make a connection to the destination
+    is_usable, usable_data = connect_to_destination_over_circuit(
+        dest, circ_id, s, cb.controller, dest._max_dl)
     if not is_usable:
         log.warning('When measuring %s %s the destination seemed to have '
                     'stopped being usable: %s', relay.nickname,

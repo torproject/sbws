@@ -97,6 +97,7 @@ class RelayPrioritizer:
                     # or create constants.
                     freshness *= max(1.0-result.freshness_reduction_factor, 0)
                 priority += freshness
+            # In a future refactor, do not create a new attribute
             relay.priority = priority
         # Sort the relays by their priority, with the smallest (best) priority
         # relays at the front
@@ -114,5 +115,7 @@ class RelayPrioritizer:
         for relay in relays[0:upper_limit]:
             log.debug('Returning next relay %s with priority %f',
                       relay.nickname, relay.priority)
+            # In a future refactor, a new attribute should not be created,
+            # then no need to remove it.
             del(relay.priority)
             yield relay

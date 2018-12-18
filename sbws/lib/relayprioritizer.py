@@ -82,15 +82,15 @@ class RelayPrioritizer:
                 freshness = result.time - oldest_allowed
                 if isinstance(result, ResultError) \
                     and prioritize_result_error is True:
-                    # Reduce the freshness for results containing errors so
-                    # that they are not de-prioritized as much. This way, we
-                    # will come back to them sooner to try again.
-                    assert result.freshness_reduction_factor >= 0.0
-                    assert result.freshness_reduction_factor <= 1.0
                     log.debug('Cutting freshness for a %s result by %d%% for '
                               '%s', result.type.value,
                               result.freshness_reduction_factor * 100,
                               relay.nickname)
+                    # result.freshness_reduction_factor are hard-coded values
+                    # on how much prioritize measurements that failed
+                    # depending on the type of error.
+                    # In a future refactor, create these values on an algorithm
+                    # or create constants.
                     freshness *= max(1.0-result.freshness_reduction_factor, 0)
                 priority += freshness
             relay.priority = priority

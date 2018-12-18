@@ -23,28 +23,30 @@ class RelayPrioritizer:
         self.fraction_to_return = conf.getfloat(
             'relayprioritizer', 'fraction_relays')
 
-    def best_priority(self):
-        ''' Return a generator containing the best priority relays.
+    def best_priority(self, prioritize_result_error=False):
+        """
+        Return a generator of a new list of relays ordereded by priority to
+        be measured. The relays that were measured farther away in the past,
+        get prioritized (lowest priority number, first in the generator).
 
-        NOTE: A lower value for priority means better priority. Remember your
-        data structures class in university and consider this something like a
-        min-priority queue.
+        The relays that were measured more recently get lower priority (last in
+        the generator, higher priority number).
 
-        Priority is calculated as the sum of the "freshness" of each
-        result for a relay. First we determine <oldest_allowed>, the time at
-        which we stop considering results to be valid. From there, a result's
-        freshness is determined to be the amount of time between when the
-        measurement was made and <oldest_allowed>. Therefore, you should see
-        that a measurement made more recently will have a higher freshness.
+        Optionally, the measurements that failed can be prioritized (be
+        measured first).
+        However, unstable relays that often fail to be measured, might fail
+        again and stable relays will get measured only when their measurements
+        become old enough.
+        The opposite might be more suitable: give lower priority to the relays
+        that are unstable, to don't spend time measuring relays that might fail
+        to be measured.
 
-        We adjust down the freshness for results containing errors. If we
-        ignored errors and didn't increase a relay's priority value for them,
-        then we'll get stuck trying to measure a few relays that have the best
-        priority but are having issues getting measured. If we treated errors
-        with equal weight as successful results, then it would take a while to
-        get around to giving the relay another chance at a getting a successful
-        measurement.
-        '''
+        Since measurements made before than X days ago (too old) are not
+        considered, and the initial list of past measurements is only filtered
+        when the scanner starts, it's needed to filter here again to discard
+        those measurements that are too old.
+
+        """
         fn_tstart = Decimal(time.time())
         relays = set(copy.deepcopy(self.relay_list.relays))
         if not self.measure_authorities:
@@ -63,7 +65,8 @@ class RelayPrioritizer:
                 # Calculate freshness as the remaining time until this result
                 # is no longer valid
                 freshness = result.time - oldest_allowed
-                if isinstance(result, ResultError):
+                if isinstance(result, ResultError) \
+                    and prioritize_result_error is True:
                     # Reduce the freshness for results containing errors so
                     # that they are not de-prioritized as much. This way, we
                     # will come back to them sooner to try again.

@@ -154,7 +154,8 @@ def _pick_ideal_second_hop(relay, dest, rl, cont, is_exit):
                 len(new_candidates), min_bw_factor, relay.nickname,
                 chosen.nickname, chosen.consensus_bandwidth)
             return chosen
-    candidates = sorted(candidates, key=lambda r: r.bandwidth, reverse=True)
+    candidates = sorted(candidates, key=lambda r: r.consensus_bandwidth,
+                        reverse=True)
     chosen = candidates[0]
     log.debug(
         'Didn\'t find any 2nd hops at least as fast as %s (bw=%s). It\'s '

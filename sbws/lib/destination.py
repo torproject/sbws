@@ -11,6 +11,8 @@ from sbws.globals import DESTINATION_VERIFY_CERTIFICATE
 import sbws.util.stem as stem_utils
 import sbws.util.requests as requests_utils
 
+from ..globals import MAXIMUM_NUMBER_DESTINATION_FAILURES
+
 log = logging.getLogger(__name__)
 
 
@@ -83,21 +85,32 @@ def connect_to_destination_over_circuit(dest, circ_id, session, cont, max_dl):
             head = session.head(dest.url, verify=dest.verify)
         except (requests.exceptions.ConnectionError,
                 requests.exceptions.ReadTimeout) as e:
+            dest.set_failure()
             return False, 'Could not connect to {} over circ {} {}: {}'.format(
                 dest.url, circ_id, stem_utils.circuit_str(cont, circ_id), e)
         finally:
             stem_utils.remove_event_listener(cont, listener)
     if head.status_code != requests.codes.ok:
+        dest.set_failure()
         return False, error_prefix + 'we expected HTTP code '\
             '{} not {}'.format(requests.codes.ok, head.status_code)
     if 'content-length' not in head.headers:
+        dest.set_failure()
         return False, error_prefix + 'we except the header Content-Length '\
-                'to exist in the response'
+            'to exist in the response'
     content_length = int(head.headers['content-length'])
     if max_dl > content_length:
+        dest.set_failure()
         return False, error_prefix + 'our maximum configured download size '\
             'is {} but the content is only {}'.format(max_dl, content_length)
     log.debug('Connected to %s over circuit %s', dest.url, circ_id)
+    # Any failure connecting to the destination will call set_failure,
+    # which will set `failed` to True and count consecutives failures.
+    # It can not be set at the start, to be able to know if it failed a
+    # a previous time, which is checked by set_failure.
+    # Future improvement: use a list to count consecutive failures
+    # or calculate it from the results.
+    dest.failed = False
     return True, {'content_length': content_length}
 
 
@@ -107,6 +120,38 @@ class Destination:
         u = urlparse(url)
         self._url = u
         self._verify = verify
+        # Flag to record whether this destination failed in the last
+        # measurement.
+        # Failures can happen if:
+        # - an HTTPS request can not be made over Tor
+        # (which might be the relays fault, not the destination being
+        # unreachable)
+        # - the destination does not support HTTP Range requests.
+        self.failed = False
+        self.consecutive_failures = 0
+
+    @property
+    def is_functional(self):
+        """
+        Returns True if there has not been a number consecutive measurements.
+        Otherwise warn about it and return False.
+
+        """
+        if self.consecutive_failures > MAXIMUM_NUMBER_DESTINATION_FAILURES:
+            log.warning("Destination %s is not functional. Please check that "
+                        "it is correct.", self._url)
+            return False
+        return True
+
+    def set_failure(self):
+        """Set failed to True and increase the number of consecutive failures.
+        Only if it also failed in the previous measuremnt.
+
+        """
+        # if it failed in the last measurement
+        if self.failed:
+            self.consecutive_failures += 1
+        self.failed = True
 
     def is_usable(self, circ_id, session, cont):
         ''' Use **connect_to_destination_over_circuit** to determine if this
@@ -171,6 +216,10 @@ class DestinationList:
         self._usability_test_timeout = \
             conf.getfloat('general', 'http_timeout')
         self._usability_lock = RLock()
+
+    @property
+    def functional_destinations(self):
+        return [d for d in self._all_dests if d.is_functional]
 
     def _should_perform_usability_test(self):
         # Until bigger refactor, do not perform usability test.
@@ -259,4 +308,4 @@ class DestinationList:
         # This removes the need for an extra lock for every measurement.
         # Do not change the order of the destinations, just return a
         # destination.
-        return self._rng.choice(self._usable_dests)
+        return self._rng.choice(self.functional_destinations)

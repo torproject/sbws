@@ -58,6 +58,11 @@ paths
     (Default ~/.sbws/log)
 
 destinations
+
+  It is required to set at least one destination for the scanner to run.
+  It is recommended to set several destinations so that the scanner can
+  continue if one fails.
+
   STR = {on, off}
     Name of destination. It is a name for the Web server from where to
     download files in order to measure bandwidths.

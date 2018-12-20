@@ -108,6 +108,11 @@ HTTP_GET_HEADERS = {
     'Accept-Encoding': 'identity',
 }
 DESTINATION_VERIFY_CERTIFICATE = True
+# This number might need adjusted depending on the percentage of circuits and
+# HTTP requests failures.
+# While the scanner can not recover from some/all failing destionations,
+# set a big number so that it continues trying.
+MAXIMUM_NUMBER_DESTINATION_FAILURES = 100
 
 
 def fail_hard(*a, **kw):

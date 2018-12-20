@@ -170,10 +170,11 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         cb.controller, conf.getfloat('general', 'http_timeout'))
     # Pick a destionation
     dest = destinations.next()
+    # If there is no any destination at this point, it can not continue.
     if not dest:
-        log.warning('Unable to get destination to measure %s %s',
-                    relay.nickname, relay.fingerprint[0:8])
-        return None
+        log.critical("There are not any functional destinations.")
+        # This should raise an error so that the caller can close the pool.
+        exit(1)
     # Pick a relay to help us measure the given relay. If the given relay is an
     # exit, then pick a non-exit. Otherwise pick an exit.
     helper = None

@@ -53,6 +53,10 @@ MAX_BW_DIFF_PERC = 50
 
 BW_LINE_SIZE = 510
 
+# This number might need adjusted depending on the percentage of circuits and
+# HTTP requests failures.
+MAXIMUM_NUMBER_DESTINATION_FAILURES = 10
+
 
 def fail_hard(*a, **kw):
     ''' Log something ... and then exit as fast as possible '''

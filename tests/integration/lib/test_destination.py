@@ -39,6 +39,9 @@ def test_connect_to_destination_over_circuit_success(persistent_launch_tor,
         destination, circuit_id, session, persistent_launch_tor, 1024)
     assert is_usable is True
     assert 'content_length' in response
+    assert not destination.failed
+    assert destination.consecutive_failures == 0
+    assert destination.is_functional
 
 
 def test_connect_to_destination_over_circuit_fail(persistent_launch_tor,
@@ -59,3 +62,36 @@ def test_connect_to_destination_over_circuit_fail(persistent_launch_tor,
     is_usable, response = connect_to_destination_over_circuit(
         bad_destination, circuit_id, session, persistent_launch_tor, 1024)
     assert is_usable is False
+
+    # because it is the first time it fails, failures aren't count
+    assert bad_destination.failed
+    assert bad_destination.consecutive_failures == 0
+    assert bad_destination.is_functional
+
+    # fail twice in a row
+    is_usable, response = connect_to_destination_over_circuit(
+        bad_destination, circuit_id, session, persistent_launch_tor, 1024)
+    assert bad_destination.failed
+    assert bad_destination.consecutive_failures == 1
+    assert bad_destination.is_functional
+
+
+def test_functional_destinations(conf, cb, rl, persistent_launch_tor):
+    good_destination = Destination('https://127.0.0.1:28888', 1024, False)
+    # Mock that it failed before and just now, but it's still considered
+    # functional.
+    good_destination.consecutive_failures = 3
+    good_destination.failed = True
+    bad_destination = Destination('https://example.example', 1024, False)
+    # Mock that it didn't fail now, but it already failed 11 consecutive
+    # times.
+    bad_destination.consecutive_failures = 11
+    bad_destination.failed = False
+    # None of the arguments are used, move to unit tests when this get
+    # refactored
+    destination_list = DestinationList(
+        conf, [good_destination, bad_destination], cb, rl,
+        persistent_launch_tor)
+    expected_functional_destinations = [good_destination]
+    functional_destinations = destination_list.functional_destinations
+    assert expected_functional_destinations == functional_destinations

@@ -13,6 +13,7 @@ def static_time(value):
 def _build_result_for_relay(conf, rl, result_type, relay_nick,
                             timestamp):
     relay = [r for r in rl.relays if r.nickname == relay_nick]
+    print(rl.relays)
     assert len(relay) == 1
     relay = relay[0]
     other = [r for r in rl.relays if r.nickname != relay_nick][0]

@@ -20,9 +20,7 @@ def test_parse_user_torrc_config_existing_keyvalue_options_fail(caplog):
     """
     torrc_dict_new = parse_user_torrc_config(
         torrc_dict, config_torrc_extra_lines)
-
-    # the new dictionary contains the existing option
-    assert torrc_dict_new == torrc_dict
-
-    # but it does not contain the new option
-    assert config_torrc_extra_lines.strip() in caplog.records[-1].getMessage()
+    # the new dictionary contains the existing key option and a list with both
+    # the existing value and the new value
+    assert torrc_dict_new != torrc_dict
+    assert torrc_dict_new == {'SocksPort': ['auto', '9050']}

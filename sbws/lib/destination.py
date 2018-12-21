@@ -194,12 +194,13 @@ class DestinationList:
             for _ in range(0, 3):
                 # Pick a random exit
                 exit = self._rng.choice(exits)
-                circ_id = self._cb.build_circuit([None, exit.fingerprint])
+                circ_id, reason = \
+                    self._cb.build_circuit([None, exit.fingerprint])
                 if circ_id:
                     break
             if not circ_id:
                 log.warning('Unable to build a circuit to test the usability '
-                            'of %s. Assuming it isn\'t usable.', dest.url)
+                            'of %s, %s', dest.url, reason)
                 continue
             log.debug('Built circ %s %s to test usability of %s', circ_id,
                       stem_utils.circuit_str(cont, circ_id), dest.url)

@@ -69,10 +69,11 @@ class RelayPrioritizer:
                     # will come back to them sooner to try again.
                     assert result.freshness_reduction_factor >= 0.0
                     assert result.freshness_reduction_factor <= 1.0
-                    log.debug('Cutting freshness for a %s result by %d%% for '
-                              '%s', result.type.value,
-                              result.freshness_reduction_factor * 100,
-                              relay.nickname)
+                    # After several days, these would log many relays.
+                    # log.debug('Cutting freshness for a %s result by %d%% for'
+                    #           ' %s', result.type.value,
+                    #           result.freshness_reduction_factor * 100,
+                    #           relay.nickname)
                     freshness *= max(1.0-result.freshness_reduction_factor, 0)
                 priority += freshness
             relay.priority = priority
@@ -83,7 +84,7 @@ class RelayPrioritizer:
                      self.min_to_return)
         fn_tstop = Decimal(time.time())
         fn_tdelta = (fn_tstop - fn_tstart) * 1000
-        log.info('Spent %f msecs calculating relay best priority', fn_tdelta)
+        log.debug('Spent %f msecs calculating relay best priority', fn_tdelta)
         # Finally, slowly return the relays to the caller (after removing the
         # priority member we polluted the variable with ...)
         for relay in relays[0:cutoff]:

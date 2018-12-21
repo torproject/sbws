@@ -68,23 +68,29 @@ class CircuitBuilder:
             log.exception("Error trying to get circuit to close it: %s.", e)
 
     def _build_circuit_impl(self, path):
+        """
+        :returns tuple: circuit id if the circuit was built, error if there
+            was an error building the circuit.
+        """
         if not valid_circuit_length(path):
             raise PathLengthException()
         c = self.controller
         timeout = self.circuit_timeout
-        fp_path = '[' + ' -> '.join([p[0:8] for p in path]) + ']'
+        fp_path = '[' + ' -> '.join([p for p in path]) + ']'
         log.debug('Building %s', fp_path)
+        error = None
         for _ in range(0, 3):
             try:
                 circ_id = c.new_circuit(
                     path, await_build=True, timeout=timeout)
             except (InvalidRequest, CircuitExtensionFailed,
                     ProtocolError, Timeout) as e:
-                log.warning(e)
+                log.debug(e)
+                error = str(e)
                 continue
             else:
-                return circ_id
-        return None
+                return circ_id, None
+        return None, error
 
     def __del__(self):
         c = self.controller

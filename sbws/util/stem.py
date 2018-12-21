@@ -12,7 +12,7 @@ import copy
 import logging
 import os
 from sbws.globals import fail_hard
-from sbws.globals import TORRC_STARTING_POINT
+from sbws.globals import TORRC_STARTING_POINT, TORRC_RUNTIME_OPTIONS
 
 log = logging.getLogger(__name__)
 stream_building_lock = RLock()
@@ -122,11 +122,10 @@ def _init_controller_socket(socket):
     return c
 
 
-def set_torrc_runtime_options(cont):
+def set_torrc_runtime_options(controller):
     """Set torrc options at runtime."""
     try:
-        cont.set_conf('__DisablePredictedCircuits', '1')
-        cont.set_conf('__LeaveStreamsUnattached', '1')
+        controller.set_options(TORRC_RUNTIME_OPTIONS)
     # Only the first option that fails will be logged here.
     # Just log stem's exceptions.
     except (ControllerError, InvalidRequest, InvalidArguments) as e:

@@ -19,8 +19,16 @@ destination requirements
 - A Web server installed and running that supports HTTP GET, HEAD and
   Range (:rfc:`7233`) requests.
   ``Apache`` HTTP Server and ``Nginx`` support them.
-- Optional support for TLS
+- TLS support to avoid HTTP content caches at the various exit nodes.
+- Certificates can be self-signed.
 - A large file; at the time of writing, at least 1 GiB in size
+  It can be created running::
+
+      head -c $((1024*1024*1024)) /dev/urandom > 1GiB
+
+- A fixed IP address or a domain name.
+- Bandwidth: at least 12.5MB/s (100 Mbit/s).
+- Network traffic: around 12-15GB/day.
 
 scanner setup
 ----------------------

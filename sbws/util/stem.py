@@ -1,5 +1,3 @@
-from collections import OrderedDict
-
 from stem.control import (Controller, Listener)
 from stem import (SocketError, InvalidRequest, UnsatisfiableRequest,
                   OperationFailed, ControllerError, InvalidArguments,
@@ -12,13 +10,11 @@ import copy
 import logging
 import os
 from sbws.globals import fail_hard
-from sbws.globals import TORRC_STARTING_POINT, TORRC_RUNTIME_OPTIONS
+from sbws.globals import (TORRC_STARTING_POINT, TORRC_RUNTIME_OPTIONS,
+                          TORRC_OPTIONS_CAN_FAIL)
 
 log = logging.getLogger(__name__)
 stream_building_lock = RLock()
-
-
-TORRC_OPTIONS_CAN_FAIL = OrderedDict({'ConnectionPadding': '0'})
 
 
 def attach_stream_to_circuit_listener(controller, circ_id):

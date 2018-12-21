@@ -1,6 +1,9 @@
 import os
 import logging
 
+from collections import OrderedDict
+
+
 log = logging.getLogger(__name__)
 
 RESULT_VERSION = 4
@@ -30,6 +33,8 @@ TORRC_RUNTIME_OPTIONS = {
     '__DisablePredictedCircuits': '1',
     '__LeaveStreamsUnattached': '1',
 }
+
+TORRC_OPTIONS_CAN_FAIL = OrderedDict({'ConnectionPadding': '0'})
 
 PKG_DIR = os.path.abspath(os.path.dirname(__file__))
 DEFAULT_CONFIG_PATH = os.path.join(PKG_DIR, 'config.default.ini')

@@ -1,5 +1,8 @@
 ''' Measure the relays. '''
 
+import sys
+import threading
+
 from ..lib.circuitbuilder import GapsCircuitBuilder as CB
 from ..lib.resultdump import ResultDump
 from ..lib.resultdump import ResultSuccess, ResultErrorCircuit
@@ -25,6 +28,20 @@ import random
 rng = random.SystemRandom()
 end_event = Event()
 log = logging.getLogger(__name__)
+
+
+def dumpstacks():
+    import pdb
+    import traceback
+    log.warning("sbws stop measuring relays, probably because of a bug."
+                "Please, open a ticket in trac.torproject.org with this"
+                "backtrace.")
+    thread_id2name = dict([(t.ident, t.name) for t in threading.enumerate()])
+    for thread_id, stack in sys._current_frames().items():
+        log.critical("Thread: %s(%d)",
+                     thread_id2name.get(thread_id, ""), thread_id)
+        log.critical(traceback.print_stack(stack))
+    pdb.set_trace()
 
 
 def timed_recv_from_server(session, dest, byte_range):
@@ -359,9 +376,16 @@ def run_speedtest(args, conf):
             while len(pending_results) >= max_pending_results:
                 time.sleep(5)
                 pending_results = [r for r in pending_results if not r.ready()]
-        while len(pending_results) > 0:
+        counter = 0
+        # give it 3min, otherwise there's a bug or deadlock
+        while len(pending_results) > 0 and counter <= 36:
+            counter += 1
+            log.debug("Number of pending measurement threads %s after "
+                      "a prioritization loop.", len(pending_results))
             time.sleep(5)
             pending_results = [r for r in pending_results if not r.ready()]
+        if counter > 36:
+            dumpstacks()
         loop_tstop = time.time()
         loop_tdelta = (loop_tstop - loop_tstart) / 60
         log.debug("Measured %s relays in %s minutes", num_relays, loop_tdelta)

@@ -73,8 +73,7 @@ def init_controller(port=None, path=None, set_custom_stream_settings=True):
             return None, 'Unable to reach tor on control socket'
     assert c is not None
     if set_custom_stream_settings:
-        c.set_conf('__DisablePredictedCircuits', '1')
-        c.set_conf('__LeaveStreamsUnattached', '1')
+        set_torrc_runtime_options(c)
     return c, ''
 
 

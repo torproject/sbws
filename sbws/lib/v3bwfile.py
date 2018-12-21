@@ -529,7 +529,7 @@ class V3BWFile(object):
                      scaling_method=TORFLOW_SCALING,
                      torflow_obs=TORFLOW_OBS_LAST,
                      torflow_cap=TORFLOW_BW_MARGIN,
-                     torflow_round_digs=PROP276_ROUND_DIG,
+                     round_digs=PROP276_ROUND_DIG,
                      secs_recent=None, secs_away=None, min_num=0,
                      consensus_path=None, max_bw_diff_perc=MAX_BW_DIFF_PERC,
                      reverse=False):
@@ -574,7 +574,7 @@ class V3BWFile(object):
             # log.debug(bw_lines[-1])
         elif scaling_method == TORFLOW_SCALING:
             bw_lines = cls.bw_torflow_scale(bw_lines_raw, torflow_obs,
-                                            torflow_cap, torflow_round_digs)
+                                            torflow_cap, round_digs)
             # log.debug(bw_lines[-1])
             cls.update_progress(
                 cls, bw_lines, header, number_consensus_relays, state)

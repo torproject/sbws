@@ -54,7 +54,7 @@ def gen_parser(sub):
     p.add_argument('-m', '--torflow-bw-margin', default=TORFLOW_BW_MARGIN,
                    type=float,
                    help="Cap maximum bw when scaling as Torflow. ")
-    p.add_argument('-r', '--torflow-round-digs',
+    p.add_argument('-r', '--round-digs', '--torflow-round-digs',
                    default=PROP276_ROUND_DIG, type=int,
                    help="Number of most significant digits to round bw.")
     p.add_argument('-p', '--secs-recent', default=None, type=int,
@@ -66,6 +66,7 @@ def gen_parser(sub):
                         "other.")
     p.add_argument('-n', '--min-num', default=NUM_MIN_RESULTS, type=int,
                    help="Mininum number of a results to consider them.")
+    return p
 
 
 def main(args, conf):
@@ -106,7 +107,7 @@ def main(args, conf):
     bw_file = V3BWFile.from_results(results, state_fpath, args.scale_constant,
                                     scaling_method,
                                     torflow_cap=args.torflow_bw_margin,
-                                    torflow_round_digs=args.torflow_round_digs,
+                                    round_digs=args.round_digs,
                                     secs_recent=args.secs_recent,
                                     secs_away=args.secs_away,
                                     min_num=args.min_num,

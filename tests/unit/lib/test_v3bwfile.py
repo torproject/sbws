@@ -269,19 +269,19 @@ def test_torflow_scale(datadir):
     results = load_result_file(str(datadir.join("results.txt")))
     v3bwfile = V3BWFile.from_results(results, scaling_method=TORFLOW_SCALING,
                                      round_digs=TORFLOW_ROUND_DIG)
-    assert v3bwfile.bw_lines[0].bw == 524
+    assert v3bwfile.bw_lines[0].bw == 123
     v3bwfile = V3BWFile.from_results(results, scaling_method=TORFLOW_SCALING,
                                      torflow_cap=0.0001,
                                      round_digs=TORFLOW_ROUND_DIG)
-    assert v3bwfile.bw_lines[0].bw == 524
+    assert v3bwfile.bw_lines[0].bw == 123
     v3bwfile = V3BWFile.from_results(results, scaling_method=TORFLOW_SCALING,
                                      torflow_cap=1,
                                      round_digs=TORFLOW_ROUND_DIG)
-    assert v3bwfile.bw_lines[0].bw == 524
+    assert v3bwfile.bw_lines[0].bw == 123
     v3bwfile = V3BWFile.from_results(results, scaling_method=TORFLOW_SCALING,
                                      torflow_cap=1,
                                      round_digs=PROP276_ROUND_DIG)
-    assert v3bwfile.bw_lines[0].bw == 520
+    assert v3bwfile.bw_lines[0].bw == 120
 
 
 def test_results_away_each_other(datadir):

@@ -4,7 +4,12 @@ python:
   - "3.5"
   - "3.6"
 install: pip install tox-travis
-script: tox
+script:
+  - tox
+  # This is not in included in the tox envlist, in order to don't need Internet
+  # when running tox
+  - tox -e doclinks
+  - tox -e clean
 
 before_install:
     - gpg --version

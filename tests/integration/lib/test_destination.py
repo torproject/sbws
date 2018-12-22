@@ -12,10 +12,6 @@ def test_destination_list_no_usability_test_success(
     destination_list, error_msg = DestinationList.from_config(
         conf, cb, rl, persistent_launch_tor
         )
-    # Initially all destinations should be "usable".
-    assert destination_list._all_dests == destination_list._usable_dests
-    # Because this is disabled.
-    assert destination_list._should_perform_usability_test() is False
     # Because there's only 1 destination in conftest, random should return
     # the same one.
     assert destination_list.next() == \

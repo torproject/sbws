@@ -1,8 +1,5 @@
 import logging
 import random
-import time
-import os
-from threading import RLock
 import requests
 from urllib.parse import urlparse
 from stem.control import EventType
@@ -144,17 +141,6 @@ class Destination:
             self.consecutive_failures += 1
         self.failed = True
 
-    def is_usable(self, circ_id, session, cont):
-        ''' Use **connect_to_destination_over_circuit** to determine if this
-        destination is usable and return what it returns. Just a small wrapper.
-        '''
-        if not isinstance(self.verify, bool):
-            if not os.path.isfile(self.verify):
-                return False, '{} is believed to be a CA bundle file on disk '\
-                    'but it does not exist'.format(self.verify)
-        return connect_to_destination_over_circuit(
-            self, circ_id, session, cont, self._max_dl)
-
     @property
     def url(self):
         return self._url.geturl()
@@ -199,69 +185,10 @@ class DestinationList:
         self._cb = circuit_builder
         self._rl = relay_list
         self._all_dests = dests
-        # Inially all destionations are usable until proven otherwise.
-        self._usable_dests = self._all_dests
-        self._last_usability_test = 0
-        self._usability_test_interval = \
-            conf.getint('destinations', 'usability_test_interval')
-        self._usability_test_timeout = \
-            conf.getfloat('general', 'http_timeout')
-        self._usability_lock = RLock()
 
     @property
     def functional_destinations(self):
         return [d for d in self._all_dests if d.is_functional]
-
-    def _should_perform_usability_test(self):
-        # Until bigger refactor, do not perform usability test.
-        # Every time a measurement is done, it already performs what usability
-        # test does.
-        return False
-
-    def _perform_usability_test(self):
-        self._usability_lock.acquire()
-        log.debug('Perform usability tests')
-        cont = self._cont
-        timeout = self._usability_test_timeout
-        session = requests_utils.make_session(cont, timeout)
-        usable_dests = []
-        for dest in self._all_dests:
-            possible_exits = self._rl.exits_not_bad_allowing_port(dest.port)
-            # Keep the fastest 10% of exits, or 3, whichever is larger
-            num_keep = int(max(3, len(possible_exits) * 0.1))
-            possible_exits = sorted(
-                possible_exits, key=lambda e: e.consensus_bandwidth,
-                reverse=True)
-            exits = possible_exits[0:num_keep]
-            if len(exits) < 1:
-                log.warning("There are no exits to perform usability tests.")
-                continue
-            # Try three times to build a circuit to test this destination
-            circ_id = None
-            for _ in range(0, 3):
-                # Pick a random exit
-                exit = self._rng.choice(exits)
-                circ_id = self._cb.build_circuit([None, exit.fingerprint])
-                if circ_id:
-                    break
-            if not circ_id:
-                log.warning('Unable to build a circuit to test the usability '
-                            'of %s. Assuming it isn\'t usable.', dest.url)
-                continue
-            log.debug('Built circ %s %s to test usability of %s', circ_id,
-                      stem_utils.circuit_str(cont, circ_id), dest.url)
-            is_usable, data = dest.is_usable(circ_id, session, cont)
-            if not is_usable:
-                log.warning(data)
-                self._cb.close_circuit(circ_id)
-                continue
-            assert is_usable
-            log.debug('%s seems usable so we will keep it', dest.url)
-            usable_dests.append(dest)
-            self._cb.close_circuit(circ_id)
-        self._usable_dests = usable_dests
-        self._last_usability_test = time.time()
-        self._usability_lock.release()
 
     @staticmethod
     def from_config(conf, circuit_builder, relay_list, controller):

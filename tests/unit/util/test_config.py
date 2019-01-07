@@ -190,14 +190,17 @@ def test_validate_bool():
 
 def test_validate_url():
     goods = [
-        'http://example.com', 'http://example.com/',
-        'http://example.com/foo.bar',
-        'http://example.com/foo/bar',
-        'http://user@example.com',
+        'https://example.com', 'https://example.com/',
+        'https://example.com/foo.bar',
+        'https://example.com/foo/bar',
+        'https://user@example.com',
+        'https://48.290.983.123:4443',
+        'http://127.0.0.1:8000'
     ]
     bads = [
         'ftp://example.com/foo.bar',
         'http://', 'http:///',
+        'http://example.com',
     ]
     for val in goods:
         d = {'': val}

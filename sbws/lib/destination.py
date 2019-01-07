@@ -98,9 +98,6 @@ class Destination:
     def __init__(self, url, max_dl, verify):
         self._max_dl = max_dl
         u = urlparse(url)
-        # these things should have been verified in verify_config
-        assert u.scheme in ['http', 'https']
-        assert u.netloc
         self._url = u
         self._verify = verify
 

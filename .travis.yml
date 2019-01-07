@@ -13,8 +13,7 @@ script:
 
 before_install:
     - gpg --version
-    - gpg --keyserver hkp://ha.pool.sks-keyservers.net --recv A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
-    - gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | sudo apt-key add
+    - sudo apt-key add tests/deb.torproject.org.asc
     - echo "deb https://deb.torproject.org/torproject.org trusty main" | sudo tee -a /etc/apt/sources.list
     - echo "deb-src https://deb.torproject.org/torproject.org trusty main" | sudo tee -a /etc/apt/sources.list
     - sudo apt-get update -qq

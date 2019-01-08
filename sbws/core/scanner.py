@@ -270,11 +270,7 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
 
 
 def dispatch_worker_thread(*a, **kw):
-    try:
-        return measure_relay(*a, **kw)
-    except Exception as err:
-        log.exception('Unhandled exception in worker thread')
-        raise err
+    return measure_relay(*a, **kw)
 
 
 def _should_keep_result(did_request_maximum, result_time, download_times):

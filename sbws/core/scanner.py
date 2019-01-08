@@ -14,16 +14,15 @@ import sbws.util.stem as stem_utils
 import sbws.util.requests as requests_utils
 from argparse import ArgumentDefaultsHelpFormatter
 from multiprocessing.dummy import Pool
-from threading import Event
 import time
 import os
 import logging
 import requests
 import random
 
+from .. import settings
 
 rng = random.SystemRandom()
-end_event = Event()
 log = logging.getLogger(__name__)
 
 
@@ -119,7 +118,7 @@ def measure_bandwidth_to_server(session, conf, dest, content_length):
         'target': conf.getfloat('scanner', 'download_target'),
         'max': conf.getfloat('scanner', 'download_max'),
     }
-    while len(results) < num_downloads:
+    while len(results) < num_downloads and not settings.end_event.is_set():
         assert expected_amount >= min_dl
         assert expected_amount <= max_dl
         random_range = get_random_range_string(content_length, expected_amount)
@@ -348,7 +347,7 @@ def run_speedtest(args, conf):
         time.sleep(15)
     rl = RelayList(args, conf, controller)
     cb = CB(args, conf, controller, rl)
-    rd = ResultDump(args, conf, end_event)
+    rd = ResultDump(args, conf)
     rp = RelayPrioritizer(args, conf, rl, rd)
     destinations, error_msg = DestinationList.from_config(
         conf, cb, rl, controller)
@@ -407,9 +406,4 @@ def main(args, conf):
     state = State(conf.getpath('paths', 'state_fname'))
     state['scanner_started'] = now_isodt_str()
 
-    try:
-        run_speedtest(args, conf)
-    except KeyboardInterrupt as e:
-        raise e
-    finally:
-        end_event.set()
+    run_speedtest(args, conf)

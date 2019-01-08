@@ -1,8 +1,9 @@
 from sbws.lib.resultdump import ResultDump
 from sbws.lib.resultdump import ResultSuccess, ResultErrorCircuit
 from sbws.lib.relayprioritizer import RelayPrioritizer
-from threading import Event
 from unittest.mock import patch
+
+from sbws import settings
 
 
 def static_time(value):
@@ -41,8 +42,7 @@ def test_relayprioritizer_general(time_mock, sbwshome_empty, args,
                                   persistent_launch_tor):
     now = 1000000
     time_mock.side_effect = static_time(now)
-    end_event = Event()
-    rd = ResultDump(args, conf, end_event)
+    rd = ResultDump(args, conf)
     try:
         rp = RelayPrioritizer(args, conf, rl, rd)
         results = []
@@ -66,4 +66,4 @@ def test_relayprioritizer_general(time_mock, sbwshome_empty, args,
             relay = best_list[pos]
             assert relay.nickname == nick
     finally:
-        end_event.set()
+        settings.end_event.set()

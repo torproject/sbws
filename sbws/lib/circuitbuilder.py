@@ -56,17 +56,12 @@ class CircuitBuilder:
         raise NotImplementedError()
 
     def close_circuit(self, circ_id):
-        c = self.controller
         try:
-            c.get_circuit(circ_id, default=None)
-            try:
-                c.close_circuit(circ_id)
-            # SocketClosed will be raised when stopping sbws
-            except (InvalidArguments, InvalidRequest, SocketClosed) as e:
-                log.debug(e)
-            self.built_circuits.discard(circ_id)
-        except (ControllerError, ValueError) as e:
-            log.exception("Error trying to get circuit to close it: %s.", e)
+            self.controller.close_circuit(circ_id)
+        # SocketClosed will be raised when stopping sbws
+        except (InvalidArguments, InvalidRequest, SocketClosed) as e:
+            log.debug(e)
+        self.built_circuits.discard(circ_id)
 
     def _build_circuit_impl(self, path):
         """

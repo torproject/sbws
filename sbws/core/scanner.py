@@ -1,5 +1,8 @@
 ''' Measure the relays. '''
 
+import signal
+import sys
+
 from ..lib.circuitbuilder import GapsCircuitBuilder as CB
 from ..lib.resultdump import ResultDump
 from ..lib.resultdump import ResultSuccess, ResultErrorCircuit
@@ -29,6 +32,24 @@ log = logging.getLogger(__name__)
 pool = None
 rd = None
 controller = None
+
+
+def stop_threads():
+    global rd, pool
+    log.debug('Stopping sbws.')
+    # Avoid new threads to start.
+    settings.set_end_event()
+    # Stop Pool threads
+    pool.close()
+    pool.join()
+    # Stop ResultDump thread
+    rd.thread.join()
+    # Stop Tor thread
+    controller.close()
+    sys.exit(0)
+
+
+signal.signal(signal.SIGTERM, stop_threads)
 
 
 def timed_recv_from_server(session, dest, byte_range):

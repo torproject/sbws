@@ -315,8 +315,18 @@ def _next_expected_amount(expected_amount, result_time, download_times,
 def result_putter(result_dump):
     ''' Create a function that takes a single argument -- the measurement
     result -- and return that function so it can be used by someone else '''
+
     def closure(measurement_result):
-        return result_dump.queue.put(measurement_result)
+        # in case the queue is full, wait until is not.
+        # Since result_dump thread is calling queue.get() every second,
+        # the queue should be full for only 1 second.
+        while result_dump.queue.full():
+            log.info('The results queue is full, after 1 second it should '
+                     'not be full.')
+            time.sleep(1)
+        # Non blocking, wait a maximum of 1 second if the queue is full.
+        # Because of the timeout, the previous while should not be needed.
+        result_dump.queue.put(measurement_result, timeout=1)
     return closure
 
 

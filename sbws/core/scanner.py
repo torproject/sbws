@@ -354,6 +354,37 @@ def result_putter_error(target):
     return closure
 
 
+def main_loop(args, conf, controller, relay_list, circuit_builder, result_dump,
+              relay_prioritizer, destinations, max_pending_results, pool):
+    pending_results = []
+    while not settings.end_event.is_set():
+        num_relays = 0
+        loop_tstart = time.time()
+        for target in relay_prioritizer.best_priority():
+            if settings.end_event.is_set():
+                break
+            num_relays += 1
+            log.debug('Measuring %s %s', target.nickname,
+                      target.fingerprint[0:8])
+            callback = result_putter(result_dump)
+            callback_err = result_putter_error(target)
+            async_result = pool.apply_async(
+                dispatch_worker_thread,
+                [args, conf, destinations, circuit_builder, relay_list,
+                 target], {}, callback, callback_err)
+            pending_results.append(async_result)
+            log.debug(async_result)
+            while len(pending_results) >= max_pending_results:
+                time.sleep(5)
+                pending_results = [r for r in pending_results if not r.ready()]
+        while len(pending_results) > 0:
+            time.sleep(5)
+            pending_results = [r for r in pending_results if not r.ready()]
+        loop_tstop = time.time()
+        loop_tdelta = (loop_tstop - loop_tstart) / 60
+        log.debug("Measured %s relays in %s minutes", num_relays, loop_tdelta)
+
+
 def run_speedtest(args, conf):
     global rd, pool, controller
     controller, _ = stem_utils.init_controller(
@@ -382,31 +413,14 @@ def run_speedtest(args, conf):
         fail_hard(error_msg)
     max_pending_results = conf.getint('scanner', 'measurement_threads')
     pool = Pool(max_pending_results)
-    pending_results = []
-    while True:
-        num_relays = 0
-        loop_tstart = time.time()
-        log.info("Starting a new loop to measure relays.")
-        for target in rp.best_priority():
-            num_relays += 1
-            log.debug('Measuring %s %s', target.nickname,
-                      target.fingerprint[0:8])
-            callback = result_putter(rd)
-            callback_err = result_putter_error(target)
-            async_result = pool.apply_async(
-                dispatch_worker_thread,
-                [args, conf, destinations, cb, rl, target],
-                {}, callback, callback_err)
-            pending_results.append(async_result)
-            while len(pending_results) >= max_pending_results:
-                time.sleep(5)
-                pending_results = [r for r in pending_results if not r.ready()]
-        while len(pending_results) > 0:
-            time.sleep(5)
-            pending_results = [r for r in pending_results if not r.ready()]
-        loop_tstop = time.time()
-        loop_tdelta = (loop_tstop - loop_tstart) / 60
-        log.info("Measured %s relays in %s minutes", num_relays, loop_tdelta)
+
+    try:
+        main_loop(args, conf, controller, rl, cb, rd, rp, destinations,
+                  max_pending_results, pool)
+    except KeyboardInterrupt:
+        log.info("Interrupted by the user.")
+    finally:
+        stop_threads()
 
 
 def gen_parser(sub):

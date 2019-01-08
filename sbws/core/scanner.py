@@ -39,9 +39,11 @@ def timed_recv_from_server(session, dest, byte_range):
     try:
         requests_utils.get(
             session, dest.url, headers=headers, verify=dest.verify)
-    except requests.exceptions.ConnectionError as e:
-        return False, e
-    except requests.exceptions.ReadTimeout as e:
+    # NewConnectionError will be raised when shutting down.
+    except (requests.exceptions.ConnectionError,
+            requests.exceptions.ReadTimeout,
+            requests.exceptions.NewConnectionError) as e:
+        log.debug(e)
         return False, e
     end_time = time.time()
     return True, end_time - start_time

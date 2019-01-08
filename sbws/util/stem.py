@@ -1,7 +1,9 @@
+import socks
+
 from stem.control import (Controller, Listener)
 from stem import (SocketError, InvalidRequest, UnsatisfiableRequest,
                   OperationFailed, ControllerError, InvalidArguments,
-                  ProtocolError)
+                  ProtocolError, SocketClosed)
 from stem.connection import IncorrectSocketType
 import stem.process
 from configparser import ConfigParser
@@ -250,8 +252,9 @@ def circuit_str(controller, circ_id):
         log.warning('Circuit %s no longer seems to exist so can\'t return '
                     'a valid circuit string for it: %s', circ_id, e)
         return None
-    except ControllerError as e:
-        log.exception("Exception trying to get circuit string %s", e)
+    # exceptions raised when stopping the scanner
+    except (ControllerError, SocketClosed, socks.GeneralProxyError) as e:
+        log.debug(e)
         return None
     return '[' +\
         ' -> '.join(['{} ({})'.format(n, fp[0:8]) for fp, n in circ.path]) +\

@@ -1,5 +1,5 @@
 from stem import CircuitExtensionFailed, InvalidRequest, ProtocolError, Timeout
-from stem import InvalidArguments, ControllerError
+from stem import InvalidArguments, ControllerError, SocketClosed
 import random
 from .relaylist import Relay
 import logging
@@ -61,8 +61,9 @@ class CircuitBuilder:
             c.get_circuit(circ_id, default=None)
             try:
                 c.close_circuit(circ_id)
-            except (InvalidArguments, InvalidRequest):
-                pass
+            # SocketClosed will be raised when stopping sbws
+            except (InvalidArguments, InvalidRequest, SocketClosed) as e:
+                log.debug(e)
             self.built_circuits.discard(circ_id)
         except (ControllerError, ValueError) as e:
             log.exception("Error trying to get circuit to close it: %s.", e)

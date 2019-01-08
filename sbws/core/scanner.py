@@ -24,6 +24,11 @@ from .. import settings
 
 rng = random.SystemRandom()
 log = logging.getLogger(__name__)
+# Declare the objects that manage the threads global so that sbws can exit
+# gracefully at any time.
+pool = None
+rd = None
+controller = None
 
 
 def timed_recv_from_server(session, dest, byte_range):
@@ -329,6 +334,7 @@ def result_putter_error(target):
 
 
 def run_speedtest(args, conf):
+    global rd, pool, controller
     controller, _ = stem_utils.init_controller(
         path=conf.getpath('tor', 'control_socket'))
     if not controller:

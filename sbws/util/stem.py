@@ -117,10 +117,54 @@ def _init_controller_socket(socket):
     return c
 
 
+def parse_user_torrc_config(torrc, torrc_text):
+    """Parse the user configuration torrc text call `extra_lines`
+    to a dictionary suitable to use with stem and return a new torrc
+    dictionary that merges that dictionary with the existing torrc.
+    Example:
+        [tor]
+        extra_lines =
+            Log debug file /tmp/tor-debug.log
+            NumCPUs 1
+    """
+    torrc_dict = torrc.copy()
+    for line in torrc_text.split('\n'):
+        # Remove leading and trailing whitespace, if any
+        line = line.strip()
+        # Ignore blank lines
+        if len(line) < 1:
+            continue
+        # The way stem handles configuring Tor with a dictionary is the first
+        # word is a key and the remaining words are the value.
+        kv = line.split(None, 1)
+        if len(kv) < 2:
+            fail_hard('All torrc lines must have 2 or more words. "%s" has '
+                      'fewer', line)
+        key, value = kv
+        log.debug('Adding "%s %s" to torrc with which we are launching Tor',
+                  key, value)
+        # It's really easy to add to the torrc if the key doesn't exist
+        if key not in torrc:
+            torrc_dict.update({key: value})
+        # But if it does, we have to make a list of values. For example, say
+        # the user wants to add a SocksPort and we already have
+        # 'SocksPort auto' in the torrc. We'll go from
+        #     torrc['SocksPort'] == 'auto'
+        # to
+        #     torrc['SocksPort'] == ['auto', '9050']
+        else:
+            existing_val = torrc[key]
+            if isinstance(existing_val, str):
+                torrc_dict.update({key: [existing_val, value]})
+            else:
+                assert isinstance(existing_val, list)
+                existing_val.append(value)
+                torrc_dict.update({key: existing_val})
+    return torrc_dict
+
+
 def launch_tor(conf):
     assert isinstance(conf, ConfigParser)
-    # Inform Tor is being launched, since it takes some seconds.
-    log.info("Launching Tor...")
     os.makedirs(conf.getpath('tor', 'datadir'), mode=0o700, exist_ok=True)
     os.makedirs(conf.getpath('tor', 'log'), exist_ok=True)
     os.makedirs(conf.getpath('tor', 'run_dpath'), mode=0o700, exist_ok=True)
@@ -141,53 +185,8 @@ def launch_tor(conf):
         'LearnCircuitBuildTimeout': '0',
         'CircuitBuildTimeout': conf['general']['circuit_timeout'],
     })
-    # This block of code reads additional torrc lines from the user's
-    # config.ini so they can add arbitrary additional options.
-    #
-    # The user can't replace our options, only add to them. For example,
-    # there's no way to remove 'SocksPort auto' (if it is still in
-    # TORRC_STARTING_POINT). If you add a SocksPort in your config.ini, you'll
-    # open two socks ports.
-    #
-    # As an example, maybe the user hates their HDD and wants to fill it with
-    # debug logs, and wants to tell Tor to use only 1 CPU core.
-    #
-    #     [tor]
-    #     extra_lines =
-    #         Log debug file /tmp/tor-debug.log
-    #         NumCPUs 1
-    for line in conf['tor']['extra_lines'].split('\n'):
-        # Remove leading and trailing whitespace, if any
-        line = line.strip()
-        # Ignore blank lines
-        if len(line) < 1:
-            continue
-        # The way stem handles configuring Tor with a dictionary is the first
-        # word is a key and the remaining words are the value.
-        kv = line.split(None, 1)
-        if len(kv) < 2:
-            fail_hard('All torrc lines must have 2 or more words. "%s" has '
-                      'fewer', line)
-        key, value = kv
-        log.info('Adding "%s %s" to torrc with which we are launching Tor',
-                 key, value)
-        # It's really easy to add to the torrc if the key doesn't exist
-        if key not in torrc:
-            torrc.update({key: value})
-        # But if it does, we have to make a list of values. For example, say
-        # the user wants to add a SocksPort and we already have
-        # 'SocksPort auto' in the torrc. We'll go from
-        #     torrc['SocksPort'] == 'auto'
-        # to
-        #     torrc['SocksPort'] == ['auto', '9050']
-        else:
-            existing_val = torrc[key]
-            if isinstance(existing_val, str):
-                torrc.update({key: [existing_val, value]})
-            else:
-                assert isinstance(existing_val, list)
-                existing_val.append(value)
-                torrc.update({key: existing_val})
+
+    torrc = parse_user_torrc_config(torrc, conf['tor']['extra_lines'])
     # Finally launch Tor
     try:
         stem.process.launch_tor_with_config(

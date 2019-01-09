@@ -139,6 +139,8 @@ logging
     Whether or not to log to stdout. (Default: yes)
   to_syslog = {yes, no}
     Whether or not to log to syslog. (Default: no)
+    NOTE that when sbws is launched by systemd, stdout goes to journal and
+    syslog.
   to_file_max_bytes = INT
     If logging to file, how large (in bytes) should the file be allowed to get
     before rotating to a new one. 10485760 is 10 MiB. If zero or number of

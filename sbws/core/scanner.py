@@ -382,6 +382,11 @@ def run_speedtest(args, conf):
         loop_tstop = time.time()
         loop_tdelta = (loop_tstop - loop_tstart) / 60
         log.info("Measured %s relays in %s minutes", num_relays, loop_tdelta)
+        # In a testing network, exit after first loop
+        if controller.get_conf('TestingTorNetwork') == '1':
+            log.info("In a testing network, exiting after the first loop.")
+            # Threads should be closed nicely in some refactor
+            exit(0)
 
 
 def gen_parser(sub):

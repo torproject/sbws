@@ -1,6 +1,7 @@
-import os
 import fcntl
 import logging
+import os
+
 from sbws.globals import fail_hard
 
 log = logging.getLogger(__name__)

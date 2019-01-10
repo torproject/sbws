@@ -1,16 +1,17 @@
-from stem.control import (Controller, Listener)
-from stem import (SocketError, InvalidRequest, UnsatisfiableRequest,
-                  OperationFailed, ControllerError, InvalidArguments,
-                  ProtocolError)
-from stem.connection import IncorrectSocketType
-import stem.process
-from configparser import ConfigParser
-from threading import RLock
 import copy
 import logging
 import os
-from sbws.globals import fail_hard
-from sbws.globals import TORRC_STARTING_POINT
+from configparser import ConfigParser
+from threading import RLock
+
+import stem.process
+from stem import (ControllerError, InvalidArguments, InvalidRequest,
+                  OperationFailed, ProtocolError, SocketError,
+                  UnsatisfiableRequest)
+from stem.connection import IncorrectSocketType
+from stem.control import Controller, Listener
+
+from sbws.globals import TORRC_STARTING_POINT, fail_hard
 
 log = logging.getLogger(__name__)
 stream_building_lock = RLock()

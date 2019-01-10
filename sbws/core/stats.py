@@ -1,16 +1,13 @@
-from sbws.globals import fail_hard
-from sbws.lib.resultdump import Result
-from sbws.lib.resultdump import ResultError
-from sbws.lib.resultdump import ResultErrorCircuit
-from sbws.lib.resultdump import ResultErrorStream
-from sbws.lib.resultdump import ResultSuccess
-from sbws.lib.resultdump import load_recent_results_in_datadir
-from argparse import ArgumentDefaultsHelpFormatter
-import os
-from datetime import datetime
-from datetime import timedelta
-from statistics import mean
 import logging
+import os
+from argparse import ArgumentDefaultsHelpFormatter
+from datetime import datetime, timedelta
+from statistics import mean
+
+from sbws.globals import fail_hard
+from sbws.lib.resultdump import (Result, ResultError, ResultErrorCircuit,
+                                 ResultErrorStream, ResultSuccess,
+                                 load_recent_results_in_datadir)
 
 log = logging.getLogger(__name__)
 

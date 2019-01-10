@@ -1,5 +1,6 @@
 """Common pytest configuration for unit and integration tests."""
 import pytest
+
 from sbws.util.parser import create_parser
 
 

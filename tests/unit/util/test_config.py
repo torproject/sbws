@@ -1,5 +1,6 @@
-import sbws.util.config as con
 from configparser import ConfigParser
+
+import sbws.util.config as con
 
 
 class PseudoSection:

@@ -1,13 +1,13 @@
+import logging
+import os
+from argparse import ArgumentDefaultsHelpFormatter
 from math import ceil
 
-from sbws.globals import (fail_hard, SBWS_SCALE_CONSTANT, TORFLOW_SCALING,
-                          SBWS_SCALING, TORFLOW_BW_MARGIN, PROP276_ROUND_DIG,
-                          DAY_SECS, NUM_MIN_RESULTS)
-from sbws.lib.v3bwfile import V3BWFile
+from sbws.globals import (DAY_SECS, NUM_MIN_RESULTS, PROP276_ROUND_DIG,
+                          SBWS_SCALE_CONSTANT, SBWS_SCALING, TORFLOW_BW_MARGIN,
+                          TORFLOW_SCALING, fail_hard)
 from sbws.lib.resultdump import load_recent_results_in_datadir
-from argparse import ArgumentDefaultsHelpFormatter
-import os
-import logging
+from sbws.lib.v3bwfile import V3BWFile
 from sbws.util.timestamp import now_fname
 
 log = logging.getLogger(__name__)

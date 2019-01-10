@@ -1,14 +1,14 @@
 """pytest configuration for unit tests."""
 import argparse
-import pytest
-from datetime import datetime
 import os
+from datetime import datetime
+
+import pytest
 
 from sbws.globals import RESULT_VERSION
-from sbws.lib.resultdump import (ResultErrorStream, ResultSuccess, Result)
-from sbws.lib.resultdump import write_result_to_datadir
+from sbws.lib.resultdump import (Result, ResultErrorStream, ResultSuccess,
+                                 write_result_to_datadir)
 from sbws.util.config import _get_default_config
-
 
 TIME1 = 1529232277.9028733
 TIME2 = datetime.utcnow().timestamp()

@@ -1,26 +1,27 @@
 ''' Measure the relays. '''
 
-from ..lib.circuitbuilder import GapsCircuitBuilder as CB
-from ..lib.resultdump import ResultDump
-from ..lib.resultdump import ResultSuccess, ResultErrorCircuit
-from ..lib.resultdump import ResultErrorStream
-from ..lib.relaylist import RelayList
-from ..lib.relayprioritizer import RelayPrioritizer
-from ..lib.destination import DestinationList
-from ..util.timestamp import now_isodt_str
-from ..util.state import State
-from sbws.globals import fail_hard
-import sbws.util.stem as stem_utils
-import sbws.util.requests as requests_utils
+import logging
+import os
+import random
+import time
 from argparse import ArgumentDefaultsHelpFormatter
 from multiprocessing.dummy import Pool
 from threading import Event
-import time
-import os
-import logging
-import requests
-import random
 
+import requests
+
+import sbws.util.requests as requests_utils
+import sbws.util.stem as stem_utils
+from sbws.globals import fail_hard
+
+from ..lib.circuitbuilder import GapsCircuitBuilder as CB
+from ..lib.destination import DestinationList
+from ..lib.relaylist import RelayList
+from ..lib.relayprioritizer import RelayPrioritizer
+from ..lib.resultdump import (ResultDump, ResultErrorCircuit,
+                              ResultErrorStream, ResultSuccess)
+from ..util.state import State
+from ..util.timestamp import now_isodt_str
 
 rng = random.SystemRandom()
 end_event = Event()

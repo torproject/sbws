@@ -1,9 +1,9 @@
+import logging
 import os.path
+from unittest.mock import patch
 
 import sbws.core.stats
 from tests.unit.globals import monotonic_time
-from unittest.mock import patch
-import logging
 
 
 def test_stats_initted(sbwshome_empty, args, conf, caplog):

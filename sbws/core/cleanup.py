@@ -1,17 +1,16 @@
 """Util functions to cleanup disk space."""
-import types
-
-from sbws.util.filelock import DirectoryLock
-from sbws.globals import fail_hard
-from sbws.util.timestamp import unixts_to_dt_obj
-from argparse import ArgumentDefaultsHelpFormatter
-from datetime import datetime
-from datetime import timedelta
-import os
 import gzip
-import shutil
 import logging
+import os
+import shutil
 import time
+import types
+from argparse import ArgumentDefaultsHelpFormatter
+from datetime import datetime, timedelta
+
+from sbws.globals import fail_hard
+from sbws.util.filelock import DirectoryLock
+from sbws.util.timestamp import unixts_to_dt_obj
 
 log = logging.getLogger(__name__)
 

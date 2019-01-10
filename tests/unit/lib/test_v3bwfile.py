@@ -5,12 +5,12 @@ import math
 import os.path
 
 from sbws import __version__ as version
-from sbws.globals import (SPEC_VERSION, SBWS_SCALING, TORFLOW_SCALING,
-                          MIN_REPORT, TORFLOW_ROUND_DIG, PROP276_ROUND_DIG)
-from sbws.lib.resultdump import Result, load_result_file, ResultSuccess
-from sbws.lib.v3bwfile import (V3BWHeader, V3BWLine, TERMINATOR, LINE_SEP,
-                               KEYVALUE_SEP_V1, num_results_of_type,
-                               V3BWFile, round_sig_dig)
+from sbws.globals import (MIN_REPORT, PROP276_ROUND_DIG, SBWS_SCALING,
+                          SPEC_VERSION, TORFLOW_ROUND_DIG, TORFLOW_SCALING)
+from sbws.lib.resultdump import Result, ResultSuccess, load_result_file
+from sbws.lib.v3bwfile import (KEYVALUE_SEP_V1, LINE_SEP, TERMINATOR, V3BWFile,
+                               V3BWHeader, V3BWLine, num_results_of_type,
+                               round_sig_dig)
 from sbws.util.timestamp import now_fname, now_isodt_str, now_unixts
 
 timestamp = 1523974147

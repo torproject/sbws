@@ -1,7 +1,8 @@
 """pytest configuration for integration tests."""
 import argparse
-import pytest
 import os
+
+import pytest
 
 from sbws.lib.circuitbuilder import GapsCircuitBuilder as CB
 from sbws.lib.destination import DestinationList

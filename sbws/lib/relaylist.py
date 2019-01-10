@@ -1,10 +1,11 @@
-from stem.descriptor.router_status_entry import RouterStatusEntryV3
-from stem.descriptor.server_descriptor import ServerDescriptor
-from stem import Flag, DescriptorUnavailable, ControllerError
+import logging
 import random
 import time
-import logging
 from threading import Lock
+
+from stem import ControllerError, DescriptorUnavailable, Flag
+from stem.descriptor.router_status_entry import RouterStatusEntryV3
+from stem.descriptor.server_descriptor import ServerDescriptor
 
 log = logging.getLogger(__name__)
 

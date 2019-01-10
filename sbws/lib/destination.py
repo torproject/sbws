@@ -1,13 +1,15 @@
 import logging
+import os
 import random
 import time
-import os
 from threading import RLock
-import requests
 from urllib.parse import urlparse
+
+import requests
 from stem.control import EventType
-import sbws.util.stem as stem_utils
+
 import sbws.util.requests as requests_utils
+import sbws.util.stem as stem_utils
 
 log = logging.getLogger(__name__)
 

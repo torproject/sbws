@@ -1,8 +1,10 @@
-from stem import CircuitExtensionFailed, InvalidRequest, ProtocolError, Timeout
-from stem import InvalidArguments, ControllerError
-import random
-from .relaylist import Relay
 import logging
+import random
+
+from stem import (CircuitExtensionFailed, ControllerError, InvalidArguments,
+                  InvalidRequest, ProtocolError, Timeout)
+
+from .relaylist import Relay
 
 log = logging.getLogger(__name__)
 

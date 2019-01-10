@@ -1,16 +1,17 @@
 """Util functions to manage sbws configuration files."""
 
-from configparser import (ConfigParser, ExtendedInterpolation)
-from configparser import InterpolationMissingOptionError
-import os
 import logging
 import logging.config
-from urllib.parse import urlparse
+import os
+from configparser import (ConfigParser, ExtendedInterpolation,
+                          InterpolationMissingOptionError)
 from string import Template
 from tempfile import NamedTemporaryFile
+from urllib.parse import urlparse
+
 from sbws.globals import (DEFAULT_CONFIG_PATH, DEFAULT_LOG_CONFIG_PATH,
-                          USER_CONFIG_PATH, SUPERVISED_RUN_DPATH,
-                          SUPERVISED_USER_CONFIG_PATH)
+                          SUPERVISED_RUN_DPATH, SUPERVISED_USER_CONFIG_PATH,
+                          USER_CONFIG_PATH)
 
 _ALPHANUM = 'abcdefghijklmnopqrstuvwxyz'
 _ALPHANUM += _ALPHANUM.upper()

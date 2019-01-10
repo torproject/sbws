@@ -1,6 +1,7 @@
-from sbws.util.filelock import FileLock
-import os
 import json
+import os
+
+from sbws.util.filelock import FileLock
 
 
 class State:

@@ -5,7 +5,6 @@ from datetime import datetime, timezone
 from sbws.util.timestamp import (dt_obj_to_isodt_str, unixts_to_dt_obj,
                                  unixts_to_isodt_str, unixts_to_str)
 
-
 isodt_str = '2018-05-23T12:55:04'
 dt_obj = datetime.strptime(isodt_str, '%Y-%m-%dT%H:%M:%S')
 unixts = int(dt_obj.replace(tzinfo=timezone.utc).timestamp())

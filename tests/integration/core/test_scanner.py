@@ -1,8 +1,9 @@
+import logging
+
 import pytest
 
 from sbws.core.scanner import measure_relay
 from sbws.lib.resultdump import ResultSuccess
-import logging
 
 
 def assert_within(value, target, radius):

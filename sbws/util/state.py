@@ -5,7 +5,7 @@ from sbws.util.filelock import FileLock
 
 
 class State:
-    '''
+    """
     State allows one to atomically access and update a simple state file on
     disk across threads and across processes.
 
@@ -41,7 +41,7 @@ class State:
     >>> # We can do many of the same things with a State object as with a dict
     >>> for key in state: print(key)
     >>> # Prints 'linux', 'age', and 'name'
-    '''
+    """
     _ALLOWED_TYPES = (int, float, str, bool, type(None))
 
     def __init__(self, fname):

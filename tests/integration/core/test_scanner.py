@@ -7,12 +7,12 @@ from sbws.lib.resultdump import ResultSuccess
 
 
 def assert_within(value, target, radius):
-    '''
+    """
     Assert that **value** is within **radius** of **target**
 
     If target is 10 and radius is 2, value can be anywhere between 8 and 12
     inclusive
-    '''
+    """
     assert target - radius < value, 'Value is too small. {} is not within '\
         '{} of {}'.format(value, radius, target)
     assert target + radius > value, 'Value is too big. {} is not within '\

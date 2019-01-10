@@ -1,4 +1,4 @@
-''' Measure the relays. '''
+"""Measure the relays. """
 
 import logging
 import os
@@ -29,9 +29,9 @@ log = logging.getLogger(__name__)
 
 
 def timed_recv_from_server(session, dest, byte_range):
-    ''' Request the **byte_range** from the URL at **dest**. If successful,
+    """Request the **byte_range** from the URL at **dest**. If successful,
     return True and the time it took to download. Otherwise return False and an
-    exception. '''
+    exception. """
     headers = {'Range': byte_range, 'Accept-Encoding': 'identity'}
     start_time = time.time()
     # TODO:
@@ -49,13 +49,13 @@ def timed_recv_from_server(session, dest, byte_range):
 
 
 def get_random_range_string(content_length, size):
-    '''
+    """
     Return a random range of bytes of length **size**. **content_length** is
     the size of the file we will be requesting a range of bytes from.
 
     For example, for content_length of 100 and size 10, this function will
     return one of the following: '0-9', '1-10', '2-11', [...] '89-98', '90-99'
-    '''
+    """
     assert size <= content_length
     # start can be anywhere in the content_length as long as it is **size**
     # bytes away from the end or more. Because range is [start, end) (doesn't
@@ -73,7 +73,7 @@ def get_random_range_string(content_length, size):
 
 
 def measure_rtt_to_server(session, conf, dest, content_length):
-    ''' Make multiple end-to-end RTT measurements by making small HTTP requests
+    """Make multiple end-to-end RTT measurements by making small HTTP requests
     over a circuit + stream that should already exist, persist, and not need
     rebuilding. If something goes wrong and not all of the RTT measurements can
     be made, return None. Otherwise return a list of the RTTs (in seconds).
@@ -81,7 +81,7 @@ def measure_rtt_to_server(session, conf, dest, content_length):
     :returns tuple: results or None if the if the measurement fail.
         None or exception if the measurement fail.
 
-    '''
+    """
     rtts = []
     size = conf.getint('scanner', 'min_download_size')
     for _ in range(0, conf.getint('scanner', 'num_rtts')):
@@ -142,11 +142,11 @@ def measure_bandwidth_to_server(session, conf, dest, content_length):
 
 
 def _pick_ideal_second_hop(relay, dest, rl, cont, is_exit):
-    '''
+    """
     Sbws builds two hop circuits. Given the **relay** to measure with
     destination **dest**, pick a second relay that is or is not an exit
     according to **is_exit**.
-    '''
+    """
     candidates = rl.exits_not_bad_allowing_port(dest.port) if is_exit \
         else rl.non_exits
     if not len(candidates):
@@ -314,17 +314,17 @@ def _next_expected_amount(expected_amount, result_time, download_times,
 
 
 def result_putter(result_dump):
-    ''' Create a function that takes a single argument -- the measurement
-    result -- and return that function so it can be used by someone else '''
+    """Create a function that takes a single argument -- the measurement
+    result -- and return that function so it can be used by someone else """
     def closure(measurement_result):
         return result_dump.queue.put(measurement_result)
     return closure
 
 
 def result_putter_error(target):
-    ''' Create a function that takes a single argument -- an error from a
+    """Create a function that takes a single argument -- an error from a
     measurement -- and return that function so it can be used by someone else
-    '''
+    """
     def closure(err):
         log.error('Unhandled exception caught while measuring %s: %s %s',
                   target.nickname, type(err), err)

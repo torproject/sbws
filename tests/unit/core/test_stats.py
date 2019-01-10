@@ -7,10 +7,10 @@ from tests.unit.globals import monotonic_time
 
 
 def test_stats_initted(sbwshome_empty, args, conf, caplog):
-    '''
+    """
     An initialized but rather empty .sbws directory should fail about missing
     ~/.sbws/datadir
-    '''
+    """
     try:
         sbws.core.stats.main(args, conf)
     except SystemExit as e:
@@ -23,10 +23,10 @@ def test_stats_initted(sbwshome_empty, args, conf, caplog):
 
 def test_stats_stale_result(args, conf, caplog,
                             sbwshome_success_result):
-    '''
+    """
     An initialized .sbws directory with no fresh results should say so and
     exit cleanly
-    '''
+    """
     caplog.set_level(logging.DEBUG)
     sbws.core.stats.main(args, conf)
     assert 'No fresh results' == caplog.records[-1].getMessage()
@@ -35,10 +35,10 @@ def test_stats_stale_result(args, conf, caplog,
 @patch('time.time')
 def test_stats_fresh_result(time_mock, sbwshome_error_result, args, conf,
                             capsys, caplog):
-    '''
+    """
     An initialized .sbws directory with a fresh error result should have some
     boring stats and exit cleanly
-    '''
+    """
     args.error_types = False
     start = 1529232278
     time_mock.side_effect = monotonic_time(start=start)
@@ -67,10 +67,10 @@ def test_stats_fresh_result(time_mock, sbwshome_error_result, args, conf,
 @patch('time.time')
 def test_stats_fresh_results(time_mock, sbwshome_success_result_two_relays,
                              args, conf, capsys, caplog):
-    '''
+    """
     An initialized .sbws directory with a fresh error and fresh success should
     have some exciting stats and exit cleanly
-    '''
+    """
     caplog.set_level(logging.DEBUG)
     start = 1529232278
     time_mock.side_effect = monotonic_time(start=start)

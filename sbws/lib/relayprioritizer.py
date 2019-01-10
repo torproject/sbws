@@ -23,7 +23,7 @@ class RelayPrioritizer:
             'relayprioritizer', 'fraction_relays')
 
     def best_priority(self):
-        ''' Return a generator containing the best priority relays.
+        """Return a generator containing the best priority relays.
 
         NOTE: A lower value for priority means better priority. Remember your
         data structures class in university and consider this something like a
@@ -43,7 +43,7 @@ class RelayPrioritizer:
         with equal weight as successful results, then it would take a while to
         get around to giving the relay another chance at a getting a successful
         measurement.
-        '''
+        """
         fn_tstart = Decimal(time.time())
         relays = set(copy.deepcopy(self.relay_list.relays))
         if not self.measure_authorities:

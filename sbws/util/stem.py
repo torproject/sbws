@@ -18,8 +18,8 @@ stream_building_lock = RLock()
 
 
 def attach_stream_to_circuit_listener(controller, circ_id):
-    ''' Returns a function that should be given to add_event_listener(). It
-    looks for newly created streams and attaches them to the given circ_id '''
+    """Returns a function that should be given to add_event_listener(). It
+    looks for newly created streams and attaches them to the given circ_id """
 
     def closure_stream_event_listener(st):
         if st.status == 'NEW' and st.purpose == 'USER':
@@ -211,8 +211,8 @@ def launch_tor(conf):
 
 
 def get_socks_info(controller):
-    ''' Returns the first SocksPort Tor is configured to listen on, in the form
-    of an (address, port) tuple '''
+    """Returns the first SocksPort Tor is configured to listen on, in the form
+    of an (address, port) tuple """
     try:
         socks_ports = controller.get_listeners(Listener.SOCKS)
         return socks_ports[0]
@@ -222,12 +222,12 @@ def get_socks_info(controller):
 
 
 def only_relays_with_bandwidth(controller, relays, min_bw=None, max_bw=None):
-    '''
+    """
     Given a list of relays, only return those that optionally have above
     **min_bw** and optionally have below **max_bw**, inclusively. If neither
     min_bw nor max_bw are given, essentially just returns the input list of
     relays.
-    '''
+    """
     assert min_bw is None or min_bw >= 0
     assert max_bw is None or max_bw >= 0
     ret = []

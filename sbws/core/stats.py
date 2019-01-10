@@ -40,10 +40,10 @@ def _result_type_per_relay(data, result_type):
 
 
 def _get_box_plot_values(iterable):
-    ''' Reutrn the min, q1, med, q1, and max of the input list or iterable.
+    """Reutrn the min, q1, med, q1, and max of the input list or iterable.
     This function is NOT perfect, and I think that's fine for basic statistical
     needs. Instead of median, it will return low or high median. Same for q1
-    and q3. '''
+    and q3. """
     if not isinstance(iterable, list):
         iterable = list(iterable)
     iterable.sort()
@@ -75,14 +75,14 @@ def _print_averages(data):
 
 
 def _results_into_bandwidths(results, limit=5):
-    '''
+    """
     For all the given resutls, extract their download statistics and normalize
     them into bytes/second bandwidths.
 
     :param list results: list of :class:`sbws.list.resultdump.ResultSuccess`
     :param int limit: The maximum number of bandwidths to return
     :returns: list of up to `limit` bandwidths, with the largest first
-    '''
+    """
     downloads = []
     for result in results:
         assert isinstance(result, ResultSuccess)
@@ -92,14 +92,14 @@ def _results_into_bandwidths(results, limit=5):
 
 
 def print_stats(args, data):
-    '''
+    """
     Called from main to print various statistics about the organized **data**
     to stdout.
 
     :param argparse.Namespace args: command line arguments
     :param dict data: keyed by relay fingerprint, and with values of
         :class:`sbws.lib.resultdump.Result` subclasses
-    '''
+    """
     results = []
     for fp in data:
         results.extend(data[fp])
@@ -132,12 +132,12 @@ def print_stats(args, data):
 
 
 def gen_parser(sub):
-    '''
+    """
     Helper function for the broader argument parser generating code that adds
     in all the possible command line arguments for the stats command.
 
     :param argparse._SubParsersAction sub: what to add a sub-parser to
-    '''
+    """
     d = 'Write some statistics about the data collected so far to stdout'
     p = sub.add_parser('stats', formatter_class=ArgumentDefaultsHelpFormatter,
                        description=d)
@@ -146,12 +146,12 @@ def gen_parser(sub):
 
 
 def main(args, conf):
-    '''
+    """
     Main entry point into the stats command.
 
     :param argparse.Namespace args: command line arguments
     :param configparser.ConfigParser conf: parsed config files
-    '''
+    """
 
     datadir = conf.getpath('paths', 'datadir')
     if not os.path.isdir(datadir):

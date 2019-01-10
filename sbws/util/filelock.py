@@ -30,7 +30,7 @@ class _FLock:
 
 
 class DirectoryLock(_FLock):
-    '''
+    """
     Holds a lock on a file in **dname** so that other sbws processes/threads
     won't try to read/write while we are reading/writing in this directory.
 
@@ -41,7 +41,7 @@ class DirectoryLock(_FLock):
     Note: The directory must already exist.
 
     :param str dname: Name of directory for which we want to obtain a lock
-    '''
+    """
     def __init__(self, dname):
         assert os.path.isdir(dname)
         lock_fname = os.path.join(dname, '.lockfile')
@@ -49,7 +49,7 @@ class DirectoryLock(_FLock):
 
 
 class FileLock(_FLock):
-    '''
+    """
     Holds a lock on **fname** so that other sbws processes/threads
     won't try to read/write while we are reading/writing this file.
 
@@ -58,7 +58,7 @@ class FileLock(_FLock):
     >>> # no longer have the lock
 
     :param str fname: Name of the file for which we want to obtain a lock
-    '''
+    """
     def __init__(self, fname):
         lock_fname = fname + '.lockfile'
         super().__init__(lock_fname)

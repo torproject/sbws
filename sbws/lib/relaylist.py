@@ -12,14 +12,14 @@ log = logging.getLogger(__name__)
 
 class Relay:
     def __init__(self, fp, cont, ns=None, desc=None):
-        '''
+        """
         Given a relay fingerprint, fetch all the information about a relay that
         sbws currently needs and store it in this class. Acts as an abstraction
         to hide the confusion that is Tor consensus/descriptor stuff.
 
         :param str fp: fingerprint of the relay.
         :param cont: active and valid stem Tor controller connection
-        '''
+        """
         assert isinstance(fp, str)
         assert len(fp) == 40
         if ns is not None:
@@ -128,10 +128,10 @@ class Relay:
 
 
 class RelayList:
-    ''' Keeps a list of all relays in the current Tor network and updates it
+    """Keeps a list of all relays in the current Tor network and updates it
     transparently in the background. Provides useful interfaces for getting
     only relays of a certain type.
-    '''
+    """
     REFRESH_INTERVAL = 300  # seconds
 
     def __init__(self, args, conf, controller):

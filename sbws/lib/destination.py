@@ -31,7 +31,7 @@ def _parse_verify_option(conf_section):
 
 
 def connect_to_destination_over_circuit(dest, circ_id, session, cont, max_dl):
-    '''
+    """
     Connect to **dest* over the given **circ_id** using the given Requests
     **session**. Make sure the destination seems usable. Return True and a
     dictionary of helpful information if we connected and the destination is
@@ -66,7 +66,7 @@ def connect_to_destination_over_circuit(dest, circ_id, session, cont, max_dl):
     :param cont Controller: them Stem library controller controlling Tor
     :returns: True and a dictionary if everything is in order and measurements
         should commence.  False and an error string otherwise.
-    '''
+    """
     assert isinstance(dest, Destination)
     error_prefix = 'When sending HTTP HEAD to {}, '.format(dest.url)
     with stem_utils.stream_building_lock:
@@ -104,9 +104,9 @@ class Destination:
         self._verify = verify
 
     def is_usable(self, circ_id, session, cont):
-        ''' Use **connect_to_destination_over_circuit** to determine if this
+        """Use **connect_to_destination_over_circuit** to determine if this
         destination is usable and return what it returns. Just a small wrapper.
-        '''
+        """
         if not isinstance(self.verify, bool):
             if not os.path.isfile(self.verify):
                 return False, '{} is believed to be a CA bundle file on disk '\
@@ -242,9 +242,9 @@ class DestinationList:
                                controller), ''
 
     def next(self):
-        '''
+        """
         Returns the next destination that should be used in a measurement
-        '''
+        """
         with self._usability_lock:
             while True:
                 if self._should_perform_usability_test():

@@ -1,6 +1,6 @@
 # Based on https://stackoverflow.com/a/3041990
 def query_yes_no(question, default='yes'):
-    '''
+    """
     Ask a yes/no question via input() and return the user's answer.
 
     :param str question: Prompt given to the user.
@@ -9,7 +9,7 @@ def query_yes_no(question, default='yes'):
         ``None`` (meaning an answer is required from the user).
     :returns: ``True`` if we ended up with a 'yes' answer, otherwise
         ``False``.
-    '''
+    """
     valid = {'yes': True, 'y': True, 'ye': True, 'no': False, 'n': False}
     if default is None:
         prompt = ' [y/n] '

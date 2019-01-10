@@ -1,11 +1,11 @@
+import os
+from argparse import ArgumentParser, RawTextHelpFormatter
+
 import sbws.core.cleanup
-import sbws.core.scanner
 import sbws.core.generate
+import sbws.core.scanner
 import sbws.core.stats
 from sbws import __version__
-
-from argparse import ArgumentParser, RawTextHelpFormatter
-import os
 
 
 def _default_dot_sbws_dname():

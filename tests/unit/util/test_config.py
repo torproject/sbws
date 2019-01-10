@@ -1,8 +1,10 @@
-import sbws.util.config as con
 from configparser import ConfigParser
+
+import sbws.util.config as con
 
 
 class PseudoSection:
+
     def __init__(self, key, value, mini=None, maxi=None):
         self.key = key
         self.value = value

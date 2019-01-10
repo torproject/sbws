@@ -1,16 +1,13 @@
-from sbws.globals import fail_hard
-from sbws.lib.resultdump import Result
-from sbws.lib.resultdump import ResultError
-from sbws.lib.resultdump import ResultErrorCircuit
-from sbws.lib.resultdump import ResultErrorStream
-from sbws.lib.resultdump import ResultSuccess
-from sbws.lib.resultdump import load_recent_results_in_datadir
-from argparse import ArgumentDefaultsHelpFormatter
-import os
-from datetime import datetime
-from datetime import timedelta
-from statistics import mean
 import logging
+import os
+from argparse import ArgumentDefaultsHelpFormatter
+from datetime import datetime, timedelta
+from statistics import mean
+
+from sbws.globals import fail_hard
+from sbws.lib.resultdump import (Result, ResultError, ResultErrorCircuit,
+                                 ResultErrorStream, ResultSuccess,
+                                 load_recent_results_in_datadir)
 
 log = logging.getLogger(__name__)
 
@@ -32,7 +29,8 @@ def _print_stats_error_types(data):
             continue
         number = counts[count_type]
         print('{}/{} ({:.2f}%) results were {}'.format(
-            number, counts['total'], 100*number/counts['total'], count_type))
+            number, counts['total'], 100 * number / counts['total'],
+            count_type))
 
 
 def _result_type_per_relay(data, result_type):
@@ -43,10 +41,10 @@ def _result_type_per_relay(data, result_type):
 
 
 def _get_box_plot_values(iterable):
-    ''' Reutrn the min, q1, med, q1, and max of the input list or iterable.
+    """Reutrn the min, q1, med, q1, and max of the input list or iterable.
     This function is NOT perfect, and I think that's fine for basic statistical
     needs. Instead of median, it will return low or high median. Same for q1
-    and q3. '''
+    and q3. """
     if not isinstance(iterable, list):
         iterable = list(iterable)
     iterable.sort()
@@ -55,7 +53,7 @@ def _get_box_plot_values(iterable):
     q1_idx = round(length / 4)
     q3_idx = median_idx + q1_idx
     return [iterable[0], iterable[q1_idx], iterable[median_idx],
-            iterable[q3_idx], iterable[length-1]]
+            iterable[q3_idx], iterable[length - 1]]
 
 
 def _print_results_type_box_plot(data, result_type):
@@ -78,14 +76,14 @@ def _print_averages(data):
 
 
 def _results_into_bandwidths(results, limit=5):
-    '''
+    """
     For all the given resutls, extract their download statistics and normalize
     them into bytes/second bandwidths.
 
     :param list results: list of :class:`sbws.list.resultdump.ResultSuccess`
     :param int limit: The maximum number of bandwidths to return
     :returns: list of up to `limit` bandwidths, with the largest first
-    '''
+    """
     downloads = []
     for result in results:
         assert isinstance(result, ResultSuccess)
@@ -95,14 +93,14 @@ def _results_into_bandwidths(results, limit=5):
 
 
 def print_stats(args, data):
-    '''
+    """
     Called from main to print various statistics about the organized **data**
     to stdout.
 
     :param argparse.Namespace args: command line arguments
     :param dict data: keyed by relay fingerprint, and with values of
         :class:`sbws.lib.resultdump.Result` subclasses
-    '''
+    """
     results = []
     for fp in data:
         results.extend(data[fp])
@@ -127,7 +125,7 @@ def print_stats(args, data):
     print(len(success_results), 'success results and',
           len(error_results), 'error results')
     print('The fastest download was {:.2f} KiB/s'.format(
-        fastest_transfer/1024))
+        fastest_transfer / 1024))
     print('Results come from', first, 'to', last, 'over a period of',
           duration)
     if getattr(args, 'error_types', False) is True:
@@ -135,12 +133,12 @@ def print_stats(args, data):
 
 
 def gen_parser(sub):
-    '''
+    """
     Helper function for the broader argument parser generating code that adds
     in all the possible command line arguments for the stats command.
 
     :param argparse._SubParsersAction sub: what to add a sub-parser to
-    '''
+    """
     d = 'Write some statistics about the data collected so far to stdout'
     p = sub.add_parser('stats', formatter_class=ArgumentDefaultsHelpFormatter,
                        description=d)
@@ -149,12 +147,12 @@ def gen_parser(sub):
 
 
 def main(args, conf):
-    '''
+    """
     Main entry point into the stats command.
 
     :param argparse.Namespace args: command line arguments
     :param configparser.ConfigParser conf: parsed config files
-    '''
+    """
 
     datadir = conf.getpath('paths', 'datadir')
     if not os.path.isdir(datadir):

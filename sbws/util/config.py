@@ -1,16 +1,17 @@
 """Util functions to manage sbws configuration files."""
 
-from configparser import (ConfigParser, ExtendedInterpolation)
-from configparser import InterpolationMissingOptionError
-import os
 import logging
 import logging.config
-from urllib.parse import urlparse
+import os
+from configparser import (ConfigParser, ExtendedInterpolation,
+                          InterpolationMissingOptionError)
 from string import Template
 from tempfile import NamedTemporaryFile
+from urllib.parse import urlparse
+
 from sbws.globals import (DEFAULT_CONFIG_PATH, DEFAULT_LOG_CONFIG_PATH,
-                          USER_CONFIG_PATH, SUPERVISED_RUN_DPATH,
-                          SUPERVISED_USER_CONFIG_PATH)
+                          SUPERVISED_RUN_DPATH, SUPERVISED_USER_CONFIG_PATH,
+                          USER_CONFIG_PATH)
 
 _ALPHANUM = 'abcdefghijklmnopqrstuvwxyz'
 _ALPHANUM += _ALPHANUM.upper()
@@ -100,7 +101,7 @@ def get_config(args):
 
 
 def _can_log_to_file(conf):
-    '''
+    """
     Checks all the known reasons for why we might not be able to log to a file,
     and returns whether or not we think we will be able to do so. This is
     useful because if we can't log to a file, we might want to force logging to
@@ -108,7 +109,7 @@ def _can_log_to_file(conf):
 
     If we can't log to file, return False and the reason. Otherwise return True
     and an empty string.
-    '''
+    """
     # We won't be able to get paths.log_dname from the config when we are first
     # initializing sbws because it depends on paths.sbws_home (by default).
     # If there is an issue getting this option, tell the caller that we can't
@@ -176,9 +177,9 @@ def configure_logging(args, conf):
 
 
 def validate_config(conf):
-    ''' Checks the given conf for bad values or bad combinations of values. If
+    """Checks the given conf for bad values or bad combinations of values. If
     there's something wrong, returns False and a list of error messages.
-    Otherwise, return True and an empty list '''
+    Otherwise, return True and an empty list """
     errors = []
     errors.extend(_validate_general(conf))
     errors.extend(_validate_cleanup(conf))

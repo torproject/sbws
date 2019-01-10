@@ -1,13 +1,16 @@
-from stem import CircuitExtensionFailed, InvalidRequest, ProtocolError, Timeout
-from stem import InvalidArguments, ControllerError
-import random
-from .relaylist import Relay
 import logging
+import random
+
+from stem import (CircuitExtensionFailed, ControllerError, InvalidArguments,
+                  InvalidRequest, ProtocolError, Timeout)
+
+from .relaylist import Relay
 
 log = logging.getLogger(__name__)
 
 
 class PathLengthException(Exception):
+
     def __init__(self, message=None, errors=None):
         if message is not None:
             super().__init__(message)
@@ -24,7 +27,8 @@ def valid_circuit_length(path):
 
 
 class CircuitBuilder:
-    ''' The CircuitBuilder interface.
+
+    """The CircuitBuilder interface.
 
     Subclasses must implement their own build_circuit() function.
     Subclasses may keep additional state if they'd find it helpful.
@@ -36,7 +40,8 @@ class CircuitBuilder:
     It might be good practice to close circuits as you find you no longer need
     them, but CircuitBuilder will keep track of existing circuits and close
     them when it is deleted.
-    '''
+    """
+
     def __init__(self, args, conf, controller, relay_list,
                  close_circuits_on_exit=True):
         self.controller = controller
@@ -51,8 +56,8 @@ class CircuitBuilder:
         return self.relay_list.relays
 
     def build_circuit(self, *a, **kw):
-        ''' Implementations of this method should build the circuit and return
-        its (str) ID. If it cannot be built, it should return None. '''
+        """Implementations of this method should build the circuit and return
+        its (str) ID. If it cannot be built, it should return None. """
         raise NotImplementedError()
 
     def close_circuit(self, circ_id):
@@ -110,15 +115,17 @@ class CircuitBuilder:
 
 
 class GapsCircuitBuilder(CircuitBuilder):
-    ''' The build_circuit member function takes a list. Falsey values in the
+
+    """The build_circuit member function takes a list. Falsey values in the
     list will be replaced with relays chosen uniformally at random; Truthy
-    values will be assumed to be relays. '''
+    values will be assumed to be relays. """
+
     def __init__(self, *a, **kw):
         super().__init__(*a, **kw)
 
     def _normalize_path(self, path):
-        ''' Change fingerprints/nicks to relay descriptor and change Falsey
-        values to None. Return the new path, or None if error '''
+        """Change fingerprints/nicks to relay descriptor and change Falsey
+        values to None. Return the new path, or None if error """
         new_path = []
         for fp in path:
             if not fp:
@@ -132,9 +139,9 @@ class GapsCircuitBuilder(CircuitBuilder):
         return new_path
 
     def _random_sample_relays(self, number, blacklist):
-        ''' Get <number> random relays from self.relays that are not in the
+        """Get <number> random relays from self.relays that are not in the
         blacklist. Return None if it cannot be done because too many are
-        blacklisted. Otherwise return a list of relays. '''
+        blacklisted. Otherwise return a list of relays. """
         all_fps = [r.fingerprint for r in self.relays]
         black_fps = [r.fingerprint for r in blacklist]
         if len(black_fps) + number > len(all_fps):
@@ -149,11 +156,11 @@ class GapsCircuitBuilder(CircuitBuilder):
         return [Relay(fp, self.controller) for fp in chosen_fps]
 
     def build_circuit(self, path):
-        ''' <path> is a list of relays and Falsey values. Relays can be
+        """<path> is a list of relays and Falsey values. Relays can be
         specified by fingerprint or nickname, and fingerprint is highly
         recommended. Falsey values (like None) will be replaced with relays
         chosen uniformally at random. A relay will not be in a circuit twice.
-        '''
+        """
         if not valid_circuit_length(path):
             raise PathLengthException()
         path = self._normalize_path(path)

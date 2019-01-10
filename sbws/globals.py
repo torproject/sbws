@@ -1,5 +1,5 @@
-import os
 import logging
+import os
 
 log = logging.getLogger(__name__)
 
@@ -55,13 +55,13 @@ BW_LINE_SIZE = 510
 
 
 def fail_hard(*a, **kw):
-    ''' Log something ... and then exit as fast as possible '''
+    """Log something ... and then exit as fast as possible """
     log.critical(*a, **kw)
     exit(1)
 
 
 def touch_file(fname, times=None):
-    '''
+    """
     If **fname** exists, update its last access and modified times to now. If
     **fname** does not exist, create it. If **times** are specified, pass them
     to os.utime for use.
@@ -69,7 +69,7 @@ def touch_file(fname, times=None):
     :param str fname: Name of file to update or create
     :param tuple times: 2-tuple of floats for access time and modified time
         respectively
-    '''
+    """
     log.debug('Touching %s', fname)
     with open(fname, 'a') as fd:
         os.utime(fd.fileno(), times=times)

@@ -1,20 +1,18 @@
+import logging
 import os
+import platform
+
+from requests.__version__ import __version__ as requests_version
+from stem import __version__ as stem_version
 
 import sbws.core.cleanup
-import sbws.core.scanner
 import sbws.core.generate
+import sbws.core.scanner
 import sbws.core.stats
-from sbws.util.config import get_config
-from sbws.util.config import validate_config
-from sbws.util.config import configure_logging
-from sbws.util.parser import create_parser
 from sbws import __version__ as version
-from stem import __version__ as stem_version
-from requests.__version__ import __version__ as requests_version
-import platform
-import logging
-
+from sbws.util.config import configure_logging, get_config, validate_config
 from sbws.util.fs import sbws_required_disk_space
+from sbws.util.parser import create_parser
 
 log = logging.getLogger(__name__)
 

@@ -1,13 +1,15 @@
 import logging
+import os
 import random
 import time
-import os
 from threading import RLock
-import requests
 from urllib.parse import urlparse
+
+import requests
 from stem.control import EventType
-import sbws.util.stem as stem_utils
+
 import sbws.util.requests as requests_utils
+import sbws.util.stem as stem_utils
 
 log = logging.getLogger(__name__)
 
@@ -29,7 +31,7 @@ def _parse_verify_option(conf_section):
 
 
 def connect_to_destination_over_circuit(dest, circ_id, session, cont, max_dl):
-    '''
+    """
     Connect to **dest* over the given **circ_id** using the given Requests
     **session**. Make sure the destination seems usable. Return True and a
     dictionary of helpful information if we connected and the destination is
@@ -64,7 +66,7 @@ def connect_to_destination_over_circuit(dest, circ_id, session, cont, max_dl):
     :param cont Controller: them Stem library controller controlling Tor
     :returns: True and a dictionary if everything is in order and measurements
         should commence.  False and an error string otherwise.
-    '''
+    """
     assert isinstance(dest, Destination)
     error_prefix = 'When sending HTTP HEAD to {}, '.format(dest.url)
     with stem_utils.stream_building_lock:
@@ -85,7 +87,7 @@ def connect_to_destination_over_circuit(dest, circ_id, session, cont, max_dl):
             '{} not {}'.format(requests.codes.ok, head.status_code)
     if 'content-length' not in head.headers:
         return False, error_prefix + 'we except the header Content-Length '\
-                'to exist in the response'
+            'to exist in the response'
     content_length = int(head.headers['content-length'])
     if max_dl > content_length:
         return False, error_prefix + 'our maximum configured download size '\
@@ -95,6 +97,7 @@ def connect_to_destination_over_circuit(dest, circ_id, session, cont, max_dl):
 
 
 class Destination:
+
     def __init__(self, url, max_dl, verify):
         self._max_dl = max_dl
         u = urlparse(url)
@@ -102,9 +105,9 @@ class Destination:
         self._verify = verify
 
     def is_usable(self, circ_id, session, cont):
-        ''' Use **connect_to_destination_over_circuit** to determine if this
+        """Use **connect_to_destination_over_circuit** to determine if this
         destination is usable and return what it returns. Just a small wrapper.
-        '''
+        """
         if not isinstance(self.verify, bool):
             if not os.path.isfile(self.verify):
                 return False, '{} is believed to be a CA bundle file on disk '\
@@ -147,6 +150,7 @@ class Destination:
 
 
 class DestinationList:
+
     def __init__(self, conf, dests, circuit_builder, relay_list, controller):
         assert len(dests) > 0
         for dest in dests:
@@ -240,9 +244,9 @@ class DestinationList:
                                controller), ''
 
     def next(self):
-        '''
+        """
         Returns the next destination that should be used in a measurement
-        '''
+        """
         with self._usability_lock:
             while True:
                 if self._should_perform_usability_test():

@@ -1,20 +1,21 @@
-from decimal import Decimal
-from ..lib.resultdump import ResultDump
-from ..lib.resultdump import Result
-from ..lib.resultdump import ResultError
-from ..lib.relaylist import RelayList
 import copy
-import time
 import logging
+import time
+from decimal import Decimal
+
+from ..lib.relaylist import RelayList
+from ..lib.resultdump import Result, ResultDump, ResultError
 
 log = logging.getLogger(__name__)
 
 
 class RelayPrioritizer:
+
     def __init__(self, args, conf, relay_list, result_dump):
         assert isinstance(relay_list, RelayList)
         assert isinstance(result_dump, ResultDump)
-        self.fresh_seconds = conf.getint('general', 'data_period')*24*60*60
+        self.fresh_seconds = conf.getint('general', 'data_period') \
+            * 24 * 60 * 60
         self.relay_list = relay_list
         self.result_dump = result_dump
         self.measure_authorities = conf.getboolean(
@@ -24,7 +25,7 @@ class RelayPrioritizer:
             'relayprioritizer', 'fraction_relays')
 
     def best_priority(self):
-        ''' Return a generator containing the best priority relays.
+        """Return a generator containing the best priority relays.
 
         NOTE: A lower value for priority means better priority. Remember your
         data structures class in university and consider this something like a
@@ -44,7 +45,7 @@ class RelayPrioritizer:
         with equal weight as successful results, then it would take a while to
         get around to giving the relay another chance at a getting a successful
         measurement.
-        '''
+        """
         fn_tstart = Decimal(time.time())
         relays = set(copy.deepcopy(self.relay_list.relays))
         if not self.measure_authorities:

@@ -1,5 +1,7 @@
-from sbws.util.state import State
 import os
+
+from sbws.util.state import State
+
 # from tempfile import NamedTemporaryFile as NTF
 
 

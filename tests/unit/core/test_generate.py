@@ -1,8 +1,8 @@
 """Unit tests for sbws.core.generate module."""
 import argparse
 
-from sbws.globals import TORFLOW_ROUND_DIG, PROP276_ROUND_DIG
 from sbws.core.generate import gen_parser
+from sbws.globals import PROP276_ROUND_DIG, TORFLOW_ROUND_DIG
 
 
 def test_gen_parser_arg_round_digs():

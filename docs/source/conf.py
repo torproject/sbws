@@ -13,6 +13,8 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
+
+
 def find_version():
     with open(os.path.join("..", "..", "sbws", "__init__.py")) as fp:
         for line in fp:
@@ -197,5 +199,5 @@ epub_exclude_files = ['search.html']
 todo_include_todos = True
 
 source_parsers = {
-   '.md': 'recommonmark.parser.CommonMarkParser',
+    '.md': 'recommonmark.parser.CommonMarkParser',
 }

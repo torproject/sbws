@@ -7,19 +7,19 @@ import logging
 import math
 import os
 from itertools import combinations
-from statistics import median, mean
+from statistics import mean, median
+
 from stem.descriptor import parse_file
 
 from sbws import __version__
-from sbws.globals import (SPEC_VERSION, BW_LINE_SIZE, SBWS_SCALE_CONSTANT,
-                          TORFLOW_SCALING, SBWS_SCALING, TORFLOW_BW_MARGIN,
-                          TORFLOW_OBS_LAST, TORFLOW_OBS_MEAN,
-                          PROP276_ROUND_DIG, MIN_REPORT, MAX_BW_DIFF_PERC)
+from sbws.globals import (BW_LINE_SIZE, MAX_BW_DIFF_PERC, MIN_REPORT,
+                          PROP276_ROUND_DIG, SBWS_SCALE_CONSTANT, SBWS_SCALING,
+                          SPEC_VERSION, TORFLOW_BW_MARGIN, TORFLOW_OBS_LAST,
+                          TORFLOW_OBS_MEAN, TORFLOW_SCALING)
 from sbws.lib.resultdump import ResultSuccess, _ResultType
 from sbws.util.filelock import DirectoryLock
-from sbws.util.timestamp import (now_isodt_str, unixts_to_isodt_str,
-                                 now_unixts)
 from sbws.util.state import State
+from sbws.util.timestamp import now_isodt_str, now_unixts, unixts_to_isodt_str
 
 log = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ STATS_KEYVALUES = ['number_eligible_relays', 'minimum_number_eligible_relays',
 KEYVALUES_INT = STATS_KEYVALUES
 # List of all unordered KeyValues currently being used to generate the file
 UNORDERED_KEYVALUES = EXTRA_ARG_KEYVALUES + STATS_KEYVALUES + \
-                      ['latest_bandwidth']
+    ['latest_bandwidth']
 # List of all the KeyValues currently being used to generate the file
 ALL_KEYVALUES = ['version'] + UNORDERED_KEYVALUES
 TERMINATOR = '====='
@@ -48,8 +48,8 @@ BW_KEYVALUE_SEP_V1 = ' '
 # not inclding in the files the extra bws for now
 BW_KEYVALUES_BASIC = ['node_id', 'bw']
 BW_KEYVALUES_FILE = BW_KEYVALUES_BASIC + \
-                    ['master_key_ed25519', 'nick', 'rtt', 'time',
-                     'success', 'error_stream', 'error_circ', 'error_misc']
+    ['master_key_ed25519', 'nick', 'rtt', 'time',
+     'success', 'error_stream', 'error_circ', 'error_misc']
 BW_KEYVALUES_EXTRA_BWS = ['bw_median', 'bw_mean', 'desc_bw_avg', 'desc_bw_bur',
                           'desc_bw_obs_last', 'desc_bw_obs_mean',
                           'consensus_bandwidth',
@@ -102,6 +102,7 @@ def result_type_to_key(type_str):
 
 
 class V3BWHeader(object):
+
     """
     Create a bandwidth measurements (V3bw) header
     following bandwidth measurements document spec version 1.X.X.
@@ -118,6 +119,7 @@ class V3BWHeader(object):
         - generator_started: str, ISO 8601 timestamp in UTC time zone
           when the generator started
     """
+
     def __init__(self, timestamp, **kwargs):
         assert isinstance(timestamp, str)
         for v in kwargs.values():
@@ -196,10 +198,10 @@ class V3BWHeader(object):
 
     @staticmethod
     def generator_started_from_file(state_fpath):
-        '''
+        """
         ISO formatted timestamp for the time when the scanner process most
         recently started.
-        '''
+        """
         state = State(state_fpath)
         if 'scanner_started' in state:
             return state['scanner_started']
@@ -266,6 +268,7 @@ class V3BWHeader(object):
 
 
 class V3BWLine(object):
+
     """
     Create a Bandwidth List line following the spec version 1.X.X.
 
@@ -282,6 +285,7 @@ class V3BWLine(object):
         - error_circ, int
         - error_misc, int
     """
+
     def __init__(self, node_id, bw, **kwargs):
         assert isinstance(node_id, str)
         assert isinstance(bw, int)
@@ -392,8 +396,7 @@ class V3BWLine(object):
         if secs_recent is None:
             return results
         results_recent = list(filter(
-                            lambda x: (now_unixts() - x.time) < secs_recent,
-                            results))
+            lambda x: (now_unixts() - x.time) < secs_recent, results))
         # if not results_recent:
         #     log.debug("Results are NOT more recent than %ss: %s",
         #               secs_recent,
@@ -499,7 +502,7 @@ class V3BWLine(object):
     def bw_strv1(self):
         """Return Bandwidth Line string following spec v1.X.X."""
         bw_line_str = BW_KEYVALUE_SEP_V1.join(
-                        self.bw_keyvalue_v1str_ls) + LINE_SEP
+            self.bw_keyvalue_v1str_ls) + LINE_SEP
         if len(bw_line_str) > BW_LINE_SIZE:
             # if this is the case, probably there are too many KeyValues,
             # or the limit needs to be changed in Tor
@@ -509,12 +512,14 @@ class V3BWLine(object):
 
 
 class V3BWFile(object):
+
     """
     Create a Bandwidth List file following spec version 1.X.X
 
     :param V3BWHeader v3bwheader: header
     :param list v3bwlines: V3BWLines
     """
+
     def __init__(self, v3bwheader, v3bwlines):
         self.header = v3bwheader
         self.bw_lines = v3bwlines

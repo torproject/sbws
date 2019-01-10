@@ -1,5 +1,6 @@
 """Common pytest configuration for unit and integration tests."""
 import pytest
+
 from sbws.util.parser import create_parser
 
 
@@ -12,6 +13,7 @@ def parser():
 def datadir(request):
     """get, read, open test files from the tests "data" directory."""
     class D:
+
         def __init__(self, basepath):
             self.basepath = basepath
 

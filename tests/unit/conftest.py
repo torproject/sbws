@@ -1,14 +1,14 @@
 """pytest configuration for unit tests."""
 import argparse
-import pytest
-from datetime import datetime
 import os
+from datetime import datetime
+
+import pytest
 
 from sbws.globals import RESULT_VERSION
-from sbws.lib.resultdump import (ResultErrorStream, ResultSuccess, Result)
-from sbws.lib.resultdump import write_result_to_datadir
+from sbws.lib.resultdump import (Result, ResultErrorStream, ResultSuccess,
+                                 write_result_to_datadir)
 from sbws.util.config import _get_default_config
-
 
 TIME1 = 1529232277.9028733
 TIME2 = datetime.utcnow().timestamp()
@@ -226,9 +226,9 @@ def resultdict_ip_changed_trimmed():
 
 @pytest.fixture(scope='function')
 def sbwshome_error_result(sbwshome_only_datadir, conf):
-    '''
+    """
     Creates an ~/.sbws with a single fresh ResultError in it
-    '''
+    """
     dd = conf.getpath('paths', 'datadir')
     write_result_to_datadir(RESULT_ERROR_STREAM, dd)
     return sbwshome_only_datadir
@@ -236,9 +236,9 @@ def sbwshome_error_result(sbwshome_only_datadir, conf):
 
 @pytest.fixture(scope='function')
 def sbwshome_success_result(sbwshome_only_datadir, conf):
-    '''
+    """
     Creates an ~/.sbws with a single fresh ResultSuccess in it
-    '''
+    """
     dd = conf.getpath('paths', 'datadir')
     write_result_to_datadir(RESULT_SUCCESS1, dd)
     return sbwshome_only_datadir
@@ -246,9 +246,9 @@ def sbwshome_success_result(sbwshome_only_datadir, conf):
 
 @pytest.fixture(scope='function')
 def sbwshome_success_result_one_relay(sbwshome_only_datadir, conf):
-    '''
+    """
     Creates an ~/.sbws with a a couple of fresh ResultSuccess for one relay
-    '''
+    """
     dd = conf.getpath('paths', 'datadir')
     write_result_to_datadir(RESULT_SUCCESS1, dd)
     write_result_to_datadir(RESULT_SUCCESS1, dd)
@@ -257,10 +257,10 @@ def sbwshome_success_result_one_relay(sbwshome_only_datadir, conf):
 
 @pytest.fixture(scope='function')
 def sbwshome_success_result_two_relays(sbwshome_only_datadir, conf):
-    '''
+    """
     Creates an ~/.sbws with a a couple of fresh ResultSuccess for a couple or
     relays
-    '''
+    """
     dd = conf.getpath('paths', 'datadir')
     write_result_to_datadir(RESULT_SUCCESS1, dd)
     write_result_to_datadir(RESULT_SUCCESS1, dd)

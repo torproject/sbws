@@ -1,4 +1,5 @@
 from unittest.mock import patch
+
 from sbws.util.userquery import query_yes_no
 
 

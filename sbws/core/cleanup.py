@@ -1,28 +1,27 @@
 """Util functions to cleanup disk space."""
-import types
-
-from sbws.util.filelock import DirectoryLock
-from sbws.globals import fail_hard
-from sbws.util.timestamp import unixts_to_dt_obj
-from argparse import ArgumentDefaultsHelpFormatter
-from datetime import datetime
-from datetime import timedelta
-import os
 import gzip
-import shutil
 import logging
+import os
+import shutil
 import time
+import types
+from argparse import ArgumentDefaultsHelpFormatter
+from datetime import datetime, timedelta
+
+from sbws.globals import fail_hard
+from sbws.util.filelock import DirectoryLock
+from sbws.util.timestamp import unixts_to_dt_obj
 
 log = logging.getLogger(__name__)
 
 
 def gen_parser(sub):
-    '''
+    """
     Helper function for the broader argument parser generating code that adds
     in all the possible command line arguments for the cleanup command.
 
     :param argparse._SubParsersAction sub: what to add a sub-parser to
-    '''
+    """
     d = 'Compress and delete results and/or v3bw files old files.' \
         'Configuration options are read to determine which are old files'
     p = sub.add_parser('cleanup', description=d,
@@ -168,12 +167,12 @@ def _clean_result_files(args, conf):
 
 
 def main(args, conf):
-    '''
+    """
     Main entry point in to the cleanup command.
 
     :param argparse.Namespace args: command line arguments
     :param configparser.ConfigParser conf: parsed config files
-    '''
+    """
     datadir = conf.getpath('paths', 'datadir')
     if not os.path.isdir(datadir):
         fail_hard('%s does not exist', datadir)

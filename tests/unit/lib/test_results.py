@@ -1,20 +1,17 @@
 from unittest.mock import patch
+
 from sbws.globals import RESULT_VERSION
-from sbws.lib.resultdump import Result
-from sbws.lib.resultdump import ResultSuccess
-from sbws.lib.resultdump import ResultError
-from sbws.lib.resultdump import ResultErrorAuth
-from sbws.lib.resultdump import ResultErrorCircuit
-from sbws.lib.resultdump import ResultErrorStream
-from sbws.lib.resultdump import _ResultType
+from sbws.lib.resultdump import (Result, ResultError, ResultErrorAuth,
+                                 ResultErrorCircuit, ResultErrorStream,
+                                 ResultSuccess, _ResultType)
 from tests.unit.globals import monotonic_time
 
 
 def test_Result(result):
-    '''
+    """
     A standard Result should not be convertible to a string because Result.type
     is not implemented.
-    '''
+    """
     try:
         str(result)
         print(str(result))
@@ -25,20 +22,20 @@ def test_Result(result):
 
 
 def test_Result_from_dict_bad_version():
-    '''
+    """
     The first thing that is checked is the version field, and a wrong one
     should return None
-    '''
+    """
     d = {'version': RESULT_VERSION + 1}
     r = Result.from_dict(d)
     assert r is None
 
 
 def test_Result_from_dict_bad_type():
-    '''
+    """
     If the result type string doesn't match any of the known types, then it
     should throw NotImplementedError
-    '''
+    """
     d = {'version': RESULT_VERSION, 'type': 'NotARealType'}
     try:
         Result.from_dict(d)

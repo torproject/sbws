@@ -1,29 +1,26 @@
-import os
 import json
-import time
 import logging
-from glob import glob
-from threading import Thread
-from threading import Event
-from threading import RLock
-from queue import Queue
-from queue import Empty
-from datetime import datetime
-from datetime import timedelta
+import os
+import time
+from datetime import datetime, timedelta
 from enum import Enum
+from glob import glob
+from queue import Empty, Queue
+from threading import Event, RLock, Thread
+
 from sbws.globals import RESULT_VERSION, fail_hard
-from sbws.util.filelock import DirectoryLock
 from sbws.lib.relaylist import Relay
+from sbws.util.filelock import DirectoryLock
 
 log = logging.getLogger(__name__)
 
 
 def merge_result_dicts(d1, d2):
-    '''
+    """
     Given two dictionaries that contain Result data, merge them.  Result
     dictionaries have keys of relay fingerprints and values of lists of results
     for those relays.
-    '''
+    """
     for key in d2:
         if key not in d1:
             d1[key] = []
@@ -32,10 +29,10 @@ def merge_result_dicts(d1, d2):
 
 
 def load_result_file(fname, success_only=False):
-    ''' Reads in all lines from the given file, and parses them into Result
+    """Reads in all lines from the given file, and parses them into Result
     structures (or subclasses of Result). Optionally only keeps ResultSuccess.
     Returns all kept Results as a result dictionary. This function does not
-    care about the age of the results '''
+    care about the age of the results """
     assert os.path.isfile(fname)
     d = {}
     num_total = 0
@@ -67,11 +64,11 @@ def load_result_file(fname, success_only=False):
 
 
 def trim_results(fresh_days, result_dict):
-    ''' Given a result dictionary, remove all Results that are no longer valid
-    and return the new dictionary '''
+    """Given a result dictionary, remove all Results that are no longer valid
+    and return the new dictionary """
     assert isinstance(fresh_days, int)
     assert isinstance(result_dict, dict)
-    data_period = fresh_days * 24*60*60
+    data_period = fresh_days * 24 * 60 * 60
     oldest_allowed = time.time() - data_period
     out_results = {}
     for fp in result_dict:
@@ -128,9 +125,9 @@ def trim_results_ip_changed(result_dict, on_changed_ipv4=False,
 def load_recent_results_in_datadir(fresh_days, datadir, success_only=False,
                                    on_changed_ipv4=False,
                                    on_changed_ipv6=False):
-    ''' Given a data directory, read all results files in it that could have
+    """Given a data directory, read all results files in it that could have
     results in them that are still valid. Trim them, and return the valid
-    Results as a list '''
+    Results as a list """
     assert isinstance(fresh_days, int)
     assert os.path.isdir(datadir)
     # Inform the results are being loaded, since it takes some seconds.
@@ -169,7 +166,7 @@ def load_recent_results_in_datadir(fresh_days, datadir, success_only=False,
 
 
 def write_result_to_datadir(result, datadir):
-    ''' Can be called from any thread '''
+    """Can be called from any thread """
     assert isinstance(result, Result)
     assert os.path.isdir(datadir)
     dt = datetime.utcfromtimestamp(result.time)
@@ -195,12 +192,15 @@ class _ResultType(_StrEnum):
 
 
 class Result:
-    ''' A simple struct to pack a measurement result into so that other code
-    can be confident it is handling a well-formed result. '''
+
+    """A simple struct to pack a measurement result into so that other code
+    can be confident it is handling a well-formed result. """
 
     class Relay:
-        ''' Implements just enough of a stem RouterStatusEntryV3 for this
-        Result class to be happy '''
+
+        """Implements just enough of a stem RouterStatusEntryV3 for this
+        Result class to be happy """
+
         def __init__(self, fingerprint, nickname, address, master_key_ed25519,
                      average_bandwidth=None, burst_bandwidth=None,
                      observed_bandwidth=None, consensus_bandwidth=None,
@@ -305,11 +305,11 @@ class Result:
 
     @staticmethod
     def from_dict(d):
-        ''' Given a dict, returns the Result* subtype that is represented by
+        """Given a dict, returns the Result* subtype that is represented by
         the dict. If we don't know how to parse the dict into a Result and it's
         likely because the programmer forgot to implement something, raises
         NotImplementedError. If we can't parse the dict for some other reason,
-        return None. '''
+        return None. """
         assert 'version' in d
         if d['version'] != RESULT_VERSION:
             return None
@@ -333,6 +333,7 @@ class Result:
 
 
 class ResultError(Result):
+
     def __init__(self, *a, msg=None, **kw):
         super().__init__(*a, **kw)
         self._msg = msg
@@ -343,7 +344,7 @@ class ResultError(Result):
 
     @property
     def freshness_reduction_factor(self):
-        '''
+        """
         When the RelayPrioritizer encounters this Result, how much should it
         adjust its freshness? (See RelayPrioritizer.best_priority() for more
         information about "freshness")
@@ -355,7 +356,7 @@ class ResultError(Result):
         The value 0.5 was chosen somewhat arbitrarily, but a few weeks of live
         network testing verifies that sbws is still able to perform useful
         measurements in a reasonable amount of time.
-        '''
+        """
         return 0.5
 
     @property
@@ -381,6 +382,7 @@ class ResultError(Result):
 
 
 class ResultErrorCircuit(ResultError):
+
     def __init__(self, *a, **kw):
         super().__init__(*a, **kw)
 
@@ -390,7 +392,7 @@ class ResultErrorCircuit(ResultError):
 
     @property
     def freshness_reduction_factor(self):
-        '''
+        """
         There are a few instances when it isn't the relay's fault that the
         circuit failed to get built. Maybe someday we'll try detecting whose
         fault it most likely was and subclassing ResultErrorCircuit. But for
@@ -400,7 +402,7 @@ class ResultErrorCircuit(ResultError):
         A (hopefully very very rare) example of when a circuit would fail to
         get built is when the sbws client machine suddenly loses Internet
         access.
-        '''
+        """
         return 0.6
 
     @staticmethod
@@ -419,6 +421,7 @@ class ResultErrorCircuit(ResultError):
 
 
 class ResultErrorStream(ResultError):
+
     def __init__(self, *a, **kw):
         super().__init__(*a, **kw)
 
@@ -442,6 +445,7 @@ class ResultErrorStream(ResultError):
 
 
 class ResultErrorAuth(ResultError):
+
     def __init__(self, *a, **kw):
         super().__init__(*a, **kw)
 
@@ -451,7 +455,7 @@ class ResultErrorAuth(ResultError):
 
     @property
     def freshness_reduction_factor(self):
-        '''
+        """
         Override the default ResultError.freshness_reduction_factor because a
         ResultErrorAuth is most likely not the measured relay's fault, so we
         shouldn't hurt its priority as much. A higher reduction factor means a
@@ -459,7 +463,7 @@ class ResultErrorAuth(ResultError):
         priority better.
 
         The value 0.9 was chosen somewhat arbitrarily.
-        '''
+        """
         return 0.9
 
     @staticmethod
@@ -478,6 +482,7 @@ class ResultErrorAuth(ResultError):
 
 
 class ResultSuccess(Result):
+
     def __init__(self, rtts, downloads, *a, **kw):
         super().__init__(*a, **kw)
         self._rtts = rtts
@@ -525,8 +530,10 @@ class ResultSuccess(Result):
 
 
 class ResultDump:
-    ''' Runs the enter() method in a new thread and collects new Results on its
-    queue. Writes them to daily result files in the data directory '''
+
+    """Runs the enter() method in a new thread and collects new Results on its
+    queue. Writes them to daily result files in the data directory """
+
     def __init__(self, args, conf, end_event):
         assert os.path.isdir(conf.getpath('paths', 'datadir'))
         assert isinstance(end_event, Event)
@@ -544,7 +551,7 @@ class ResultDump:
             fail_hard(e)
 
     def store_result(self, result):
-        ''' Call from ResultDump thread '''
+        """Call from ResultDump thread """
         assert isinstance(result, Result)
         with self.data_lock:
             fp = result.fingerprint
@@ -558,8 +565,8 @@ class ResultDump:
             # file.
 
     def handle_result(self, result):
-        ''' Call from ResultDump thread. If we are shutting down, ignores
-        ResultError* types '''
+        """Call from ResultDump thread. If we are shutting down, ignores
+        ResultError* types """
         assert isinstance(result, Result)
         fp = result.fingerprint
         nick = result.nickname
@@ -572,17 +579,17 @@ class ResultDump:
         if result.type == "success":
             msg = "Success measuring {} ({}) via circuit {} and " \
                   "destination {}".format(
-                    result.fingerprint, result.nickname, result.circ,
-                    result.dest_url)
+                      result.fingerprint, result.nickname, result.circ,
+                      result.dest_url)
         else:
             msg = "Error measuring {} ({}) via circuit {} and " \
                   "destination {}: {}".format(
-                    result.fingerprint, result.nickname, result.circ,
-                    result.dest_url, result.msg)
+                      result.fingerprint, result.nickname, result.circ,
+                      result.dest_url, result.msg)
         log.info(msg)
 
     def enter(self):
-        ''' Main loop for the ResultDump thread '''
+        """Main loop for the ResultDump thread """
         with self.data_lock:
             self.data = load_recent_results_in_datadir(
                 self.fresh_days, self.datadir)

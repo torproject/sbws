@@ -60,7 +60,7 @@ def test_relayprioritizer_general(time_mock, sbwshome_empty, args,
         # results for will have the highest priority, but don't test the order
         # of them. Skip to the end of the list and check those guys since they
         # should have a defined order.
-        for i in range(1, 5+1):
+        for i in range(1, 5 + 1):
             nick = 'relay{}'.format(i)
             pos = i * -1
             relay = best_list[pos]

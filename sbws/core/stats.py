@@ -29,7 +29,8 @@ def _print_stats_error_types(data):
             continue
         number = counts[count_type]
         print('{}/{} ({:.2f}%) results were {}'.format(
-            number, counts['total'], 100*number/counts['total'], count_type))
+            number, counts['total'], 100 * number / counts['total'],
+            count_type))
 
 
 def _result_type_per_relay(data, result_type):
@@ -52,7 +53,7 @@ def _get_box_plot_values(iterable):
     q1_idx = round(length / 4)
     q3_idx = median_idx + q1_idx
     return [iterable[0], iterable[q1_idx], iterable[median_idx],
-            iterable[q3_idx], iterable[length-1]]
+            iterable[q3_idx], iterable[length - 1]]
 
 
 def _print_results_type_box_plot(data, result_type):
@@ -124,7 +125,7 @@ def print_stats(args, data):
     print(len(success_results), 'success results and',
           len(error_results), 'error results')
     print('The fastest download was {:.2f} KiB/s'.format(
-        fastest_transfer/1024))
+        fastest_transfer / 1024))
     print('Results come from', first, 'to', last, 'over a period of',
           duration)
     if getattr(args, 'error_types', False) is True:

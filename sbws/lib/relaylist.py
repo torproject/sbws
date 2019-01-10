@@ -11,6 +11,7 @@ log = logging.getLogger(__name__)
 
 
 class Relay:
+
     def __init__(self, fp, cont, ns=None, desc=None):
         """
         Given a relay fingerprint, fetch all the information about a relay that
@@ -128,6 +129,7 @@ class Relay:
 
 
 class RelayList:
+
     """Keeps a list of all relays in the current Tor network and updates it
     transparently in the background. Provides useful interfaces for getting
     only relays of a certain type.

@@ -21,7 +21,7 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import http.server
 # import time
 
-FILE_SIZE = 1*1024*1024*1024  # 1 GiB
+FILE_SIZE = 1 * 1024 * 1024 * 1024  # 1 GiB
 
 
 def _get_resp_size_from_range(range_str):

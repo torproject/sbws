@@ -10,10 +10,12 @@ log = logging.getLogger(__name__)
 
 
 class RelayPrioritizer:
+
     def __init__(self, args, conf, relay_list, result_dump):
         assert isinstance(relay_list, RelayList)
         assert isinstance(result_dump, ResultDump)
-        self.fresh_seconds = conf.getint('general', 'data_period')*24*60*60
+        self.fresh_seconds = conf.getint('general', 'data_period') \
+            * 24 * 60 * 60
         self.relay_list = relay_list
         self.result_dump = result_dump
         self.measure_authorities = conf.getboolean(

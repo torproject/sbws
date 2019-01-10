@@ -68,7 +68,7 @@ def trim_results(fresh_days, result_dict):
     and return the new dictionary """
     assert isinstance(fresh_days, int)
     assert isinstance(result_dict, dict)
-    data_period = fresh_days * 24*60*60
+    data_period = fresh_days * 24 * 60 * 60
     oldest_allowed = time.time() - data_period
     out_results = {}
     for fp in result_dict:
@@ -192,12 +192,15 @@ class _ResultType(_StrEnum):
 
 
 class Result:
+
     """A simple struct to pack a measurement result into so that other code
     can be confident it is handling a well-formed result. """
 
     class Relay:
+
         """Implements just enough of a stem RouterStatusEntryV3 for this
         Result class to be happy """
+
         def __init__(self, fingerprint, nickname, address, master_key_ed25519,
                      average_bandwidth=None, burst_bandwidth=None,
                      observed_bandwidth=None, consensus_bandwidth=None,
@@ -330,6 +333,7 @@ class Result:
 
 
 class ResultError(Result):
+
     def __init__(self, *a, msg=None, **kw):
         super().__init__(*a, **kw)
         self._msg = msg
@@ -378,6 +382,7 @@ class ResultError(Result):
 
 
 class ResultErrorCircuit(ResultError):
+
     def __init__(self, *a, **kw):
         super().__init__(*a, **kw)
 
@@ -416,6 +421,7 @@ class ResultErrorCircuit(ResultError):
 
 
 class ResultErrorStream(ResultError):
+
     def __init__(self, *a, **kw):
         super().__init__(*a, **kw)
 
@@ -439,6 +445,7 @@ class ResultErrorStream(ResultError):
 
 
 class ResultErrorAuth(ResultError):
+
     def __init__(self, *a, **kw):
         super().__init__(*a, **kw)
 
@@ -475,6 +482,7 @@ class ResultErrorAuth(ResultError):
 
 
 class ResultSuccess(Result):
+
     def __init__(self, rtts, downloads, *a, **kw):
         super().__init__(*a, **kw)
         self._rtts = rtts
@@ -522,8 +530,10 @@ class ResultSuccess(Result):
 
 
 class ResultDump:
+
     """Runs the enter() method in a new thread and collects new Results on its
     queue. Writes them to daily result files in the data directory """
+
     def __init__(self, args, conf, end_event):
         assert os.path.isdir(conf.getpath('paths', 'datadir'))
         assert isinstance(end_event, Event)
@@ -569,13 +579,13 @@ class ResultDump:
         if result.type == "success":
             msg = "Success measuring {} ({}) via circuit {} and " \
                   "destination {}".format(
-                    result.fingerprint, result.nickname, result.circ,
-                    result.dest_url)
+                      result.fingerprint, result.nickname, result.circ,
+                      result.dest_url)
         else:
             msg = "Error measuring {} ({}) via circuit {} and " \
                   "destination {}: {}".format(
-                    result.fingerprint, result.nickname, result.circ,
-                    result.dest_url, result.msg)
+                      result.fingerprint, result.nickname, result.circ,
+                      result.dest_url, result.msg)
         log.info(msg)
 
     def enter(self):

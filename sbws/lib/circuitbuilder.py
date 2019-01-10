@@ -10,6 +10,7 @@ log = logging.getLogger(__name__)
 
 
 class PathLengthException(Exception):
+
     def __init__(self, message=None, errors=None):
         if message is not None:
             super().__init__(message)
@@ -26,6 +27,7 @@ def valid_circuit_length(path):
 
 
 class CircuitBuilder:
+
     """The CircuitBuilder interface.
 
     Subclasses must implement their own build_circuit() function.
@@ -39,6 +41,7 @@ class CircuitBuilder:
     them, but CircuitBuilder will keep track of existing circuits and close
     them when it is deleted.
     """
+
     def __init__(self, args, conf, controller, relay_list,
                  close_circuits_on_exit=True):
         self.controller = controller
@@ -112,9 +115,11 @@ class CircuitBuilder:
 
 
 class GapsCircuitBuilder(CircuitBuilder):
+
     """The build_circuit member function takes a list. Falsey values in the
     list will be replaced with relays chosen uniformally at random; Truthy
     values will be assumed to be relays. """
+
     def __init__(self, *a, **kw):
         super().__init__(*a, **kw)
 

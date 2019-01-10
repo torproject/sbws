@@ -87,7 +87,7 @@ def connect_to_destination_over_circuit(dest, circ_id, session, cont, max_dl):
             '{} not {}'.format(requests.codes.ok, head.status_code)
     if 'content-length' not in head.headers:
         return False, error_prefix + 'we except the header Content-Length '\
-                'to exist in the response'
+            'to exist in the response'
     content_length = int(head.headers['content-length'])
     if max_dl > content_length:
         return False, error_prefix + 'our maximum configured download size '\
@@ -97,6 +97,7 @@ def connect_to_destination_over_circuit(dest, circ_id, session, cont, max_dl):
 
 
 class Destination:
+
     def __init__(self, url, max_dl, verify):
         self._max_dl = max_dl
         u = urlparse(url)
@@ -149,6 +150,7 @@ class Destination:
 
 
 class DestinationList:
+
     def __init__(self, conf, dests, circuit_builder, relay_list, controller):
         assert len(dests) > 0
         for dest in dests:

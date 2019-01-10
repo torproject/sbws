@@ -5,6 +5,7 @@ from sbws.util.filelock import FileLock
 
 
 class State:
+
     """
     State allows one to atomically access and update a simple state file on
     disk across threads and across processes.

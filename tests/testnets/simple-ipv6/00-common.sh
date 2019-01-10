@@ -1,7 +1,0 @@
-ip_space="127.10.0."
-socksport="2000"
-controlport="2001"
-orport="2002"
-dirport="2003"
-auth_torrc_section="auth.torrc.part"
-sbws_server_host="::1"

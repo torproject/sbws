@@ -1,1 +1,0 @@
-../simple.common/02-start-network.sh

@@ -1,1 +1,0 @@
-../simple.common/03-network-in-ready-state.py

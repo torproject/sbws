@@ -1,8 +1,0 @@
-auth?/
-relay?/
-exit?/
-client?/
-datadir/
-tor/
-config*.ini
-*.log

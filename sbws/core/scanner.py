@@ -400,6 +400,9 @@ def main_loop(args, conf, controller, relay_list, circuit_builder, result_dump,
 
     """
     pending_results = []
+    # Set the time to wait for a thread to finish as the half of an HTTP
+    # request timeout.
+    time_to_sleep = conf.getfloat('general', 'http_timeout') / 2
     # Do not start a new loop if sbws is stopping.
     while not settings.end_event.is_set():
         log.debug("Starting a new measurement loop.")
@@ -421,14 +424,14 @@ def main_loop(args, conf, controller, relay_list, circuit_builder, result_dump,
             # Instead of letting apply_async to queue the relays in order until
             # a thread has finished, wait here until a thread has finished.
             while len(pending_results) >= max_pending_results:
-                # sleep is non-blocking sine happens in the main process
-                time.sleep(5)
+                # sleep is non-blocking since happens in the main process.
+                time.sleep(time_to_sleep)
                 pending_results = [r for r in pending_results if not r.ready()]
         while len(pending_results) > 0:
             log.debug("There are %s pending measurements.",
                       len(pending_results))
-            # sleep is non-blocking sine happens in the main process
-            time.sleep(5)
+            # sleep is non-blocking since happens in the main process.
+            time.sleep(time_to_sleep)
             pending_results = [r for r in pending_results if not r.ready()]
         loop_tstop = time.time()
         loop_tdelta = (loop_tstop - loop_tstart) / 60

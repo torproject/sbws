@@ -8,7 +8,7 @@ class Settings:
     """Singleton settings for all the packages.
     This way change settings can be seen by all the packages that import it.
 
-    It leaves in ``__init__.py`` to leave open the possibility of having a
+    It lives in ``__init__.py`` to leave open the possibility of having a
     ``settings.py`` module for user settings.
 
     .. note:: After refactoring, globals should only have constants.

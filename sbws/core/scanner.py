@@ -202,6 +202,7 @@ def _pick_ideal_second_hop(relay, dest, rl, cont, is_exit):
 
 
 def measure_relay(args, conf, destinations, cb, rl, relay):
+    log.debug('Measuring %s %s', relay.nickname, relay.fingerprint)
     s = requests_utils.make_session(
         cb.controller, conf.getfloat('general', 'http_timeout'))
     # Pick a destionation
@@ -409,8 +410,6 @@ def main_loop(args, conf, controller, relay_list, circuit_builder, result_dump,
             if settings.end_event.is_set():
                 break
             num_relays += 1
-            log.debug('Measuring %s %s', target.nickname,
-                      target.fingerprint[0:8])
             # callback and callback_err must be non-blocking
             callback = result_putter(result_dump)
             callback_err = result_putter_error(target)

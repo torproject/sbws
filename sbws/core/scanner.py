@@ -34,7 +34,7 @@ rd = None
 controller = None
 
 
-def stop_threads():
+def stop_threads(signal, frame):
     global rd, pool
     log.debug('Stopping sbws.')
     # Avoid new threads to start.

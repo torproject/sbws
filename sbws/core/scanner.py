@@ -12,7 +12,7 @@ from ..lib.relayprioritizer import RelayPrioritizer
 from ..lib.destination import DestinationList
 from ..util.timestamp import now_isodt_str
 from ..util.state import State
-from sbws.globals import fail_hard
+from sbws.globals import fail_hard, TIMEOUT_MEASUREMENTS
 import sbws.util.stem as stem_utils
 import sbws.util.requests as requests_utils
 from argparse import ArgumentDefaultsHelpFormatter
@@ -31,17 +31,24 @@ log = logging.getLogger(__name__)
 
 
 def dumpstacks():
-    import pdb
     import traceback
-    log.warning("sbws stop measuring relays, probably because of a bug."
-                "Please, open a ticket in trac.torproject.org with this"
-                "backtrace.")
+    log.critical("sbws stop measuring relays, probably because of a bug."
+                 "Please, open a ticket in trac.torproject.org with this"
+                 "backtrace.")
     thread_id2name = dict([(t.ident, t.name) for t in threading.enumerate()])
     for thread_id, stack in sys._current_frames().items():
         log.critical("Thread: %s(%d)",
                      thread_id2name.get(thread_id, ""), thread_id)
         log.critical(traceback.print_stack(stack))
-    pdb.set_trace()
+    # If logging level is less than DEBUG (more verbose), start pdb so that
+    # developers can debug the issue.
+    if log.getEffectiveLevel() < logging.DEBUG:
+        import pdb
+        pdb.set_trace()
+    # Otherwise exit.
+    else:
+        # Change to stop threads when #28869 is merged
+        sys.exit(1)
 
 
 def timed_recv_from_server(session, dest, byte_range):
@@ -376,15 +383,15 @@ def run_speedtest(args, conf):
             while len(pending_results) >= max_pending_results:
                 time.sleep(5)
                 pending_results = [r for r in pending_results if not r.ready()]
-        counter = 0
-        # give it 3min, otherwise there's a bug or deadlock
-        while len(pending_results) > 0 and counter <= 36:
-            counter += 1
+        time_waiting = 0
+        while (len(pending_results) > 0
+               and time_waiting <= TIMEOUT_MEASUREMENTS):
             log.debug("Number of pending measurement threads %s after "
                       "a prioritization loop.", len(pending_results))
             time.sleep(5)
+            time_waiting += 5
             pending_results = [r for r in pending_results if not r.ready()]
-        if counter > 36:
+        if time_waiting > TIMEOUT_MEASUREMENTS:
             dumpstacks()
         loop_tstop = time.time()
         loop_tdelta = (loop_tstop - loop_tstart) / 60

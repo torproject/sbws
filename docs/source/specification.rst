@@ -52,14 +52,6 @@ This document describes the implementation contained within the accompanying
 Anatomy of a Tor network using sbws
 -----------------------------------
 
-First and foremost, there needs to be one or more webservers that exist
-somewhere on the Internet. They MUST serve up a file of at least some minimum
-size, and MUST support both HTTP GET and HEAD requests on that file. For both
-HTTP verbs, they MUST support requests with the Range header and MUST support
-*not* compressing responses. Beyond these requirements, the webservers MAY support
-TLS connections, optionally with a valid certificate. Both apache and nginx fit
-these requirements.
-
 Every directory authority that wishes to also vote on relay bandwidth (AKA
 a bandwidth authority) MUST run one or more sbws scanner clients (or trust
 someone to run one or more sbws scanner clients for them). The scanners run

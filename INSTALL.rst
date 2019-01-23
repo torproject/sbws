@@ -19,7 +19,7 @@ Continue reading to install ``sbws`` in other ways.
 System requirements
 --------------------
 
-- Tor
+- Tor (last stable version is recommended)
 - Python 3 (>= 3.5)
 - virtualenv_ (while there is not ``stem`` release > 1.6.0, it is
   recommended to install the required python dependencies in a virtualenv)

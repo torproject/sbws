@@ -489,7 +489,7 @@ def run_speedtest(args, conf):
     except KeyboardInterrupt:
         log.info("Interrupted by the user.")
     finally:
-        stop_threads()
+        stop_threads(signal.SIGINT, None)
 
 
 def gen_parser(sub):

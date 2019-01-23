@@ -439,6 +439,22 @@ def main_loop(args, conf, controller, relay_list, circuit_builder, result_dump,
 
 
 def run_speedtest(args, conf):
+    """Initializes all the data and threads needed to measure the relays.
+
+    It launches or connect to Tor in a thread.
+    It initializes the list of relays seen in the Tor network.
+    It starts a thread to read the previous measurements and wait for new
+    measurements to write them to the disk.
+    It initializes a class that will be used to order the relays depending
+    on their measurements age.
+    It initializes the list of destinations that will be used for the
+    measurements.
+    It initializes the thread pool that will launch the measurement threads.
+    The pool starts 3 other threads that are not the measurement (worker)
+    threads.
+    Finally, it calls the function that will manage the measurement threads.
+
+    """
     global rd, pool, controller
     controller, _ = stem_utils.init_controller(
         path=conf.getpath('tor', 'control_socket'))

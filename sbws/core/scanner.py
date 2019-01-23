@@ -2,6 +2,7 @@
 
 import sys
 import threading
+import uuid
 
 from ..lib.circuitbuilder import GapsCircuitBuilder as CB
 from ..lib.resultdump import ResultDump
@@ -12,7 +13,7 @@ from ..lib.relayprioritizer import RelayPrioritizer
 from ..lib.destination import DestinationList
 from ..util.timestamp import now_isodt_str
 from ..util.state import State
-from sbws.globals import fail_hard, TIMEOUT_MEASUREMENTS
+from sbws.globals import fail_hard, TIMEOUT_MEASUREMENTS, HTTP_GET_HEADERS
 import sbws.util.stem as stem_utils
 import sbws.util.requests as requests_utils
 from argparse import ArgumentDefaultsHelpFormatter
@@ -23,6 +24,8 @@ import os
 import logging
 import requests
 import random
+
+from sbws import settings
 
 
 rng = random.SystemRandom()
@@ -55,17 +58,21 @@ def timed_recv_from_server(session, dest, byte_range):
     ''' Request the **byte_range** from the URL at **dest**. If successful,
     return True and the time it took to download. Otherwise return False and an
     exception. '''
-    headers = {'Range': byte_range, 'Accept-Encoding': 'identity'}
+
     start_time = time.time()
+    HTTP_GET_HEADERS['Range'] = byte_range
     # TODO:
     # - What other exceptions can this throw?
-    # - Do we have to read the content, or did requests already do so?
+    # - response.elapsed "measures the time taken between sending the first
+    #   byte of the request and finishing parsing the headers.
+    #   It is therefore unaffected by consuming the response content"
+    #   If this mean that the content has arrived, elapsed could be used to
+    #   know the time it took.
     try:
-        requests_utils.get(
-            session, dest.url, headers=headers, verify=dest.verify)
-    except requests.exceptions.ConnectionError as e:
-        return False, e
-    except requests.exceptions.ReadTimeout as e:
+        # headers are merged with the session ones, not overwritten.
+        session.get(dest.url, headers=HTTP_GET_HEADERS, verify=dest.verify)
+    except (requests.exceptions.ConnectionError,
+            requests.exceptions.ReadTimeout) as e:
         return False, e
     end_time = time.time()
     return True, end_time - start_time
@@ -372,6 +379,14 @@ def run_speedtest(args, conf):
             'even lead to messed up results.',
             conf.getpath('tor', 'control_socket'))
         time.sleep(15)
+
+    # When there will be a refactor where conf is global, this can be removed
+    # from here.
+    state = State(conf.getpath('paths', 'state_fname'))
+    # Call only once to initialize http_headers
+    settings.init_http_headers(conf.get('scanner', 'nickname'), state['uuid'],
+                               str(controller.get_version()))
+
     rl = RelayList(args, conf, controller)
     cb = CB(args, conf, controller, rl)
     rd = ResultDump(args, conf, end_event)
@@ -439,6 +454,9 @@ def main(args, conf):
 
     state = State(conf.getpath('paths', 'state_fname'))
     state['scanner_started'] = now_isodt_str()
+    # Generate an unique identifier for each scanner
+    if 'uuid' not in state:
+        state['uuid'] = str(uuid.uuid4())
 
     try:
         run_speedtest(args, conf)

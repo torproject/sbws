@@ -1,5 +1,12 @@
 import os
 import logging
+import platform
+
+from requests import __version__ as requests_version
+from stem import __version__ as stem_version
+
+from sbws import __version__
+
 
 log = logging.getLogger(__name__)
 
@@ -53,6 +60,32 @@ MIN_REPORT = 60
 MAX_BW_DIFF_PERC = 50
 
 BW_LINE_SIZE = 510
+
+# Metadata to send in every requests, so that data servers can know which
+# scanners are using them.
+# In Requests these keys are case insensitive.
+HTTP_HEADERS = {
+    # This would be ignored if changing to HTTP/2
+    'Connection': 'keep-alive',
+    # Needs to get Tor version from the controller
+    'User-Agent': 'sbws/{} ({}) Python/{} Requests/{} Stem/{} Tor/'.format(
+                    __version__, platform.platform(),
+                    platform.python_version(),
+                    requests_version, stem_version),
+    # Organization defined names (:rfc:`7239`)
+    # Needs to get the nickname from the user config file.
+    'Tor-Bandwidth-Scanner-Nickname': '{}',
+    'Tor-Bandwidth-Scanner-UUID': '{}',
+    # In case of including IP address.
+    # 'Forwarded': 'for={}'  # IPv6 part, if there's
+    }
+# In the case of having ipv6 it's concatenated to forwarder.
+IPV6_FORWARDED = ', for="[{}]"'
+
+HTTP_GET_HEADERS = {
+    'Range': '{}',
+    'Accept-Encoding': 'identity',
+}
 
 
 def fail_hard(*a, **kw):

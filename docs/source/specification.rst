@@ -78,17 +78,6 @@ ever measured within the validity period into a single file for the tor process
 the bandwidth authority is running to read.  The bandwidth authority includes
 these aggregated results in its votes.
 
-Sbws dependencies
------------------
-
-Sbws scanners run tor for themselves and do not require a system tor process to
-exist. Tor MUST be installed, and it SHOULD be any up-to-date version supported
-by the network team.
-
-Sbws uses the python library Stem_ to launch and control tor and the python
-library Requests_ to make HTTP(S) requests. Both are generally packaged for
-most major Linux distributions, and are always available in PyPI.
-
 How it all works
 ----------------
 

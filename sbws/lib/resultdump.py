@@ -4,7 +4,6 @@ import time
 import logging
 from glob import glob
 from threading import Thread
-from threading import Event
 from threading import RLock
 from queue import Queue
 from queue import Empty
@@ -14,6 +13,7 @@ from enum import Enum
 from sbws.globals import RESULT_VERSION, fail_hard
 from sbws.util.filelock import DirectoryLock
 from sbws.lib.relaylist import Relay
+from .. import settings
 
 log = logging.getLogger(__name__)
 
@@ -527,13 +527,11 @@ class ResultSuccess(Result):
 class ResultDump:
     ''' Runs the enter() method in a new thread and collects new Results on its
     queue. Writes them to daily result files in the data directory '''
-    def __init__(self, args, conf, end_event):
+    def __init__(self, args, conf):
         assert os.path.isdir(conf.getpath('paths', 'datadir'))
-        assert isinstance(end_event, Event)
         self.conf = conf
         self.fresh_days = conf.getint('general', 'data_period')
         self.datadir = conf.getpath('paths', 'datadir')
-        self.end_event = end_event
         self.data = {}
         self.data_lock = RLock()
         self.thread = Thread(target=self.enter)
@@ -563,7 +561,7 @@ class ResultDump:
         assert isinstance(result, Result)
         fp = result.fingerprint
         nick = result.nickname
-        if isinstance(result, ResultError) and self.end_event.is_set():
+        if isinstance(result, ResultError) and settings.end_event.is_set():
             log.debug('Ignoring %s for %s %s because we are shutting down',
                       type(result).__name__, nick, fp)
             return
@@ -586,7 +584,7 @@ class ResultDump:
         with self.data_lock:
             self.data = load_recent_results_in_datadir(
                 self.fresh_days, self.datadir)
-        while not (self.end_event.is_set() and self.queue.empty()):
+        while not (settings.end_event.is_set() and self.queue.empty()):
             try:
                 event = self.queue.get(timeout=1)
             except Empty:

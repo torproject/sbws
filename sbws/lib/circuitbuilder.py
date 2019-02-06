@@ -74,19 +74,13 @@ class CircuitBuilder:
         timeout = self.circuit_timeout
         fp_path = '[' + ' -> '.join([p for p in path]) + ']'
         log.debug('Building %s', fp_path)
-        error = None
-        for _ in range(0, 3):
-            try:
-                circ_id = c.new_circuit(
-                    path, await_build=True, timeout=timeout)
-            except (InvalidRequest, CircuitExtensionFailed,
-                    ProtocolError, Timeout) as e:
-                log.debug(e)
-                error = str(e)
-                continue
-            else:
-                return circ_id, None
-        return None, error
+        try:
+            circ_id = c.new_circuit(
+                path, await_build=True, timeout=timeout)
+        except (InvalidRequest, CircuitExtensionFailed,
+                ProtocolError, Timeout) as e:
+            return None, str(e)
+        return circ_id, None
 
     def __del__(self):
         c = self.controller

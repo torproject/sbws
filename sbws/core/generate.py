@@ -104,8 +104,10 @@ def main(args, conf):
     state_fpath = conf.getpath('paths', 'state_fname')
     consensus_path = os.path.join(conf.getpath('tor', 'datadir'),
                                   "cached-consensus")
-    bw_file = V3BWFile.from_results(results, state_fpath, args.scale_constant,
-                                    scaling_method,
+    # Accept None as scanner_country to be compatible with older versions.
+    scanner_country = conf['scanner'].get('country')
+    bw_file = V3BWFile.from_results(results, scanner_country, state_fpath,
+                                    args.scale_constant, scaling_method,
                                     torflow_cap=args.torflow_bw_margin,
                                     round_digs=args.round_digs,
                                     secs_recent=args.secs_recent,

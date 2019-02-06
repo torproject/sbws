@@ -17,10 +17,7 @@ class PathLengthException(Exception):
 
 
 def valid_circuit_length(path):
-    assert isinstance(path, int) or isinstance(path, list)
-    if isinstance(path, int):
-        return path > 0 and path <= 8
-    return len(path) > 0 and len(path) <= 8
+    return 0 < len(path) <= 8
 
 
 class CircuitBuilder:

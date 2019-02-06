@@ -541,7 +541,6 @@ def gen_parser(sub):
 def main(args, conf):
     if conf.getint('scanner', 'measurement_threads') < 1:
         fail_hard('Number of measurement threads must be larger than 1')
-
     min_dl = conf.getint('scanner', 'min_download_size')
     max_dl = conf.getint('scanner', 'max_download_size')
     if max_dl < min_dl:
@@ -555,5 +554,4 @@ def main(args, conf):
     # Generate an unique identifier for each scanner
     if 'uuid' not in state:
         state['uuid'] = str(uuid.uuid4())
-
     run_speedtest(args, conf)

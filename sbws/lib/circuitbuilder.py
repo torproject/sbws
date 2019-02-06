@@ -87,6 +87,9 @@ class CircuitBuilder:
         self.built_circuits.clear()
 
 
+# In a future refactor, remove this class, since sbws chooses the relays to
+# build the circuit, the relays are not just choosen as random as this class
+# does.
 class GapsCircuitBuilder(CircuitBuilder):
     ''' The build_circuit member function takes a list. Falsey values in the
     list will be replaced with relays chosen uniformally at random; Truthy

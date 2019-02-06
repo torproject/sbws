@@ -7,15 +7,6 @@ import logging
 log = logging.getLogger(__name__)
 
 
-class PathLengthException(Exception):
-    def __init__(self, message=None, errors=None):
-        if message is not None:
-            super().__init__(message)
-        else:
-            super().__init__()
-        self.errors = errors
-
-
 def valid_circuit_length(path):
     return 0 < len(path) <= 8
 
@@ -66,7 +57,7 @@ class CircuitBuilder:
             was an error building the circuit.
         """
         if not valid_circuit_length(path):
-            raise PathLengthException()
+            return None, "Can not build a circuit, invalid path."
         c = self.controller
         timeout = self.circuit_timeout
         fp_path = '[' + ' -> '.join([p for p in path]) + ']'
@@ -142,7 +133,7 @@ class GapsCircuitBuilder(CircuitBuilder):
         chosen uniformally at random. A relay will not be in a circuit twice.
         '''
         if not valid_circuit_length(path):
-            raise PathLengthException()
+            return None, "Can not build a circuit, invalid path."
         path = self._normalize_path(path)
         if path is None:
             return None

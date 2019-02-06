@@ -16,6 +16,8 @@ from sbws.util.timestamp import now_fname, now_isodt_str, now_unixts
 timestamp = 1523974147
 timestamp_l = str(timestamp)
 version_l = KEYVALUE_SEP_V1.join(['version', SPEC_VERSION])
+scanner_country = 'US'
+scanner_country_l = KEYVALUE_SEP_V1.join(['scanner_country', scanner_country])
 software_l = KEYVALUE_SEP_V1.join(['software', 'sbws'])
 software_version_l = KEYVALUE_SEP_V1.join(['software_version', version])
 file_created = '2018-04-25T13:10:57'
@@ -24,7 +26,7 @@ latest_bandwidth = '2018-04-17T14:09:07'
 latest_bandwidth_l = KEYVALUE_SEP_V1.join(['latest_bandwidth',
                                           latest_bandwidth])
 header_ls = [timestamp_l, version_l, file_created_l, latest_bandwidth_l,
-             software_l, software_version_l, TERMINATOR]
+             scanner_country_l, software_l, software_version_l, TERMINATOR]
 header_str = LINE_SEP.join(header_ls) + LINE_SEP
 earliest_bandwidth = '2018-04-16T14:09:07'
 earliest_bandwidth_l = KEYVALUE_SEP_V1.join(['earliest_bandwidth',
@@ -53,7 +55,8 @@ v3bw_str = header_extra_str + raw_bwl_str
 
 def test_v3bwheader_str():
     """Test header str"""
-    header = V3BWHeader(timestamp_l, file_created=file_created)
+    header = V3BWHeader(timestamp_l, scanner_country=scanner_country,
+                        file_created=file_created)
     assert header_str == str(header)
 
 

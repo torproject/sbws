@@ -235,6 +235,36 @@ def test_nickname():
         assert not valid, reason
 
 
+def test_country(conf):
+    from string import Template
+    err_tmpl = Template('$sec/$key ($val): $e')
+
+    # Invalid default country code in scanner section
+    errors = con._validate_country(conf, 'scanner', 'country', err_tmpl)
+    assert errors[0] == \
+        'scanner/country (AA): Not a valid ISO 3166 alpha-2 country code.'
+
+    # Valid country code in scanner section
+    conf['scanner']['country'] = 'US'
+    errors = con._validate_country(conf, 'scanner', 'country', err_tmpl)
+    assert not errors
+
+    # No country in destinations.foo section
+    conf['destinations']['foo'] = 'on'
+    conf['destinations.foo'] = {}
+    conf['destinations.foo']['url'] = 'https://foo.bar'
+    errors = con._validate_country(
+        conf, 'destinations.foo', 'country', err_tmpl)
+    assert errors[0] == \
+        'destinations.foo/country (None): ' \
+        'Missing country in configuration file.'
+
+    # Valid country in destinations.foo section
+    conf['destinations.foo']['url'] = 'US'
+    errors = con._validate_country(conf, 'scanner', 'country', err_tmpl)
+    assert not errors
+
+
 def test_config_arg_provided_but_no_found(args, conf):
     args.config = 'non_existing_file'
     user_conf = con._get_user_config(args, conf)

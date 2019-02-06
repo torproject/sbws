@@ -12,6 +12,8 @@ from sbws.globals import (DEFAULT_CONFIG_PATH, DEFAULT_LOG_CONFIG_PATH,
                           USER_CONFIG_PATH, SUPERVISED_RUN_DPATH,
                           SUPERVISED_USER_CONFIG_PATH)
 
+from sbws.util.iso3166 import ISO_3166_ALPHA_2
+
 _ALPHANUM = 'abcdefghijklmnopqrstuvwxyz'
 _ALPHANUM += _ALPHANUM.upper()
 _ALPHANUM += '0123456789'
@@ -269,6 +271,21 @@ def _validate_paths(conf):
     return errors
 
 
+def _validate_country(conf, sec, key, err_tmpl):
+    errors = []
+    if conf[sec].get(key, None) is None:
+        errors.append(err_tmpl.substitute(
+            sec=sec, key=key, val=None,
+            e="Missing country in configuration file."))
+        return errors
+    valid = conf[sec]['country'] in ISO_3166_ALPHA_2
+    if not valid:
+        errors.append(err_tmpl.substitute(
+            sec=sec, key=key, val=conf[sec][key],
+            e="Not a valid ISO 3166 alpha-2 country code."))
+    return errors
+
+
 def _validate_scanner(conf):
     errors = []
     sec = 'scanner'
@@ -288,7 +305,7 @@ def _validate_scanner(conf):
         'download_max': {'minimum': 0.001, 'maximum': None},
     }
     all_valid_keys = list(ints.keys()) + list(floats.keys()) + \
-        ['nickname']
+        ['nickname', 'country']
     errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))
     errors.extend(_validate_section_ints(conf, sec, ints, err_tmpl))
     errors.extend(_validate_section_floats(conf, sec, floats, err_tmpl))
@@ -296,6 +313,7 @@ def _validate_scanner(conf):
     if not valid:
         errors.append(err_tmpl.substitute(
             sec=sec, key='nickname', val=conf[sec]['nickname'], e=error_msg))
+    errors.extend(_validate_country(conf, sec, 'country', err_tmpl))
     return errors
 
 
@@ -388,7 +406,7 @@ def _validate_destinations(conf):
     urls = {
         'url': {},
     }
-    all_valid_keys = list(urls.keys()) + ['verify']
+    all_valid_keys = list(urls.keys()) + ['verify', 'country']
     for sec in dest_sections:
         if sec not in conf:
             errors.append('{} is an enabled destination but is not a '
@@ -397,6 +415,7 @@ def _validate_destinations(conf):
         errors.extend(_validate_section_keys(
             conf, sec, all_valid_keys, err_tmpl, allow_missing=['verify']))
         errors.extend(_validate_section_urls(conf, sec, urls, err_tmpl))
+        errors.extend(_validate_country(conf, sec, 'country', err_tmpl))
     return errors
 
 

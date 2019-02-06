@@ -8,9 +8,9 @@ Tor bandwidth scanner configuration file.
 
 **sbws** (1) ``scanner`` command requires a configuration file with a
 "[destinations]" section.
+"[destinations]" is the only section that does not have a default value.
 
-It is the only section that does not have a default value.
-
+It is also required to configure "country" in the "[scanner]" section.
 It is recommended, but not required to configure "nickname" in the "[scanner]"
 section.
 
@@ -77,6 +77,9 @@ destinations.STR
   verify = BOOL
     Whether or not to verify the destination certificate.
     (Default: True)
+  country = STR
+    ISO 3166-1 alpha-2 country code.
+    Use ZZ if the destination URL is a domain name and it is in a CDN.
 
 tor
 
@@ -99,6 +102,9 @@ scanner
   nickname = STR
     A human-readable string with chars in a-zA-Z0-9 to identify the scanner.
     (Default: IDidntEditTheSBWSConfig)
+  country = STR
+    ISO 3166-1 alpha-2 country code.
+    (Default: AA, a non existing country to detect it was not edited)
   download_toofast = INT
     Limits on what download times are too fast/slow/etc. (Default: 1)
   download_min = INT

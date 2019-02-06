@@ -136,16 +136,13 @@ class GapsCircuitBuilder(CircuitBuilder):
             return None, "Can not build a circuit, invalid path."
         path = self._normalize_path(path)
         if path is None:
-            return None
+            return None, "Can not build a circuit, no path."
         num_missing = len(['foo' for r in path if not r])
         insert_relays = self._random_sample_relays(
             num_missing, [r for r in path if r is not None])
         if insert_relays is None:
             path = ','.join([r.nickname if r else str(None) for r in path])
-            log.warning(
-                'Problem building a circuit to satisfy %s with available '
-                'relays in the network', path)
-            return None
+            return None, "Can not build a circuit with the current relays."
         assert len(insert_relays) == num_missing
         path = [r.fingerprint if r else insert_relays.pop().fingerprint
                 for r in path]

@@ -116,6 +116,21 @@ Classes used in the initialization:
 
 Source code: :func:`sbws.core.scanner.run_speedtest`
 
+Measuring relays
+~~~~~~~~~~~~~~~~~
+
+#. For every relay:
+#. Select a second relay to build a Tor circuit.
+#. Build the circuit.
+#. Make HTTPS GET requests to the Web server over the circuit.
+#. Store the time the request took and the amount of bytes requested.
+
+.. image:: ./images/activity_all.svg
+   :alt: activity measuring relays
+   :height: 300px
+   :align: center
+
+Source code: :func:`sbws.core.scanner.measure_relay`
 
 Simple result storage
 ~~~~~~~~~~~~~~~~~~~~~

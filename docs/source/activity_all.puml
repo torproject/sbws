@@ -1,0 +1,25 @@
+@startuml
+
+start
+
+while (no SIGINT/SIGTERM?)
+
+  while (next relay to measure?)
+
+    :Select a destination;
+
+    :Select a second relay;
+
+    :Build a circuit;
+
+    :HTTP GET (Range-Bytes);
+
+    :Store measurement;
+
+  endwhile
+
+endwhile
+
+stop
+
+@enduml

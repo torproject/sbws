@@ -192,6 +192,12 @@ class _ResultType(_StrEnum):
     ErrorCircuit = 'error-circ'
     ErrorStream = 'error-stream'
     ErrorAuth = 'error-auth'
+    # When it can not be found a second relay suitable to measure a relay.
+    # It is used in ``ResultErrorSecondRelay``.
+    ErrorSecondRelay = 'error-second-relay'
+    # When there is not a working destination Web Server.
+    # It is used in ``ResultErrorDestionation``.
+    ErrorDestination = 'error-destination'
 
 
 class Result:
@@ -337,6 +343,10 @@ class Result:
             return ResultErrorStream.from_dict(d)
         elif d['type'] == _ResultType.ErrorAuth.value:
             return ResultErrorAuth.from_dict(d)
+        elif d['type'] == _ResultType.ErrorSecondRelay.value:
+            return ResultErrorSecondRelay.from_dict(d)
+        elif d['type'] == _ResultType.ErrorDestination.value:
+            return ResultErrorDestination.from_dict(d)
         else:
             raise NotImplementedError(
                 'Unknown result type {}'.format(d['type']))
@@ -452,6 +462,83 @@ class ResultErrorStream(ResultError):
                 d['master_key_ed25519'],
                 relay_in_recent_consensus_count=  # noqa
                     d.get('relay_in_recent_consensus_count', None)),  # noqa
+            d['circ'], d['dest_url'], d['scanner'],
+            msg=d['msg'], t=d['time'])
+
+    def to_dict(self):
+        d = super().to_dict()
+        return d
+
+
+class ResultErrorSecondRelay(ResultError):
+    """
+    Error when it could not be found a second relay suitable to measure
+    a relay.
+
+    A second suitable relay is a relay that:
+    - Has at least equal bandwidth as the relay to measure.
+    - If the relay to measure is not an exit,
+      the second relay is an exit without `bad` flag and can exit to port 443.
+    - If the relay to measure is an exit, the second relay is not an exit.
+
+    It is instanciated in :func:`~sbws.core.scanner.measure_relay`.
+
+    .. note:: this duplicates code and add more tech-debt,
+       since it's the same as the other
+       :class:`~sbws.lib.resultdump.ResultError` classes except for the
+       ``type``.
+       In a future refactor, there should be only one ``ResultError`` class
+       and assign the type in the ``scanner`` module.
+    """
+    def __init__(self, *a, **kw):
+        super().__init__(*a, **kw)
+
+    @property
+    def type(self):
+        return _ResultType.ErrorSecondRelay
+
+    @staticmethod
+    def from_dict(d):
+        assert isinstance(d, dict)
+        return ResultErrorSecondRelay(
+            Result.Relay(
+                d['fingerprint'], d['nickname'], d['address'],
+                d['master_key_ed25519']),
+            d['circ'], d['dest_url'], d['scanner'],
+            msg=d['msg'], t=d['time'])
+
+    def to_dict(self):
+        d = super().to_dict()
+        return d
+
+
+class ResultErrorDestination(ResultError):
+    """
+    Error when there is not a working destination Web Server.
+
+    It is instanciated in :func:`~sbws.core.scanner.measure_relay`.
+
+    .. note:: this duplicates code and add more tech-debt,
+       since it's the same as the other
+       :class:`~sbws.lib.resultdump.ResultError` classes except for the
+       ``type``.
+       In a future refactor, there should be only one ``ResultError`` class
+       and assign the type in the ``scanner`` module.
+    """
+    def __init__(self, *a, **kw):
+        super().__init__(*a, **kw)
+
+    @property
+    def type(self):
+        return _ResultType.ErrorSecondRelay
+
+    @staticmethod
+    def from_dict(d):
+        assert isinstance(d, dict)
+        return ResultErrorSecondRelay(
+            Result.Relay(
+                d['fingerprint'], d['nickname'], d['address'],
+                d['master_key_ed25519']),
             d['circ'], d['dest_url'], d['scanner'],
             msg=d['msg'], t=d['time'])
 

@@ -150,6 +150,20 @@ Selecting a second relay
 
 Source code: :func:`sbws.core.scanner.measure_relay`
 
+Selecting the data to download
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#. While the downloaded data is smaller than 1GB or the number of download
+   is minor than 5:
+#. Randomly, select a 16MiB range.
+#. If it takes less than 5 seconds, select a bigger range and don't keep any
+   information.
+#. If it takes more than 10 seconds, select an smaller range and don't keep any
+   information.
+#. Store the number of bytes downloaded and the time it took.
+
+Source code: :func:`sbws.core.scanner._should_keep_result`
+
 Simple result storage
 ~~~~~~~~~~~~~~~~~~~~~
 

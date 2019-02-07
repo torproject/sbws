@@ -70,10 +70,51 @@ ever measured within the validity period into a single file for the tor process
 the bandwidth authority is running to read.  The bandwidth authority includes
 these aggregated results in its votes.
 
-How it all works
-----------------
+Running the scanner
+---------------------
+Overview
+~~~~~~~~~
 
-We now describe various core parts of sbws.
+The :term:`scanner` obtain a list of relays from the Tor network.
+It measures the bandwidth of each relay by creating a two hop circuit with the
+relay to measure and download data from a :term:`destination` Web Server.
+The :term:`generator` creates a :term:`bandwidth list file` that is read
+by a :term:`directory authority` and used to report relays' bandwidth in its
+vote.
+
+.. image:: ./images/scanner.svg
+   :height: 200px
+   :align: center
+
+Intialization
+~~~~~~~~~~~~~~
+
+.. At some point it should be able to get environment variables
+
+#. Parse the command line arguments and configuration files.
+#. Launch a Tor thread with an specific configuration or connect to a running
+   Tor daemon that is running with a suitable configuration.
+#. Obtain the list of relays in the Tor network from the Tor consensus and
+   descriptor documents.
+#. Read and parse the old bandwidth measurements stored in the file system.
+#. Select a subset of the relays to be measured next, ordered by:
+
+   #. relays not measured.
+   #. measurements age.
+
+.. image:: ./images/use_cases_data_sources.svg
+   :alt: data sources
+   :height: 200px
+   :align: center
+
+Classes used in the initialization:
+
+.. image:: ./images/use_cases_classes.svg
+   :alt: classes initializing data
+   :height: 300px
+   :align: center
+
+Source code: :func:`sbws.core.scanner.run_speedtest`
 
 Simple relay prioritization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~

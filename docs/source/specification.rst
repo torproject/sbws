@@ -1,37 +1,6 @@
 Simple Bandwidth Scanner technical details
 ============================================
 
-Background
-----------
-
-Some of the Tor :term:`directory authorities <directory authority>`
-run bandwidth scanners to measure the bandwidth of relays and include their
-measurements in their network status votes. Clients use the consensus of these
-weights to inform their path selection process with the hope that every circuit
-they build will have roughly equal performance, regardless of the relays
-chosen. This achieves a form of load balancing.
-
-.. _problem:
-
-Historically, the directory authorities that ran bandwidth scanners
-(:term:`bandwidth authorities <bandwidth authority>`), ran torflow_. Time
-passed, it slowly become less maintained, and the collective knowledge of how
-it worked slipped away.
-
-The bandwidth authorities became increasingly unhappy having to run torflow.
-Twice yearly Tor Project meetings came and went. Everyone agreed a replacement
-was needed, but it was harder to reach consensus on what it should look like
-and what its goals where.
-
-Simple Bandwidth Scanner (sbws) is a project motivated by discussions at the
-Rome 2018 Tor Project meeting. It aims to be a quick to implement,
-easy to maintain replacement for torflow. It should not receive many fancy
-features; instead, developer time should be spent on finding and implementing a
-better load balancing solution than bandwidth scanning, such as peerflow_.
-
-This document describes the implementation contained within the accompanying
-``sbws`` package.
-
 Anatomy of a Tor network using sbws
 -----------------------------------
 

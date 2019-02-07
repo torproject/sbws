@@ -1,14 +1,6 @@
 Simple Bandwidth Scanner technical details
 ============================================
 
-:Author: Matt Traudt, juga
-:Date: 29 March 2018
-:Last Update: 19 Sep 2018
-:Status: Draft
-
-.. note:: this document may become an specification of the ``sbws`` method to
-   measure relays and/or scale the measuremensts
-
 Conventions
 -----------
 

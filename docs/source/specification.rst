@@ -203,8 +203,8 @@ a percententage (currently 60%) than the number of relays in the consensus,
 additional Header Lines MUST be added (see XXX) to the Bandwith File and the
 relays SHOULD NOT be included.
 
-Scaling bandwidth measurements
-:::::::::::::::::::::::::::::::::
+Scaling the bandwidth measurements
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Consensus bandwidth obtained by new implementations MUST be comparable to the
 consensus bandwidth, therefore they MUST implement torflow_scaling_.

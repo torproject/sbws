@@ -164,30 +164,16 @@ Selecting the data to download
 
 Source code: :func:`sbws.core.scanner._should_keep_result`
 
-Simple result storage
-~~~~~~~~~~~~~~~~~~~~~
+Writing the measurements to the filesystem
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Internally, sbws has a hierarchy of ``Result`` classes for easy managing of
-different types of result (success, error-because-of-circuit-error,
-error-because-[...] etc.). These results get converted into JSON strings and
-stored -- **one per line** -- in text files in a data directory.
+For every measured relay, the measurement result is put in a queue.
+There's an independent thread getting measurements from the queue every second.
+Every new measurement is appended to a file as a json line
+(but the file itself is not json!).
+The file is named with the current date. Every day a new file is created.
 
-The text files are simply named after the date. For example:
-``2018-03-20.txt``.
-
-The sbws scanner only appends to these files, and it automatically starts a new
-file when the system's clock ticks past midnight UTC.
-
-To avoid any weird timezone-related issues, consumers of sbws scanner data (such
-as the generate and stats scripts) SHOULD read more files than strictly
-necessary. For example, if the validity period is 5 days, they should read 6
-days of files. Because all results have a Unix timestamp, consumers of sbws
-data can easily determine which results are just outside the validity period as
-they are reading them in.
-
-
-Simple result processing
-~~~~~~~~~~~~~~~~~~~~~~~~
+Source code: :func:`sbws.lib.resultdump.ResultDump.enter`
 
 Every hour the directory authorities vote to come to a consensus about the
 state of the Tor network.  The bandwidth authorities need to use the results

@@ -116,52 +116,6 @@ Classes used in the initialization:
 
 Source code: :func:`sbws.core.scanner.run_speedtest`
 
-Simple relay prioritization
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-This may be the most complex part of sbws.
-
-Sbws makes an effort to prioritize measurements of relays that don't have many
-recent results. For example: relays that just joined the Tor network or relays
-that haven't been online in the past few days. This goal is achieved using a
-min-priority queue and the concept of *freshness*.
-
-Freshness is defined as the amount of time between when the measurement was
-made and the time sbws will stop considering it valid. Thus, a measurement made
-more recently will have more time until it is no longer valid (higher
-freshness) and a measurement made a long time ago will have very little time
-until it is no longer valid (lower freshness).
-
-Over time, sbws will make many measurements for a given relay. The sum of these
-measurements' freshnesses is the relay's priority. As we are prioritizing like
-a min-priority queue, a higher sum of freshnesses means *worse* priority while
-a lower sum of freshnesses means *better* priority.
-
-  Example: AlphaRelay33 joined the network yesterday and sbws has measured it
-  once so far. BetaRelay87 has been in the network for years and has been
-  getting measured regularly approximately once a day. BetaRelay87 has five
-  measurements that are still valid, with freshnesses 10, 100, 500, 1000, and
-  1500. AlphaRelay33's one measurement has freshness 3000. Because the sum of
-  BetaRelay87's 5 measurements is greater than AlphaRelay33's one measurement,
-  AlphaRelay33 has *better* priority and will be measured next before
-  BetaRelay87.
-
-  Example: AlphaRelay33 is still a brand new relay with its one measurement
-  in the last day with freshness 3000. CharlieRelay9 has been in the network
-  for a long time, but had technical issues last week and hasn't been online in
-  many days. When CharlieRelay9's operator finally gets him back online, he
-  still has one valid measurement with freshness 10. Because AlphaRelay33's
-  measurement is fresher, CharlieRelay9 has *better* priority and will get
-  measured first.
-
-Sometimes measurements fail. Hopefully they fail because of transient issues,
-and with that hope in mind, it would be nice if a relay with a failed
-measurement didn't have to wait a long time to have another chance at a
-successful measurement. For this reason, when summing the freshnesses of
-results for a given relay, sbws will artificially *reduce* the freshness for
-measurements that were not successful. This makes the sum of freshnesses lower
-for that relay, and therefore the priority *better* so it can be measured again
-sooner.
 
 Simple result storage
 ~~~~~~~~~~~~~~~~~~~~~

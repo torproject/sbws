@@ -1,29 +1,9 @@
 Simple Bandwidth Scanner technical details
 ============================================
 
-Anatomy of a Tor network using sbws
------------------------------------
-
-Every directory authority that wishes to also vote on relay bandwidth (AKA
-a bandwidth authority) MUST run one or more sbws scanner clients (or trust
-someone to run one or more sbws scanner clients for them). The scanners run
-continuously, constantly building two-hop circuits to the previously described
-webservers and measuring the amount of bandwidth relays are capable of
-handling on these measurement circuit.  Over these circuits it collects RTT
-data (by repeatedly requesting a single byte from the webserver) and available
-bandwidth data (by starting small and progressively requesting larger amounts
-of data until the request takes long enough to fulfill, and then requesting
-that amount many times).
-
-Periodically the operator of an sbws scanner MUST run the sbws generate
-command in order to generate a :term:`v3bw file`. This aggregates the previous
-few days' worth of measurement results into one RTT and one bandwidth per relay
-ever measured within the validity period into a single file for the tor process
-the bandwidth authority is running to read.  The bandwidth authority includes
-these aggregated results in its votes.
-
 Running the scanner
----------------------
+-----------------------
+
 Overview
 ~~~~~~~~~
 

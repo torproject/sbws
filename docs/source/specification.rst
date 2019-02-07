@@ -175,13 +175,16 @@ The file is named with the current date. Every day a new file is created.
 
 Source code: :func:`sbws.lib.resultdump.ResultDump.enter`
 
-Every hour the directory authorities vote to come to a consensus about the
-state of the Tor network.  The bandwidth authorities need to use the results
-that have been gathered to inform their vote about relays' bandwidths. To do
-this they use sbws generate.
+Running the generator
+-----------------------
 
-The relays' bandwidth measurements (``Results``) to be added to the Bandwidth
-File MUST be first selected and MUST be then then scaled.
+Every hour, the generator:
+#. Aggregate all the measurements (not older than 6 six days) for every relay.
+#. Filter the measurements
+#. Scale the measurements
+#. Write the bandwidth file
+
+Source code: :func:`sbws.lib.v3bwfile.V3BWFile.from_results`
 
 Selecting bandwidth measurements
 :::::::::::::::::::::::::::::::::::

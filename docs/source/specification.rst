@@ -186,15 +186,15 @@ Every hour, the generator:
 
 Source code: :func:`sbws.lib.v3bwfile.V3BWFile.from_results`
 
-Selecting bandwidth measurements
-:::::::::::::::::::::::::::::::::::
+Filtering the bandwidth measurements
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Each relay bandwidth measurements are selected in the following way:
 
-1. At least two bandwidth measurements (``Result`` s) MUST have been obtained
+#. At least two bandwidth measurements (``Result`` s) MUST have been obtained
    within an arbitrary number of seconds (currently one day).
    If they are not, the relay MUST NOT be included in the Bandwith File.
-2. The measurements than are are older than an arbitrary number of senconds
+#. The measurements than are are older than an arbitrary number of senconds
    in the past MUST be discarded.
    Currently this number is the same as ``data_period`` (5 days).
 

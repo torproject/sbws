@@ -313,7 +313,6 @@ class V3BWLine(object):
         divided by the the time it took to received.
         bw = data (Bytes) / time (seconds)
         """
-        success_results = [r for r in results if isinstance(r, ResultSuccess)]
         # log.debug("Len success_results %s", len(success_results))
         node_id = '$' + results[0].fingerprint
         kwargs = dict()
@@ -322,43 +321,44 @@ class V3BWLine(object):
             kwargs['master_key_ed25519'] = results[0].master_key_ed25519
         kwargs['time'] = cls.last_time_from_results(results)
         kwargs.update(cls.result_types_from_results(results))
-        # useful args for scaling
-        if success_results:
-            results_away = \
-                cls.results_away_each_other(success_results, secs_away)
-            if not results_away:
-                return None
-            # log.debug("Results away from each other: %s",
-            #           [unixts_to_isodt_str(r.time) for r in results_away])
-            results_recent = cls.results_recent_than(results_away, secs_recent)
-            if not results_recent:
-                return None
-            if not len(results_recent) >= min_num:
-                # log.debug('The number of results is less than %s', min_num)
-                return None
-            rtt = cls.rtt_from_results(results_recent)
-            if rtt:
-                kwargs['rtt'] = rtt
-            bw = cls.bw_median_from_results(results_recent)
-            kwargs['bw_mean'] = cls.bw_mean_from_results(results_recent)
-            kwargs['bw_median'] = cls.bw_median_from_results(
+
+        success_results = [r for r in results if isinstance(r, ResultSuccess)]
+        if not success_results:
+            return None
+        results_away = \
+            cls.results_away_each_other(success_results, secs_away)
+        if not results_away:
+            return None
+        # log.debug("Results away from each other: %s",
+        #           [unixts_to_isodt_str(r.time) for r in results_away])
+        results_recent = cls.results_recent_than(results_away, secs_recent)
+        if not results_recent:
+            return None
+        if not len(results_recent) >= min_num:
+            # log.debug('The number of results is less than %s', min_num)
+            return None
+        rtt = cls.rtt_from_results(results_recent)
+        if rtt:
+            kwargs['rtt'] = rtt
+        bw = cls.bw_median_from_results(results_recent)
+        kwargs['bw_mean'] = cls.bw_mean_from_results(results_recent)
+        kwargs['bw_median'] = cls.bw_median_from_results(
+            results_recent)
+        kwargs['desc_bw_avg'] = \
+            cls.desc_bw_avg_from_results(results_recent)
+        kwargs['desc_bw_bur'] = \
+            cls.desc_bw_bur_from_results(results_recent)
+        kwargs['consensus_bandwidth'] = \
+            cls.consensus_bandwidth_from_results(results_recent)
+        kwargs['consensus_bandwidth_is_unmeasured'] = \
+            cls.consensus_bandwidth_is_unmeasured_from_results(
                 results_recent)
-            kwargs['desc_bw_avg'] = \
-                cls.desc_bw_avg_from_results(results_recent)
-            kwargs['desc_bw_bur'] = \
-                cls.desc_bw_bur_from_results(results_recent)
-            kwargs['consensus_bandwidth'] = \
-                cls.consensus_bandwidth_from_results(results_recent)
-            kwargs['consensus_bandwidth_is_unmeasured'] = \
-                cls.consensus_bandwidth_is_unmeasured_from_results(
-                    results_recent)
-            kwargs['desc_bw_obs_last'] = \
-                cls.desc_bw_obs_last_from_results(results_recent)
-            kwargs['desc_bw_obs_mean'] = \
-                cls.desc_bw_obs_mean_from_results(results_recent)
-            bwl = cls(node_id, bw, **kwargs)
-            return bwl
-        return None
+        kwargs['desc_bw_obs_last'] = \
+            cls.desc_bw_obs_last_from_results(results_recent)
+        kwargs['desc_bw_obs_mean'] = \
+            cls.desc_bw_obs_mean_from_results(results_recent)
+        bwl = cls(node_id, bw, **kwargs)
+        return bwl
 
     @classmethod
     def from_data(cls, data, fingerprint):

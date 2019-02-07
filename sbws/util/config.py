@@ -123,8 +123,6 @@ def _can_log_to_file(conf):
 def configure_logging(args, conf):
     assert isinstance(conf, ConfigParser)
     logger = 'logger_sbws'
-    if args.log_level:
-        conf['logging']['level'] = args.log_level.upper()
     # Set the correct handler(s) based on [logging] options
     handlers = set()
     can_log_to_file, reason = _can_log_to_file(conf)
@@ -168,6 +166,15 @@ def configure_logging(args, conf):
         conf['logging']['to_stdout_level'].upper()
     conf['handler_to_syslog']['level'] = \
         conf['logging']['to_syslog_level'].upper()
+    # If there's a log_level cli argument, the user would expect that level
+    # in the standard output.
+    # conf['logging']['level'] sets the lower level, but it's still needed to
+    # set the stdout level.
+    # It also must be set up in the end, since cli arguments have higher
+    # priority.
+    if args.log_level:
+        conf['logging']['level'] = args.log_level.upper()
+        conf['handler_to_stdout']['level'] = conf['logging']['level']
     # Now we configure the standard python logging system
     with NamedTemporaryFile('w+t') as fd:
         conf.write(fd)

@@ -114,6 +114,8 @@ BANDWIDTH_LINE_KEY_VALUES_MONITOR = [
     # 1.2 relay: the number of different consensuses, that sbws has seen,
     # since the last 5 days, that have this relay
     'relay_in_recent_consensus_count',
+    # 2.6 relay:
+    'relay_recent_priority_list_count',
     # 3.8 relay:  the number of times that sbws has tried to measure
     # this relay, since the last 5 days
     # This would be the number of times a relay was in a priority list (2.6)
@@ -244,6 +246,35 @@ class V3BWHeader(object):
             kwargs['destinations_countries'] = destinations_countries
         if recent_consensus_count is not None:
             kwargs['recent_consensus_count'] = str(recent_consensus_count)
+
+        recent_measurement_attempt_count = \
+            cls.recent_measurement_attempt_count_from_file(state_fpath)
+        if recent_measurement_attempt_count is not None:
+            kwargs['recent_measurement_attempt_count'] = \
+                str(recent_measurement_attempt_count)
+
+        # If it is a failure that is not a ResultError, then
+        # failures = attempts - all mesaurements
+        # Works only in the case that old measurements files already had
+        # measurements count
+        if recent_measurement_attempt_count is not None:
+            all_measurements = 0
+            for result_list in results.values():
+                all_measurements += len(result_list)
+            measurement_failures = (recent_measurement_attempt_count
+                                    - all_measurements)
+            kwargs['recent_measurement_failure_count'] = \
+                str(measurement_failures)
+
+        priority_lists = cls.recent_priority_list_count_from_file(state_fpath)
+        if priority_lists is not None:
+            kwargs['recent_priority_list_count'] = str(priority_lists)
+
+        priority_relays = \
+            cls.recent_priority_relay_count_from_file(state_fpath)
+        if priority_relays is not None:
+            kwargs['recent_priority_relay_count'] = str(priority_relays)
+
         h = cls(timestamp, **kwargs)
         return h
 
@@ -307,6 +338,22 @@ class V3BWHeader(object):
             return state['recent_consensus_count']
         else:
             return None
+
+    # NOTE: in future refactor store state in the class
+    @staticmethod
+    def recent_measurement_attempt_count_from_file(state_fpath):
+        state = State(state_fpath)
+        return state.get('recent_measurement_attempt_count', None)
+
+    @staticmethod
+    def recent_priority_list_count_from_file(state_fpath):
+        state = State(state_fpath)
+        return state.get('recent_priority_list_count', None)
+
+    @staticmethod
+    def recent_priority_relay_count_from_file(state_fpath):
+        state = State(state_fpath)
+        return state.get('recent_priority_relay_count', None)
 
     @staticmethod
     def latest_bandwidth_from_results(results):
@@ -422,6 +469,20 @@ class V3BWLine(object):
         if consensuses_count:
             consensus_count = max(consensuses_count)
             kwargs['relay_in_recent_consensus_count'] = consensus_count
+
+        measurements_attempts = \
+            [r.relay_recent_measurement_attempt_count for r in results
+             if getattr(r, 'relay_recent_measurement_attempt_count', None)]
+        if measurements_attempts:
+            kwargs['relay_recent_measurement_attempt_count'] = \
+                str(max(measurements_attempts))
+
+        relay_recent_priority_list_counts = \
+            [r.relay_recent_priority_list_count for r in results
+             if getattr(r, 'relay_recent_priority_list_count', None)]
+        if relay_recent_priority_list_counts:
+            kwargs['relay_recent_priority_list_count'] = \
+                str(max(relay_recent_priority_list_counts))
 
         success_results = [r for r in results if isinstance(r, ResultSuccess)]
         if not success_results:

@@ -132,6 +132,24 @@ Measuring relays
 
 Source code: :func:`sbws.core.scanner.measure_relay`
 
+Selecting a second relay
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+#. If the relay to measure is an exit, use it as an exit and obtain the
+   non-exits.
+#. If the relay to measure is not an exit, use it as first hop and obtain
+   the exits.
+#. From non-exits or exits, select one randomly from the ones that have
+   double consensus bandwidth than the relay to measure.
+#. If there are no relays that satisfy this, lower the required bandwidth.
+
+.. image:: ./images/activity_second_relay.svg
+   :alt: activity select second relay
+   :height: 400px
+   :align: center
+
+Source code: :func:`sbws.core.scanner.measure_relay`
+
 Simple result storage
 ~~~~~~~~~~~~~~~~~~~~~
 

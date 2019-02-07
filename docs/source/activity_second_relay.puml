@@ -1,0 +1,30 @@
+@startuml
+
+start
+
+if (relay to measure is exit?) then (yes)
+  :obtain non-exits;
+else (no)
+  :obtain an exits
+  without bad flag
+  that can exit
+  to port 443;
+endif
+:potential second relays;
+:obtain a relay
+from potential
+sencond relays
+randomly;
+if (second relay has 2x bandwidth?) then (yes)
+elseif (other second relay has 1.5x bandwidth?) then (yes)
+elseif (other second relay has 1x bandwidth?) then (yes)
+else (nothing)
+  stop
+endif
+:second relay selected!;
+:Build a circuit
+whith exit as
+second hop;
+stop
+
+@enduml

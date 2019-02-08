@@ -404,6 +404,11 @@ class V3BWLine(object):
             kwargs['master_key_ed25519'] = results[0].master_key_ed25519
         kwargs['time'] = cls.last_time_from_results(results)
         kwargs.update(cls.result_types_from_results(results))
+        consensuses_count = [r.consensus_count for r in results
+                             if getattr(r, 'consensus_count', None)]
+        if consensuses_count:
+            consensus_count = max(consensuses_count)
+            kwargs['relay_in_recent_consensus_count'] = consensus_count
 
         success_results = [r for r in results if isinstance(r, ResultSuccess)]
         if not success_results:

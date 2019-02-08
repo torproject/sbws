@@ -28,8 +28,15 @@ file_created_l = KEYVALUE_SEP_V1.join(['file_created', file_created])
 latest_bandwidth = '2018-04-17T14:09:07'
 latest_bandwidth_l = KEYVALUE_SEP_V1.join(['latest_bandwidth',
                                           latest_bandwidth])
+attempts = '1'
+attempts_l = KEYVALUE_SEP_V1.join(['recent_measurement_attempt_count',
+                                   attempts])
+failure = '0'
+failure_l = KEYVALUE_SEP_V1.join(['recent_measurement_failure_count',
+                                  failure])
 header_ls = [timestamp_l, version_l, destinations_countries_l, file_created_l,
              latest_bandwidth_l,
+             # attempts_l, failure_l,
              scanner_country_l, software_l, software_version_l, TERMINATOR]
 header_str = LINE_SEP.join(header_ls) + LINE_SEP
 earliest_bandwidth = '2018-04-16T14:09:07'
@@ -52,7 +59,10 @@ raw_bwl_str = "bw=56 bw_mean=61423 bw_median=55656 "\
     "error_second_relay=0 error_stream=1 " \
     "master_key_ed25519=g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s " \
     "nick=A " \
-    "node_id=$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA rtt=456 success=1 " \
+    "node_id=$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA "\
+    "relay_recent_measurement_attempt_count=2 "\
+    "relay_recent_priority_list_count=3 "\
+    "rtt=456 success=1 " \
     "time=2018-04-17T14:09:07\n"
 
 v3bw_str = header_extra_str + raw_bwl_str

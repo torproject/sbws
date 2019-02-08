@@ -204,7 +204,8 @@ class Result:
         def __init__(self, fingerprint, nickname, address, master_key_ed25519,
                      average_bandwidth=None, burst_bandwidth=None,
                      observed_bandwidth=None, consensus_bandwidth=None,
-                     consensus_bandwidth_is_unmeasured=None):
+                     consensus_bandwidth_is_unmeasured=None,
+                     consensus_count=None):
             self.fingerprint = fingerprint
             self.nickname = nickname
             self.address = address
@@ -215,15 +216,19 @@ class Result:
             self.consensus_bandwidth = consensus_bandwidth
             self.consensus_bandwidth_is_unmeasured = \
                 consensus_bandwidth_is_unmeasured
+            # The number of times the relay was in a consensus.
+            self.consensus_count = consensus_count
 
-    def __init__(self, relay, circ, dest_url, scanner_nick, t=None):
+    def __init__(self, relay, circ, dest_url, scanner_nick, t=None,
+                 consensus_count=None):
         self._relay = Result.Relay(relay.fingerprint, relay.nickname,
                                    relay.address, relay.master_key_ed25519,
                                    relay.average_bandwidth,
                                    relay.burst_bandwidth,
                                    relay.observed_bandwidth,
                                    relay.consensus_bandwidth,
-                                   relay.consensus_bandwidth_is_unmeasured)
+                                   relay.consensus_bandwidth_is_unmeasured,
+                                   relay.consensus_count)
         self._circ = circ
         self._dest_url = dest_url
         self._scanner = scanner_nick
@@ -270,6 +275,11 @@ class Result:
         return self._relay.master_key_ed25519
 
     @property
+    def consensus_count(self):
+        """Number of times the relay was in a consensus."""
+        return self._relay.consensus_count
+
+    @property
     def circ(self):
         return self._circ
 
@@ -301,6 +311,7 @@ class Result:
             'type': self.type,
             'scanner': self.scanner,
             'version': self.version,
+            'consensus_count': self.consensus_count,
         }
 
     @staticmethod
@@ -368,7 +379,8 @@ class ResultError(Result):
         return ResultError(
             Result.Relay(
                 d['fingerprint'], d['nickname'], d['address'],
-                d['master_key_ed25519']),
+                d['master_key_ed25519'],
+                consensus_count=d.get('consensus_count', None)),
             d['circ'], d['dest_url'], d['scanner'],
             msg=d['msg'], t=d['time'])
 
@@ -409,7 +421,8 @@ class ResultErrorCircuit(ResultError):
         return ResultErrorCircuit(
             Result.Relay(
                 d['fingerprint'], d['nickname'], d['address'],
-                d['master_key_ed25519']),
+                d['master_key_ed25519'],
+                consensus_count=d.get('consensus_count', None)),
             d['circ'], d['dest_url'], d['scanner'],
             msg=d['msg'], t=d['time'])
 
@@ -432,7 +445,8 @@ class ResultErrorStream(ResultError):
         return ResultErrorStream(
             Result.Relay(
                 d['fingerprint'], d['nickname'], d['address'],
-                d['master_key_ed25519']),
+                d['master_key_ed25519'],
+                consensus_count=d.get('consensus_count', None)),
             d['circ'], d['dest_url'], d['scanner'],
             msg=d['msg'], t=d['time'])
 
@@ -468,7 +482,8 @@ class ResultErrorAuth(ResultError):
         return ResultErrorAuth(
             Result.Relay(
                 d['fingerprint'], d['nickname'], d['address'],
-                d['master_key_ed25519']),
+                d['master_key_ed25519'],
+                consensus_count=d.get('consensus_count', None)),
             d['circ'], d['dest_url'], d['scanner'],
             msg=d['msg'], t=d['time'])
 
@@ -505,7 +520,8 @@ class ResultSuccess(Result):
                 d['master_key_ed25519'], d['relay_average_bandwidth'],
                 d.get('relay_burst_bandwidth'), d['relay_observed_bandwidth'],
                 d.get('consensus_bandwidth'),
-                d.get('consensus_bandwidth_is_unmeasured')),
+                d.get('consensus_bandwidth_is_unmeasured'),
+                consensus_count=d.get('consensus_count', None)),
             d['circ'], d['dest_url'], d['scanner'],
             t=d['time'])
 

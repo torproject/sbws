@@ -12,6 +12,26 @@ from ..globals import MAXIMUM_NUMBER_DESTINATION_FAILURES
 log = logging.getLogger(__name__)
 
 
+# Duplicate some code from DestinationList.from_config,
+# it should be refactored.
+def parse_destinations_countries(conf):
+    """Returns the destinations' country as string separated by comma.
+
+    """
+    destinations_countries = []
+    for key in conf['destinations'].keys():
+        # Not a destination key
+        if key in ['usability_test_interval']:
+            continue
+        # The destination is not enabled
+        if not conf['destinations'].getboolean(key):
+            continue
+        destination_section = 'destinations.{}'.format(key)
+        destination_country = conf[destination_section].get('country', None)
+        destinations_countries.append(destination_country)
+    return ','.join(destinations_countries)
+
+
 def _parse_verify_option(conf_section):
     if 'verify' not in conf_section:
         return DESTINATION_VERIFY_CERTIFICATE

@@ -9,6 +9,7 @@ from argparse import ArgumentDefaultsHelpFormatter
 import os
 import logging
 from sbws.util.timestamp import now_fname
+from sbws.lib import destination
 
 log = logging.getLogger(__name__)
 
@@ -106,7 +107,9 @@ def main(args, conf):
                                   "cached-consensus")
     # Accept None as scanner_country to be compatible with older versions.
     scanner_country = conf['scanner'].get('country')
-    bw_file = V3BWFile.from_results(results, scanner_country, state_fpath,
+    destinations_countries = destination.parse_destinations_countries(conf)
+    bw_file = V3BWFile.from_results(results, scanner_country,
+                                    destinations_countries, state_fpath,
                                     args.scale_constant, scaling_method,
                                     torflow_cap=args.torflow_bw_margin,
                                     round_digs=args.round_digs,

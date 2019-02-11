@@ -29,7 +29,7 @@ KEYVALUE_SEP_V2 = ' '
 # List of the extra KeyValues accepted by the class
 EXTRA_ARG_KEYVALUES = ['software', 'software_version', 'file_created',
                        'earliest_bandwidth', 'generator_started',
-                       'scanner_country']
+                       'scanner_country', 'destinations_countries']
 STATS_KEYVALUES = ['number_eligible_relays', 'minimum_number_eligible_relays',
                    'number_consensus_relays', 'percent_eligible_relays',
                    'minimum_percent_eligible_relays']
@@ -141,7 +141,8 @@ class V3BWHeader(object):
         return self.strv2
 
     @classmethod
-    def from_results(cls, results, scanner_country=None, state_fpath=''):
+    def from_results(cls, results, scanner_country=None,
+                     destinations_countries=None, state_fpath=''):
         kwargs = dict()
         latest_bandwidth = cls.latest_bandwidth_from_results(results)
         earliest_bandwidth = cls.earliest_bandwidth_from_results(results)
@@ -154,6 +155,8 @@ class V3BWHeader(object):
         # To be compatible with older bandwidth files, do not require it.
         if scanner_country is not None:
             kwargs['scanner_country'] = scanner_country
+        if destinations_countries is not None:
+            kwargs['destinations_countries'] = destinations_countries
         h = cls(timestamp, **kwargs)
         return h
 
@@ -528,7 +531,8 @@ class V3BWFile(object):
                                            for bw_line in self.bw_lines])
 
     @classmethod
-    def from_results(cls, results, scanner_country=None, state_fpath='',
+    def from_results(cls, results, scanner_country=None,
+                     destinations_countries=None, state_fpath='',
                      scale_constant=SBWS_SCALE_CONSTANT,
                      scaling_method=TORFLOW_SCALING,
                      torflow_obs=TORFLOW_OBS_LAST,
@@ -555,7 +559,8 @@ class V3BWFile(object):
 
         """
         log.info('Processing results to generate a bandwidth list file.')
-        header = V3BWHeader.from_results(results, scanner_country, state_fpath)
+        header = V3BWHeader.from_results(results, scanner_country,
+                                         destinations_countries, state_fpath)
         bw_lines_raw = []
         number_consensus_relays = cls.read_number_consensus_relays(
             consensus_path)

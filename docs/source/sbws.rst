@@ -1,4 +1,4 @@
-sbws package API
+Package API
 =================
 
 Subpackages

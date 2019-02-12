@@ -1,5 +1,5 @@
-Simple Bandwidth Scanner technical details
-============================================
+What the scanner and the generator do
+======================================
 
 Running the scanner
 -----------------------

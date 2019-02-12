@@ -143,6 +143,12 @@ consensus bandwidth, therefore they MUST implement torflow_scaling_.
 The bandwidth_file_spec_ appendix B describes torflow scaling and a linear
 scaling method.
 
+Writing the bandwidth file
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The bandwidth file format is defined in the bandwidth_file_spec_.
+
+
 .. _torflow: https://gitweb.torproject.org/torflow.git
 .. _stem: https://stem.torproject.org
 .. https://github.com/requests/requests/issues/4885

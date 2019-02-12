@@ -49,7 +49,8 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.githubpages',
     'sphinx.ext.imgmath',
-    'sphinx.ext.intersphinx'
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.viewcode'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -199,3 +200,5 @@ todo_include_todos = True
 source_parsers = {
    '.md': 'recommonmark.parser.CommonMarkParser',
 }
+
+numfig = True

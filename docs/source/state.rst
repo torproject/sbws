@@ -18,3 +18,5 @@ The last time ``sbws scanner`` was started.
 - **Producer**: ``sbws scanner``, once at startup.
 
 - **Consumer**: ``sbws generate``, once each time it is ran.
+
+Code: :class:`sbws.util.state.State`

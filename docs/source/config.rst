@@ -1,7 +1,7 @@
 .. _config_internal:
 
-How sbws configuration works internally
-----------------------------------------
+Internal code configuration files
+==================================
 Sbws has two default config files it reads: on general, and one specific to
 logging.
 They all get combined internally to the same ``conf`` structure.
@@ -34,8 +34,8 @@ The user example config file provided by ``sbws`` might look like this.
 
 .. _default-config:
 
-Default Config
---------------
+Default Configuration
+----------------------
 
 .. literalinclude:: config.default.ini
     :caption: config.default.ini

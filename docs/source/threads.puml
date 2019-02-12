@@ -1,0 +1,23 @@
+@startuml
+
+start
+
+:MainThread;
+  fork
+    :TorEventListener;
+  fork again
+    :ResultDump;
+  fork again
+    :workers_thread;
+  fork again
+    :tasks_thread;
+  fork again
+    :resutls_tread;
+  fork again
+  while (threads < 3?)
+      :measure_relay;
+  endwhile
+  end fork
+
+
+@enduml

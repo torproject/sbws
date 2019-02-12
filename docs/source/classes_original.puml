@@ -1,0 +1,143 @@
+@startuml
+
+class RelayList {
+  list relays
+  list bad_exits
+  list exits
+  list non_exits
+  Relay random_relay()
+  list exits_not_bad_can_exit_to_port(int port)
+}
+RelayList *-- Relay
+class Relay {
+  str nickname
+  str fingerprint
+  list flags
+  ExitPolicy exit_policy
+  str address
+  str master_key_ed25519
+  int observed_bandwidth
+  int average_bandwidth
+  int burst_bandwidth
+  int consensus_bandwidth
+  int consensus_bandwidth_is_unmeasured
+  bool can_exit_to_port(int port)
+  bool is_exit_not_bad_allowing_port(int port)
+}
+class RelayPrioritizer {
+  ResultDump result_dump
+  RelayList relay_list
+  generator best_priority()
+}
+RelayPrioritizer *-- RelayList
+RelayPrioritizer *-- ResultDump
+Result ^-- ResultError
+Result ^-- ResultSuccess
+Result -- Destination
+Result *-- Relay
+class Result {
+  Relay _relay
+  list circ
+  str dest_url
+  str scanner
+  int time
+  dict to_dict()
+  Result from_dict(dict d)
+}
+ResultDump *-- Result
+ResultDump -- Relay
+class ResultDump {
+  dict data
+  Lock data_lock
+  Thread thread
+  Queue queue
+  store_result(Result result)
+  handle_result(Result result)
+  enter()
+  list results_for_relay(Relay relay)
+}
+class DestinationList {
+  list DestinationList
+  Destination next()
+  DestinationList from_config()
+}
+DestinationList *-- Destination
+class Destination {
+  str hostname
+  int port
+  str url
+  bool verify
+  bool is_usable()
+  Destination from_config()
+}
+V3BWHeader -- Result
+class V3BWHeader {
+  int timestamp
+  str version
+  str file_created
+  str latest_bandwidth
+  int num_lines
+  str software
+  str software_version
+  V3BWHeader from_results(dict results)
+  add_stats(**kwargs)
+  int earliest_bandwidth_from_results(dict results)
+  str generator_started_from_file(dict results)
+  int latest_bandwidth_from_results(dict results)
+}
+V3BWLine -- Result
+class V3BWLine {
+  int bw
+  str node_id
+  int bw_mean_from_results(list results)
+  int bw_median_from_results(list results)
+  int desc_bw_obs_last_from_results(list results)
+  int desc_bw_obs_mean_from_results(list results)
+  V3BWLine from_results(list results)
+  str last_time_from_results(list results)
+  dict result_types_from_results(list results)
+  list results_away_each_other(list results)
+  list results_recent_than(list results)
+}
+V3BWFile *-- V3BWHeader
+V3BWFile *-- V3BWLine
+V3BWHFile -- Result
+class V3BWFile {
+  V3BWHeader header
+  list bw_lines
+  info_stats
+  bool is_min_perc
+  int max_bw
+  int mean_bw
+  int median_bw
+  int min_bw
+  int num
+  int sum_bw
+  V3BWFile from_results(dict results)
+  list bw_kb(bw_lines)
+  list bw_sbws_scale(bw_lines)
+  list bw_torflow_scale(bw_lines)
+  bool is_max_bw_diff_perc_reached(bw_lines)
+  (dict, bool) measured_progress_stats(bw_lines)
+  int read_number_consensus_relays(str consensus_path)
+  (list, list, list) to_plt()
+  list update_progress(bw_lines)
+  warn_if_not_accurate_enough(bw_lines)
+}
+CircuitBuilder *-- RelayList
+CircuitBuilder -- Relay
+class CircuitBuilder {
+  set built_circuits
+  RelayList relay_list
+  list relays
+  Controller controller
+  int build_circuit()
+  void close_circuit()
+}
+CircuitBuilder ^-- GapsCircuitBuilder
+
+class State {
+  get()
+}
+
+@enduml

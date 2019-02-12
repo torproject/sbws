@@ -1,0 +1,220 @@
+@startuml
+
+class RelayList {
+  stem.Controller _controller
+  Lock _refresh_lock
+  int _last_refresh
+  list @p relays
+  list @p bad_exits
+  list @p exits
+  list @p non_exits
+  list @p authorities
+  bool _need_refresh()
+  _init_relays()
+  _refresh()
+  list _relays_with_flag(int flag)
+  list _relays_without_flag(int flag)
+  list exits_not_bad_can_exit_to_port(int port)
+}
+RelayList *-- Relay
+class Relay {
+  stem.RouterStatusEntryV3 _from_ns
+  stem.RelayDescriptor _from_desc
+  str @p nickname
+  str @p fingerprint
+  list @p flags
+  ExitPolicy @p exit_policy
+  str @p address
+  str @p master_key_ed25519
+  int @p observed_bandwidth
+  int @p average_bandwidth
+  int @p burst_bandwidth
+  int @p consensus_bandwidth
+  int @p consensus_bandwidth_is_unmeasured
+  obj _from_ns(attr)
+  obj _from_desc(attr)
+  bool can_exit_to_port(int port)
+  bool is_exit_not_bad_allowing_port(int port)
+}
+class RelayPrioritizer {
+  int fresh_seconds
+  ResultDump result_dump
+  RelayList relay_list
+  bool measure_authorities
+  generator best_priority()
+}
+RelayPrioritizer *-- RelayList
+RelayPrioritizer *-- ResultDump
+Result ^-- ResultError
+Result ^-- ResultSuccess
+Result -- Destination
+class Result {
+  Result.Relay _relay
+  list @p circ
+  str @p dest_url
+  str @p scanner
+  int @p time
+  str @p type
+  int @p version
+  str @p nickname
+  str @p fingerprint
+  str @p address
+  str @p master_key_ed25519
+  int @p relay_observed_bandwidth
+  int @p relay_average_bandwidth
+  int @p relay_burst_bandwidth
+  int @p consensus_bandwidth
+  int @p consensus_bandwidth_is_unmeasured
+  dict to_dict()
+  Result from_dict(dict d)
+}
+Result -- Relay
+Result *-- Result.Relay
+class Result.Relay {
+  str nickname
+  str fingerprint
+  str address
+  str master_key_ed25519
+  int observed_bandwidth
+  int average_bandwidth
+  int burst_bandwidth
+  int consensus_bandwidth
+  int consensus_bandwidth_is_unmeasured
+}
+class ResultError {
+  str @p msg
+}
+ResultError ^-- ResultErrorCircuit
+class ResultErrorCircuit {
+}
+ResultError ^-- ResultErrorStream
+class ResultSuccess {
+  list @p rtts
+  list @p downloads
+}
+ResultDump *-- Result
+ResultDump -- Relay
+class ResultDump {
+  dict data
+  int fresh_days
+  str datadir
+  Lock data_lock
+  Thread thread
+  Queue queue
+  store_result(Result result)
+  handle_result(Result result)
+  enter()
+  list results_for_relay(Relay relay)
+}
+class DestinationList {
+  list _rl
+  Destination next()
+  DestinationList @sm from_config(...)
+}
+DestinationList *-- Destination
+class Destination {
+  str @p hostname
+  int @p port
+  str @p url
+  bool @p verify
+  bool is_usable()
+  Destination @sm from_config(str conf_section,int max_dl)
+}
+V3BWHeader -- Result
+class V3BWHeader {
+  int timestamp
+  str version
+  str file_created
+  str latest_bandwidth
+  int num_lines
+  str software
+  str software_version
+  str generator_started
+  int number_eligible_relays
+  int minimum_number_eligible_relays
+  int number_consensus_relays
+  int percent_eligible_relays
+  int minimum_percent_eligible_relays
+  int @p num_lines
+
+  V3BWHeader @cm from_results(dict results)
+  add_stats(**kwargs)
+  int @sm earliest_bandwidth_from_results(dict results)
+  str @sm generator_started_from_file(dict results)
+  int @sm latest_bandwidth_from_results(dict results)
+}
+V3BWLine -- Result
+class V3BWLine {
+  int bw
+  str node_id
+  str master_key_ed25519
+  str nick
+  int rtt
+  str time
+  int success
+  int error_stream
+  int error_circ
+  int error_misc
+  int bw_median
+  int bw_mean
+  int desc_bw_avg
+  int desc_bw_bur
+  int desc_bw_obs_last
+  int desc_bw_obs_mean
+  consensus_bandwidth
+  consensus_bandwidth_is_unmeasured
+
+  int @sm bw_mean_from_results(list results)
+  int @sm bw_median_from_results(list results)
+  int @sm desc_bw_obs_last_from_results(list results)
+  int @sm desc_bw_obs_mean_from_results(list results)
+  V3BWLine @cm from_results(list results)
+  str @sm last_time_from_results(list results)
+  dict @sm result_types_from_results(list results)
+  list @sm results_away_each_other(list results)
+  list @sm results_recent_than(list results)
+}
+V3BWFile *-- V3BWHeader
+V3BWFile *-- V3BWLine
+V3BWFile -- Result
+class V3BWFile {
+  V3BWHeader header
+  list bw_lines
+  @p info_stats
+  bool @p is_min_perc
+  int @p max_bw
+  int @p mean_bw
+  int @p median_bw
+  int @p min_bw
+  int @p num
+  int @p sum_bw
+  V3BWFile @cm from_results(dict results, ...)
+  list @sm bw_kb(bw_lines)
+  list @sm bw_sbws_scale(bw_lines)
+  list @sm bw_torflow_scale(bw_lines)
+  bool @sm is_max_bw_diff_perc_reached(bw_lines)
+  (dict, bool) @sm measured_progress_stats(bw_lines)
+  int @sm read_number_consensus_relays(str consensus_path)
+  (list, list, list) to_plt()
+  list update_progress(bw_lines, ...)
+  warn_if_not_accurate_enough(bw_lines, ...)
+  tuple to_plt(...)
+  write(str output)
+}
+CircuitBuilder *-- RelayList
+CircuitBuilder -- Relay
+class CircuitBuilder {
+  set built_circuits
+  RelayList relay_list
+  list relays
+  Controller controller
+  int build_circuit()
+  void close_circuit()
+}
+CircuitBuilder ^-- GapsCircuitBuilder
+
+class State {
+  get()
+}
+
+@enduml

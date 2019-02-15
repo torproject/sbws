@@ -15,3 +15,8 @@ def test_relay_properties(persistent_launch_tor):
     assert relay.address == '127.10.0.1'
     assert relay.master_key_ed25519 == \
         'wLglSEw9/DHfpNrlrqjVRSnGLVWfnm0vYxkryH4aT6Q'
+
+
+def test_relay_list_last_consensus_timestamp(rl):
+    assert rl.last_consensus_timestamp == \
+        rl._relays[0].last_consensus_timestamp

@@ -7,20 +7,8 @@ import logging
 log = logging.getLogger(__name__)
 
 
-class PathLengthException(Exception):
-    def __init__(self, message=None, errors=None):
-        if message is not None:
-            super().__init__(message)
-        else:
-            super().__init__()
-        self.errors = errors
-
-
 def valid_circuit_length(path):
-    assert isinstance(path, int) or isinstance(path, list)
-    if isinstance(path, int):
-        return path > 0 and path <= 8
-    return len(path) > 0 and len(path) <= 8
+    return 0 < len(path) <= 8
 
 
 class CircuitBuilder:
@@ -69,24 +57,18 @@ class CircuitBuilder:
             was an error building the circuit.
         """
         if not valid_circuit_length(path):
-            raise PathLengthException()
+            return None, "Can not build a circuit, invalid path."
         c = self.controller
         timeout = self.circuit_timeout
         fp_path = '[' + ' -> '.join([p for p in path]) + ']'
         log.debug('Building %s', fp_path)
-        error = None
-        for _ in range(0, 3):
-            try:
-                circ_id = c.new_circuit(
-                    path, await_build=True, timeout=timeout)
-            except (InvalidRequest, CircuitExtensionFailed,
-                    ProtocolError, Timeout) as e:
-                log.debug(e)
-                error = str(e)
-                continue
-            else:
-                return circ_id, None
-        return None, error
+        try:
+            circ_id = c.new_circuit(
+                path, await_build=True, timeout=timeout)
+        except (InvalidRequest, CircuitExtensionFailed,
+                ProtocolError, Timeout) as e:
+            return None, str(e)
+        return circ_id, None
 
     def __del__(self):
         c = self.controller
@@ -105,6 +87,9 @@ class CircuitBuilder:
         self.built_circuits.clear()
 
 
+# In a future refactor, remove this class, since sbws chooses the relays to
+# build the circuit, the relays are not just choosen as random as this class
+# does.
 class GapsCircuitBuilder(CircuitBuilder):
     ''' The build_circuit member function takes a list. Falsey values in the
     list will be replaced with relays chosen uniformally at random; Truthy
@@ -151,19 +136,16 @@ class GapsCircuitBuilder(CircuitBuilder):
         chosen uniformally at random. A relay will not be in a circuit twice.
         '''
         if not valid_circuit_length(path):
-            raise PathLengthException()
+            return None, "Can not build a circuit, invalid path."
         path = self._normalize_path(path)
         if path is None:
-            return None
+            return None, "Can not build a circuit, no path."
         num_missing = len(['foo' for r in path if not r])
         insert_relays = self._random_sample_relays(
             num_missing, [r for r in path if r is not None])
         if insert_relays is None:
             path = ','.join([r.nickname if r else str(None) for r in path])
-            log.warning(
-                'Problem building a circuit to satisfy %s with available '
-                'relays in the network', path)
-            return None
+            return None, "Can not build a circuit with the current relays."
         assert len(insert_relays) == num_missing
         path = [r.fingerprint if r else insert_relays.pop().fingerprint
                 for r in path]

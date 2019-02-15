@@ -86,6 +86,7 @@ HTTP_GET_HEADERS = {
     'Range': '{}',
     'Accept-Encoding': 'identity',
 }
+DESTINATION_VERIFY_CERTIFICATE = True
 
 
 def fail_hard(*a, **kw):

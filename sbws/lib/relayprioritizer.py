@@ -1,6 +1,5 @@
 from decimal import Decimal
 from ..lib.resultdump import ResultDump
-from ..lib.resultdump import Result
 from ..lib.resultdump import ResultError
 from ..lib.relaylist import RelayList
 import copy
@@ -23,32 +22,55 @@ class RelayPrioritizer:
         self.fraction_to_return = conf.getfloat(
             'relayprioritizer', 'fraction_relays')
 
-    def best_priority(self):
-        ''' Return a generator containing the best priority relays.
+    def best_priority(self, prioritize_result_error=False,
+                      return_fraction=True):
+        """Yields a new ordered list of relays to be measured next.
 
-        NOTE: A lower value for priority means better priority. Remember your
-        data structures class in university and consider this something like a
-        min-priority queue.
+        The relays that were measured farther away in the past,
+        get prioritized (lowest priority number, first in the list).
+        The relays that were measured more recently get lower priority (last in
+        the list, higher priority number).
 
-        Priority is calculated as the sum of the "freshness" of each
-        result for a relay. First we determine <oldest_allowed>, the time at
-        which we stop considering results to be valid. From there, a result's
-        freshness is determined to be the amount of time between when the
-        measurement was made and <oldest_allowed>. Therefore, you should see
-        that a measurement made more recently will have a higher freshness.
+        Optionally, the relays which measurements failed can be prioritized
+        (first in the list).
+        However, unstable relays that fail often to be measured, might fail
+        again and stable relays will get measured only when their measurements
+        become old enough.
+        The opposite might be more suitable: give lower priority to the relays
+        that are unstable, to don't spend time measuring relays that might fail
+        to be measured.
 
-        We adjust down the freshness for results containing errors. If we
-        ignored errors and didn't increase a relay's priority value for them,
-        then we'll get stuck trying to measure a few relays that have the best
-        priority but are having issues getting measured. If we treated errors
-        with equal weight as successful results, then it would take a while to
-        get around to giving the relay another chance at a getting a successful
-        measurement.
-        '''
+        Optionally, return only a fraction of all the relays in the network.
+        Since there could be new relays in the network while measuring the
+        list of relays returned by this method, this method is run again
+        before all the relays in the network are measured.
+
+        .. note::
+
+            In a future refactor, instead of having a static fraction of relays
+            to be measured, this method could be call when it's known that
+            there're X number of new relays in the network.
+
+        Since measurements made before than X days ago (too old) are not
+        considered, and the initial list of past measurements is only filtered
+        when the scanner starts, it's needed to filter here again to discard
+        those measurements.
+
+        :param bool prioritize_result_error: whether prioritize or not
+            measurements that did not succed.
+        :param bool return_fraction: whether to return only a fraction of the
+            relays seen in the network or return all.
+        return: a generator of the new ordered list of relays to measure next.
+
+        """
         fn_tstart = Decimal(time.time())
         relays = set(copy.deepcopy(self.relay_list.relays))
         if not self.measure_authorities:
             relays = relays.difference(set(self.relay_list.authorities))
+        # Since there will be new measurements every time this method is called
+        # again, update the list of results.
+        # In a future refactor with other data structure there should not be
+        # needed.
         rd = self.result_dump
         for relay in relays:
             results = rd.results_for_relay(relay)
@@ -56,39 +78,44 @@ class RelayPrioritizer:
             # The time before which we do not consider results valid anymore
             oldest_allowed = time.time() - self.fresh_seconds
             for result in results:
-                assert isinstance(result, Result)
                 # Ignore results that are too far in the past
                 if result.time < oldest_allowed:
                     continue
                 # Calculate freshness as the remaining time until this result
                 # is no longer valid
                 freshness = result.time - oldest_allowed
-                if isinstance(result, ResultError):
-                    # Reduce the freshness for results containing errors so
-                    # that they are not de-prioritized as much. This way, we
-                    # will come back to them sooner to try again.
-                    assert result.freshness_reduction_factor >= 0.0
-                    assert result.freshness_reduction_factor <= 1.0
-                    # After several days, these would log many relays.
+                if isinstance(result, ResultError) \
+                        and prioritize_result_error is True:
                     # log.debug('Cutting freshness for a %s result by %d%% for'
                     #           ' %s', result.type.value,
                     #           result.freshness_reduction_factor * 100,
                     #           relay.nickname)
+                    # result.freshness_reduction_factor are hard-coded values
+                    # on how much prioritize measurements that failed
+                    # depending on the type of error.
+                    # In a future refactor, create these values on an algorithm
+                    # or create constants.
                     freshness *= max(1.0-result.freshness_reduction_factor, 0)
                 priority += freshness
+            # In a future refactor, do not create a new attribute
             relay.priority = priority
         # Sort the relays by their priority, with the smallest (best) priority
         # relays at the front
         relays = sorted(relays, key=lambda r: r.priority)
-        cutoff = max(int(len(relays) * self.fraction_to_return),
-                     self.min_to_return)
+
         fn_tstop = Decimal(time.time())
         fn_tdelta = (fn_tstop - fn_tstart) * 1000
-        log.debug('Spent %f msecs calculating relay best priority', fn_tdelta)
-        # Finally, slowly return the relays to the caller (after removing the
-        # priority member we polluted the variable with ...)
-        for relay in relays[0:cutoff]:
+        log.info('Spent %f msecs calculating relay best priority', fn_tdelta)
+
+        # Return a fraction of relays in the network if return_fraction is
+        # True, otherwise return all.
+        cutoff = max(int(len(relays) * self.fraction_to_return),
+                     self.min_to_return)
+        upper_limit = cutoff if return_fraction else len(relays)
+        for relay in relays[0:upper_limit]:
             log.debug('Returning next relay %s with priority %f',
                       relay.nickname, relay.priority)
+            # In a future refactor, a new attribute should not be created,
+            # then no need to remove it.
             del(relay.priority)
             yield relay

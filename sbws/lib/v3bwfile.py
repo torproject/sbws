@@ -229,7 +229,9 @@ class V3BWHeader(object):
         kwargs = dict()
         latest_bandwidth = cls.latest_bandwidth_from_results(results)
         earliest_bandwidth = cls.earliest_bandwidth_from_results(results)
+        # NOTE: Blocking, reads file
         generator_started = cls.generator_started_from_file(state_fpath)
+        consensus_count = cls.consensus_count_from_file(state_fpath)
         timestamp = str(latest_bandwidth)
         kwargs['latest_bandwidth'] = unixts_to_isodt_str(latest_bandwidth)
         kwargs['earliest_bandwidth'] = unixts_to_isodt_str(earliest_bandwidth)
@@ -240,6 +242,8 @@ class V3BWHeader(object):
             kwargs['scanner_country'] = scanner_country
         if destinations_countries is not None:
             kwargs['destinations_countries'] = destinations_countries
+        if consensus_count is not None:
+            kwargs['recent_consensus_count'] = str(consensus_count)
         h = cls(timestamp, **kwargs)
         return h
 
@@ -293,6 +297,14 @@ class V3BWHeader(object):
         state = State(state_fpath)
         if 'scanner_started' in state:
             return state['scanner_started']
+        else:
+            return None
+
+    @staticmethod
+    def consensus_count_from_file(state_fpath):
+        state = State(state_fpath)
+        if 'consensus_count' in state:
+            return state['consensus_count']
         else:
             return None
 

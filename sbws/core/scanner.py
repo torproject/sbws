@@ -554,7 +554,7 @@ def run_speedtest(args, conf):
     # To do not have to pass args and conf to RelayList, pass an extra
     # argument with the data_period
     measurements_period = conf.getint('general', 'data_period')
-    rl = RelayList(args, conf, controller, measurements_period)
+    rl = RelayList(args, conf, controller, measurements_period, state)
     cb = CB(args, conf, controller, rl)
     rd = ResultDump(args, conf)
     rp = RelayPrioritizer(args, conf, rl, rd)

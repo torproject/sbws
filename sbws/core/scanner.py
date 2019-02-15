@@ -551,8 +551,10 @@ def run_speedtest(args, conf):
     # Call only once to initialize http_headers
     settings.init_http_headers(conf.get('scanner', 'nickname'), state['uuid'],
                                str(controller.get_version()))
-
-    rl = RelayList(args, conf, controller)
+    # To do not have to pass args and conf to RelayList, pass an extra
+    # argument with the data_period
+    measurements_period = conf.getint('general', 'data_period')
+    rl = RelayList(args, conf, controller, measurements_period)
     cb = CB(args, conf, controller, rl)
     rd = ResultDump(args, conf)
     rp = RelayPrioritizer(args, conf, rl, rd)

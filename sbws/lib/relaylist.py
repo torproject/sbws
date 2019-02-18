@@ -355,6 +355,13 @@ class RelayList:
     def authorities(self):
         return self._relays_with_flag(Flag.AUTHORITY)
 
+    @property
+    def relays_fingerprints(self):
+        # Using relays instead of _relays, so that the list get updated if
+        # needed, since this method is used to know which fingerprints are in
+        # the consensus.
+        return [r.fingerprint for r in self.relays]
+
     def random_relay(self):
         return self.rng.choice(self.relays)
 

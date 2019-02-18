@@ -14,7 +14,7 @@ from ..lib.relayprioritizer import RelayPrioritizer
 from ..lib.destination import DestinationList
 from ..util.timestamp import now_isodt_str
 from ..util.state import State
-from sbws.globals import fail_hard, HTTP_GET_HEADERS
+from sbws.globals import fail_hard, HTTP_GET_HEADERS, TIMEOUT_MEASUREMENTS
 import sbws.util.stem as stem_utils
 import sbws.util.requests as requests_utils
 from argparse import ArgumentDefaultsHelpFormatter
@@ -456,12 +456,16 @@ def main_loop(args, conf, controller, relay_list, circuit_builder, result_dump,
                 # sleep is non-blocking since happens in the main process.
                 time.sleep(time_to_sleep)
                 pending_results = [r for r in pending_results if not r.ready()]
-        while len(pending_results) > 0:
-            log.debug("There are %s pending measurements.",
-                      len(pending_results))
-            # sleep is non-blocking since happens in the main process.
+        time_waiting = 0
+        while (len(pending_results) > 0
+               and time_waiting <= TIMEOUT_MEASUREMENTS):
+            log.debug("Number of pending measurement threads %s after "
+                      "a prioritization loop.", len(pending_results))
             time.sleep(time_to_sleep)
+            time_waiting += time_to_sleep
             pending_results = [r for r in pending_results if not r.ready()]
+        if time_waiting > TIMEOUT_MEASUREMENTS:
+            dumpstacks()
         loop_tstop = time.time()
         loop_tdelta = (loop_tstop - loop_tstart) / 60
         log.debug("Measured %s relays in %s minutes", num_relays, loop_tdelta)

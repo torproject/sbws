@@ -18,12 +18,17 @@ class TimedSession(requests.Session):
 
 
 def make_session(controller, timeout):
-    s = requests.Session()
+    """
+    Initialize a TimedSession with the timeout, the proxies and the headers.
+
+    """
+    s = TimedSession()
     socks_info = stem_utils.get_socks_info(controller)
     s.proxies = {
         'http': 'socks5h://{}:{}'.format(*socks_info),
         'https': 'socks5h://{}:{}'.format(*socks_info),
     }
-    s.timeout = timeout
+    # ``_timeout`` is not used by request's Session, but it is by TimedSession.
+    s._timeout = timeout
     s.headers = settings.HTTP_HEADERS
     return s

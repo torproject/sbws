@@ -30,7 +30,7 @@ def test_connect_to_destination_over_circuit_success(persistent_launch_tor,
     helper = rl.exits_not_bad_allowing_port(destination.port)[0]
     circuit_path = [relay.fingerprint, helper.fingerprint]
     # build a circuit
-    circuit_id = cb.build_circuit(circuit_path)
+    circuit_id, _ = cb.build_circuit(circuit_path)
     # Perform "usability test"
     is_usable, response = connect_to_destination_over_circuit(
         destination, circuit_id, session, persistent_launch_tor, 1024)
@@ -54,7 +54,7 @@ def test_connect_to_destination_over_circuit_fail(persistent_launch_tor,
     helper = rl.exits_not_bad_allowing_port(bad_destination.port)[0]
     circuit_path = [relay.fingerprint, helper.fingerprint]
     # Build a circuit.
-    circuit_id = cb.build_circuit(circuit_path)
+    circuit_id, _ = cb.build_circuit(circuit_path)
     # Perform "usability test"
     is_usable, response = connect_to_destination_over_circuit(
         bad_destination, circuit_id, session, persistent_launch_tor, 1024)

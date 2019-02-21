@@ -1,7 +1,20 @@
 import requests
 
 from sbws import settings
-import sbws.util.stem as stem_utils
+from sbws.util import stem as stem_utils
+
+
+class TimedSession(requests.Session):
+    """Requests Session that sends timeout in the head and get methods.
+    """
+
+    def get(self, url, **kwargs):
+        return super().get(url, timeout=getattr(self, "_timeout", None),
+                           **kwargs)
+
+    def head(self, url, **kwargs):
+        return super().head(url, timeout=getattr(self, "_timeout", None),
+                            **kwargs)
 
 
 def make_session(controller, timeout):

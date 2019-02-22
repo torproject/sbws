@@ -107,9 +107,9 @@ def main(args, conf):
                                   "cached-consensus")
     # Accept None as scanner_country to be compatible with older versions.
     scanner_country = conf['scanner'].get('country')
-    destinations_country = destination.parse_destinations_country(conf)
+    destinations_countries = destination.parse_destinations_countries(conf)
     bw_file = V3BWFile.from_results(results, scanner_country,
-                                    destinations_country, state_fpath,
+                                    destinations_countries, state_fpath,
                                     args.scale_constant, scaling_method,
                                     torflow_cap=args.torflow_bw_margin,
                                     round_digs=args.round_digs,

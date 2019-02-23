@@ -48,7 +48,8 @@ header_extra_str = LINE_SEP.join(header_extra_ls) + LINE_SEP
 raw_bwl_str = "bw=56 bw_mean=61423 bw_median=55656 "\
     "consensus_bandwidth=600000 consensus_bandwidth_is_unmeasured=False "\
     "desc_bw_avg=1000000000 desc_bw_bur=123456 desc_bw_obs_last=524288 "\
-    "desc_bw_obs_mean=524288 error_circ=0 error_misc=0 error_stream=1 " \
+    "desc_bw_obs_mean=524288 error_circ=0 error_destination=0 error_misc=0 " \
+    "error_second_relay=0 error_stream=1 " \
     "master_key_ed25519=g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s " \
     "nick=A " \
     "node_id=$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA rtt=456 success=1 " \

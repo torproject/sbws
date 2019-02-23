@@ -94,7 +94,7 @@ def main(args, conf):
     reset_bw_ipv4_changes = conf.getboolean('general', 'reset_bw_ipv4_changes')
     reset_bw_ipv6_changes = conf.getboolean('general', 'reset_bw_ipv6_changes')
     results = load_recent_results_in_datadir(
-        fresh_days, datadir, success_only=True,
+        fresh_days, datadir,
         on_changed_ipv4=reset_bw_ipv4_changes,
         on_changed_ipv6=reset_bw_ipv6_changes)
     if len(results) < 1:

@@ -231,6 +231,13 @@ def _pick_ideal_second_hop(relay, dest, rl, cont, is_exit):
 
 
 def measure_relay(args, conf, destinations, cb, rl, relay):
+    """
+    Select a Web server, a relay to build the circuit,
+    build the circuit and measure the bandwidth of the given relay.
+
+    :return Result: a measurement Result object
+
+    """
     log.debug('Measuring %s %s', relay.nickname, relay.fingerprint)
     s = requests_utils.make_session(
         cb.controller, conf.getfloat('general', 'http_timeout'))

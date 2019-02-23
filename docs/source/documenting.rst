@@ -1,7 +1,7 @@
 .. _documenting:
 
-Installing documentation dependendencies and building it
----------------------------------------------------------
+Installing and building the documentation
+-----------------------------------------
 
 To build the documentation, extra Python dependencies are needed:
 

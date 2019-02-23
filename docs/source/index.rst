@@ -37,17 +37,21 @@ Included in the
 .. toctree::
    :maxdepth: 1
 
-   specification
-   faq
-   glossary
-   roadmap
-   config_tor
    testing
    documenting
+   how_works
+   code_design
    state
    config
-   diagrams
+   config_tor
    sbws
+   bandwidth_distribution
+   tor_bandwidth_files
+   bandwidth_authorities
+   monitoring_bandwidth
+   roadmap
+   glossary
+   faq
 
 Proposals:
 

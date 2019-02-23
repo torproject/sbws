@@ -1,4 +1,5 @@
 ''' Measure the relays. '''
+import queue
 
 from ..lib.circuitbuilder import GapsCircuitBuilder as CB
 from ..lib.resultdump import ResultDump
@@ -317,16 +318,19 @@ def result_putter(result_dump):
     result -- and return that function so it can be used by someone else '''
 
     def closure(measurement_result):
-        # in case the queue is full, wait until is not.
         # Since result_dump thread is calling queue.get() every second,
         # the queue should be full for only 1 second.
-        while result_dump.queue.full():
-            log.info('The results queue is full, after 1 second it should '
-                     'not be full.')
-            time.sleep(1)
-        # Non blocking, wait a maximum of 1 second if the queue is full.
-        # Because of the timeout, the previous while should not be needed.
-        result_dump.queue.put(measurement_result, timeout=1)
+        # This call blocks at maximum timeout seconds.
+        try:
+            result_dump.queue.put(measurement_result, timeout=3)
+        except queue.Full:
+            # The result would be lost, the scanner will continue working.
+            log.warning(
+                "The queue with measurements is full, when adding %s.\n"
+                "It is possible that the thread that get them to "
+                "write them to the disk (ResultDump.enter) is stalled.",
+                measurement_result
+                )
     return closure
 
 

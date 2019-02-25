@@ -80,7 +80,9 @@ MIN_REPORT = 60
 # in the bandwidth lines in percentage
 MAX_BW_DIFF_PERC = 50
 
-BW_LINE_SIZE = 510
+# With the new KeyValues in #29591, the lines are greater than 510
+# Tor already accept lines of any size, but leaving the limit anyway.
+BW_LINE_SIZE = 1022
 
 # Metadata to send in every requests, so that data servers can know which
 # scanners are using them.

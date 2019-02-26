@@ -55,7 +55,9 @@ BW_LINE_SIZE = 510
 
 # This number might need adjusted depending on the percentage of circuits and
 # HTTP requests failures.
-MAXIMUM_NUMBER_DESTINATION_FAILURES = 10
+# While the scanner can not recover from some/all failing destionations,
+# set a big number so that it continues trying.
+MAXIMUM_NUMBER_DESTINATION_FAILURES = 100
 
 
 def fail_hard(*a, **kw):

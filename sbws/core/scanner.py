@@ -172,7 +172,9 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     dest = destinations.next()
     # If there is no any destination at this point, it can not continue.
     if not dest:
-        log.critical("There are not any functional destinations.")
+        log.critical("There are not any functional destinations.\n"
+                     "It is recommended to set several destinations so that "
+                     "the scanner can continue if one fails.")
         # This should raise an error so that the caller can close the pool.
         exit(1)
     # Pick a relay to help us measure the given relay. If the given relay is an

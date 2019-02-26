@@ -30,6 +30,8 @@ or `<INSTALL.html>`_  (local build or Read the Docs).
 
 To run the ``scanner`` it is mandatory to create a configuration file with at
 least one ``destination``.
+It is recommended to set several ``destination``s so that the ``scanner`` can
+continue if one fails.
 
 If ``sbws`` is installed from the Debian package, then create a file in
 ``/etc/sbws/sbws.ini`` like in the following example:

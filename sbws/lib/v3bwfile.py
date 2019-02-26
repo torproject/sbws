@@ -26,20 +26,71 @@ log = logging.getLogger(__name__)
 LINE_SEP = '\n'
 KEYVALUE_SEP_V1 = '='
 KEYVALUE_SEP_V2 = ' '
+
+# NOTE: in a future refactor make make all the KeyValues be a dictionary
+# with their type, so that it's more similar to stem parser.
+
+# Header KeyValues
+# =================
 # List of the extra KeyValues accepted by the class
 EXTRA_ARG_KEYVALUES = ['software', 'software_version', 'file_created',
                        'earliest_bandwidth', 'generator_started',
                        'scanner_country', 'destinations_countries']
+# number_eligible_relays is the number that ends in the bandwidth file
+# ie, have not been excluded by one of the filters in 4. below
+# They should be call recent_measurement_included_count to be congruent
+# with the other KeyValues.
 STATS_KEYVALUES = ['number_eligible_relays', 'minimum_number_eligible_relays',
                    'number_consensus_relays', 'percent_eligible_relays',
                    'minimum_percent_eligible_relays']
-KEYVALUES_INT = STATS_KEYVALUES
+# Added in #29591
+BW_HEADER_KEYVALUES_MONITOR = [
+    # 1.1 header: the number of different consensuses, that sbws has seen,
+    # since the last 5 days
+    'recent_consensus_count',
+    # 2.4 Number of times a priority list has been created
+    'recent_priority_list_count',
+    # 2.5 Number of relays that there were in a priority list
+    # [50, number of relays in the network * 0.05]
+    'recent_priority_relay_count',
+    # 3.6 header: the number of times that sbws has tried to measure any relay,
+    # since the last 5 days
+    # This would be the number of times a relays were in a priority list
+    'recent_measurement_attempt_count',
+    # 3.7 header: the number of times that sbws has tried to measure any relay,
+    # since the last 5 days, but it didn't work
+    # This should be the number of attempts - number of ResultSuccess -
+    # something else we don't know yet
+    # So far is the number of ResultError
+    'recent_measurement_failure_count',
+    # The number of success results should be:
+    # the number of attempts - the number of failures
+    # 4.6 header: the number of successful results, created in the last 5 days,
+    # that were excluded by a filter
+    # This is the sum of the following 3 + not success results
+    # 'recent_measurement_exclusion_count',
+    'recent_measurement_exclusion_not_distanciated_count',
+    'recent_measurement_exclusion_not_recent_count',
+    'recent_measurement_exclusion_not_min_num_count',
+]
+BANDWIDTH_HEADER_KEY_VALUES_INIT = \
+    ['earliest_bandwidth', 'generator_started',
+     'scanner_country', 'destinations_countries']\
+    + STATS_KEYVALUES \
+    + BW_HEADER_KEYVALUES_MONITOR
+
+KEYVALUES_INT = STATS_KEYVALUES + BW_HEADER_KEYVALUES_MONITOR
 # List of all unordered KeyValues currently being used to generate the file
 UNORDERED_KEYVALUES = EXTRA_ARG_KEYVALUES + STATS_KEYVALUES + \
-                      ['latest_bandwidth']
+                      ['latest_bandwidth'] + \
+                      BW_HEADER_KEYVALUES_MONITOR
 # List of all the KeyValues currently being used to generate the file
 ALL_KEYVALUES = ['version'] + UNORDERED_KEYVALUES
+
 TERMINATOR = '====='
+
+# Bandwidth Lines KeyValues
+# =========================
 # Num header lines in v1.X.X using all the KeyValues
 NUM_LINES_HEADER_V1 = len(ALL_KEYVALUES) + 2
 LINE_TERMINATOR = TERMINATOR + LINE_SEP
@@ -50,14 +101,46 @@ BW_KEYVALUE_SEP_V1 = ' '
 BW_KEYVALUES_BASIC = ['node_id', 'bw']
 BW_KEYVALUES_FILE = BW_KEYVALUES_BASIC + \
                     ['master_key_ed25519', 'nick', 'rtt', 'time',
-                     'success', 'error_stream', 'error_circ', 'error_misc']
+                     'success', 'error_stream', 'error_circ', 'error_misc',
+                     # Added in #292951
+                     'error_second_relay', 'error_destination']
 BW_KEYVALUES_EXTRA_BWS = ['bw_median', 'bw_mean', 'desc_bw_avg', 'desc_bw_bur',
                           'desc_bw_obs_last', 'desc_bw_obs_mean',
                           'consensus_bandwidth',
                           'consensus_bandwidth_is_unmeasured']
-BW_KEYVALUES_EXTRA = BW_KEYVALUES_FILE + BW_KEYVALUES_EXTRA_BWS
+
+# Added in #292951
+BANDWIDTH_LINE_KEY_VALUES_MONITOR = [
+    # 1.2 relay: the number of different consensuses, that sbws has seen,
+    # since the last 5 days, that have this relay
+    'relay_in_recent_consensus_count',
+    # 3.8 relay:  the number of times that sbws has tried to measure
+    # this relay, since the last 5 days
+    # This would be the number of times a relay was in a priority list (2.6)
+    # since once it gets measured, it either returns ResultError,
+    # ResultSuccess or something else happened that we don't know yet
+    'relay_recent_measurement_attempt_count',
+    # 3.9 relay:  the number of times that sbws has tried to measure
+    # this relay, since the last 5 days, but it didn't work
+    # This should be the number of attempts - number of ResultSuccess -
+    # something else we don't know yet
+    # So far is the number of ResultError
+    'relay_recent_measurement_failure_count',
+    # The number of success results should be:
+    # the number of attempts - the number of failures
+    # 4.8 relay:  the number of successful results, created in the last 5 days,
+    # that were excluded by a rule, for this relay
+    # This would be the sum of the following 3 + the number of not success
+    'relay_recent_measurement_exclusion_count',
+    'relay_recent_measurement_exclusion_not_distanciated',
+    'relay_recent_measurement_exclusion_not_recent_count',
+    'relay_recent_measurement_exclusion_not_min_num_count',
+]
+BW_KEYVALUES_EXTRA = BW_KEYVALUES_FILE + BW_KEYVALUES_EXTRA_BWS \
+               + BANDWIDTH_LINE_KEY_VALUES_MONITOR
 BW_KEYVALUES_INT = ['bw', 'rtt', 'success', 'error_stream',
-                    'error_circ', 'error_misc'] + BW_KEYVALUES_EXTRA_BWS
+                    'error_circ', 'error_misc'] + BW_KEYVALUES_EXTRA_BWS \
+                   + BANDWIDTH_LINE_KEY_VALUES_MONITOR
 BW_KEYVALUES = BW_KEYVALUES_BASIC + BW_KEYVALUES_EXTRA
 
 
@@ -133,7 +216,7 @@ class V3BWHeader(object):
         # same as timestamp
         self.latest_bandwidth = unixts_to_isodt_str(timestamp)
         [setattr(self, k, v) for k, v in kwargs.items()
-         if k in EXTRA_ARG_KEYVALUES]
+         if k in BANDWIDTH_HEADER_KEY_VALUES_INIT]
 
     def __str__(self):
         if self.version.startswith('1.'):

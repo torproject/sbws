@@ -94,6 +94,12 @@ def connect_to_destination_over_circuit(dest, circ_id, session, cont, max_dl):
         return False, error_prefix + 'our maximum configured download size '\
             'is {} but the content is only {}'.format(max_dl, content_length)
     log.debug('Connected to %s over circuit %s', dest.url, circ_id)
+    # Any failure connecting to the destination will call set_failure,
+    # which will set `failed` to True and count consecutives failures.
+    # It can not be set at the start, to be able to know if it failed a
+    # a previous time, which is checked by set_failure.
+    # Future improvement: store a list or fixed size dequeue of timestamps
+    # when it fails.
     dest.failed = False
     return True, {'content_length': content_length}
 

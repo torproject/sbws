@@ -1,4 +1,5 @@
 """Integration tests for destination.py"""
+from sbws.globals import MAXIMUM_NUMBER_DESTINATION_FAILURES
 import sbws.util.requests as requests_utils
 from sbws.lib.destination import (DestinationList, Destination,
                                   connect_to_destination_over_circuit)
@@ -81,7 +82,8 @@ def test_functional_destinations(conf, cb, rl, persistent_launch_tor):
     bad_destination = Destination('https://example.example', 1024, False)
     # Mock that it didn't fail now, but it already failed 11 consecutive
     # times.
-    bad_destination.consecutive_failures = 11
+    bad_destination.consecutive_failures = \
+        MAXIMUM_NUMBER_DESTINATION_FAILURES + 1
     bad_destination.failed = False
     # None of the arguments are used, move to unit tests when this get
     # refactored

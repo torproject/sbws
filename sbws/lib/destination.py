@@ -98,8 +98,8 @@ def connect_to_destination_over_circuit(dest, circ_id, session, cont, max_dl):
     # which will set `failed` to True and count consecutives failures.
     # It can not be set at the start, to be able to know if it failed a
     # a previous time, which is checked by set_failure.
-    # Future improvement: store a list or fixed size dequeue of timestamps
-    # when it fails.
+    # Future improvement: use a list to count consecutive failures
+    # or calculate it from the results.
     dest.failed = False
     return True, {'content_length': content_length}
 

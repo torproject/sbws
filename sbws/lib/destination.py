@@ -109,7 +109,7 @@ class Destination:
         self._verify = verify
         # Flag to record whether this destination failed in the last
         # measurement.
-        # Failures can't happen if:
+        # Failures can happen if:
         # - an HTTPS request can not be made over Tor
         # (which might be the relays fault, not the destination being
         # unreachable)

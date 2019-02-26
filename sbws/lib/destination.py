@@ -75,22 +75,22 @@ def connect_to_destination_over_circuit(dest, circ_id, session, cont, max_dl):
             head = requests_utils.head(session, dest.url, verify=dest.verify)
         except (requests.exceptions.ConnectionError,
                 requests.exceptions.ReadTimeout) as e:
-            dest.set_failure
+            dest.set_failure()
             return False, 'Could not connect to {} over circ {} {}: {}'.format(
                 dest.url, circ_id, stem_utils.circuit_str(cont, circ_id), e)
         finally:
             stem_utils.remove_event_listener(cont, listener)
     if head.status_code != requests.codes.ok:
-        dest.set_failure
+        dest.set_failure()
         return False, error_prefix + 'we expected HTTP code '\
             '{} not {}'.format(requests.codes.ok, head.status_code)
     if 'content-length' not in head.headers:
-        dest.set_failure
+        dest.set_failure()
         return False, error_prefix + 'we except the header Content-Length '\
             'to exist in the response'
     content_length = int(head.headers['content-length'])
     if max_dl > content_length:
-        dest.set_failure
+        dest.set_failure()
         return False, error_prefix + 'our maximum configured download size '\
             'is {} but the content is only {}'.format(max_dl, content_length)
     log.debug('Connected to %s over circuit %s', dest.url, circ_id)
@@ -130,7 +130,6 @@ class Destination:
             return False
         return True
 
-    @property
     def set_failure(self):
         """Set failed to True and increase the number of consecutive failures.
         Only if it also failed in the previous measuremnt.

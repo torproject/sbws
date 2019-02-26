@@ -37,7 +37,7 @@ rd = None
 controller = None
 
 
-def stop_threads(signal, frame):
+def stop_threads(signal, frame, exit_code=0):
     global rd, pool
     log.debug('Stopping sbws.')
     # Avoid new threads to start.
@@ -49,7 +49,7 @@ def stop_threads(signal, frame):
     rd.thread.join()
     # Stop Tor thread
     controller.close()
-    sys.exit(0)
+    sys.exit(exit_code)
 
 
 signal.signal(signal.SIGTERM, stop_threads)
@@ -247,11 +247,12 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     # If there is no any destination at this point, it can not continue.
     if not dest:
         # XXX: this should return a ResultError
+        # instead of stopping the scanner once a destination can be recovered.
         log.critical("There are not any functional destinations.\n"
                      "It is recommended to set several destinations so that "
                      "the scanner can continue if one fails.")
-        # This should raise an error so that the caller can close the pool.
-        exit(1)
+        # Exit the scanner with error stopping threads first.
+        stop_threads(signal.SIGTERM, None, 1)
     # Pick a relay to help us measure the given relay. If the given relay is an
     # exit, then pick a non-exit. Otherwise pick an exit.
     helper = None

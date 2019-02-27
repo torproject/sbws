@@ -60,9 +60,7 @@ signal.signal(signal.SIGTERM, stop_threads)
 
 def dumpstacks():
     import traceback
-    log.critical("sbws stop measuring relays, probably because of a bug."
-                 "Please, open a ticket in trac.torproject.org with this"
-                 "backtrace.")
+    log.critical(FILLUP_TICKET_MSG)
     thread_id2name = dict([(t.ident, t.name) for t in threading.enumerate()])
     for thread_id, stack in sys._current_frames().items():
         log.critical("Thread: %s(%d)",

@@ -411,6 +411,51 @@ def result_putter_error(target):
     return closure
 
 
+def wait_for_pending_results(pending_results, time_to_sleep):
+    """Wait for pending results to be ready or timeout.
+
+    After a prioritization loop finish, there might be still pending results
+    because:
+    - They were last meaured, then wait until they are ready or the time
+      waiting is bigger than ``TIMEOUT_MEASUREMENTS``
+    - They were measured before but there was some problem.
+      Since the callbacks were not call, to get either the Result
+      or an exception, call `get` with timeout.
+
+    `get` is not call before, because then the callbacks should also
+    be call and each `get` will be blocking the main process for each pending
+    result.
+
+    :param list pending_results: list of AyncResults, working threads
+    :param int time_to_sleep: the time to wait for the pending results to be
+        ready.
+
+    """
+    time_waiting = 0
+    # Wait for the results to be ready.
+    while (len(pending_results) > 0
+           and time_waiting <= TIMEOUT_MEASUREMENTS):
+        log.debug("Number of pending measurement threads %s after "
+                  "a prioritization loop.", len(pending_results))
+        time.sleep(time_to_sleep)
+        time_waiting += time_to_sleep
+        pending_results = [r for r in pending_results if not r.ready()]
+
+    # If we alreay waited, get them with a low timeout.
+    if time_waiting > TIMEOUT_MEASUREMENTS:
+        for r in pending_results:
+            try:
+                result = r.get(timeout=0.1)
+                log.warning("Something went wrong."
+                            "Result %s was not stored, it took too long.",
+                            result)
+            # Log any exception so that it can be fixed.
+            except Exception as e:
+                log.critical(FILLUP_TICKET_MSG)
+                # if the exception happened in the threads:
+                traceback.print_exception(type(e), e, e.__traceback__)
+
+
 def main_loop(args, conf, controller, relay_list, circuit_builder, result_dump,
               relay_prioritizer, destinations, max_pending_results, pool):
     """Starts and reuse the threads that measure the relays forever.
@@ -483,34 +528,9 @@ def main_loop(args, conf, controller, relay_list, circuit_builder, result_dump,
                 # sleep is non-blocking since happens in the main process.
                 time.sleep(time_to_sleep)
                 pending_results = [r for r in pending_results if not r.ready()]
-        time_waiting = 0
-        while (len(pending_results) > 0
-               and time_waiting <= TIMEOUT_MEASUREMENTS):
-            log.debug("Number of pending measurement threads %s after "
-                      "a prioritization loop.", len(pending_results))
-            time.sleep(time_to_sleep)
-            time_waiting += time_to_sleep
-            pending_results = [r for r in pending_results if not r.ready()]
-        if time_waiting > TIMEOUT_MEASUREMENTS:
-            # If the result threads didn't finish yet, the callbacks have not
-            # been call and therefore the _value (either the Result or an
-            # exception) has not been obtained.
-            # To get either the Result or an exception, call `get` with timeout
-            # Timeout is low since we already waited.
-            # `get` is not call before, because then the callbacks should also
-            # be call and each get will be blocking the main process before
-            # calling other other pending_result get.
-            for r in pending_results:
-                try:
-                    result = r.get(timeout=0.1)
-                    log.warning("Result %s was not stored, it took too long.",
-                                result)
-                # Log any exception so that it can be fixed.
-                except Exception as e:
-                    log.critical(FILLUP_TICKET_MSG)
-                    log.exception(e)
-                    # if the exception happened in the threads:
-                    traceback.print_exception(type(e), e, e.__traceback__)
+
+        wait_for_pending_results(pending_results, time_to_sleep)
+
         loop_tstop = time.time()
         loop_tdelta = (loop_tstop - loop_tstart) / 60
         log.debug("Measured %s relays in %s minutes", num_relays, loop_tdelta)

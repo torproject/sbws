@@ -492,7 +492,25 @@ def main_loop(args, conf, controller, relay_list, circuit_builder, result_dump,
             time_waiting += time_to_sleep
             pending_results = [r for r in pending_results if not r.ready()]
         if time_waiting > TIMEOUT_MEASUREMENTS:
-            dumpstacks()
+            # If the result threads didn't finish yet, the callbacks have not
+            # been call and therefore the _value (either the Result or an
+            # exception) has not been obtained.
+            # To get either the Result or an exception, call `get` with timeout
+            # Timeout is low since we already waited.
+            # `get` is not call before, because then the callbacks should also
+            # be call and each get will be blocking the main process before
+            # calling other other pending_result get.
+            for r in pending_results:
+                try:
+                    result = r.get(timeout=0.1)
+                    log.warning("Result %s was not stored, it took too long.",
+                                result)
+                # Log any exception so that it can be fixed.
+                except Exception as e:
+                    log.critical(FILLUP_TICKET_MSG)
+                    log.exception(e)
+                    # if the exception happened in the threads:
+                    traceback.print_exception(type(e), e, e.__traceback__)
         loop_tstop = time.time()
         loop_tdelta = (loop_tstop - loop_tstart) / 60
         log.debug("Measured %s relays in %s minutes", num_relays, loop_tdelta)

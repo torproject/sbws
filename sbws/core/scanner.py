@@ -84,8 +84,6 @@ def timed_recv_from_server(session, dest, byte_range):
 
     start_time = time.time()
     HTTP_GET_HEADERS['Range'] = byte_range
-    # TODO:
-    # - What other exceptions can this throw?
     # - response.elapsed "measures the time taken between sending the first
     #   byte of the request and finishing parsing the headers.
     #   It is therefore unaffected by consuming the response content"
@@ -94,10 +92,8 @@ def timed_recv_from_server(session, dest, byte_range):
     try:
         # headers are merged with the session ones, not overwritten.
         session.get(dest.url, headers=HTTP_GET_HEADERS, verify=dest.verify)
-    # NewConnectionError will be raised when shutting down.
-    except (requests.exceptions.ConnectionError,
-            requests.exceptions.ReadTimeout,
-            requests.exceptions.NewConnectionError) as e:
+    # Catch any `requests` exception, so that it can stored in the Result
+    except requests.exceptions.RequestException as e:
         log.debug(e)
         return False, e
     end_time = time.time()

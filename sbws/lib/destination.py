@@ -76,11 +76,8 @@ def connect_to_destination_over_circuit(dest, circ_id, session, cont, max_dl):
         listener = stem_utils.attach_stream_to_circuit_listener(cont, circ_id)
         stem_utils.add_event_listener(cont, listener, EventType.STREAM)
         try:
-            # TODO:
-            # - What other exceptions can this throw?
             head = session.head(dest.url, verify=dest.verify)
-        except (requests.exceptions.ConnectionError,
-                requests.exceptions.ReadTimeout) as e:
+        except requests.exceptions.RequestException as e:
             dest.set_failure()
             return False, 'Could not connect to {} over circ {} {}: {}'.format(
                 dest.url, circ_id, stem_utils.circuit_str(cont, circ_id), e)

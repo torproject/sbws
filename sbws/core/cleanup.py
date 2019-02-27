@@ -122,7 +122,7 @@ def _check_validity_periods_results(
 
 
 def _clean_v3bw_files(args, conf):
-    v3bw_dname = conf['paths']['v3bw_dname']
+    v3bw_dname = conf.getpath('paths', 'v3bw_dname')
     if not os.path.isdir(v3bw_dname):
         fail_hard('%s does not exist', v3bw_dname)
     compress_after_days = conf.getint('cleanup',
@@ -144,7 +144,7 @@ def _clean_v3bw_files(args, conf):
 
 
 def _clean_result_files(args, conf):
-    datadir = conf['paths']['datadir']
+    datadir = conf.getpath('paths', 'datadir')
     if not os.path.isdir(datadir):
         fail_hard('%s does not exist', datadir)
     data_period = conf.getint('general', 'data_period')
@@ -174,10 +174,6 @@ def main(args, conf):
     :param argparse.Namespace args: command line arguments
     :param configparser.ConfigParser conf: parsed config files
     '''
-    datadir = conf.getpath('paths', 'datadir')
-    if not os.path.isdir(datadir):
-        fail_hard('%s does not exist', datadir)
-
     if not args.no_results:
         _clean_result_files(args, conf)
 

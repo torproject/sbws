@@ -3,6 +3,7 @@
 import signal
 import sys
 import threading
+import traceback
 import uuid
 
 from ..lib.circuitbuilder import GapsCircuitBuilder as CB
@@ -59,7 +60,6 @@ signal.signal(signal.SIGTERM, stop_threads)
 
 
 def dumpstacks():
-    import traceback
     log.critical(FILLUP_TICKET_MSG)
     thread_id2name = dict([(t.ident, t.name) for t in threading.enumerate()])
     for thread_id, stack in sys._current_frames().items():
@@ -393,7 +393,11 @@ def result_putter_error(target):
     def closure(object):
         # The only object that can be here if there is not any uncatched
         # exception is stem.SocketClosed when stopping sbws
-        log.debug(type(object))
+        # An exception here means that the worker thread finished.
+        log.warning(FILLUP_TICKET_MSG)
+        # To print the traceback that happened in the thread, not here in the
+        # main process
+        traceback.print_exception(type(object), object, object.__traceback__)
     return closure
 
 

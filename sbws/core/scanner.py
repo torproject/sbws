@@ -36,6 +36,9 @@ pool = None
 rd = None
 controller = None
 
+FILLUP_TICKET_MSG = """Something went wrong.
+Please create a ticket in https://trac.torproject.org with this traceback."""
+
 
 def stop_threads(signal, frame, exit_code=0):
     global rd, pool
@@ -540,14 +543,18 @@ def run_speedtest(args, conf):
         fail_hard(error_msg)
     max_pending_results = conf.getint('scanner', 'measurement_threads')
     pool = Pool(max_pending_results)
-
     try:
         main_loop(args, conf, controller, rl, cb, rd, rp, destinations,
                   max_pending_results, pool)
     except KeyboardInterrupt:
         log.info("Interrupted by the user.")
-    finally:
         stop_threads(signal.SIGINT, None)
+    # Any exception not catched at this point would make the scanner stall.
+    # Log it and exit gracefully.
+    except Exception as e:
+        log.critical(FILLUP_TICKET_MSG)
+        log.exception(e)
+        stop_threads(signal.SIGTERM, None, 1)
 
 
 def gen_parser(sub):

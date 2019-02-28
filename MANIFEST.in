@@ -5,10 +5,4 @@ include examples *
 recursive-include docs *
 prune docs/build
 recursive-include tests *
-prune tests/testnets/*/auth?
-prune tests/testnets/*/relay?
-prune tests/testnets/*/datadir
-prune tests/testnets/*/exit?
-recursive-exclude tests/testnets/* config*.ini
-recursive-exclude tests/testnets/* *.log
 prune **/__pycache__

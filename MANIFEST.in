@@ -1,8 +1,7 @@
 include *.md
 include *.rst
-include sbws/*.ini
-include examples *
+include *.ini
 recursive-include docs *
 prune docs/build
 recursive-include tests *
-prune **/__pycache__
+recursive-exclude **/__pycache__ *

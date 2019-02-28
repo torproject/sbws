@@ -1,1 +1,0 @@
-../simple.common/01-gen-configs.sh

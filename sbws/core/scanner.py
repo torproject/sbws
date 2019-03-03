@@ -1,4 +1,5 @@
 ''' Measure the relays. '''
+import queue
 
 import signal
 import sys
@@ -377,8 +378,21 @@ def _next_expected_amount(expected_amount, result_time, download_times,
 def result_putter(result_dump):
     ''' Create a function that takes a single argument -- the measurement
     result -- and return that function so it can be used by someone else '''
+
     def closure(measurement_result):
-        return result_dump.queue.put(measurement_result)
+        # Since result_dump thread is calling queue.get() every second,
+        # the queue should be full for only 1 second.
+        # This call blocks at maximum timeout seconds.
+        try:
+            result_dump.queue.put(measurement_result, timeout=3)
+        except queue.Full:
+            # The result would be lost, the scanner will continue working.
+            log.warning(
+                "The queue with measurements is full, when adding %s.\n"
+                "It is possible that the thread that get them to "
+                "write them to the disk (ResultDump.enter) is stalled.",
+                measurement_result
+                )
     return closure
 
 

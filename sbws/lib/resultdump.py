@@ -580,7 +580,22 @@ class ResultDump:
         log.info(msg)
 
     def enter(self):
-        ''' Main loop for the ResultDump thread '''
+        """Main loop for the ResultDump thread.
+
+        When there are results in the queue, queue.get will get them until
+        there are not anymore or timeout happen.
+
+        For every result it gets, it process it and store in the filesystem,
+        which takes ~1 millisecond and will not trigger the timeout.
+        It can then store in the filesystem ~1000 results per second.
+
+        I does not accept any other data type than Results or list of Results,
+        therefore is not possible to put big data types in the queue.
+
+        If there are not any results in the queue, it waits 1 second and checks
+        again.
+
+        """
         with self.data_lock:
             self.data = load_recent_results_in_datadir(
                 self.fresh_days, self.datadir)

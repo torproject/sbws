@@ -486,15 +486,7 @@ def main_loop(args, conf, controller, relay_list, circuit_builder, result_dump,
     instead ``result_putter_error``, which logs the error and complete
     immediately.
 
-    Before iterating over the next relay, it waits (non blocking, since it
-    happens in the main thread) until one of the ``max_pending_results``
-    threads has finished.
-
-    This is not needed, since otherwise async_result will queue the relays to
-    measure in order and won't start reusing a thread to measure a relay until
-    other thread has finished. But it makes the logic a bit more sequential.
-
-    Before the outer loop iterates, it also waits (again non blocking) that all
+    Before the outer loop iterates, it waits (non blocking) that all
     the ``Results`` are ready.
     This avoid to start measuring the same relay which might still being
     measured.
@@ -522,12 +514,6 @@ def main_loop(args, conf, controller, relay_list, circuit_builder, result_dump,
                 [args, conf, destinations, circuit_builder, relay_list,
                  target], {}, callback, callback_err)
             pending_results.append(async_result)
-            # Instead of letting apply_async to queue the relays in order until
-            # a thread has finished, wait here until a thread has finished.
-            while len(pending_results) >= max_pending_results:
-                # sleep is non-blocking since happens in the main process.
-                time.sleep(time_to_sleep)
-                pending_results = [r for r in pending_results if not r.ready()]
 
         wait_for_pending_results(pending_results, time_to_sleep)
 

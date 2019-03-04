@@ -483,16 +483,8 @@ def main_loop(args, conf, controller, relay_list, circuit_builder, result_dump,
                 # sleep is non-blocking since happens in the main process.
                 time.sleep(time_to_sleep)
                 pending_results = [r for r in pending_results if not r.ready()]
-        time_waiting = 0
-        while (len(pending_results) > 0
-               and time_waiting <= TIMEOUT_MEASUREMENTS):
-            log.debug("Number of pending measurement threads %s after "
-                      "a prioritization loop.", len(pending_results))
-            time.sleep(time_to_sleep)
-            time_waiting += time_to_sleep
-            pending_results = [r for r in pending_results if not r.ready()]
-        if time_waiting > TIMEOUT_MEASUREMENTS:
-            dumpstacks()
+
+        wait_for_results(time_to_sleep, pending_results)
         loop_tstop = time.time()
         loop_tdelta = (loop_tstop - loop_tstart) / 60
         log.debug("Measured %s relays in %s minutes", num_relays, loop_tdelta)
@@ -501,6 +493,19 @@ def main_loop(args, conf, controller, relay_list, circuit_builder, result_dump,
             log.info("In a testing network, exiting after the first loop.")
             # Threads should be closed nicely in some refactor
             stop_threads(signal.SIGTERM, None)
+
+
+def wait_for_results(time_to_sleep, pending_results):
+    time_waiting = 0
+    while (len(pending_results) > 0
+           and time_waiting <= TIMEOUT_MEASUREMENTS):
+        log.debug("Number of pending measurement threads %s after "
+                  "a prioritization loop.", len(pending_results))
+        time.sleep(time_to_sleep)
+        time_waiting += time_to_sleep
+        pending_results = [r for r in pending_results if not r.ready()]
+    if time_waiting > TIMEOUT_MEASUREMENTS:
+        dumpstacks()
 
 
 def run_speedtest(args, conf):

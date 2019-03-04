@@ -7,6 +7,8 @@ import threading
 import traceback
 import uuid
 
+from multiprocessing.context import TimeoutError
+
 from ..lib.circuitbuilder import GapsCircuitBuilder as CB
 from ..lib.resultdump import ResultDump
 from ..lib.resultdump import ResultSuccess, ResultErrorCircuit
@@ -506,6 +508,34 @@ def wait_for_results(time_to_sleep, pending_results):
         pending_results = [r for r in pending_results if not r.ready()]
     if time_waiting > TIMEOUT_MEASUREMENTS:
         dumpstacks()
+
+
+def force_get_results(pending_results):
+    """Try to get either the result or an exception, which is logged.
+
+    Get call by ``wait_for_results`` when the time waiting was already long.
+    To get either the Result or an exception, call `get` with timeout.
+    Timeout is low since we already waited.
+    `get` is not call before, because it blocks and the callbacks are not call.
+    """
+    for r in pending_results:
+        try:
+            result = r.get(timeout=0.1)
+            log.warning("Result %s was not stored, it took too long.",
+                        result)
+        # TimeoutError is raised when the result is not ready, ie. has not
+        # been processed yet
+        except TimeoutError:
+            log.warning("A result was not stored, it was not ready.")
+        # If the result raised an exception, get returns it,
+        # so, log any exception so that it can be fixed.
+        # This should not happen, since callback_err would have been call first
+        except Exception as e:
+            log.critical(FILLUP_TICKET_MSG)
+            log.exception("exception %s", e)
+            # if the exception happened in the threads:
+            log.warning("traceback %s",
+                        traceback.print_exception(type(e), e, e.__traceback__))
 
 
 def run_speedtest(args, conf):

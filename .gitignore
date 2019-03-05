@@ -1,3 +1,4 @@
+*.pyc
 __pycache__/
 venv*/
 passwords.txt
@@ -10,3 +11,4 @@ htmlcov
 .pytest_cache
 dist
 build
+*.lockfile

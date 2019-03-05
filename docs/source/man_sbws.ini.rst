@@ -6,14 +6,12 @@ DESCRIPTION
 
 Tor bandwidth scanner configuration file.
 
-**sbws** (1) ``scanner`` command requires a configuration file with a
-"[destinations]" section.
-"[destinations]" is the only section that does not have a default value.
+**sbws** (1) ``scanner`` command requires a configuration file with the
+"[scanner]", "[destinations]" "[destination.<name>]" sections.
 
-It is also required to configure "country" in the "[scanner]" section.
-It is recommended, but not required to configure "nickname" in the "[scanner]"
-section.
+There must be at least one "[destination.<name>]".
 
+See an **EXAMPLES** below for a minimal configuration.
 
 SECTIONS
 ---------
@@ -186,6 +184,10 @@ EXAMPLES
 
 Example ``destinations`` section::
 
+    [scanner]
+    nickname = Manual
+    country = US
+
     [destinations]
     foo = on
     bar = on
@@ -194,14 +196,18 @@ Example ``destinations`` section::
     [destinations.foo]
     # using HTTP
     url = http://example.org/sbws.bin
+    country = ZZ
+    verify = False
 
     [destinations.bar]
     # using HTTPS
     url = https://example.com/data
+    country = SN
 
     [destinations.baz]
     # this will be ignored
     url = https://example.net/ask/stan/where/the/file/is.exe
+    country = TH
 
 FILES
 -----

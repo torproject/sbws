@@ -8,6 +8,90 @@ Changelog <http://keepachangelog.com/en/1.0.0/>`__ and this project
 adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__.
 
 
+v1.0.3 (2019-02-28)
+-------------------
+
+Fixed
+~~~~~~
+
+- scanner: check that ResultDump queue is not full
+  Fixes bug #28866. Bugfix v0.1.0.
+- config: set stdout log level to cli argument. Closes: #29199
+- cleanup: Use getpath to get configuration paths. Bugfix v0.7.0.
+- destination: stop running twice usability tests.
+  Fixes bug #28897. Bugfix v0.3.0
+- globals, stem: explain where torrc options are.
+  Fixes bug #28646. Bugfix v0.4.0
+- stem: disable pad connections. Fixes bug 28692. Bugfix v0.4.0
+- generate: Load all results, including error ones.
+  Closes #29568. Bugfix v0.4.0 (line introduced in v0.1.0).
+- relayprioritizer: Stop prioritizing relays that tend to fail.
+  Fixes bug #28868. Bugfix v0.1.0
+- circuitbuilder: Stop building the circuit 3 times.
+  Fixes bug #29295. Bugfix v0.1.0.
+- docs: add verify option to man and example.
+  Closes bug #28788. Bugfix v0.4.0.
+- CI: run scanner using the test network. Fixes bug #28933. Bugfix v0.1.0.
+- scanner: catch SIGINT in the main loop. Fixes bug #28869. Bugfix v0.1.0.
+- Stop including tests network as binary blob. Fixes bug #28590. Bugfix v0.4.0.
+- relaylist: remove assertions that fail measurement.
+  Closes #28870. Bugfix v0.4.0
+- config: Use configuration provided as argument.
+  Fixes bug #28724. Bugfix v0.7.0.
+- stem: parse torrc options that are only a key.
+  Fixes bug #28715. Bugfix v0.1.1
+- stem: Stop merging multiple torrc options with the same name.
+  Fixes bug #28738. Bugfix v0.1.1
+- docs: add note about syslog when running systemd.
+  Closes bug #28761. Bugfix v0.6.0
+- CI: include deb.torproject.org key.
+  Closes #28922. Bugfix v1.0.3-dev0
+- config: stop allowing http servers without tls.
+  Fixes bug #28789. Bugfix v0.2.0.
+- Make info level logs more clear and consistent.
+  Closes bug #28736. Bugfix v0.3.0.
+- CI: check broken links in the docs. Closes #28670.
+- docs: add scanner and destination requirements.
+  Closes bug #28647. Bugfix v0.4.0
+- generate: use round_digs variable name in methods.
+  Closes bug #28602. Bugfix 1.0.3-dev0
+- docs: Change old broken links in the documentation. Closes #28662.
+- docs: replace http by https in links. Closes #28661.
+- Fix git repository link. Fixes bug #28762. Bugfix v1.0.0.
+- docs: add example destination in DEPLOY. Closes #28649.
+- docs: Change links to be interpreted by ReST. Closes #28648.
+- Force rtfd.io to install the package. Closes bug #28601.
+- config: continue when the file is not found. Closes: #28550.
+- Stop resolving domains locally and check same flags for the 2nd hop.
+  Closes bug #28458, #28471. Bugfix 1.0.4.
+- Limit the relays' bandwidth to their consensus bandwidth. Closes #28598.
+- globals: add torrc logging options. Closes #28645. Bugfix v0.2.0.
+- Limit bandwidth to the relay MaxAdvertisedBandwidth
+  Fixes bug #28588. Bugfix 0.8.0.
+- Exclude results, then check for the minimum number. Closes bug 28572.
+- Make sbws round to 3 significant figures in torflow rounding mode.
+  Bugfix on 27337 in sbws 1.0. Part of 28442.
+
+Changed
+~~~~~~~~
+
+- tests: remove unused testnets. Fixes bug #29046. Bugfix v0.4.0.
+- scanner, destination: Log all possible exceptions.
+- docs: Update/improve documentation on how the scanner/generator work.
+  Closes: #29149
+- Requests: Change make_session to use the TimedSession.
+- CI: change to Ubuntu Xenial.
+- docs: stop editing changelog on every bug/ticket. Closes ticket #28572.
+- Change sbws scaling method to torflow. Closes: #28446.
+- Round bandwidths to 2 significant digits by default.
+  Implements part of proposal 276. Implements 28451.
+
+Added
+~~~~~~
+
+- Send scanner metadata as part of every HTTP request. Closes: #28741
+- scanner: log backtrace when not progressing. Closes: 28932
+
 v1.0.2 (2018-11-10)
 -------------------
 
@@ -181,7 +265,7 @@ Changed
 -  Remove test data v3bw file and generate it from the same test.
    (#26736)
 -  Stop using food terms for cleanup-related config options
--  Cleanup command now cleans up old v3bw files too (#26701)
+-  cleanup command now cleans up old v3bw files too (#26701)
 -  Make sbws more compatible with system packages: (#26862)
 -  Allow a configuration file argument
 -  Remove directory argument

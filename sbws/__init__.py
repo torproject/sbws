@@ -1,4 +1,4 @@
-__version__ = '1.0.3-dev0'
+__version__ = '1.0.4-dev0'
 
 import threading  # noqa
 

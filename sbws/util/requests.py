@@ -24,6 +24,9 @@ def make_session(controller, timeout):
     """
     s = TimedSession()
     socks_info = stem_utils.get_socks_info(controller)
+    # Probably because scanner is stopping.
+    if socks_info is None:
+        return None
     s.proxies = {
         'http': 'socks5h://{}:{}'.format(*socks_info),
         'https': 'socks5h://{}:{}'.format(*socks_info),

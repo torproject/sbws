@@ -240,6 +240,9 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     log.debug('Measuring %s %s', relay.nickname, relay.fingerprint)
     s = requests_utils.make_session(
         cb.controller, conf.getfloat('general', 'http_timeout'))
+    # Probably because the scanner is stopping.
+    if s is None:
+        return None
     # Pick a destionation
     dest = destinations.next()
     # If there is no any destination at this point, it can not continue.
@@ -401,13 +404,17 @@ def result_putter_error(target):
     measurement -- and return that function so it can be used by someone else
     '''
     def closure(object):
+        if settings.end_event.is_set():
+            return
         # The only object that can be here if there is not any uncatched
         # exception is stem.SocketClosed when stopping sbws
         # An exception here means that the worker thread finished.
         log.warning(FILLUP_TICKET_MSG)
-        # To print the traceback that happened in the thread, not here in the
-        # main process
-        traceback.print_exception(type(object), object, object.__traceback__)
+        # To print the traceback that happened in the thread, not here in
+        # the main process.
+        log.warning("".join(traceback.format_exception(
+            type(object), object, object.__traceback__))
+            )
     return closure
 
 

@@ -66,7 +66,7 @@ class CircuitBuilder:
             circ_id = c.new_circuit(
                 path, await_build=True, timeout=timeout)
         except (InvalidRequest, CircuitExtensionFailed,
-                ProtocolError, Timeout) as e:
+                ProtocolError, Timeout, SocketClosed) as e:
             return None, str(e)
         return circ_id, None
 

@@ -14,6 +14,7 @@ import os
 from sbws.globals import fail_hard
 from sbws.globals import (TORRC_STARTING_POINT, TORRC_RUNTIME_OPTIONS,
                           TORRC_OPTIONS_CAN_FAIL)
+from sbws import settings
 
 log = logging.getLogger(__name__)
 stream_building_lock = RLock()
@@ -50,6 +51,11 @@ def add_event_listener(controller, func, event):
 def remove_event_listener(controller, func):
     try:
         controller.remove_event_listener(func)
+    except SocketClosed as e:
+        if not settings.end_event.is_set():
+            log.debug(e)
+        else:
+            log.exception(e)
     except ProtocolError as e:
         log.exception("Exception trying to remove event %s", e)
 
@@ -245,9 +251,13 @@ def get_socks_info(controller):
     try:
         socks_ports = controller.get_listeners(Listener.SOCKS)
         return socks_ports[0]
+    except SocketClosed as e:
+        if not settings.end_event.is_set():
+            log.debug(e)
+    # This might need to return the eception if this happen in other cases
+    # than when stopping the scanner.
     except ControllerError as e:
-        log.exception("Exception trying to get socks info: %e.", e)
-        exit(1)
+        log.debug(e)
 
 
 def only_relays_with_bandwidth(controller, relays, min_bw=None, max_bw=None):

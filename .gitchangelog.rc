@@ -197,6 +197,8 @@ output_engine = rest_py
 ##
 ## This option tells git-log whether to include merge commits in the log.
 ## The default is to include them.
+# Including merge commit to be able to detect which group of commits belong
+# to the same feature/bug.
 include_merge = True
 
 

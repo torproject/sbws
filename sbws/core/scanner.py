@@ -492,6 +492,8 @@ def main_loop(args, conf, controller, relay_list, circuit_builder, result_dump,
             # Don't start measuring a relay if sbws is stopping.
             if settings.end_event.is_set():
                 break
+            relay_list.increment_recent_measurement_attempt_count()
+            target.increment_relay_recent_measurement_attempt_count()
             num_relays += 1
             # callback and callback_err must be non-blocking
             callback = result_putter(result_dump)

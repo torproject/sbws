@@ -201,17 +201,39 @@ class _ResultType(_StrEnum):
 
 
 class Result:
-    ''' A simple struct to pack a measurement result into so that other code
-    can be confident it is handling a well-formed result. '''
+    """A bandwidth measurement for a relay.
+
+    It re-implements :class:`~sbws.lib.relaylist.Relay` as a inner class.
+    """
 
     class Relay:
-        ''' Implements just enough of a stem RouterStatusEntryV3 for this
-        Result class to be happy '''
+        """A Tor relay.
+
+        It re-implements :class:`~sbws.lib.relaylist.Relay`
+        with the attributes needed.
+
+        .. note:: in a future refactor it would be simpler if a ``Relay`` has
+           measurements and a measurement has a relay,
+           instead of every measurement re-implementing ``Relay``.
+        """
         def __init__(self, fingerprint, nickname, address, master_key_ed25519,
                      average_bandwidth=None, burst_bandwidth=None,
                      observed_bandwidth=None, consensus_bandwidth=None,
                      consensus_bandwidth_is_unmeasured=None,
-                     relay_in_recent_consensus_count=None):
+                     # Counters to be stored by relay and not per measurement,
+                     # since the measurements might fail.
+                     relay_in_recent_consensus_count=None,
+                     relay_recent_measurement_attempt_count=None,
+                     relay_recent_priority_list_count=None):
+            """
+            Initializes a ``Result.Relay``.
+
+            .. note:: in a future refactor the attributes should be dinamic
+               to easy adding/removing them.
+               They are shared by  :class:`~sbws.lib.relaylist.Relay` and
+               :class:`~sbws.lib.v3bwfile.V3BWLine` and there should not be
+               repeated in every class.
+            """
             self.fingerprint = fingerprint
             self.nickname = nickname
             self.address = address
@@ -222,20 +244,30 @@ class Result:
             self.consensus_bandwidth = consensus_bandwidth
             self.consensus_bandwidth_is_unmeasured = \
                 consensus_bandwidth_is_unmeasured
-            # The number of times the relay was in a consensus.
             self.relay_in_recent_consensus_count = \
                 relay_in_recent_consensus_count
+            self.relay_recent_measurement_attempt_count = \
+                relay_recent_measurement_attempt_count
+            self.relay_recent_priority_list_count = \
+                relay_recent_priority_list_count
 
     def __init__(self, relay, circ, dest_url, scanner_nick, t=None,
                  relay_in_recent_consensus_count=None):
-        self._relay = Result.Relay(relay.fingerprint, relay.nickname,
-                                   relay.address, relay.master_key_ed25519,
-                                   relay.average_bandwidth,
-                                   relay.burst_bandwidth,
-                                   relay.observed_bandwidth,
-                                   relay.consensus_bandwidth,
-                                   relay.consensus_bandwidth_is_unmeasured,
-                                   relay.relay_in_recent_consensus_count)
+        """
+        Initilizes the measurement and the relay with all the relay attributes.
+        """
+        self._relay = Result.Relay(
+            relay.fingerprint, relay.nickname,
+            relay.address, relay.master_key_ed25519,
+            relay.average_bandwidth,
+            relay.burst_bandwidth,
+            relay.observed_bandwidth,
+            relay.consensus_bandwidth,
+            relay.consensus_bandwidth_is_unmeasured,
+            relay.relay_in_recent_consensus_count,
+            relay.relay_recent_measurement_attempt_count,
+            relay.relay_recent_priority_list_count
+            )
         self._circ = circ
         self._dest_url = dest_url
         self._scanner = scanner_nick
@@ -287,6 +319,24 @@ class Result:
         return self._relay.relay_in_recent_consensus_count
 
     @property
+    def relay_recent_measurement_attempt_count(self):
+        """Returns the relay recent measurements attemps.
+
+        It is initialized in :class:`~sbws.lib.relaylist.Relay` and
+        incremented in :func:`~sbws.core.scanner.main_loop`.
+        """
+        return self._relay.relay_recent_measurement_attempt_count
+
+    @property
+    def relay_recent_priority_list_count(self):
+        """Returns the relay recent "prioritization"s to be measured.
+
+        It is initialized in :class:`~sbws.lib.relaylist.Relay` and
+        incremented in :func:`~sbws.core.scanner.main_loop`.
+        """
+        return self._relay.relay_recent_priority_list_count
+
+    @property
     def circ(self):
         return self._circ
 
@@ -320,15 +370,29 @@ class Result:
             'version': self.version,
             'relay_in_recent_consensus_count':
                 self.relay_in_recent_consensus_count,
+            'relay_recent_measurement_attempt_count':
+                self.relay_recent_measurement_attempt_count,
+            'relay_recent_priority_list_count':
+                self.relay_recent_priority_list_count,
         }
 
     @staticmethod
     def from_dict(d):
-        ''' Given a dict, returns the Result* subtype that is represented by
-        the dict. If we don't know how to parse the dict into a Result and it's
-        likely because the programmer forgot to implement something, raises
-        NotImplementedError. If we can't parse the dict for some other reason,
-        return None. '''
+        """
+        Returns a :class:`~sbws.lib.resultdump.Result` subclass from a
+        dictionary.
+
+        Returns None if the ``version`` attribute is not
+        :const:`~sbws.globals.RESULT_VERSION`
+
+        It raises ``NotImplementedError`` when the dictionary ``type`` can not
+        be parsed.
+
+        .. note:: in a future refactor, the conversions to/from
+           object-dictionary will be simpler using ``setattr`` and ``__dict__``
+
+           ``version`` is not being used and should be removed.
+        """
         assert 'version' in d
         if d['version'] != RESULT_VERSION:
             return None
@@ -393,7 +457,12 @@ class ResultError(Result):
                 d['fingerprint'], d['nickname'], d['address'],
                 d['master_key_ed25519'],
                 relay_in_recent_consensus_count=  # noqa
-                    d.get('relay_in_recent_consensus_count', None)),  # noqa
+                    d.get('relay_in_recent_consensus_count', None),  # noqa
+                relay_recent_measurement_attempt_count=  # noqa
+                    d.get('relay_recent_measurement_attempt_count', None),  # noqa
+                relay_recent_priority_list_count=  # noqa
+                    d.get('relay_recent_priority_list_count', None),  # noqa
+                ),
             d['circ'], d['dest_url'], d['scanner'],
             msg=d['msg'], t=d['time'])
 
@@ -436,7 +505,12 @@ class ResultErrorCircuit(ResultError):
                 d['fingerprint'], d['nickname'], d['address'],
                 d['master_key_ed25519'],
                 relay_in_recent_consensus_count=  # noqa
-                    d.get('relay_in_recent_consensus_count', None)),  # noqa
+                    d.get('relay_in_recent_consensus_count', None),  # noqa
+                relay_recent_measurement_attempt_count=  # noqa
+                    d.get('relay_recent_measurement_attempt_count', None),  # noqa
+                relay_recent_priority_list_count=  # noqa
+                    d.get('relay_recent_priority_list_count', None),  # noqa
+                ),
             d['circ'], d['dest_url'], d['scanner'],
             msg=d['msg'], t=d['time'])
 
@@ -461,7 +535,12 @@ class ResultErrorStream(ResultError):
                 d['fingerprint'], d['nickname'], d['address'],
                 d['master_key_ed25519'],
                 relay_in_recent_consensus_count=  # noqa
-                    d.get('relay_in_recent_consensus_count', None)),  # noqa
+                    d.get('relay_in_recent_consensus_count', None),  # noqa
+                relay_recent_measurement_attempt_count=  # noqa
+                    d.get('relay_recent_measurement_attempt_count', None),  # noqa
+                relay_recent_priority_list_count=  # noqa
+                    d.get('relay_recent_priority_list_count', None),  # noqa
+                ),
             d['circ'], d['dest_url'], d['scanner'],
             msg=d['msg'], t=d['time'])
 
@@ -576,7 +655,12 @@ class ResultErrorAuth(ResultError):
                 d['fingerprint'], d['nickname'], d['address'],
                 d['master_key_ed25519'],
                 relay_in_recent_consensus_count=  # noqa
-                    d.get('relay_in_recent_consensus_count', None)),  # noqa
+                    d.get('relay_in_recent_consensus_count', None),  # noqa
+                relay_recent_measurement_attempt_count=  # noqa
+                    d.get('relay_recent_measurement_attempt_count', None),  # noqa
+                relay_recent_priority_list_count=  # noqa
+                    d.get('relay_recent_priority_list_count', None),  # noqa
+                ),
             d['circ'], d['dest_url'], d['scanner'],
             msg=d['msg'], t=d['time'])
 
@@ -615,7 +699,12 @@ class ResultSuccess(Result):
                 d.get('consensus_bandwidth'),
                 d.get('consensus_bandwidth_is_unmeasured'),
                 relay_in_recent_consensus_count=  # noqa
-                    d.get('relay_in_recent_consensus_count', None)),  # noqa
+                    d.get('relay_in_recent_consensus_count', None),  # noqa
+                relay_recent_measurement_attempt_count=  # noqa
+                    d.get('relay_recent_measurement_attempt_count', None),  # noqa
+                relay_recent_priority_list_count=  # noqa
+                    d.get('relay_recent_priority_list_count', None),  # noqa
+                ),
             d['circ'], d['dest_url'], d['scanner'],
             t=d['time'])
 

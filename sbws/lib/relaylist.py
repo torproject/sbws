@@ -79,6 +79,12 @@ class Relay:
                 log.exception("Exception trying to get desc %s", e)
         self._consensus_timestamps = []
         self._add_consensus_timestamp(timestamp)
+        # The number of times that a relay is "prioritized" to be measured.
+        # It is incremented in ``RelayPrioritizer.best_priority``
+        self.relay_recent_priority_list_count = 0
+        # The number of times that a relay has been queued to be measured.
+        # It is incremented in ``scanner.main_loop``
+        self.relay_recent_measurement_attempt_count = 0
 
     def _from_desc(self, attr):
         if not self._desc:
@@ -231,6 +237,30 @@ class Relay:
                 Flag.EXIT in self.flags and
                 self.can_exit_to_port(port))
 
+    def increment_relay_recent_measurement_attempt_count(self):
+        """
+        Increment The number of times that a relay has been queued
+        to be measured.
+
+        It is call from :funf:`~sbws.core.scaner.main_loop`.
+        """
+        # If it was not in the previous measurements version, start counting
+        if self.relay_recent_measurement_attempt_count is None:
+            self.relay_recent_measurement_attempt_count = 0
+        self.relay_recent_measurement_attempt_count += 1
+
+    def increment_relay_recent_priority_list_count(self):
+        """
+        The number of times that a relay is "prioritized" to be measured.
+
+        It is call from
+        :meth:`~sbws.lib.relayprioritizer.RelayPrioritizer.best_priority`.
+        """
+        # If it was not in the previous measurements version, start counting
+        if self.relay_recent_priority_list_count is None:
+            self.relay_recent_priority_list_count = 0
+        self.relay_recent_priority_list_count += 1
+
 
 class RelayList:
     ''' Keeps a list of all relays in the current Tor network and updates it
@@ -252,6 +282,11 @@ class RelayList:
         # The period of time for which the measurements are keep.
         self._measurements_period = measurements_period
         self._state = state
+        # NOTE: blocking: writes to disk
+        if self._state:
+            if self._state.get('recent_measurement_attempt_count', None) \
+                    is None:
+                self._state['recent_measurement_attempt_count'] = 0
         self._refresh()
 
     def _need_refresh(self):
@@ -389,3 +424,16 @@ class RelayList:
     def exits_not_bad_allowing_port(self, port):
         return [r for r in self.exits
                 if r.is_exit_not_bad_allowing_port(port)]
+
+    def increment_recent_measurement_attempt_count(self):
+        """
+        Increment the number of times that any relay has been queued to be
+        measured.
+
+        It is call from :funf:`~sbws.core.scaner.main_loop`.
+
+        It is read and stored in a ``state`` file.
+        """
+        # NOTE: blocking, writes to file!
+        if self._state:
+            self._state['recent_measurement_attempt_count'] += 1

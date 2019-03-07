@@ -63,12 +63,12 @@ class State:
         self._state = self._read()
         return self._state.__len__()
 
-    def get(self, key):
+    def get(self, key, d=None):
         if not isinstance(key, str):
             raise TypeError(
                 'Keys must be strings. %s is a %s' % (key, type(key)))
         self._state = self._read()
-        return self._state.get(key)
+        return self._state.get(key, d)
 
     def __getitem__(self, key):
         if not isinstance(key, str):
@@ -93,7 +93,6 @@ class State:
             raise TypeError(
                 'May only store value with type in %s, not %s' %
                 (State._ALLOWED_TYPES, type(value)))
-        self._state = self._read()
         self._state.__setitem__(key, value)
         self._write()
 

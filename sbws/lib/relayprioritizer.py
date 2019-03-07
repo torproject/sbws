@@ -6,6 +6,8 @@ import copy
 import time
 import logging
 
+from ..util import state
+
 log = logging.getLogger(__name__)
 
 
@@ -21,6 +23,31 @@ class RelayPrioritizer:
         self.min_to_return = conf.getint('relayprioritizer', 'min_relays')
         self.fraction_to_return = conf.getfloat(
             'relayprioritizer', 'fraction_relays')
+        self._state = state.State(conf.getpath('paths', 'state_fname'))
+        if self._state is not None:
+            # If it was not in previous state versions, initialize it to 0
+            if self._state.get('recent_priority_list_count', None) is None:
+                self._state['recent_priority_list_count'] = 0
+            if self._state.get('recent_priority_relay_count') is None:
+                self._state['recent_priority_relay_count'] = 0
+
+    def increment_priority_lists(self):
+        """
+        Increment the number of times that
+        :meth:`~sbws.lib.relayprioritizer.RelayPrioritizer.best_priority`
+        has been run.
+        """
+        # NOTE: blocking, writes to file!
+        self._state['recent_priority_list_count'] += 1
+
+    def increment_priority_relays(self, relays_count):
+        """
+        Increment the number of relays that have been "prioritized" to be
+        measured in a
+        :meth:`~sbws.lib.relayprioritizer.RelayPrioritizer.best_priority`.
+        """
+        # NOTE: blocking, writes to file!
+        self._state['recent_priority_relay_count'] += relays_count
 
     def best_priority(self, prioritize_result_error=False,
                       return_fraction=True):
@@ -112,10 +139,18 @@ class RelayPrioritizer:
         cutoff = max(int(len(relays) * self.fraction_to_return),
                      self.min_to_return)
         upper_limit = cutoff if return_fraction else len(relays)
+        # NOTE: these two are blocking, write to disk
+        # Increment the number of times ``best_priority`` has been run.
+        self.increment_priority_lists()
+        # Increment the number of relays that have been "prioritized".
+        self.increment_priority_relays(upper_limit)
         for relay in relays[0:upper_limit]:
             log.debug('Returning next relay %s with priority %f',
                       relay.nickname, relay.priority)
             # In a future refactor, a new attribute should not be created,
             # then no need to remove it.
             del(relay.priority)
+            # Increment the number of times a realy was "prioritized" to be
+            # measured.
+            relay.increment_relay_recent_priority_list_count()
             yield relay

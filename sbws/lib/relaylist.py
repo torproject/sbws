@@ -206,7 +206,7 @@ class Relay:
         self._remove_old_consensus_timestamps()
 
     @property
-    def consensus_count(self):
+    def relay_in_recent_consensus_count(self):
         """Number of times the relay was in a conensus."""
         return len(self._consensus_timestamps)
 
@@ -371,13 +371,13 @@ class RelayList:
 
         log.info("Number of consensuses obtained in the last %s days: %s.",
                  int(self._measurements_period / 24 / 60 / 60),
-                 self.consensus_count)
+                 self.recent_consensus_count)
         # NOTE: blocking, writes to file!
         if self._state is not None:
-            self._state['consensus_count'] = self.consensus_count
+            self._state['recent_consensus_count'] = self.recent_consensus_count
 
     @property
-    def consensus_count(self):
+    def recent_consensus_count(self):
         """Number of times a new consensus was obtained."""
         return len(self._consensus_timestamps)
 

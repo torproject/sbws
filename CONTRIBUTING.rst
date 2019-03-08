@@ -159,7 +159,7 @@ When a PR is being reviewed, new changes might be needed:
 
 - If the change does not modify a previous change, create new commits and push.
 - If the change modifies a previous change and it's small,
-  `git commit fixup <https://git-scm.com/docs/git-commit#git-commit---fixupltcommitgt>`_
+  `git commit fixup <https://git-scm.com/docs/git-commit#Documentation/git-commit.txt---fixupltcommitgt>`_
   should be used. When it is agreed that the PR is ready, create a new branch
   named ``mybranch_02`` and run:
 

@@ -84,6 +84,16 @@ MAX_BW_DIFF_PERC = 50
 # Tor already accept lines of any size, but leaving the limit anyway.
 BW_LINE_SIZE = 1022
 
+# RelayList, ResultDump, v3bwfile
+# For how many seconds in the past the relays and measurements data is keep/
+# considered valid.
+# This is currently set by default in config.default.ini as ``date_period``,
+# and used in ResultDump and v3bwfile.
+# In a future refactor, constants in config.default.ini should be moved here,
+# or calculated in settings, so that there's no need to pass the configuration
+# to all the functions.
+MEASUREMENTS_PERIOD = 5 * 24 * 60 * 60
+
 # Metadata to send in every requests, so that data servers can know which
 # scanners are using them.
 # In Requests these keys are case insensitive.

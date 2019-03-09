@@ -120,7 +120,12 @@ class Relay:
 
     @property
     def consensus_bandwidth(self):
-        return self._from_ns('bandwidth')
+        """Return the consensus bandwidth in Bytes.
+
+        Consensus bandwidth is the only bandwidth value that is in kilobytes.
+        """
+        if self._from_ns('bandwidth') is not None:
+            return self._from_ns('bandwidth') * 1000
 
     @property
     def consensus_bandwidth_is_unmeasured(self):

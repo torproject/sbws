@@ -132,11 +132,35 @@ def main(args):
     # While we use Github releases and not dist.tpo
     print("\n6. Create release tarball")
     print("-------------------------")
-    print("Obtaining Github tarball...")
+
+    print("\nCreating a release tarball...")
     subprocess.call(
-        "torsocks wget https://github.com/torproject/sbws/archive/v{}.tar.gz"
-        .format(release_version).split(' ')
+        "git archive --format=tar.gz --prefix=sbws-{}/ "
+        "-o v{}.tar.gz v{}"
+        .format(release_version, release_version, release_version).split(' ')
+    )
+    print("\nCreating tarball hash file...")
+    fd = open('v{}.tar.gz.sha256'.format(release_version), 'w')
+    subprocess.call("sha256sum v{}.tar.gz".format(release_version).split(' '),
+                    stdout=fd)
+    fd.close()
+
+    print("Obtaining Github tarball...")
+    # This will overwrite local tarball, but that's fine since the hash file
+    # won't be overwritten.
+    subprocess.call(
+        "wget https://github.com/torproject/sbws/archive/v{}.tar.gz "
+        "-O v{}.tar.gz"
+        .format(release_version, release_version).split(' ')
         )
+
+    print("Verifying Github tarball and local one are the same...")
+    try:
+        subprocess.check_call("sha256sum -c v{}.tar.gz.sha256"
+                              .format(release_version).split(' '))
+    except subprocess.CalledProcessError:
+        print("Tarballs are not the same")
+        sys.exit(1)
 
     print("\n7. Create the tarball signature")
     print("-------------------------------")

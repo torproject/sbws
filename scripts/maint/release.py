@@ -2,6 +2,8 @@
 # Copyright 2019 juga (juga at riseup dot net), CC0 license.
 """Script to help release new versions.
 
+usage: release.py GPG_KEY_IDENTIFIER
+
 It will:
 0. Detect the current program version
 1. Ask which version to release
@@ -85,6 +87,11 @@ def obtain_next_prerelease_version(release_version):
 
 def main(args):
     print(__doc__)
+    try:
+        keyid = args[0]
+    except IndexError:
+        print("Please, pass a GPG key identifier as argument.")
+        sys.exit(1)
     print("1. Which version to release")
     print("---------------------------")
     current_version = semantic_version.Version(sbws.__version__)
@@ -165,10 +172,11 @@ def main(args):
     print("\n7. Create the tarball signature")
     print("-------------------------------")
     print("Creating detached signature...")
-    subprocess.call("gpg --default-key F305447AF806D46B "
+    subprocess.call("gpg --default-key {} "
                     "--output v{}.tar.gz.asc "
                     "--detach-sign v{}.tar.gz"
-                    .format(release_version, release_version).split(' '))
+                    .format(keyid, release_version, release_version)
+                    .split(' '))
 
     print("\nUpload the signature manually to Github.")
     input("Press enter when done.")

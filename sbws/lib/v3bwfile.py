@@ -468,7 +468,7 @@ class V3BWLine(object):
              if getattr(r, 'relay_in_recent_consensus_count', None)]
         if consensuses_count:
             consensus_count = max(consensuses_count)
-            kwargs['relay_in_recent_consensus_count'] = consensus_count
+            kwargs['relay_in_recent_consensus_count'] = str(consensus_count)
 
         measurements_attempts = \
             [r.relay_recent_measurement_attempt_count for r in results

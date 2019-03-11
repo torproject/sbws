@@ -21,9 +21,3 @@ def test_make_session(conf, persistent_launch_tor, dests):
     except requests.exceptions.ConnectTimeout:
         pass
     assert response is None
-
-    # Disable socks proxies to test a session request not over Tor
-    # without timeout.
-    session.proxies = {}
-    response = session.get(dests.next().url, verify=False)
-    print(response.request.__dict__)

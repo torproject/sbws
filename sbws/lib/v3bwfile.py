@@ -43,6 +43,18 @@ EXTRA_ARG_KEYVALUES = ['software', 'software_version', 'file_created',
 STATS_KEYVALUES = ['number_eligible_relays', 'minimum_number_eligible_relays',
                    'number_consensus_relays', 'percent_eligible_relays',
                    'minimum_percent_eligible_relays']
+BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED = [
+    # The number of success results should be:
+    # the number of attempts - the number of failures
+    # 4.6 header: the number of successful results, created in the last 5 days,
+    # that were excluded by a filter
+    # This is the sum of the following 3 + not success results
+    # 'recent_measurement_exclusion_count',
+    'recent_measurement_exclusion_not_success_count',
+    'recent_measurement_exclusion_not_distanciated_count',
+    'recent_measurement_exclusion_not_recent_count',
+    'recent_measurement_exclusion_not_min_num_count',
+]
 # Added in #29591
 # NOTE: recent_consensus_count, recent_priority_list_count,
 # recent_measurement_attempt_count and recent_priority_relay_count
@@ -67,16 +79,7 @@ BW_HEADER_KEYVALUES_MONITOR = [
     # something else we don't know yet
     # So far is the number of ResultError
     'recent_measurement_failure_count',
-    # The number of success results should be:
-    # the number of attempts - the number of failures
-    # 4.6 header: the number of successful results, created in the last 5 days,
-    # that were excluded by a filter
-    # This is the sum of the following 3 + not success results
-    # 'recent_measurement_exclusion_count',
-    'recent_measurement_exclusion_not_distanciated_count',
-    'recent_measurement_exclusion_not_recent_count',
-    'recent_measurement_exclusion_not_min_num_count',
-]
+] + BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED
 BANDWIDTH_HEADER_KEY_VALUES_INIT = \
     ['earliest_bandwidth', 'generator_started',
      'scanner_country', 'destinations_countries']\
@@ -135,11 +138,14 @@ BANDWIDTH_LINE_KEY_VALUES_MONITOR = [
     'relay_recent_measurement_failure_count',
     # The number of success results should be:
     # the number of attempts - the number of failures
+    # Number of error results, it can be deduced counting the number of errors
+    # but this way seem clearer.
+    'relay_recent_measurement_exclusion_not_success_count',
     # 4.8 relay:  the number of successful results, created in the last 5 days,
-    # that were excluded by a rule, for this relay
+    # that were excluded by a rule, for this relay.
     # This would be the sum of the following 3 + the number of not success
-    'relay_recent_measurement_exclusion_count',
-    'relay_recent_measurement_exclusion_not_distanciated',
+    # 'relay_recent_measurement_exclusion_count',
+    'relay_recent_measurement_exclusion_not_distanciated_count',
     'relay_recent_measurement_exclusion_not_recent_count',
     'relay_recent_measurement_exclusion_not_min_num_count',
 ]

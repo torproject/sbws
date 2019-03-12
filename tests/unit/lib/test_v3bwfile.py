@@ -8,9 +8,12 @@ from sbws import __version__ as version
 from sbws.globals import (SPEC_VERSION, SBWS_SCALING, TORFLOW_SCALING,
                           MIN_REPORT, TORFLOW_ROUND_DIG, PROP276_ROUND_DIG)
 from sbws.lib.resultdump import Result, load_result_file, ResultSuccess
-from sbws.lib.v3bwfile import (V3BWHeader, V3BWLine, TERMINATOR, LINE_SEP,
-                               KEYVALUE_SEP_V1, num_results_of_type,
-                               V3BWFile, round_sig_dig)
+from sbws.lib.v3bwfile import (
+    V3BWHeader, V3BWLine, TERMINATOR, LINE_SEP,
+    KEYVALUE_SEP_V1, num_results_of_type,
+    V3BWFile, round_sig_dig,
+    BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED
+    )
 from sbws.util.timestamp import now_fname, now_isodt_str, now_unixts
 
 timestamp = 1523974147
@@ -61,6 +64,10 @@ raw_bwl_str = "bw=56 bw_mean=61423 bw_median=55656 "\
     "nick=A " \
     "node_id=$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA "\
     "relay_recent_measurement_attempt_count=2 "\
+    "relay_recent_measurement_exclusion_not_distanciated_count=0 "\
+    "relay_recent_measurement_exclusion_not_min_num_count=1 "\
+    "relay_recent_measurement_exclusion_not_recent_count=0 "\
+    "relay_recent_measurement_exclusion_not_success_count=1 "\
     "relay_recent_priority_list_count=3 "\
     "rtt=456 success=1 " \
     "time=2018-04-17T14:09:07\n"
@@ -237,7 +244,7 @@ def test_v3bwline_from_results_file(datadir):
         if fp not in d:
             d[fp] = []
         d[fp].append(r)
-    bwl = V3BWLine.from_data(d, fp)
+    bwl, _ = V3BWLine.from_data(d, fp)
     # bw store now B, not KB
     bwl.bw = round(bwl.bw / 1000)
     assert raw_bwl_str == str(bwl)
@@ -248,7 +255,11 @@ def test_from_results_read(datadir, tmpdir, conf, args):
     expected_header = V3BWHeader(timestamp_l,
                                  earliest_bandwidth=earliest_bandwidth,
                                  latest_bandwidth=latest_bandwidth)
-    raw_bwls = [V3BWLine.from_results(results[fp]) for fp in results]
+    exclusion_dict = dict(
+        [(k, 0) for k in BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED]
+        )
+    expected_header.add_relays_excluded_counters(exclusion_dict)
+    raw_bwls = [V3BWLine.from_results(results[fp])[0] for fp in results]
     # Scale BWLines using torflow method, since it's the default and BWLines
     # bandwidth is the raw bandwidth.
     expected_bwls = V3BWFile.bw_torflow_scale(raw_bwls)
@@ -343,7 +354,7 @@ def test_measured_progress_stats(datadir):
     results = load_result_file(str(datadir.join("results_away.txt")))
     for fp, values in results.items():
         # log.debug("Relay fp %s", fp)
-        line = V3BWLine.from_results(values)
+        line, _ = V3BWLine.from_results(values)
         if line is not None:
             bw_lines_raw.append(line)
     assert len(bw_lines_raw) == 3

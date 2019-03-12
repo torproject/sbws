@@ -438,6 +438,11 @@ class V3BWHeader(object):
         [setattr(self, k, str(v)) for k, v in kwargs.items()
          if k in STATS_KEYVALUES]
 
+    def add_relays_excluded_counters(self, exclusion_dict):
+        log.debug("Adding relays excluded counters.")
+        for k, v in exclusion_dict.items():
+            setattr(self, k, str(v))
+
 
 class V3BWLine(object):
     """
@@ -761,12 +766,22 @@ class V3BWFile(object):
         number_consensus_relays = cls.read_number_consensus_relays(
             consensus_path)
         state = State(state_fpath)
+
+        # Initiliaze exclusion counts dictionary with 0
+        exclusion_dict = dict(
+            [(k, 0) for k in BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED]
+            )
         for fp, values in results.items():
             # log.debug("Relay fp %s", fp)
             line, reason = V3BWLine.from_results(values, secs_recent,
                                                  secs_away, min_num)
             if line is not None:
                 bw_lines_raw.append(line)
+            else:
+                exclusion_dict[reason] = exclusion_dict.get(reason, 0) + 1
+        # Add the headers with the number of excluded relays by reason
+        header.add_relays_excluded_counters(exclusion_dict)
+
         if not bw_lines_raw:
             log.info("After applying restrictions to the raw results, "
                      "there is not any. Scaling can not be applied.")

@@ -510,20 +510,29 @@ class V3BWLine(object):
                 str(max(relay_recent_priority_list_counts))
 
         success_results = [r for r in results if isinstance(r, ResultSuccess)]
+        kwargs['relay_recent_measurement_exclusion_not_success_count'] = \
+            len(results) - len(success_results)
         if not success_results:
-            return None
+            return None, 'recent_measurement_exclusion_not_success_count'
         results_away = \
             cls.results_away_each_other(success_results, secs_away)
+        kwargs['relay_recent_measurement_exclusion_not_distanciated_count'] = \
+            len(success_results) - len(results_away)
         if not results_away:
-            return None
+            return None, 'recent_measurement_exclusion_not_distanciated_count'
         # log.debug("Results away from each other: %s",
         #           [unixts_to_isodt_str(r.time) for r in results_away])
         results_recent = cls.results_recent_than(results_away, secs_recent)
+        kwargs['relay_recent_measurement_exclusion_not_recent_count'] = \
+            len(results_away) - len(results_recent)
         if not results_recent:
-            return None
+            return None, 'recent_measurement_exclusion_not_recent_count'
+        kwargs['relay_recent_measurement_exclusion_not_min_num_count'] = \
+            len(results_recent)
         if not len(results_recent) >= min_num:
             # log.debug('The number of results is less than %s', min_num)
-            return None
+            return None, 'recent_measurement_exclusion_not_min_num_count'
+
         rtt = cls.rtt_from_results(results_recent)
         if rtt:
             kwargs['rtt'] = rtt
@@ -545,7 +554,7 @@ class V3BWLine(object):
         kwargs['desc_bw_obs_mean'] = \
             cls.desc_bw_obs_mean_from_results(results_recent)
         bwl = cls(node_id, bw, **kwargs)
-        return bwl
+        return bwl, None
 
     @classmethod
     def from_data(cls, data, fingerprint):
@@ -754,8 +763,8 @@ class V3BWFile(object):
         state = State(state_fpath)
         for fp, values in results.items():
             # log.debug("Relay fp %s", fp)
-            line = V3BWLine.from_results(values, secs_recent, secs_away,
-                                         min_num)
+            line, reason = V3BWLine.from_results(values, secs_recent,
+                                                 secs_away, min_num)
             if line is not None:
                 bw_lines_raw.append(line)
         if not bw_lines_raw:

@@ -192,7 +192,11 @@ class _ResultType(_StrEnum):
     ErrorCircuit = 'error-circ'
     ErrorStream = 'error-stream'
     ErrorAuth = 'error-auth'
+    # When it can not be found a second relay suitable to measure a relay.
+    # It is used in ``ResultErrorSecondRelay``.
     ErrorSecondRelay = 'error-second-relay'
+    # When there is not a working destination Web Server.
+    # It is used in ``ResultErrorDestionation``.
     ErrorDestination = 'error-destination'
 
 
@@ -503,6 +507,25 @@ class ResultErrorStream(ResultError):
 
 
 class ResultErrorSecondRelay(ResultError):
+    """
+    Error when it could not be found a second relay suitable to measure
+    a relay.
+
+    A second suitable relay is a relay that:
+    - Has at least equal bandwidth as the relay to measure.
+    - If the relay to measure is not an exit,
+      the second relay is an exit without `bad` flag and can exit to port 443.
+    - If the relay to measure is an exit, the second relay is not an exit.
+
+    It is instanciated in :func:`~sbws.core.scanner.measure_relay`.
+
+    .. note:: this duplicates code and add more tech-debt,
+       since it's the same as the other
+       :class:`~sbws.lib.resultdump.ResultError` classes except for the
+       ``type``.
+       In a future refactor, there should be only one ``ResultError`` class
+       and assign the type in the ``scanner`` module.
+    """
     def __init__(self, *a, **kw):
         super().__init__(*a, **kw)
 
@@ -526,6 +549,18 @@ class ResultErrorSecondRelay(ResultError):
 
 
 class ResultErrorDestination(ResultError):
+    """
+    Error when there is not a working destination Web Server.
+
+    It is instanciated in :func:`~sbws.core.scanner.measure_relay`.
+
+    .. note:: this duplicates code and add more tech-debt,
+       since it's the same as the other
+       :class:`~sbws.lib.resultdump.ResultError` classes except for the
+       ``type``.
+       In a future refactor, there should be only one ``ResultError`` class
+       and assign the type in the ``scanner`` module.
+    """
     def __init__(self, *a, **kw):
         super().__init__(*a, **kw)
 

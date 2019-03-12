@@ -43,6 +43,28 @@ EXTRA_ARG_KEYVALUES = ['software', 'software_version', 'file_created',
 STATS_KEYVALUES = ['number_eligible_relays', 'minimum_number_eligible_relays',
                    'number_consensus_relays', 'percent_eligible_relays',
                    'minimum_percent_eligible_relays']
+
+# KeyValues that count the number of relays that are in the bandwidth file,
+# but ignored by Tor when voting, because they do not have a
+# measured bandwidth.
+BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED = [
+    # Number of relays that were measured but all the measurements failed
+    # because of network failures or it was
+    # not found a suitable helper relay
+    'recent_measurements_excluded_error_count',
+    # Number of relays that have successful measurements but the measurements
+    # were not away from each other in X time (by default 1 day).
+    'recent_measurements_excluded_near_count',
+    # Number of relays that have successful measurements and they are away from
+    # each other but they are not X time recent.
+    # By default this is 5 days, which is the same time the older
+    # the measurements can be by default.
+    'recent_measurements_excluded_old_count',
+    # Number of relays that have successful measurements and they are away from
+    # each other and recent
+    # but the number of measurements are less than X (by default 2).
+    'recent_measurements_excluded_few_count',
+]
 # Added in #29591
 # NOTE: recent_consensus_count, recent_priority_list_count,
 # recent_measurement_attempt_count and recent_priority_relay_count
@@ -67,16 +89,7 @@ BW_HEADER_KEYVALUES_MONITOR = [
     # something else we don't know yet
     # So far is the number of ResultError
     'recent_measurement_failure_count',
-    # The number of success results should be:
-    # the number of attempts - the number of failures
-    # 4.6 header: the number of successful results, created in the last 5 days,
-    # that were excluded by a filter
-    # This is the sum of the following 3 + not success results
-    # 'recent_measurement_exclusion_count',
-    'recent_measurement_exclusion_not_distanciated_count',
-    'recent_measurement_exclusion_not_recent_count',
-    'recent_measurement_exclusion_not_min_num_count',
-]
+] + BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED
 BANDWIDTH_HEADER_KEY_VALUES_INIT = \
     ['earliest_bandwidth', 'generator_started',
      'scanner_country', 'destinations_countries']\
@@ -133,15 +146,23 @@ BANDWIDTH_LINE_KEY_VALUES_MONITOR = [
     # something else we don't know yet
     # So far is the number of ResultError
     'relay_recent_measurement_failure_count',
-    # The number of success results should be:
-    # the number of attempts - the number of failures
-    # 4.8 relay:  the number of successful results, created in the last 5 days,
-    # that were excluded by a rule, for this relay
-    # This would be the sum of the following 3 + the number of not success
-    'relay_recent_measurement_exclusion_count',
-    'relay_recent_measurement_exclusion_not_distanciated',
-    'relay_recent_measurement_exclusion_not_recent_count',
-    'relay_recent_measurement_exclusion_not_min_num_count',
+    # Number of error results created in the last 5 days that are excluded.
+    # This is the sum of all the errors.
+    'relay_recent_measurements_excluded_error_count',
+    # The number of successful results, created in the last 5 days,
+    # that were excluded by a rule, for this relay.
+    # 'relay_recent_measurements_excluded_error_count' would be the
+    # sum of the following 3 + the number of error results.
+
+    # The number of successful measurements that are not X time away
+    # from each other (by default 1 day).
+    'relay_recent_measurements_excluded_near_count',
+    # The number of successful measurements that are away from each other
+    # but not X time recent (by default 5 days).
+    'relay_recent_measurements_excluded_old_count',
+    # The number of measurements excluded because they are not at least X
+    # (by default 2).
+    'relay_recent_measurements_excluded_few_count',
 ]
 BW_KEYVALUES_EXTRA = BW_KEYVALUES_FILE + BW_KEYVALUES_EXTRA_BWS \
                + BANDWIDTH_LINE_KEY_VALUES_MONITOR

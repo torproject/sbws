@@ -525,20 +525,51 @@ class V3BWLine(object):
                 str(max(relay_recent_priority_list_counts))
 
         success_results = [r for r in results if isinstance(r, ResultSuccess)]
+
+        # NOTE: The following 4 conditions exclude relays from the bandwidth
+        # file when the measurements does not satisfy some rules, what makes
+        # the relay non-`eligible`.
+        # In BANDWIDTH_LINE_KEY_VALUES_MONITOR it is explained what they mean.
+        # In BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED it is also
+        # explained the what it means the strings returned.
+        # They rules were introduced in #28061 and #27338
+        # In #28565 we introduce the KeyValues to know why they're excluded.
+        # In #28563 we report these relays, but make Tor ignore them.
+        # This might confirm #28042.
+
+        number_excluded_error = len(results) - len(success_results)
+        if number_excluded_error > 0:
+            # then the number of error results is the number of results
+            kwargs['relay_recent_measurements_excluded_error_count'] = \
+                number_excluded_error
         if not success_results:
-            return None
+            return None, 'recent_measurements_excluded_error_count'
+
         results_away = \
             cls.results_away_each_other(success_results, secs_away)
+        number_excluded_near = len(success_results) - len(results_away)
+        if number_excluded_near > 0:
+            kwargs['relay_recent_measurements_excluded_near_count'] = \
+                len(success_results) - len(results_away)
         if not results_away:
-            return None
+            return None, 'recent_measurements_excluded_near_count'
+
         # log.debug("Results away from each other: %s",
         #           [unixts_to_isodt_str(r.time) for r in results_away])
         results_recent = cls.results_recent_than(results_away, secs_recent)
+        number_excluded_old = len(results_away) - len(results_recent)
+        if number_excluded_old > 0:
+            kwargs['relay_recent_measurements_excluded_old_count'] = \
+                number_excluded_old
         if not results_recent:
-            return None
+            return None, 'recent_measurements_excluded_old_count'
+
         if not len(results_recent) >= min_num:
+            kwargs['relay_recent_measurements_excluded_few_count'] = \
+                len(results_recent)
             # log.debug('The number of results is less than %s', min_num)
-            return None
+            return None, 'recent_measurements_excluded_few_count'
+
         rtt = cls.rtt_from_results(results_recent)
         if rtt:
             kwargs['rtt'] = rtt
@@ -560,7 +591,7 @@ class V3BWLine(object):
         kwargs['desc_bw_obs_mean'] = \
             cls.desc_bw_obs_mean_from_results(results_recent)
         bwl = cls(node_id, bw, **kwargs)
-        return bwl
+        return bwl, None
 
     @classmethod
     def from_data(cls, data, fingerprint):
@@ -594,7 +625,7 @@ class V3BWLine(object):
                 return results
         # log.debug("Results are NOT away from each other in at least %ss: %s",
         #           secs_away, [unixts_to_isodt_str(r.time) for r in results])
-        return None
+        return []
 
     @staticmethod
     def results_recent_than(results, secs_recent=None):
@@ -769,8 +800,8 @@ class V3BWFile(object):
         state = State(state_fpath)
         for fp, values in results.items():
             # log.debug("Relay fp %s", fp)
-            line = V3BWLine.from_results(values, secs_recent, secs_away,
-                                         min_num)
+            line, reason = V3BWLine.from_results(values, secs_recent,
+                                                 secs_away, min_num)
             if line is not None:
                 bw_lines_raw.append(line)
         if not bw_lines_raw:

@@ -61,9 +61,7 @@ raw_bwl_str = "bw=56 bw_mean=61423 bw_median=55656 "\
     "nick=A " \
     "node_id=$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA "\
     "relay_recent_measurement_attempt_count=2 "\
-    "relay_recent_measurement_exclusion_not_distanciated_count=0 "\
-    "relay_recent_measurement_exclusion_not_recent_count=0 "\
-    "relay_recent_measurement_exclusion_not_success_count=1 "\
+    "relay_recent_measurements_excluded_error_count=1 "\
     "relay_recent_priority_list_count=3 "\
     "rtt=456 success=1 " \
     "time=2018-04-17T14:09:07\n"
@@ -315,7 +313,7 @@ def test_results_away_each_other(datadir):
 
     # There is one result excluded, but the relay is not excluded
     bwl, reason = V3BWLine.from_results(values, secs_away=secs_away, min_num=2)
-    assert bwl.relay_recent_measurement_exclusion_error_count == 1
+    assert bwl.relay_recent_measurements_excluded_error_count == 1
     assert reason is None
 
     success_results = [r for r in values if isinstance(r, ResultSuccess)]
@@ -330,8 +328,8 @@ def test_results_away_each_other(datadir):
     # the relay is excluded
     bwl, reason = V3BWLine.from_results(values, secs_away=secs_away, min_num=2)
     # TODO ticket28563: uncomment
-    # assert bwl.relay_recent_measurement_exclusion_near_count == 2
-    assert reason == 'recent_measurement_exclusion_near_count'
+    # assert bwl.relay_recent_measurements_excluded_near_count == 2
+    assert reason == 'recent_measurements_excluded_near_count'
 
     success_results = [r for r in values if isinstance(r, ResultSuccess)]
     assert len(success_results) >= min_num
@@ -349,8 +347,8 @@ def test_results_away_each_other(datadir):
     # There is only 1 result, the relay is excluded
     bwl, reason = V3BWLine.from_results(values, min_num=2)
     # TODO ticket28563: uncomment
-    # assert bwl.recent_measurement_exclusion_few_count == 1
-    assert reason == 'recent_measurement_exclusion_few_count'
+    # assert bwl.recent_measurements_excluded_few_count == 1
+    assert reason == 'recent_measurements_excluded_few_count'
 
     success_results = [r for r in values if isinstance(r, ResultSuccess)]
     assert len(success_results) < min_num

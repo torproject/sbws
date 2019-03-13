@@ -44,6 +44,10 @@ STATS_KEYVALUES = ['number_eligible_relays', 'minimum_number_eligible_relays',
                    'number_consensus_relays', 'percent_eligible_relays',
                    'minimum_percent_eligible_relays']
 # Added in #29591
+# NOTE: recent_consensus_count, recent_priority_list_count,
+# recent_measurement_attempt_count and recent_priority_relay_count
+# are not reset when the scanner is stop.
+# They will accumulate the values since the scanner was ever started.
 BW_HEADER_KEYVALUES_MONITOR = [
     # 1.1 header: the number of different consensuses, that sbws has seen,
     # since the last 5 days

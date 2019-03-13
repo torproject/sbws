@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Test generation of bandwidth measurements document (v3bw)"""
 import json
+import logging
 import math
 import os.path
 
@@ -393,3 +394,17 @@ def test_update_progress(datadir, tmpdir):
     assert header.number_consensus_relays == '3'
     assert header.number_eligible_relays == '3'
     assert header.percent_eligible_relays == '100'
+
+
+def test_time_measure_half_network(caplog):
+    header = V3BWHeader(timestamp_l,
+                        file_created=file_created,
+                        generator_started=generator_started,
+                        earliest_bandwidth=earliest_bandwidth)
+    header.number_consensus_relays = '6500'
+    header.number_eligible_relays = '4000'
+    caplog.set_level(logging.INFO)
+    header.add_time_report_half_network()
+    assert header.time_to_report_half_network == '70200'  # 19.5h
+    expected_log = "Estimated time to measure the network: 39 hours."  # 19.5*2
+    assert caplog.records[-1].getMessage() == expected_log

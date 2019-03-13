@@ -114,7 +114,8 @@ BANDWIDTH_LINE_KEY_VALUES_MONITOR = [
     # 1.2 relay: the number of different consensuses, that sbws has seen,
     # since the last 5 days, that have this relay
     'relay_in_recent_consensus_count',
-    # 2.6 relay:
+    # 2.6 relay: the number of times a relay was "prioritized" to be measured
+    # in the recent days (by default 5).
     'relay_recent_priority_list_count',
     # 3.8 relay:  the number of times that sbws has tried to measure
     # this relay, since the last 5 days
@@ -342,16 +343,30 @@ class V3BWHeader(object):
     # NOTE: in future refactor store state in the class
     @staticmethod
     def recent_measurement_attempt_count_from_file(state_fpath):
+        """
+        Returns the number of times any relay was queued to be measured
+        in the recent (by default 5) days from the state file.
+        """
         state = State(state_fpath)
         return state.get('recent_measurement_attempt_count', None)
 
     @staticmethod
     def recent_priority_list_count_from_file(state_fpath):
+        """
+        Returns the number of times
+        :meth:`~sbws.lib.relayprioritizer.RelayPrioritizer.best_priority`
+        was run
+        in the recent (by default 5) days from the state file.
+        """
         state = State(state_fpath)
         return state.get('recent_priority_list_count', None)
 
     @staticmethod
     def recent_priority_relay_count_from_file(state_fpath):
+        """
+        Returns the number of times any relay was "prioritized" to be measured
+        in the recent (by default 5) days from the state file.
+        """
         state = State(state_fpath)
         return state.get('recent_priority_relay_count', None)
 

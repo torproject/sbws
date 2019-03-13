@@ -64,6 +64,10 @@ class State:
         return self._state.__len__()
 
     def get(self, key, d=None):
+        """
+        Implements a dictionary ``get`` method reading and locking
+        a json file.
+        """
         if not isinstance(key, str):
             raise TypeError(
                 'Keys must be strings. %s is a %s' % (key, type(key)))

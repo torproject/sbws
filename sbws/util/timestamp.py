@@ -14,6 +14,10 @@ def dt_obj_to_isodt_str(dt):
     return dt.replace(microsecond=0).isoformat()
 
 
+def isostr_to_dt_obj(isostr):
+    return datetime.strptime(isostr, "%Y-%m-%dT%H:%M:%S")
+
+
 def unixts_to_dt_obj(unixts):
     """
     Convert unix timestamp to naive datetime object in UTC time zone.

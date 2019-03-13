@@ -18,7 +18,7 @@ from sbws.globals import (SPEC_VERSION, BW_LINE_SIZE, SBWS_SCALE_CONSTANT,
 from sbws.lib.resultdump import ResultSuccess, _ResultType
 from sbws.util.filelock import DirectoryLock
 from sbws.util.timestamp import (now_isodt_str, unixts_to_isodt_str,
-                                 now_unixts)
+                                 now_unixts, isostr_to_dt_obj)
 from sbws.util.state import State
 
 log = logging.getLogger(__name__)
@@ -76,6 +76,9 @@ BW_HEADER_KEYVALUES_MONITOR = [
     'recent_measurement_exclusion_not_distanciated_count',
     'recent_measurement_exclusion_not_recent_count',
     'recent_measurement_exclusion_not_min_num_count',
+
+    # The time it took to report about half of the network.
+    'time_to_report_half_network',
 ]
 BANDWIDTH_HEADER_KEY_VALUES_INIT = \
     ['earliest_bandwidth', 'generator_started',
@@ -432,6 +435,42 @@ class V3BWHeader(object):
         [setattr(self, k, str(v)) for k, v in kwargs.items()
          if k in STATS_KEYVALUES]
 
+    def add_relays_excluded_counters(self, exclusion_dict):
+        log.debug("Adding relays excluded counters.")
+        for k, v in exclusion_dict.items():
+            setattr(self, k, str(v))
+
+    def add_time_report_all_network(self):
+        """Add to the header the time it took to measure half of the network.
+
+        It is not the time the scanner actually takes on measuring all the
+        network, but the ``number_eligible_relays`` that are reported in the
+        bandwidth file.
+
+        Log also an estimated on how long it would take with the current
+        number of relays included in the bandwidth file.
+        """
+        # NOTE: in future refactor do not convert attributes to str until
+        # writing to the file.
+        elapsed_time = round(
+            (isostr_to_dt_obj(self.latest_bandwidth)
+             - isostr_to_dt_obj(self.earliest_bandwidth))
+            .total_seconds())
+
+        eligible_relays = getattr(self, 'number_eligible_relay', None)
+        if eligible_relays is not None:
+            if (int(eligible_relays)
+                    >= int(self.number_consensus_relays) / 2):
+                self.time_to_report_half_network = elapsed_time
+
+        # In any case log an estimated.
+        percent_eligible = getattr(self, 'percent_eligible_relays', None)
+        if percent_eligible:
+            estimated_time = \
+                elapsed_time * 100 / int(self.percent_eligible_relays)
+            log.debug("Estimated time to measure the network: %s minutes.",
+                      round(estimated_time / 60))
+
 
 class V3BWLine(object):
     """
@@ -773,6 +812,7 @@ class V3BWFile(object):
             # log.debug(bw_lines[-1])
         # Not using the result for now, just warning
         cls.is_max_bw_diff_perc_reached(bw_lines, max_bw_diff_perc)
+        header.add_time_report_all_network()
         f = cls(header, bw_lines)
         return f
 

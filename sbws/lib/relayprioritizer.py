@@ -30,13 +30,22 @@ class RelayPrioritizer:
                 self._state['recent_priority_list_count'] = 0
             if self._state.get('recent_priority_relay_count') is None:
                 self._state['recent_priority_relay_count'] = 0
-        print("state", self._state.__dict__)
 
     def increment_priority_lists(self):
+        """
+        Increment the number of times that
+        :meth:`~sbws.lib.relayprioritizer.RelayPrioritizer.best_priority`
+        has been run.
+        """
         # NOTE: blocking, writes to file!
         self._state['recent_priority_list_count'] += 1
 
     def increment_priority_relays(self, relays_count):
+        """
+        Increment the number of relays that have been "prioritized" to be
+        measured in a
+        :meth:`~sbws.lib.relayprioritizer.RelayPrioritizer.best_priority`.
+        """
         # NOTE: blocking, writes to file!
         self._state['recent_priority_relay_count'] += relays_count
 
@@ -131,7 +140,9 @@ class RelayPrioritizer:
                      self.min_to_return)
         upper_limit = cutoff if return_fraction else len(relays)
         # NOTE: these two are blocking, write to disk
+        # Increment the number of times ``best_priority`` has been run.
         self.increment_priority_lists()
+        # Increment the number of relays that have been "prioritized".
         self.increment_priority_relays(upper_limit)
         for relay in relays[0:upper_limit]:
             log.debug('Returning next relay %s with priority %f',
@@ -139,5 +150,7 @@ class RelayPrioritizer:
             # In a future refactor, a new attribute should not be created,
             # then no need to remove it.
             del(relay.priority)
+            # Increment the number of times a realy was "prioritized" to be
+            # measured.
             relay.increment_relay_recent_priority_list_count()
             yield relay

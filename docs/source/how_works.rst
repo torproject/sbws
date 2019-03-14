@@ -7,12 +7,19 @@ Running the scanner
 Overview
 ~~~~~~~~~
 
-The :term:`scanner` obtain a list of relays from the Tor network.
-It measures the bandwidth of each relay by creating a two hop circuit with the
-relay to measure and download data from a :term:`destination` Web Server.
-The :term:`generator` creates a :term:`bandwidth list file` that is read
-by a :term:`directory authority` and used to report relays' bandwidth in its
-vote.
+.. The following text is part of the introduction in the README, but rst
+   formatted.
+
+The :term:`scanner` measures the bandwidth of each relay in the Tor network
+(except the directory authorities) by creating a two hops circuit
+with the relay. It then measures the bandwidth by downloading data
+from a :term:`destination` Web Server and stores the measurements.
+
+The :term:`generator` read the measurements, aggregates, filters and
+scales them using torflow's scaling method.
+
+Then it generates a :term:`bandwidth list file` that is read
+by a :term:`directory authority` to report relays’ bandwidth in its vote.
 
 .. image:: ./images/scanner.svg
    :height: 200px

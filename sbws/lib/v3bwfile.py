@@ -452,6 +452,10 @@ class V3BWHeader(object):
          if k in STATS_KEYVALUES]
 
     def add_relays_excluded_counters(self, exclusion_dict):
+        """
+        Add the monitoring KeyValues to the header about the number of
+        relays not included because they were not ``eligible``.
+        """
         log.debug("Adding relays excluded counters.")
         for k, v in exclusion_dict.items():
             setattr(self, k, str(v))
@@ -792,7 +796,13 @@ class V3BWFile(object):
             consensus_path)
         state = State(state_fpath)
 
-        # Initiliaze exclusion counts dictionary with 0
+        # Create a dictionary with the number of relays excluded by any of the
+        # of the filtering rules that makes relays non-`eligible`.
+        # NOTE: In BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED it is
+        # explained what are the KeyValues.
+        # They were introduced in #28061 and #27338.
+        # Using the KeyValues introduced in #28565
+        # Initiliaze exclusion counts dictionary with 0.
         exclusion_dict = dict(
             [(k, 0) for k in BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED]
             )

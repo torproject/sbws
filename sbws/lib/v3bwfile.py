@@ -528,6 +528,18 @@ class V3BWLine(object):
                 str(max(relay_recent_priority_list_counts))
 
         success_results = [r for r in results if isinstance(r, ResultSuccess)]
+
+        # NOTE: The following 4 conditions exclude relays from the bandwidth
+        # file when the measurements does not satisfy some rules, what makes
+        # the relay non-`eligible`.
+        # In BANDWIDTH_LINE_KEY_VALUES_MONITOR it is explained what they mean.
+        # In BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED it is also
+        # explained the what it means the strings returned.
+        # They rules were introduced in #28061 and #27338
+        # In #28565 we introduce the KeyValues to know why they're excluded.
+        # In #28563 will include again these lines, but make them unparseable
+        # by Tor.
+        # This might confirm #28042.
         kwargs['relay_recent_measurement_exclusion_not_success_count'] = \
             len(results) - len(success_results)
         if not success_results:

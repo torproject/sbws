@@ -51,8 +51,15 @@ BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED = [
     # This is the sum of the following 3 + not success results
     # 'recent_measurement_exclusion_count',
     'recent_measurement_exclusion_not_success_count',
+    # The relay measurements are not done in X time away from each other.
+    # By default this is 1 day.
     'recent_measurement_exclusion_not_distanciated_count',
+    # The relay measurements are not X time recent.
+    # By default this is 5 days, which is the same time the older
+    # the measurements can be by default.
     'recent_measurement_exclusion_not_recent_count',
+    # The minimum number of measurement a relay needs to have.
+    # By default this is two.
     'recent_measurement_exclusion_not_min_num_count',
 ]
 # Added in #29591
@@ -145,8 +152,14 @@ BANDWIDTH_LINE_KEY_VALUES_MONITOR = [
     # that were excluded by a rule, for this relay.
     # This would be the sum of the following 3 + the number of not success
     # 'relay_recent_measurement_exclusion_count',
+    # The number of measurements excluded because they were not X time
+    # away from each other. By default it is one day.
     'relay_recent_measurement_exclusion_not_distanciated_count',
+    # The number of measurements excluded because there were not X time recent.
+    # By default this is 5 days.
     'relay_recent_measurement_exclusion_not_recent_count',
+    # The number of measurements excluded because there were not at least X.
+    # By default it is 2.
     'relay_recent_measurement_exclusion_not_min_num_count',
 ]
 BW_KEYVALUES_EXTRA = BW_KEYVALUES_FILE + BW_KEYVALUES_EXTRA_BWS \

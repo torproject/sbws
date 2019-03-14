@@ -3,13 +3,17 @@
 [![Build Status](https://travis-ci.org/torproject/sbws.svg?branch=master)](https://travis-ci.org/https://travis-ci.org/torproject/sbws)
 
 Simple Bandwidth Scanner (called `sbws`) is a Tor bandwidth scanner that
-produces bandwidth files to be used by Directory Authorities.
+generates bandwidth files to be used by Directory Authorities.
 
-The scanner builds two hop circuits consisting of the relay being measured and
-a fast exit. Over these circuits it measures bandwidth and store the results.
+The scanner measures the bandwidth of each relay in the Tor network
+(except the directory authorities) by creating a two hops circuit
+with the relay to measure, download data from a destination Web Server
+and store the measurements.
 
-The generator read the measurement results, scales them using torflow's
-scaling method and creates the bandwidth file.
+The generator read the measurements, aggregate, filter and
+scales them using torflow's scaling method.
+Then it generates a bandwidth list file that is read
+by a directory authority to report relays’ bandwidth in its vote.
 
 **WARNING**: This software is intended to be run by researchers using a test
 Tor network, such as chutney or shadow, or by the Tor bandwidth authorities

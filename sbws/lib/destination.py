@@ -1,3 +1,5 @@
+import collections
+import datetime
 import logging
 import random
 import requests
@@ -6,8 +8,13 @@ from stem.control import EventType
 
 from sbws.globals import DESTINATION_VERIFY_CERTIFICATE
 import sbws.util.stem as stem_utils
+from ..globals import (
+    MAX_NUM_DESTINATION_FAILURES,
+    DELTA_SECONDS_RETRY_DESTINATION,
+    NUM_DESTINATION_ATTEMPTS_STORED,
+    FACTOR_INCREMENT_DESTINATION_RETRY
+    )
 
-from ..globals import MAXIMUM_NUMBER_DESTINATION_FAILURES
 
 log = logging.getLogger(__name__)
 
@@ -98,73 +105,155 @@ def connect_to_destination_over_circuit(dest, circ_id, session, cont, max_dl):
         try:
             head = session.head(dest.url, verify=dest.verify)
         except requests.exceptions.RequestException as e:
-            dest.set_failure()
+            dest.add_failure()
             return False, 'Could not connect to {} over circ {} {}: {}'.format(
                 dest.url, circ_id, stem_utils.circuit_str(cont, circ_id), e)
         finally:
             stem_utils.remove_event_listener(cont, listener)
     if head.status_code != requests.codes.ok:
-        dest.set_failure()
+        dest.add_failure()
         return False, error_prefix + 'we expected HTTP code '\
             '{} not {}'.format(requests.codes.ok, head.status_code)
     if 'content-length' not in head.headers:
-        dest.set_failure()
+        dest.add_failure()
         return False, error_prefix + 'we except the header Content-Length '\
             'to exist in the response'
     content_length = int(head.headers['content-length'])
     if max_dl > content_length:
-        dest.set_failure()
+        dest.add_failure()
         return False, error_prefix + 'our maximum configured download size '\
             'is {} but the content is only {}'.format(max_dl, content_length)
     log.debug('Connected to %s over circuit %s', dest.url, circ_id)
-    # Any failure connecting to the destination will call set_failure,
-    # which will set `failed` to True and count consecutives failures.
-    # It can not be set at the start, to be able to know if it failed a
-    # a previous time, which is checked by set_failure.
-    # Future improvement: use a list to count consecutive failures
-    # or calculate it from the results.
-    dest.failed = False
+    # Any failure connecting to the destination will call add_failure,
+    # It can not be set at the start, to be able to know whether it is
+    # failing consecutive times.
+    dest.add_success()
     return True, {'content_length': content_length}
 
 
 class Destination:
-    def __init__(self, url, max_dl, verify):
+    """Web server from which data is downloaded to measure bandwidth.
+    """
+    # NOTE: max_dl and verify should be optional and have defaults
+    def __init__(self, url, max_dl, verify,
+                 max_num_failures=MAX_NUM_DESTINATION_FAILURES,
+                 delta_seconds_retry=DELTA_SECONDS_RETRY_DESTINATION,
+                 num_attempts_stored=NUM_DESTINATION_ATTEMPTS_STORED,
+                 factor_increment_retry=FACTOR_INCREMENT_DESTINATION_RETRY):
+        """Initalizes the Web server from which the data is downloaded.
+
+        :param str url: Web server data URL to download.
+        :param int max_dl: Maximum size of the the data to download.
+        :param bool verify: Whether to verify or not the TLS certificate.
+        :param int max_num_failures: Number of consecutive failures when the
+            destination is not considered functional.
+        :param int delta_seconds_retry: Delta time to try a destination
+            that was not functional.
+        :param int num_attempts_stored: Number of attempts to store.
+        :param int factor_increment_retry: Factor to increment delta by
+            before trying to use a destination again.
+        """
         self._max_dl = max_dl
         u = urlparse(url)
         self._url = u
         self._verify = verify
-        # Flag to record whether this destination failed in the last
-        # measurement.
-        # Failures can happen if:
-        # - an HTTPS request can not be made over Tor
-        # (which might be the relays fault, not the destination being
-        # unreachable)
-        # - the destination does not support HTTP Range requests.
-        self.failed = False
-        self.consecutive_failures = 0
 
-    @property
+        # Attributes to decide whether a destination is functional or not.
+        self._max_num_failures = max_num_failures
+        self._num_attempts_stored = num_attempts_stored
+        # Default delta time to try a destination that was not functional.
+        self._default_delta_seconds_retry = delta_seconds_retry
+        self._delta_seconds_retry = delta_seconds_retry
+        # Using a deque (FIFO) to do not grow forever and
+        # to do not have to remove old attempts.
+        # Store tuples of timestamp and whether the destination succed or not
+        # (succed, 1, failed, 0).
+        # Initialize it as if it never failed.
+        self._attempts = collections.deque([(datetime.datetime.utcnow(), 1), ],
+                                           maxlen=self._num_attempts_stored)
+        self._factor = factor_increment_retry
+
+    def _last_attempts(self, n=None):
+        """Return the last ``n`` attempts the destination was used."""
+        # deque does not accept slices,
+        # a new deque is returned with the last n items
+        # (or less if there were less).
+        return collections.deque(self._attempts,
+                                 maxlen=(n or self._max_num_failures))
+
+    def _are_last_attempts_failures(self, n=None):
+        """
+        Return True if the last`` n`` times the destination was used
+        and failed.
+        """
+        # Count the number that there was a failure when used
+        n = n if n else self._max_num_failures
+        return ([i[1] for i in self._last_attempts(n)].count(0)
+                >= self._max_num_failures)
+
+    def _increment_time_to_retry(self, factor=None):
+        """
+        Increment the time a destination will be tried again by a ``factor``.
+        """
+        self._delta_seconds_retry *= factor or self._factor
+        log.info("Incremented the time to try destination %s to %s hours.",
+                 self.url, self._delta_seconds_retry / 60 / 60)
+
+    def _is_last_try_old_enough(self, n=None):
+        """
+        Return True if the last time it was used it was ``n`` seconds ago.
+        """
+        # Timestamp of the last attempt.
+        last_time = self._attempts[-1][0]
+        # If the last attempt is older than _delta_seconds_retry,
+        if (datetime.datetime.utcnow()
+                - datetime.timedelta(seconds=self._delta_seconds_retry)
+                > last_time):
+            # And try again.
+            return True
+        return False
+
     def is_functional(self):
-        """
-        Returns True if there has not been a number consecutive measurements.
-        Otherwise warn about it and return False.
+        """Whether connections to a destination are failing or not.
 
+        Return True if:
+            - It did not fail more than n (by default 3) consecutive times.
+            - The last time the destination was tried
+              was x (by default 3h) seconds ago.
+        And False otherwise.
+
+        When the destination is tried again after the consecutive failures,
+        the time to try again is incremented and resetted as soon as the
+        destination does not fail.
         """
-        if self.consecutive_failures > MAXIMUM_NUMBER_DESTINATION_FAILURES:
-            log.warning("Destination %s is not functional. Please check that "
-                        "it is correct.", self._url)
+        # Failed the last X consecutive times
+        if self._are_last_attempts_failures():
+            log.warning("The last %s times the destination %s failed."
+                        "It will not be used again in %s hours.\n",
+                        self._max_num_failures, self.url,
+                        self._delta_seconds_retry / 60 / 60)
+            log.warning("Please, add more destinations or increment the "
+                        "number of maximum number of consecutive failures "
+                        "in the configuration.")
+            # It was not used for a while and the last time it was used
+            # was long ago, then try again
+            if self._is_last_try_old_enough():
+                log.info("The destination %s was not tried for %s hours, "
+                         "it is going to by tried again.")
+                # Set the next time to retry higher, in case this attempt fails
+                self._increment_time_to_retry()
+                return True
             return False
+        # Reset the time to retry to the initial value
+        # In case it was incrememented
+        self._delta_seconds_retry = self._default_delta_seconds_retry
         return True
 
-    def set_failure(self):
-        """Set failed to True and increase the number of consecutive failures.
-        Only if it also failed in the previous measuremnt.
+    def add_failure(self, dt=None):
+        self._attempts.append((dt or datetime.datetime.utcnow(), 0))
 
-        """
-        # if it failed in the last measurement
-        if self.failed:
-            self.consecutive_failures += 1
-        self.failed = True
+    def add_success(self, dt=None):
+        self._attempts.append((dt or datetime.datetime.utcnow(), 1))
 
     @property
     def url(self):
@@ -213,7 +302,7 @@ class DestinationList:
 
     @property
     def functional_destinations(self):
-        return [d for d in self._all_dests if d.is_functional]
+        return [d for d in self._all_dests if d.is_functional()]
 
     @staticmethod
     def from_config(conf, circuit_builder, relay_list, controller):
@@ -250,4 +339,8 @@ class DestinationList:
         # This removes the need for an extra lock for every measurement.
         # Do not change the order of the destinations, just return a
         # destination.
-        return self._rng.choice(self.functional_destinations)
+        # random.choice raises IndexError with an empty list.
+        if self.functional_destinations:
+            return self._rng.choice(self.functional_destinations)
+        else:
+            return None

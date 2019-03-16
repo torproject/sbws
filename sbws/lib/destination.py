@@ -286,7 +286,15 @@ class Destination:
         assert 'url' in conf_section
         url = conf_section['url']
         verify = _parse_verify_option(conf_section)
-        return Destination(url, max_dl, verify)
+        try:
+            max_num_failures = conf_section.getint('max_num_failures')
+        except ValueError:
+            log.warning("Configuration max_num_failures is wrong, ignoring.")
+            max_num_failures = None
+        if max_num_failures:
+            return Destination(url, max_dl, verify, max_num_failures)
+        else:
+            return Destination(url, max_dl, verify)
 
 
 class DestinationList:

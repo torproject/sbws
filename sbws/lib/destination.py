@@ -14,6 +14,7 @@ from ..globals import (
     NUM_DESTINATION_ATTEMPTS_STORED,
     FACTOR_INCREMENT_DESTINATION_RETRY
     )
+from sbws import settings
 
 
 log = logging.getLogger(__name__)
@@ -98,6 +99,10 @@ def connect_to_destination_over_circuit(dest, circ_id, session, cont, max_dl):
         should commence.  False and an error string otherwise.
     '''
     assert isinstance(dest, Destination)
+    log.debug("Connecting to destination over circuit.")
+    # Do not start if sbws is stopping
+    if settings.end_event.is_set():
+        return False, "Shutting down."
     error_prefix = 'When sending HTTP HEAD to {}, '.format(dest.url)
     with stem_utils.stream_building_lock:
         listener = stem_utils.attach_stream_to_circuit_listener(cont, circ_id)

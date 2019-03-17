@@ -561,9 +561,10 @@ class V3BWLine(object):
             len(results_away) - len(results_recent)
         if not results_recent:
             return None, 'recent_measurement_exclusion_not_recent_count'
-        kwargs['relay_recent_measurement_exclusion_not_min_num_count'] = \
-            len(results_recent)
+
         if not len(results_recent) >= min_num:
+            kwargs['relay_recent_measurement_exclusion_not_min_num_count'] = \
+                len(results_recent)
             # log.debug('The number of results is less than %s', min_num)
             return None, 'recent_measurement_exclusion_not_min_num_count'
 

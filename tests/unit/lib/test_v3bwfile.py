@@ -65,7 +65,6 @@ raw_bwl_str = "bw=56 bw_mean=61423 bw_median=55656 "\
     "node_id=$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA "\
     "relay_recent_measurement_attempt_count=2 "\
     "relay_recent_measurement_exclusion_not_distanciated_count=0 "\
-    "relay_recent_measurement_exclusion_not_min_num_count=1 "\
     "relay_recent_measurement_exclusion_not_recent_count=0 "\
     "relay_recent_measurement_exclusion_not_success_count=1 "\
     "relay_recent_priority_list_count=3 "\

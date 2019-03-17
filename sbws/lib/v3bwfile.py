@@ -116,6 +116,15 @@ BW_KEYVALUES_BASIC = ['node_id', 'bw']
 BW_KEYVALUES_FILE = BW_KEYVALUES_BASIC + \
                     ['master_key_ed25519', 'nick', 'rtt', 'time',
                      'success', 'error_stream', 'error_circ', 'error_misc',
+                     # `vote=0` is used for the relays that were excluded to
+                     # be reported in the bandwidth file and now they are
+                     # reported.
+                     # It tells Tor to do not vote on the relay.
+                     # `unmeasured=1` is used for the same relays and it is
+                     # added in case Tor would vote on them in future versions.
+                     # Maybe these keys should not be included for the relays
+                     # in which vote=1 and unmeasured=0.
+                     'vote', 'unmeasured',
                      # Added in #292951
                      'error_second_relay', 'error_destination']
 BW_KEYVALUES_EXTRA_BWS = ['bw_median', 'bw_mean', 'desc_bw_avg', 'desc_bw_bur',
@@ -164,8 +173,11 @@ BANDWIDTH_LINE_KEY_VALUES_MONITOR = [
 ]
 BW_KEYVALUES_EXTRA = BW_KEYVALUES_FILE + BW_KEYVALUES_EXTRA_BWS \
                + BANDWIDTH_LINE_KEY_VALUES_MONITOR
+# NOTE: tech-debt: assign boolean type to vote and unmeasured,
+# when the attributes are defined with a type, as stem does.
 BW_KEYVALUES_INT = ['bw', 'rtt', 'success', 'error_stream',
-                    'error_circ', 'error_misc'] + BW_KEYVALUES_EXTRA_BWS \
+                    'error_circ', 'error_misc', 'vote', 'unmeasured'] \
+                   + BW_KEYVALUES_EXTRA_BWS \
                    + BANDWIDTH_LINE_KEY_VALUES_MONITOR
 BW_KEYVALUES = BW_KEYVALUES_BASIC + BW_KEYVALUES_EXTRA
 
@@ -465,22 +477,16 @@ class V3BWLine(object):
     """
     Create a Bandwidth List line following the spec version 1.X.X.
 
-    :param str node_id:
-    :param int bw:
-    :param dict kwargs: extra headers. Currently supported:
+    :param str node_id: the relay fingerprint
+    :param int bw: the bandwidth value that directory authorities will include
+        in their votes.
+    :param dict kwargs: extra headers.
 
-        - nickname, str
-        - master_key_ed25519, str
-        - rtt, int
-        - time, str
-        - sucess, int
-        - error_stream, int
-        - error_circ, int
-        - error_misc, int
+    .. note:: tech-debt: move node_id and bw to kwargs and just ensure that
+       the required values are in **kwargs
     """
     def __init__(self, node_id, bw, **kwargs):
         assert isinstance(node_id, str)
-        assert isinstance(bw, int)
         assert node_id.startswith('$')
         self.node_id = node_id
         self.bw = bw
@@ -544,29 +550,60 @@ class V3BWLine(object):
         # In #28563 will include again these lines, but make them unparseable
         # by Tor.
         # This might confirm #28042.
+
+        # If the relay is non-`eligible`:
+        # Create a bandwidth line with the relay, but set ``vote=0`` so that
+        # Tor versions with patch #29806 does not vote on the relay.
+        # Set ``bw=1`` so that Tor versions without the patch,
+        # will give the relay low bandwidth.
+        # Include ``unmeasured=1`` in case Tor would vote on unmeasured relays
+        # in future versions.
+        # And return because there are not bandwidth values.
+        # NOTE: the bandwidth values could still be obtained if:
+        # 1. ``ResultError`` will store them
+        # 2. assign ``results_recent = results`` when there is a ``exclusion
+        # reason.
+        # This could be done in a better way as part of a refactor #28684.
+
+        kwargs['vote'] = '0'
+        kwargs['unmeasured'] = '1'
+
+        exclusion_reason = None
         kwargs['relay_recent_measurement_exclusion_not_success_count'] = \
             len(results) - len(success_results)
         if not success_results:
-            return None, 'recent_measurement_exclusion_not_success_count'
+            exclusion_reason = 'recent_measurement_exclusion_not_success_count'
+            return (cls(node_id, 1, **kwargs), exclusion_reason)
         results_away = \
             cls.results_away_each_other(success_results, secs_away)
         kwargs['relay_recent_measurement_exclusion_not_distanciated_count'] = \
             len(success_results) - len(results_away)
         if not results_away:
-            return None, 'recent_measurement_exclusion_not_distanciated_count'
+            exclusion_reason = \
+                'recent_measurement_exclusion_not_distanciated_count'
+            return (cls(node_id, 1, **kwargs), exclusion_reason)
         # log.debug("Results away from each other: %s",
         #           [unixts_to_isodt_str(r.time) for r in results_away])
         results_recent = cls.results_recent_than(results_away, secs_recent)
         kwargs['relay_recent_measurement_exclusion_not_recent_count'] = \
             len(results_away) - len(results_recent)
         if not results_recent:
-            return None, 'recent_measurement_exclusion_not_recent_count'
+            exclusion_reason = \
+                'recent_measurement_exclusion_not_recent_count'
+            return (cls(node_id, 1, **kwargs), exclusion_reason)
 
         if not len(results_recent) >= min_num:
             kwargs['relay_recent_measurement_exclusion_not_min_num_count'] = \
                 len(results_recent)
             # log.debug('The number of results is less than %s', min_num)
-            return None, 'recent_measurement_exclusion_not_min_num_count'
+            exclusion_reason = \
+                'recent_measurement_exclusion_not_min_num_count'
+            return (cls(node_id, 1, **kwargs), exclusion_reason)
+
+        # For any line not excluded, do not include vote and unmeasured
+        # KeyValues
+        del kwargs['vote']
+        del kwargs['unmeasured']
 
         rtt = cls.rtt_from_results(results_recent)
         if rtt:
@@ -589,7 +626,7 @@ class V3BWLine(object):
         kwargs['desc_bw_obs_mean'] = \
             cls.desc_bw_obs_mean_from_results(results_recent)
         bwl = cls(node_id, bw, **kwargs)
-        return bwl, None
+        return bwl, exclusion_reason
 
     @classmethod
     def from_data(cls, data, fingerprint):
@@ -623,7 +660,7 @@ class V3BWLine(object):
                 return results
         # log.debug("Results are NOT away from each other in at least %ss: %s",
         #           secs_away, [unixts_to_isodt_str(r.time) for r in results])
-        return None
+        return []
 
     @staticmethod
     def results_recent_than(results, secs_recent=None):
@@ -793,6 +830,7 @@ class V3BWFile(object):
         header = V3BWHeader.from_results(results, scanner_country,
                                          destinations_countries, state_fpath)
         bw_lines_raw = []
+        bw_lines_excluded = []
         number_consensus_relays = cls.read_number_consensus_relays(
             consensus_path)
         state = State(state_fpath)
@@ -811,9 +849,13 @@ class V3BWFile(object):
             # log.debug("Relay fp %s", fp)
             line, reason = V3BWLine.from_results(values, secs_recent,
                                                  secs_away, min_num)
-            if line is not None:
+            # If there is no reason it means the line will not be excluded.
+            if not reason:
                 bw_lines_raw.append(line)
             else:
+                # Store the excluded lines to include them in the bandwidth
+                # file.
+                bw_lines_excluded.append(line)
                 exclusion_dict[reason] = exclusion_dict.get(reason, 0) + 1
         # Add the headers with the number of excluded relays by reason
         header.add_relays_excluded_counters(exclusion_dict)
@@ -823,7 +865,9 @@ class V3BWFile(object):
                      "there is not any. Scaling can not be applied.")
             cls.update_progress(
                 cls, bw_lines_raw, header, number_consensus_relays, state)
-            return cls(header, [])
+            # Create the bandwidth file with the excluded lines that does not
+            # have ``bw`` attribute
+            return cls(header, bw_lines_excluded)
         if scaling_method == SBWS_SCALING:
             bw_lines = cls.bw_sbws_scale(bw_lines_raw, scale_constant)
             cls.warn_if_not_accurate_enough(bw_lines, scale_constant)
@@ -839,7 +883,8 @@ class V3BWFile(object):
             # log.debug(bw_lines[-1])
         # Not using the result for now, just warning
         cls.is_max_bw_diff_perc_reached(bw_lines, max_bw_diff_perc)
-        f = cls(header, bw_lines)
+        # Include excluded lines that does not have ``bw`` attribute.
+        f = cls(header, bw_lines + bw_lines_excluded)
         return f
 
     @classmethod
@@ -1201,7 +1246,7 @@ class V3BWFile(object):
 
     @property
     def sum_bw(self):
-        return sum([l.bw for l in self.bw_lines])
+        return sum([l.bw for l in self.bw_lines if hasattr(l, 'bw')])
 
     @property
     def num(self):
@@ -1209,19 +1254,19 @@ class V3BWFile(object):
 
     @property
     def mean_bw(self):
-        return mean([l.bw for l in self.bw_lines])
+        return mean([l.bw for l in self.bw_lines if hasattr(l, 'bw')])
 
     @property
     def median_bw(self):
-        return median([l.bw for l in self.bw_lines])
+        return median([l.bw for l in self.bw_lines if hasattr(l, 'bw')])
 
     @property
     def max_bw(self):
-        return max([l.bw for l in self.bw_lines])
+        return max([l.bw for l in self.bw_lines if hasattr(l, 'bw')])
 
     @property
     def min_bw(self):
-        return min([l.bw for l in self.bw_lines])
+        return min([l.bw for l in self.bw_lines if hasattr(l, 'bw')])
 
     @property
     def info_stats(self):

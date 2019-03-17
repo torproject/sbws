@@ -55,6 +55,9 @@ header_extra_ls = [timestamp_l, version_l,
 header_extra_str = LINE_SEP.join(header_extra_ls) + LINE_SEP
 
 # Line produced without any scaling.
+# unmeasured and vote are not congruent with the exclusion,
+# but `from_data` is only used in the test and doesn't include the
+# arg `min_num`
 raw_bwl_str = "bw=56 bw_mean=61423 bw_median=55656 "\
     "consensus_bandwidth=600000 consensus_bandwidth_is_unmeasured=False "\
     "desc_bw_avg=1000000000 desc_bw_bur=123456 desc_bw_obs_last=524288 "\
@@ -69,7 +72,8 @@ raw_bwl_str = "bw=56 bw_mean=61423 bw_median=55656 "\
     "relay_recent_measurement_exclusion_not_success_count=1 "\
     "relay_recent_priority_list_count=3 "\
     "rtt=456 success=1 " \
-    "time=2018-04-17T14:09:07\n"
+    "time=2018-04-17T14:09:07 " \
+    "unmeasured=0 vote=1\n"
 
 v3bw_str = header_extra_str + raw_bwl_str
 

@@ -7,10 +7,10 @@ generates bandwidth files to be used by Directory Authorities.
 
 The scanner measures the bandwidth of each relay in the Tor network
 (except the directory authorities) by creating a two hops circuit
-with the relay to measure, download data from a destination Web Server
-and store the measurements.
+with the relay. It then measures the bandwidth by downloading data
+from a destination Web Server and stores the measurements.
 
-The generator read the measurements, aggregate, filter and
+The generator read the measurements, aggregates, filters and
 scales them using torflow's scaling method.
 Then it generates a bandwidth list file that is read
 by a directory authority to report relays’ bandwidth in its vote.

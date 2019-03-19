@@ -12,10 +12,10 @@ Overview
 
 The :term:`scanner` measures the bandwidth of each relay in the Tor network
 (except the directory authorities) by creating a two hops circuit
-with the relay to measure, download data from a :term:`destination` Web Server
-and store the measurements.
+with the relay. It then measures the bandwidth by downloading data
+from a :term:`destination` Web Server and stores the measurements.
 
-The :term:`generator` read the measurements, aggregate, filter and
+The :term:`generator` read the measurements, aggregates, filters and
 scales them using torflow's scaling method.
 
 Then it generates a :term:`bandwidth list file` that is read

@@ -580,7 +580,7 @@ class V3BWLine(object):
 
         # Create a bandwidth line with the relay, but set ``vote=0`` so that
         # Tor versions with patch #29806 does not vote on the relay.
-        # Set ``bw=0`` so that Tor versions without the patch,
+        # Set ``bw=1`` so that Tor versions without the patch,
         # will give the relay low bandwidth.
         # Include ``unmeasured=1`` in case Tor would vote on unmeasured relays
         # in future versions.
@@ -597,7 +597,8 @@ class V3BWLine(object):
             return (cls(node_id, 1, **kwargs), exclusion_reason)
 
         # For any line not excluded, change vote and unmeasured values
-        # Maybe we should just not include these KeyValues in this case.
+        # Maybe we should just not include these KeyValues in this case
+        # but until now we add all KeyValues to all the relays.
         kwargs['vote'] = '1'
         kwargs['unmeasured'] = '0'
 

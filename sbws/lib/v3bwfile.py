@@ -550,11 +550,30 @@ class V3BWLine(object):
         # In #28563 will include again these lines, but make them unparseable
         # by Tor.
         # This might confirm #28042.
+
+        # If the relay is non-`eligible`:
+        # Create a bandwidth line with the relay, but set ``vote=0`` so that
+        # Tor versions with patch #29806 does not vote on the relay.
+        # Set ``bw=1`` so that Tor versions without the patch,
+        # will give the relay low bandwidth.
+        # Include ``unmeasured=1`` in case Tor would vote on unmeasured relays
+        # in future versions.
+        # And return because there are not bandwidth values.
+        # NOTE: the bandwidth values could still be obtained if:
+        # 1. ``ResultError`` will store them
+        # 2. assign ``results_recent = results`` when there is a ``exclusion
+        # reason.
+        # This could be done in a better way as part of a refactor #28684.
+
+        kwargs['vote'] = '0'
+        kwargs['unmeasured'] = '1'
+
         exclusion_reason = None
         kwargs['relay_recent_measurement_exclusion_not_success_count'] = \
             len(results) - len(success_results)
         if not success_results:
             exclusion_reason = 'recent_measurement_exclusion_not_success_count'
+            return (cls(node_id, 1, **kwargs), exclusion_reason)
         results_away = \
             cls.results_away_each_other(success_results, secs_away)
         kwargs['relay_recent_measurement_exclusion_not_distanciated_count'] = \
@@ -562,6 +581,7 @@ class V3BWLine(object):
         if not results_away:
             exclusion_reason = \
                 'recent_measurement_exclusion_not_distanciated_count'
+            return (cls(node_id, 1, **kwargs), exclusion_reason)
         # log.debug("Results away from each other: %s",
         #           [unixts_to_isodt_str(r.time) for r in results_away])
         results_recent = cls.results_recent_than(results_away, secs_recent)
@@ -570,6 +590,7 @@ class V3BWLine(object):
         if not results_recent:
             exclusion_reason = \
                 'recent_measurement_exclusion_not_recent_count'
+            return (cls(node_id, 1, **kwargs), exclusion_reason)
 
         if not len(results_recent) >= min_num:
             kwargs['relay_recent_measurement_exclusion_not_min_num_count'] = \
@@ -577,30 +598,12 @@ class V3BWLine(object):
             # log.debug('The number of results is less than %s', min_num)
             exclusion_reason = \
                 'recent_measurement_exclusion_not_min_num_count'
-
-        # Create a bandwidth line with the relay, but set ``vote=0`` so that
-        # Tor versions with patch #29806 does not vote on the relay.
-        # Set ``bw=1`` so that Tor versions without the patch,
-        # will give the relay low bandwidth.
-        # Include ``unmeasured=1`` in case Tor would vote on unmeasured relays
-        # in future versions.
-        kwargs['vote'] = '0'
-        kwargs['unmeasured'] = '1'
-        # And return because there are not bandwidth values.
-
-        # NOTE: the bandwidth values could still be obtained if:
-        # 1. ``ResultError`` will store them
-        # 2. assign ``results_recent = results`` when there is a ``exclusion
-        # reason.
-        # This could be done in a better way as part of a refactor #28684.
-        if exclusion_reason is not None:
             return (cls(node_id, 1, **kwargs), exclusion_reason)
 
-        # For any line not excluded, change vote and unmeasured values
-        # Maybe we should just not include these KeyValues in this case
-        # but until now we add all KeyValues to all the relays.
-        kwargs['vote'] = '1'
-        kwargs['unmeasured'] = '0'
+        # For any line not excluded, do not include vote and unmeasured
+        # KeyValues
+        del kwargs['vote']
+        del kwargs['unmeasured']
 
         rtt = cls.rtt_from_results(results_recent)
         if rtt:
@@ -657,7 +660,7 @@ class V3BWLine(object):
                 return results
         # log.debug("Results are NOT away from each other in at least %ss: %s",
         #           secs_away, [unixts_to_isodt_str(r.time) for r in results])
-        return None
+        return []
 
     @staticmethod
     def results_recent_than(results, secs_recent=None):
@@ -1243,7 +1246,7 @@ class V3BWFile(object):
 
     @property
     def sum_bw(self):
-        return sum([l.bw for l in self.bw_lines if getattr(l, 'bw', None)])
+        return sum([l.bw for l in self.bw_lines if hasattr(l, 'bw')])
 
     @property
     def num(self):
@@ -1251,19 +1254,19 @@ class V3BWFile(object):
 
     @property
     def mean_bw(self):
-        return mean([l.bw for l in self.bw_lines if getattr(l, 'bw', None)])
+        return mean([l.bw for l in self.bw_lines if hasattr(l, 'bw')])
 
     @property
     def median_bw(self):
-        return median([l.bw for l in self.bw_lines if getattr(l, 'bw', None)])
+        return median([l.bw for l in self.bw_lines if hasattr(l, 'bw')])
 
     @property
     def max_bw(self):
-        return max([l.bw for l in self.bw_lines if getattr(l, 'bw', None)])
+        return max([l.bw for l in self.bw_lines if hasattr(l, 'bw')])
 
     @property
     def min_bw(self):
-        return min([l.bw for l in self.bw_lines if getattr(l, 'bw', None)])
+        return min([l.bw for l in self.bw_lines if hasattr(l, 'bw')])
 
     @property
     def info_stats(self):

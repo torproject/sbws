@@ -72,8 +72,7 @@ raw_bwl_str = "bw=56 bw_mean=61423 bw_median=55656 "\
     "relay_recent_measurement_exclusion_not_success_count=1 "\
     "relay_recent_priority_list_count=3 "\
     "rtt=456 success=1 " \
-    "time=2018-04-17T14:09:07 " \
-    "unmeasured=0 vote=1\n"
+    "time=2018-04-17T14:09:07\n"
 
 v3bw_str = header_extra_str + raw_bwl_str
 
@@ -323,26 +322,46 @@ def test_results_away_each_other(datadir):
     results = load_result_file(str(datadir.join("results_away.txt")))
     # A has 4 results, 3 are success, 2 are 1 day away, 1 is 12h away
     values = results["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"]
+
+    # There is one result excluded, but the relay is not excluded
+    bwl, _ = V3BWLine.from_results(values, secs_away=secs_away, min_num=2)
+    assert not hasattr(bwl, "vote")
+    assert not hasattr(bwl, "unmeasured")
+
     success_results = [r for r in values if isinstance(r, ResultSuccess)]
     assert len(success_results) >= min_num
     results_away = V3BWLine.results_away_each_other(success_results, secs_away)
     assert len(results_away) == 3
+
     # B has 2 results, 12h away from each other
     values = results["BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"]
     success_results = [r for r in values if isinstance(r, ResultSuccess)]
     assert len(success_results) >= min_num
     results_away = V3BWLine.results_away_each_other(success_results, secs_away)
-    assert results_away is None
+    assert not results_away
+
+    # Two measurements are excluded and there were only 2,
+    # the relay is excluded
+    bwl, _ = V3BWLine.from_results(values, secs_away=secs_away, min_num=2)
+    assert bwl.vote == '0'
+    assert bwl.unmeasured == '1'
+
     secs_away = 43200  # 12h
     values = results["BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"]
     success_results = [r for r in values if isinstance(r, ResultSuccess)]
     assert len(success_results) >= min_num
     results_away = V3BWLine.results_away_each_other(success_results, secs_away)
     assert len(results_away) == 2
+
     # C has 1 result
     values = results["CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"]
     success_results = [r for r in values if isinstance(r, ResultSuccess)]
     assert len(success_results) < min_num
+
+    # There is only 1 result, the relay is excluded
+    bwl, _ = V3BWLine.from_results(values, min_num=2)
+    assert bwl.vote == '0'
+    assert bwl.unmeasured == '1'
 
 
 def test_measured_progress_stats(datadir):

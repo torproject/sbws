@@ -56,6 +56,9 @@ header_extra_ls = [timestamp_l, version_l,
 header_extra_str = LINE_SEP.join(header_extra_ls) + LINE_SEP
 
 # Line produced without any scaling.
+# unmeasured and vote are not congruent with the exclusion,
+# but `from_data` is only used in the test and doesn't include the
+# arg `min_num`
 raw_bwl_str = "bw=56 bw_mean=61423 bw_median=55656 "\
     "consensus_bandwidth=600000 consensus_bandwidth_is_unmeasured=False "\
     "desc_bw_avg=1000000000 desc_bw_bur=123456 desc_bw_obs_last=524288 "\
@@ -323,6 +326,8 @@ def test_results_away_each_other(datadir):
     bwl, reason = V3BWLine.from_results(values, secs_away=secs_away, min_num=2)
     assert bwl.relay_recent_measurements_excluded_error_count == 1
     assert reason is None
+    assert not hasattr(bwl, "vote")
+    assert not hasattr(bwl, "unmeasured")
 
     success_results = [r for r in values if isinstance(r, ResultSuccess)]
     assert len(success_results) >= min_num
@@ -335,28 +340,32 @@ def test_results_away_each_other(datadir):
     # Two measurements are excluded and there were only 2,
     # the relay is excluded
     bwl, reason = V3BWLine.from_results(values, secs_away=secs_away, min_num=2)
-    # TODO ticket28563: uncomment
-    # assert bwl.relay_recent_measurements_excluded_near_count == 2
+    assert bwl.relay_recent_measurements_excluded_near_count == 2
     assert reason == 'recent_measurements_excluded_near_count'
+    assert bwl.vote == '0'
+    assert bwl.unmeasured == '1'
 
     success_results = [r for r in values if isinstance(r, ResultSuccess)]
     assert len(success_results) >= min_num
     results_away = V3BWLine.results_away_each_other(success_results, secs_away)
     assert not results_away
+
     secs_away = 43200  # 12h
     values = results["BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"]
     success_results = [r for r in values if isinstance(r, ResultSuccess)]
     assert len(success_results) >= min_num
     results_away = V3BWLine.results_away_each_other(success_results, secs_away)
     assert len(results_away) == 2
+
     # C has 1 result
     values = results["CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"]
 
     # There is only 1 result, the relay is excluded
     bwl, reason = V3BWLine.from_results(values, min_num=2)
-    # TODO ticket28563: uncomment
-    # assert bwl.recent_measurements_excluded_few_count == 1
+    assert bwl.relay_recent_measurements_excluded_few_count == 1
     assert reason == 'recent_measurements_excluded_few_count'
+    assert bwl.vote == '0'
+    assert bwl.unmeasured == '1'
 
     success_results = [r for r in values if isinstance(r, ResultSuccess)]
     assert len(success_results) < min_num

@@ -479,12 +479,7 @@ def main_loop(args, conf, controller, relay_list, circuit_builder, result_dump,
     measured.
 
     """
-    # Variable to count total progress in the last days:
-    # In case it is needed to see which relays are not being measured,
-    # store their fingerprint, not only their number.
-    measured_fp_set = set()
-    measured_percent = 0
-    main_loop_tstart = time.monotonic()
+    hbeat = heartbeat(conf.getpath('paths', 'state_fname'))
 
     # Set the time to wait for a thread to finish as the half of an HTTP
     # request timeout.
@@ -496,6 +491,10 @@ def main_loop(args, conf, controller, relay_list, circuit_builder, result_dump,
         # long, set it here and not outside the loop.
         pending_results = []
         loop_tstart = time.time()
+
+        # Register relay fingerprints to the heartbeat module
+        hbeat.register_consensus_fpr(relay_list.relays_fingerprints)
+
         for target in relay_prioritizer.best_priority():
             # Don't start measuring a relay if sbws is stopping.
             if settings.end_event.is_set():
@@ -511,7 +510,10 @@ def main_loop(args, conf, controller, relay_list, circuit_builder, result_dump,
                 [args, conf, destinations, circuit_builder, relay_list,
                  target], {}, callback, callback_err)
             pending_results.append(async_result)
-            measured_fp_set.add(async_result)
+
+            # Register this measurement to the heartbeat module
+            hbeat.register_measured_fpr(async_result)
+
         # After the for has finished, the pool has queued all the relays
         # and pending_results has the list of all the AsyncResults.
         # It could also be obtained with pool._cache, which contains
@@ -519,10 +521,8 @@ def main_loop(args, conf, controller, relay_list, circuit_builder, result_dump,
         num_relays_to_measure = len(pending_results)
         wait_for_results(num_relays_to_measure, pending_results)
 
-        measured_percent = heartbeat.total_measured_percent(
-            measured_percent, relay_list.relays_fingerprints, measured_fp_set,
-            main_loop_tstart, conf.getpath('paths', 'state_fname')
-            )
+        # Print the heartbeat message
+        hbeat.print_heartbeat_message()
 
         loop_tstop = time.time()
         loop_tdelta = (loop_tstop - loop_tstart) / 60

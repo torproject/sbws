@@ -33,7 +33,7 @@ import requests
 import random
 
 from .. import settings
-from .lib import heartbeat
+from ..lib import heartbeat
 
 rng = random.SystemRandom()
 log = logging.getLogger(__name__)
@@ -482,7 +482,6 @@ def main_loop(args, conf, controller, relay_list, circuit_builder, result_dump,
     # Variable to count total progress in the last days:
     # In case it is needed to see which relays are not being measured,
     # store their fingerprint, not only their number.
-    consensus_fp_set = set()
     measured_fp_set = set()
     measured_percent = 0
     main_loop_tstart = time.monotonic()
@@ -497,8 +496,6 @@ def main_loop(args, conf, controller, relay_list, circuit_builder, result_dump,
         # long, set it here and not outside the loop.
         pending_results = []
         loop_tstart = time.time()
-        # Store all the relays seen in all the consensuses.
-        [consensus_fp_set.add(r) for r in relay_list.relays_fingerprints]
         for target in relay_prioritizer.best_priority():
             # Don't start measuring a relay if sbws is stopping.
             if settings.end_event.is_set():
@@ -521,13 +518,10 @@ def main_loop(args, conf, controller, relay_list, circuit_builder, result_dump,
         # a dictionary with AsyncResults as items.
         num_relays_to_measure = len(pending_results)
         wait_for_results(num_relays_to_measure, pending_results)
-        # NOTE: in a future refactor make State a singleton in __init__.py
-        state_dict = State(conf.getpath('paths', 'state_fname'))
-        num_loops = state_dict['recent_priority_list_count']
 
         measured_percent = heartbeat.total_measured_percent(
-            measured_percent, consensus_fp_set, measured_fp_set,
-            main_loop_tstart, num_loops
+            measured_percent, relay_list.relays_fingerprints, measured_fp_set,
+            main_loop_tstart, conf.getpath('paths', 'state_fname')
             )
 
         loop_tstop = time.time()

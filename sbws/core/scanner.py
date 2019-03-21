@@ -33,6 +33,7 @@ import requests
 import random
 
 from .. import settings
+from ..lib.heartbeat import Heartbeat
 
 rng = random.SystemRandom()
 log = logging.getLogger(__name__)
@@ -474,6 +475,8 @@ def main_loop(args, conf, controller, relay_list, circuit_builder, result_dump,
     measured.
 
     """
+    hbeat = Heartbeat(conf.getpath('paths', 'state_fname'))
+
     # Set the time to wait for a thread to finish as the half of an HTTP
     # request timeout.
     # Do not start a new loop if sbws is stopping.
@@ -484,6 +487,10 @@ def main_loop(args, conf, controller, relay_list, circuit_builder, result_dump,
         # long, set it here and not outside the loop.
         pending_results = []
         loop_tstart = time.time()
+
+        # Register relay fingerprints to the heartbeat module
+        hbeat.register_consensus_fprs(relay_list.relays_fingerprints)
+
         for target in relay_prioritizer.best_priority():
             # Don't start measuring a relay if sbws is stopping.
             if settings.end_event.is_set():
@@ -500,12 +507,18 @@ def main_loop(args, conf, controller, relay_list, circuit_builder, result_dump,
                  target], {}, callback, callback_err)
             pending_results.append(async_result)
 
+            # Register this measurement to the heartbeat module
+            hbeat.register_measured_fpr(target.fingerprint)
+
         # After the for has finished, the pool has queued all the relays
         # and pending_results has the list of all the AsyncResults.
         # It could also be obtained with pool._cache, which contains
         # a dictionary with AsyncResults as items.
         num_relays_to_measure = len(pending_results)
         wait_for_results(num_relays_to_measure, pending_results)
+
+        # Print the heartbeat message
+        hbeat.print_heartbeat_message()
 
         loop_tstop = time.time()
         loop_tdelta = (loop_tstop - loop_tstart) / 60

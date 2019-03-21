@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Test generation of bandwidth measurements document (v3bw)"""
 import json
+import logging
 import math
 import os.path
 
@@ -8,9 +9,12 @@ from sbws import __version__ as version
 from sbws.globals import (SPEC_VERSION, SBWS_SCALING, TORFLOW_SCALING,
                           MIN_REPORT, TORFLOW_ROUND_DIG, PROP276_ROUND_DIG)
 from sbws.lib.resultdump import Result, load_result_file, ResultSuccess
-from sbws.lib.v3bwfile import (V3BWHeader, V3BWLine, TERMINATOR, LINE_SEP,
-                               KEYVALUE_SEP_V1, num_results_of_type,
-                               V3BWFile, round_sig_dig)
+from sbws.lib.v3bwfile import (
+    V3BWHeader, V3BWLine, TERMINATOR, LINE_SEP,
+    KEYVALUE_SEP_V1, num_results_of_type,
+    V3BWFile, round_sig_dig,
+    BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED
+    )
 from sbws.util.timestamp import now_fname, now_isodt_str, now_unixts
 
 timestamp = 1523974147
@@ -28,8 +32,15 @@ file_created_l = KEYVALUE_SEP_V1.join(['file_created', file_created])
 latest_bandwidth = '2018-04-17T14:09:07'
 latest_bandwidth_l = KEYVALUE_SEP_V1.join(['latest_bandwidth',
                                           latest_bandwidth])
+attempts = '1'
+attempts_l = KEYVALUE_SEP_V1.join(['recent_measurement_attempt_count',
+                                   attempts])
+failure = '0'
+failure_l = KEYVALUE_SEP_V1.join(['recent_measurement_failure_count',
+                                  failure])
 header_ls = [timestamp_l, version_l, destinations_countries_l, file_created_l,
              latest_bandwidth_l,
+             # attempts_l, failure_l,
              scanner_country_l, software_l, software_version_l, TERMINATOR]
 header_str = LINE_SEP.join(header_ls) + LINE_SEP
 earliest_bandwidth = '2018-04-16T14:09:07'
@@ -45,13 +56,21 @@ header_extra_ls = [timestamp_l, version_l,
 header_extra_str = LINE_SEP.join(header_extra_ls) + LINE_SEP
 
 # Line produced without any scaling.
+# unmeasured and vote are not congruent with the exclusion,
+# but `from_data` is only used in the test and doesn't include the
+# arg `min_num`
 raw_bwl_str = "bw=56 bw_mean=61423 bw_median=55656 "\
     "consensus_bandwidth=600000 consensus_bandwidth_is_unmeasured=False "\
     "desc_bw_avg=1000000000 desc_bw_bur=123456 desc_bw_obs_last=524288 "\
-    "desc_bw_obs_mean=524288 error_circ=0 error_misc=0 error_stream=1 " \
+    "desc_bw_obs_mean=524288 error_circ=0 error_destination=0 error_misc=0 " \
+    "error_second_relay=0 error_stream=1 " \
     "master_key_ed25519=g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s " \
     "nick=A " \
-    "node_id=$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA rtt=456 success=1 " \
+    "node_id=$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA "\
+    "relay_recent_measurement_attempt_count=2 "\
+    "relay_recent_measurements_excluded_error_count=1 "\
+    "relay_recent_priority_list_count=3 "\
+    "rtt=456 success=1 " \
     "time=2018-04-17T14:09:07\n"
 
 v3bw_str = header_extra_str + raw_bwl_str
@@ -226,7 +245,7 @@ def test_v3bwline_from_results_file(datadir):
         if fp not in d:
             d[fp] = []
         d[fp].append(r)
-    bwl = V3BWLine.from_data(d, fp)
+    bwl, _ = V3BWLine.from_data(d, fp)
     # bw store now B, not KB
     bwl.bw = round(bwl.bw / 1000)
     assert raw_bwl_str == str(bwl)
@@ -237,7 +256,11 @@ def test_from_results_read(datadir, tmpdir, conf, args):
     expected_header = V3BWHeader(timestamp_l,
                                  earliest_bandwidth=earliest_bandwidth,
                                  latest_bandwidth=latest_bandwidth)
-    raw_bwls = [V3BWLine.from_results(results[fp]) for fp in results]
+    exclusion_dict = dict(
+        [(k, 0) for k in BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED]
+        )
+    expected_header.add_relays_excluded_counters(exclusion_dict)
+    raw_bwls = [V3BWLine.from_results(results[fp])[0] for fp in results]
     # Scale BWLines using torflow method, since it's the default and BWLines
     # bandwidth is the raw bandwidth.
     expected_bwls = V3BWFile.bw_torflow_scale(raw_bwls)
@@ -298,24 +321,52 @@ def test_results_away_each_other(datadir):
     results = load_result_file(str(datadir.join("results_away.txt")))
     # A has 4 results, 3 are success, 2 are 1 day away, 1 is 12h away
     values = results["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"]
+
+    # There is one result excluded, but the relay is not excluded
+    bwl, reason = V3BWLine.from_results(values, secs_away=secs_away, min_num=2)
+    assert bwl.relay_recent_measurements_excluded_error_count == 1
+    assert reason is None
+    assert not hasattr(bwl, "vote")
+    assert not hasattr(bwl, "unmeasured")
+
     success_results = [r for r in values if isinstance(r, ResultSuccess)]
     assert len(success_results) >= min_num
     results_away = V3BWLine.results_away_each_other(success_results, secs_away)
     assert len(results_away) == 3
+
     # B has 2 results, 12h away from each other
     values = results["BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"]
+
+    # Two measurements are excluded and there were only 2,
+    # the relay is excluded
+    bwl, reason = V3BWLine.from_results(values, secs_away=secs_away, min_num=2)
+    assert bwl.relay_recent_measurements_excluded_near_count == 2
+    assert reason == 'recent_measurements_excluded_near_count'
+    assert bwl.vote == '0'
+    assert bwl.unmeasured == '1'
+
     success_results = [r for r in values if isinstance(r, ResultSuccess)]
     assert len(success_results) >= min_num
     results_away = V3BWLine.results_away_each_other(success_results, secs_away)
-    assert results_away is None
+    assert not results_away
+
     secs_away = 43200  # 12h
     values = results["BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"]
     success_results = [r for r in values if isinstance(r, ResultSuccess)]
     assert len(success_results) >= min_num
     results_away = V3BWLine.results_away_each_other(success_results, secs_away)
     assert len(results_away) == 2
+
     # C has 1 result
     values = results["CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"]
+
+    # There is only 1 result, the relay is excluded
+    bwl, reason = V3BWLine.from_results(values, min_num=2)
+    assert bwl.relay_recent_measurements_excluded_few_count == 1
+    assert reason == 'recent_measurements_excluded_few_count'
+    assert bwl.vote == '0'
+    assert bwl.unmeasured == '1'
+
     success_results = [r for r in values if isinstance(r, ResultSuccess)]
     assert len(success_results) < min_num
 
@@ -332,7 +383,7 @@ def test_measured_progress_stats(datadir):
     results = load_result_file(str(datadir.join("results_away.txt")))
     for fp, values in results.items():
         # log.debug("Relay fp %s", fp)
-        line = V3BWLine.from_results(values)
+        line, _ = V3BWLine.from_results(values)
         if line is not None:
             bw_lines_raw.append(line)
     assert len(bw_lines_raw) == 3
@@ -382,3 +433,17 @@ def test_update_progress(datadir, tmpdir):
     assert header.number_consensus_relays == '3'
     assert header.number_eligible_relays == '3'
     assert header.percent_eligible_relays == '100'
+
+
+def test_time_measure_half_network(caplog):
+    header = V3BWHeader(timestamp_l,
+                        file_created=file_created,
+                        generator_started=generator_started,
+                        earliest_bandwidth=earliest_bandwidth)
+    header.number_consensus_relays = '6500'
+    header.number_eligible_relays = '4000'
+    caplog.set_level(logging.INFO)
+    header.add_time_report_half_network()
+    assert header.time_to_report_half_network == '70200'  # 19.5h
+    expected_log = "Estimated time to measure the network: 39 hours."  # 19.5*2
+    assert caplog.records[-1].getMessage() == expected_log

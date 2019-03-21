@@ -18,7 +18,7 @@ from sbws.globals import (SPEC_VERSION, BW_LINE_SIZE, SBWS_SCALE_CONSTANT,
 from sbws.lib.resultdump import ResultSuccess, _ResultType
 from sbws.util.filelock import DirectoryLock
 from sbws.util.timestamp import (now_isodt_str, unixts_to_isodt_str,
-                                 now_unixts)
+                                 now_unixts, isostr_to_dt_obj)
 from sbws.util.state import State
 
 log = logging.getLogger(__name__)
@@ -26,20 +26,90 @@ log = logging.getLogger(__name__)
 LINE_SEP = '\n'
 KEYVALUE_SEP_V1 = '='
 KEYVALUE_SEP_V2 = ' '
+
+# NOTE: in a future refactor make make all the KeyValues be a dictionary
+# with their type, so that it's more similar to stem parser.
+
+# Header KeyValues
+# =================
 # List of the extra KeyValues accepted by the class
 EXTRA_ARG_KEYVALUES = ['software', 'software_version', 'file_created',
                        'earliest_bandwidth', 'generator_started',
                        'scanner_country', 'destinations_countries']
+# number_eligible_relays is the number that ends in the bandwidth file
+# ie, have not been excluded by one of the filters in 4. below
+# They should be call recent_measurement_included_count to be congruent
+# with the other KeyValues.
 STATS_KEYVALUES = ['number_eligible_relays', 'minimum_number_eligible_relays',
                    'number_consensus_relays', 'percent_eligible_relays',
                    'minimum_percent_eligible_relays']
-KEYVALUES_INT = STATS_KEYVALUES
+
+# KeyValues that count the number of relays that are in the bandwidth file,
+# but ignored by Tor when voting, because they do not have a
+# measured bandwidth.
+BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED = [
+    # Number of relays that were measured but all the measurements failed
+    # because of network failures or it was
+    # not found a suitable helper relay
+    'recent_measurements_excluded_error_count',
+    # Number of relays that have successful measurements but the measurements
+    # were not away from each other in X time (by default 1 day).
+    'recent_measurements_excluded_near_count',
+    # Number of relays that have successful measurements and they are away from
+    # each other but they are not X time recent.
+    # By default this is 5 days, which is the same time the older
+    # the measurements can be by default.
+    'recent_measurements_excluded_old_count',
+    # Number of relays that have successful measurements and they are away from
+    # each other and recent
+    # but the number of measurements are less than X (by default 2).
+    'recent_measurements_excluded_few_count',
+]
+# Added in #29591
+# NOTE: recent_consensus_count, recent_priority_list_count,
+# recent_measurement_attempt_count and recent_priority_relay_count
+# are not reset when the scanner is stop.
+# They will accumulate the values since the scanner was ever started.
+BW_HEADER_KEYVALUES_MONITOR = [
+    # 1.1 header: the number of different consensuses, that sbws has seen,
+    # since the last 5 days
+    'recent_consensus_count',
+    # 2.4 Number of times a priority list has been created
+    'recent_priority_list_count',
+    # 2.5 Number of relays that there were in a priority list
+    # [50, number of relays in the network * 0.05]
+    'recent_priority_relay_count',
+    # 3.6 header: the number of times that sbws has tried to measure any relay,
+    # since the last 5 days
+    # This would be the number of times a relays were in a priority list
+    'recent_measurement_attempt_count',
+    # 3.7 header: the number of times that sbws has tried to measure any relay,
+    # since the last 5 days, but it didn't work
+    # This should be the number of attempts - number of ResultSuccess -
+    # something else we don't know yet
+    # So far is the number of ResultError
+    'recent_measurement_failure_count',
+    # The time it took to report about half of the network.
+    'time_to_report_half_network',
+] + BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED
+BANDWIDTH_HEADER_KEY_VALUES_INIT = \
+    ['earliest_bandwidth', 'generator_started',
+     'scanner_country', 'destinations_countries']\
+    + STATS_KEYVALUES \
+    + BW_HEADER_KEYVALUES_MONITOR
+
+KEYVALUES_INT = STATS_KEYVALUES + BW_HEADER_KEYVALUES_MONITOR
 # List of all unordered KeyValues currently being used to generate the file
 UNORDERED_KEYVALUES = EXTRA_ARG_KEYVALUES + STATS_KEYVALUES + \
-                      ['latest_bandwidth']
+                      ['latest_bandwidth'] + \
+                      BW_HEADER_KEYVALUES_MONITOR
 # List of all the KeyValues currently being used to generate the file
 ALL_KEYVALUES = ['version'] + UNORDERED_KEYVALUES
+
 TERMINATOR = '====='
+
+# Bandwidth Lines KeyValues
+# =========================
 # Num header lines in v1.X.X using all the KeyValues
 NUM_LINES_HEADER_V1 = len(ALL_KEYVALUES) + 2
 LINE_TERMINATOR = TERMINATOR + LINE_SEP
@@ -50,14 +120,69 @@ BW_KEYVALUE_SEP_V1 = ' '
 BW_KEYVALUES_BASIC = ['node_id', 'bw']
 BW_KEYVALUES_FILE = BW_KEYVALUES_BASIC + \
                     ['master_key_ed25519', 'nick', 'rtt', 'time',
-                     'success', 'error_stream', 'error_circ', 'error_misc']
+                     'success', 'error_stream', 'error_circ', 'error_misc',
+                     # `vote=0` is used for the relays that were excluded to
+                     # be reported in the bandwidth file and now they are
+                     # reported.
+                     # It tells Tor to do not vote on the relay.
+                     # `unmeasured=1` is used for the same relays and it is
+                     # added in case Tor would vote on them in future versions.
+                     # Maybe these keys should not be included for the relays
+                     # in which vote=1 and unmeasured=0.
+                     'vote', 'unmeasured',
+                     # Added in #292951
+                     'error_second_relay', 'error_destination']
 BW_KEYVALUES_EXTRA_BWS = ['bw_median', 'bw_mean', 'desc_bw_avg', 'desc_bw_bur',
                           'desc_bw_obs_last', 'desc_bw_obs_mean',
                           'consensus_bandwidth',
                           'consensus_bandwidth_is_unmeasured']
-BW_KEYVALUES_EXTRA = BW_KEYVALUES_FILE + BW_KEYVALUES_EXTRA_BWS
+
+# Added in #292951
+BANDWIDTH_LINE_KEY_VALUES_MONITOR = [
+    # 1.2 relay: the number of different consensuses, that sbws has seen,
+    # since the last 5 days, that have this relay
+    'relay_in_recent_consensus_count',
+    # 2.6 relay: the number of times a relay was "prioritized" to be measured
+    # in the recent days (by default 5).
+    'relay_recent_priority_list_count',
+    # 3.8 relay:  the number of times that sbws has tried to measure
+    # this relay, since the last 5 days
+    # This would be the number of times a relay was in a priority list (2.6)
+    # since once it gets measured, it either returns ResultError,
+    # ResultSuccess or something else happened that we don't know yet
+    'relay_recent_measurement_attempt_count',
+    # 3.9 relay:  the number of times that sbws has tried to measure
+    # this relay, since the last 5 days, but it didn't work
+    # This should be the number of attempts - number of ResultSuccess -
+    # something else we don't know yet
+    # So far is the number of ResultError
+    'relay_recent_measurement_failure_count',
+    # Number of error results created in the last 5 days that are excluded.
+    # This is the sum of all the errors.
+    'relay_recent_measurements_excluded_error_count',
+    # The number of successful results, created in the last 5 days,
+    # that were excluded by a rule, for this relay.
+    # 'relay_recent_measurements_excluded_error_count' would be the
+    # sum of the following 3 + the number of error results.
+
+    # The number of successful measurements that are not X time away
+    # from each other (by default 1 day).
+    'relay_recent_measurements_excluded_near_count',
+    # The number of successful measurements that are away from each other
+    # but not X time recent (by default 5 days).
+    'relay_recent_measurements_excluded_old_count',
+    # The number of measurements excluded because they are not at least X
+    # (by default 2).
+    'relay_recent_measurements_excluded_few_count',
+]
+BW_KEYVALUES_EXTRA = BW_KEYVALUES_FILE + BW_KEYVALUES_EXTRA_BWS \
+               + BANDWIDTH_LINE_KEY_VALUES_MONITOR
+# NOTE: tech-debt: assign boolean type to vote and unmeasured,
+# when the attributes are defined with a type, as stem does.
 BW_KEYVALUES_INT = ['bw', 'rtt', 'success', 'error_stream',
-                    'error_circ', 'error_misc'] + BW_KEYVALUES_EXTRA_BWS
+                    'error_circ', 'error_misc', 'vote', 'unmeasured'] \
+                   + BW_KEYVALUES_EXTRA_BWS \
+                   + BANDWIDTH_LINE_KEY_VALUES_MONITOR
 BW_KEYVALUES = BW_KEYVALUES_BASIC + BW_KEYVALUES_EXTRA
 
 
@@ -133,7 +258,7 @@ class V3BWHeader(object):
         # same as timestamp
         self.latest_bandwidth = unixts_to_isodt_str(timestamp)
         [setattr(self, k, v) for k, v in kwargs.items()
-         if k in EXTRA_ARG_KEYVALUES]
+         if k in BANDWIDTH_HEADER_KEY_VALUES_INIT]
 
     def __str__(self):
         if self.version.startswith('1.'):
@@ -146,7 +271,9 @@ class V3BWHeader(object):
         kwargs = dict()
         latest_bandwidth = cls.latest_bandwidth_from_results(results)
         earliest_bandwidth = cls.earliest_bandwidth_from_results(results)
+        # NOTE: Blocking, reads file
         generator_started = cls.generator_started_from_file(state_fpath)
+        recent_consensus_count = cls.consensus_count_from_file(state_fpath)
         timestamp = str(latest_bandwidth)
         kwargs['latest_bandwidth'] = unixts_to_isodt_str(latest_bandwidth)
         kwargs['earliest_bandwidth'] = unixts_to_isodt_str(earliest_bandwidth)
@@ -157,6 +284,37 @@ class V3BWHeader(object):
             kwargs['scanner_country'] = scanner_country
         if destinations_countries is not None:
             kwargs['destinations_countries'] = destinations_countries
+        if recent_consensus_count is not None:
+            kwargs['recent_consensus_count'] = str(recent_consensus_count)
+
+        recent_measurement_attempt_count = \
+            cls.recent_measurement_attempt_count_from_file(state_fpath)
+        if recent_measurement_attempt_count is not None:
+            kwargs['recent_measurement_attempt_count'] = \
+                str(recent_measurement_attempt_count)
+
+        # If it is a failure that is not a ResultError, then
+        # failures = attempts - all mesaurements
+        # Works only in the case that old measurements files already had
+        # measurements count
+        if recent_measurement_attempt_count is not None:
+            all_measurements = 0
+            for result_list in results.values():
+                all_measurements += len(result_list)
+            measurement_failures = (recent_measurement_attempt_count
+                                    - all_measurements)
+            kwargs['recent_measurement_failure_count'] = \
+                str(measurement_failures)
+
+        priority_lists = cls.recent_priority_list_count_from_file(state_fpath)
+        if priority_lists is not None:
+            kwargs['recent_priority_list_count'] = str(priority_lists)
+
+        priority_relays = \
+            cls.recent_priority_relay_count_from_file(state_fpath)
+        if priority_relays is not None:
+            kwargs['recent_priority_relay_count'] = str(priority_relays)
+
         h = cls(timestamp, **kwargs)
         return h
 
@@ -212,6 +370,44 @@ class V3BWHeader(object):
             return state['scanner_started']
         else:
             return None
+
+    @staticmethod
+    def consensus_count_from_file(state_fpath):
+        state = State(state_fpath)
+        if 'recent_consensus_count' in state:
+            return state['recent_consensus_count']
+        else:
+            return None
+
+    # NOTE: in future refactor store state in the class
+    @staticmethod
+    def recent_measurement_attempt_count_from_file(state_fpath):
+        """
+        Returns the number of times any relay was queued to be measured
+        in the recent (by default 5) days from the state file.
+        """
+        state = State(state_fpath)
+        return state.get('recent_measurement_attempt_count', None)
+
+    @staticmethod
+    def recent_priority_list_count_from_file(state_fpath):
+        """
+        Returns the number of times
+        :meth:`~sbws.lib.relayprioritizer.RelayPrioritizer.best_priority`
+        was run
+        in the recent (by default 5) days from the state file.
+        """
+        state = State(state_fpath)
+        return state.get('recent_priority_list_count', None)
+
+    @staticmethod
+    def recent_priority_relay_count_from_file(state_fpath):
+        """
+        Returns the number of times any relay was "prioritized" to be measured
+        in the recent (by default 5) days from the state file.
+        """
+        state = State(state_fpath)
+        return state.get('recent_priority_relay_count', None)
 
     @staticmethod
     def latest_bandwidth_from_results(results):
@@ -271,27 +467,83 @@ class V3BWHeader(object):
         [setattr(self, k, str(v)) for k, v in kwargs.items()
          if k in STATS_KEYVALUES]
 
+    def add_time_report_half_network(self):
+        """Add to the header the time it took to measure half of the network.
+
+        It is not the time the scanner actually takes on measuring all the
+        network, but the ``number_eligible_relays`` that are reported in the
+        bandwidth file and directory authorities will vote on.
+
+        This is calculated for half of the network, so that failed or not
+        reported relays do not affect too much.
+
+        For instance, if there are 6500 relays in the network, half of the
+        network would be 3250. And if there were 4000 eligible relays
+        measured in an interval of 3 days, the time to measure half of the
+        network would be 3 days * 3250 / 4000.
+
+        Since the elapsed time is calculated from the earliest and the
+        latest measurement and a relay might have more than 2 measurements,
+        this would give an estimate on how long it would take to measure
+        the network including all the valid measurements.
+
+        Log also an estimated on how long it would take with the current
+        number of relays included in the bandwidth file.
+        """
+        # NOTE: in future refactor do not convert attributes to str until
+        # writing to the file, so that they do not need to be converted back
+        # to do some calculations.
+        elapsed_time = (
+            (isostr_to_dt_obj(self.latest_bandwidth)
+             - isostr_to_dt_obj(self.earliest_bandwidth))
+            .total_seconds())
+
+        # This attributes were added later and some tests that
+        # do not initialize them would fail.
+        eligible_relays = int(getattr(self, 'number_eligible_relays', 0))
+        consensus_relays = int(getattr(self, 'number_consensus_relays', 0))
+        if not(eligible_relays and consensus_relays):
+            return
+
+        half_network = consensus_relays / 2
+        # Calculate the time it would take to measure half of the network
+        if eligible_relays >= half_network:
+            time_half_network = round(
+                elapsed_time * half_network / eligible_relays
+            )
+            self.time_to_report_half_network = str(time_half_network)
+
+        # In any case log an estimated on the time to measure all the network.
+        estimated_time = round(
+            elapsed_time * consensus_relays / eligible_relays
+        )
+        log.info("Estimated time to measure the network: %s hours.",
+                 round(estimated_time / 60 / 60))
+
+    def add_relays_excluded_counters(self, exclusion_dict):
+        """
+        Add the monitoring KeyValues to the header about the number of
+        relays not included because they were not ``eligible``.
+        """
+        log.debug("Adding relays excluded counters.")
+        for k, v in exclusion_dict.items():
+            setattr(self, k, str(v))
+
 
 class V3BWLine(object):
     """
     Create a Bandwidth List line following the spec version 1.X.X.
 
-    :param str node_id:
-    :param int bw:
-    :param dict kwargs: extra headers. Currently supported:
+    :param str node_id: the relay fingerprint
+    :param int bw: the bandwidth value that directory authorities will include
+        in their votes.
+    :param dict kwargs: extra headers.
 
-        - nickname, str
-        - master_key_ed25519, str
-        - rtt, int
-        - time, str
-        - sucess, int
-        - error_stream, int
-        - error_circ, int
-        - error_misc, int
+    .. note:: tech-debt: move node_id and bw to kwargs and just ensure that
+       the required values are in **kwargs
     """
     def __init__(self, node_id, bw, **kwargs):
         assert isinstance(node_id, str)
-        assert isinstance(bw, int)
         assert node_id.startswith('$')
         self.node_id = node_id
         self.bw = bw
@@ -313,7 +565,6 @@ class V3BWLine(object):
         divided by the the time it took to received.
         bw = data (Bytes) / time (seconds)
         """
-        success_results = [r for r in results if isinstance(r, ResultSuccess)]
         # log.debug("Len success_results %s", len(success_results))
         node_id = '$' + results[0].fingerprint
         kwargs = dict()
@@ -322,43 +573,126 @@ class V3BWLine(object):
             kwargs['master_key_ed25519'] = results[0].master_key_ed25519
         kwargs['time'] = cls.last_time_from_results(results)
         kwargs.update(cls.result_types_from_results(results))
-        # useful args for scaling
-        if success_results:
-            results_away = \
-                cls.results_away_each_other(success_results, secs_away)
-            if not results_away:
-                return None
-            # log.debug("Results away from each other: %s",
-            #           [unixts_to_isodt_str(r.time) for r in results_away])
-            results_recent = cls.results_recent_than(results_away, secs_recent)
-            if not results_recent:
-                return None
-            if not len(results_recent) >= min_num:
-                # log.debug('The number of results is less than %s', min_num)
-                return None
-            rtt = cls.rtt_from_results(results_recent)
-            if rtt:
-                kwargs['rtt'] = rtt
-            bw = cls.bw_median_from_results(results_recent)
-            kwargs['bw_mean'] = cls.bw_mean_from_results(results_recent)
-            kwargs['bw_median'] = cls.bw_median_from_results(
+        consensuses_count = \
+            [r.relay_in_recent_consensus_count for r in results
+             if getattr(r, 'relay_in_recent_consensus_count', None)]
+        if consensuses_count:
+            consensus_count = max(consensuses_count)
+            kwargs['relay_in_recent_consensus_count'] = str(consensus_count)
+
+        measurements_attempts = \
+            [r.relay_recent_measurement_attempt_count for r in results
+             if getattr(r, 'relay_recent_measurement_attempt_count', None)]
+        if measurements_attempts:
+            kwargs['relay_recent_measurement_attempt_count'] = \
+                str(max(measurements_attempts))
+
+        relay_recent_priority_list_counts = \
+            [r.relay_recent_priority_list_count for r in results
+             if getattr(r, 'relay_recent_priority_list_count', None)]
+        if relay_recent_priority_list_counts:
+            kwargs['relay_recent_priority_list_count'] = \
+                str(max(relay_recent_priority_list_counts))
+
+        success_results = [r for r in results if isinstance(r, ResultSuccess)]
+
+        # NOTE: The following 4 conditions exclude relays from the bandwidth
+        # file when the measurements does not satisfy some rules, what makes
+        # the relay non-`eligible`.
+        # In BANDWIDTH_LINE_KEY_VALUES_MONITOR it is explained what they mean.
+        # In BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED it is also
+        # explained the what it means the strings returned.
+        # They rules were introduced in #28061 and #27338
+        # In #28565 we introduce the KeyValues to know why they're excluded.
+        # In #28563 we report these relays, but make Tor ignore them.
+        # This might confirm #28042.
+
+        # If the relay is non-`eligible`:
+        # Create a bandwidth line with the relay, but set ``vote=0`` so that
+        # Tor versions with patch #29806 does not vote on the relay.
+        # Set ``bw=1`` so that Tor versions without the patch,
+        # will give the relay low bandwidth.
+        # Include ``unmeasured=1`` in case Tor would vote on unmeasured relays
+        # in future versions.
+        # And return because there are not bandwidth values.
+        # NOTE: the bandwidth values could still be obtained if:
+        # 1. ``ResultError`` will store them
+        # 2. assign ``results_recent = results`` when there is a ``exclusion
+        # reason.
+        # This could be done in a better way as part of a refactor #28684.
+
+        kwargs['vote'] = '0'
+        kwargs['unmeasured'] = '1'
+
+        exclusion_reason = None
+
+        number_excluded_error = len(results) - len(success_results)
+        if number_excluded_error > 0:
+            # then the number of error results is the number of results
+            kwargs['relay_recent_measurements_excluded_error_count'] = \
+                number_excluded_error
+        if not success_results:
+            exclusion_reason = 'recent_measurements_excluded_error_count'
+            return (cls(node_id, 1, **kwargs), exclusion_reason)
+
+        results_away = \
+            cls.results_away_each_other(success_results, secs_away)
+        number_excluded_near = len(success_results) - len(results_away)
+        if number_excluded_near > 0:
+            kwargs['relay_recent_measurements_excluded_near_count'] = \
+                number_excluded_near
+        if not results_away:
+            exclusion_reason = \
+                'recent_measurements_excluded_near_count'
+            return (cls(node_id, 1, **kwargs), exclusion_reason)
+        # log.debug("Results away from each other: %s",
+        #           [unixts_to_isodt_str(r.time) for r in results_away])
+
+        results_recent = cls.results_recent_than(results_away, secs_recent)
+        number_excluded_old = len(results_away) - len(results_recent)
+        if number_excluded_old > 0:
+            kwargs['relay_recent_measurements_excluded_old_count'] = \
+                number_excluded_old
+        if not results_recent:
+            exclusion_reason = \
+                'recent_measurements_excluded_old_count'
+            return (cls(node_id, 1, **kwargs), exclusion_reason)
+
+        if not len(results_recent) >= min_num:
+            kwargs['relay_recent_measurements_excluded_few_count'] = \
+                len(results_recent)
+            # log.debug('The number of results is less than %s', min_num)
+            exclusion_reason = \
+                'recent_measurements_excluded_few_count'
+            return (cls(node_id, 1, **kwargs), exclusion_reason)
+
+        # For any line not excluded, do not include vote and unmeasured
+        # KeyValues
+        del kwargs['vote']
+        del kwargs['unmeasured']
+
+        rtt = cls.rtt_from_results(results_recent)
+        if rtt:
+            kwargs['rtt'] = rtt
+        bw = cls.bw_median_from_results(results_recent)
+        kwargs['bw_mean'] = cls.bw_mean_from_results(results_recent)
+        kwargs['bw_median'] = cls.bw_median_from_results(
+            results_recent)
+        kwargs['desc_bw_avg'] = \
+            cls.desc_bw_avg_from_results(results_recent)
+        kwargs['desc_bw_bur'] = \
+            cls.desc_bw_bur_from_results(results_recent)
+        kwargs['consensus_bandwidth'] = \
+            cls.consensus_bandwidth_from_results(results_recent)
+        kwargs['consensus_bandwidth_is_unmeasured'] = \
+            cls.consensus_bandwidth_is_unmeasured_from_results(
                 results_recent)
-            kwargs['desc_bw_avg'] = \
-                cls.desc_bw_avg_from_results(results_recent)
-            kwargs['desc_bw_bur'] = \
-                cls.desc_bw_bur_from_results(results_recent)
-            kwargs['consensus_bandwidth'] = \
-                cls.consensus_bandwidth_from_results(results_recent)
-            kwargs['consensus_bandwidth_is_unmeasured'] = \
-                cls.consensus_bandwidth_is_unmeasured_from_results(
-                    results_recent)
-            kwargs['desc_bw_obs_last'] = \
-                cls.desc_bw_obs_last_from_results(results_recent)
-            kwargs['desc_bw_obs_mean'] = \
-                cls.desc_bw_obs_mean_from_results(results_recent)
-            bwl = cls(node_id, bw, **kwargs)
-            return bwl
-        return None
+        kwargs['desc_bw_obs_last'] = \
+            cls.desc_bw_obs_last_from_results(results_recent)
+        kwargs['desc_bw_obs_mean'] = \
+            cls.desc_bw_obs_mean_from_results(results_recent)
+        bwl = cls(node_id, bw, **kwargs)
+        return bwl, None
 
     @classmethod
     def from_data(cls, data, fingerprint):
@@ -392,7 +726,7 @@ class V3BWLine(object):
                 return results
         # log.debug("Results are NOT away from each other in at least %ss: %s",
         #           secs_away, [unixts_to_isodt_str(r.time) for r in results])
-        return None
+        return []
 
     @staticmethod
     def results_recent_than(results, secs_recent=None):
@@ -562,21 +896,42 @@ class V3BWFile(object):
         header = V3BWHeader.from_results(results, scanner_country,
                                          destinations_countries, state_fpath)
         bw_lines_raw = []
+        bw_lines_excluded = []
         number_consensus_relays = cls.read_number_consensus_relays(
             consensus_path)
         state = State(state_fpath)
+
+        # Create a dictionary with the number of relays excluded by any of the
+        # of the filtering rules that makes relays non-`eligible`.
+        # NOTE: In BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED it is
+        # explained what are the KeyValues.
+        # See also the comments in `from_results`.
+        exclusion_dict = dict(
+            [(k, 0) for k in BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED]
+            )
         for fp, values in results.items():
             # log.debug("Relay fp %s", fp)
-            line = V3BWLine.from_results(values, secs_recent, secs_away,
-                                         min_num)
-            if line is not None:
+            line, reason = V3BWLine.from_results(values, secs_recent,
+                                                 secs_away, min_num)
+            # If there is no reason it means the line will not be excluded.
+            if not reason:
                 bw_lines_raw.append(line)
+            else:
+                # Store the excluded lines to include them in the bandwidth
+                # file.
+                bw_lines_excluded.append(line)
+                exclusion_dict[reason] = exclusion_dict.get(reason, 0) + 1
+        # Add the headers with the number of excluded relays by reason
+        header.add_relays_excluded_counters(exclusion_dict)
+
         if not bw_lines_raw:
             log.info("After applying restrictions to the raw results, "
                      "there is not any. Scaling can not be applied.")
             cls.update_progress(
                 cls, bw_lines_raw, header, number_consensus_relays, state)
-            return cls(header, [])
+            # Create the bandwidth file with the excluded lines that does not
+            # have ``bw`` attribute
+            return cls(header, bw_lines_excluded)
         if scaling_method == SBWS_SCALING:
             bw_lines = cls.bw_sbws_scale(bw_lines_raw, scale_constant)
             cls.warn_if_not_accurate_enough(bw_lines, scale_constant)
@@ -592,7 +947,8 @@ class V3BWFile(object):
             # log.debug(bw_lines[-1])
         # Not using the result for now, just warning
         cls.is_max_bw_diff_perc_reached(bw_lines, max_bw_diff_perc)
-        f = cls(header, bw_lines)
+        header.add_time_report_half_network()
+        f = cls(header, bw_lines + bw_lines_excluded)
         return f
 
     @classmethod
@@ -954,7 +1310,7 @@ class V3BWFile(object):
 
     @property
     def sum_bw(self):
-        return sum([l.bw for l in self.bw_lines])
+        return sum([l.bw for l in self.bw_lines if hasattr(l, 'bw')])
 
     @property
     def num(self):
@@ -962,19 +1318,19 @@ class V3BWFile(object):
 
     @property
     def mean_bw(self):
-        return mean([l.bw for l in self.bw_lines])
+        return mean([l.bw for l in self.bw_lines if hasattr(l, 'bw')])
 
     @property
     def median_bw(self):
-        return median([l.bw for l in self.bw_lines])
+        return median([l.bw for l in self.bw_lines if hasattr(l, 'bw')])
 
     @property
     def max_bw(self):
-        return max([l.bw for l in self.bw_lines])
+        return max([l.bw for l in self.bw_lines if hasattr(l, 'bw')])
 
     @property
     def min_bw(self):
-        return min([l.bw for l in self.bw_lines])
+        return min([l.bw for l in self.bw_lines if hasattr(l, 'bw')])
 
     @property
     def info_stats(self):

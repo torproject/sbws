@@ -65,5 +65,6 @@ def test_relayprioritizer_general(time_mock, sbwshome_empty, args,
             pos = i * -1
             relay = best_list[pos]
             assert relay.nickname == nick
+            assert relay.relay_recent_priority_list_count == 1
     finally:
         settings.end_event.set()

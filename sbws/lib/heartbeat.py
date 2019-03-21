@@ -26,14 +26,14 @@ class Heartbeat(object):
 
         self.state_dict = State(state_path)
 
-        self.previous_measurement_percent
+        self.previous_measurement_percent = 0
 
     def register_measured_fpr(self, async_result):
-        measured_fp_set.add(async_result)
+        self.measured_fp_set.add(async_result)
 
     def register_consensus_fprs(self, relay_fprs):
         for r in relay_fprs:
-            self.cosnensus_fp_set.add(r)
+            self.consensus_fp_set.add(r)
 
     def print_heartbeat_message(self):
         """Print the new percentage of the different relays that were measured.
@@ -46,17 +46,18 @@ class Heartbeat(object):
         """
         loops_count = self.state_dict.get('recent_priority_list_count', 0)
 
-        not_measured_fp_set = consensus_fp_set.difference(measured_fp_set)
-        main_loop_tdelta = (time.monotonic() - main_loop_tstart) / 60
-        new_measured_percent = round(len(measured_fp_set) / len(consensus_fp_set) * 100)
+        not_measured_fp_set = self.consensus_fp_set.difference(self.measured_fp_set)
+        main_loop_tdelta = (time.monotonic() - self.main_loop_tstart) / 60
+        new_measured_percent = round(len(self.measured_fp_set) / len(self.consensus_fp_set) * 100)
 
         log.info("Run %s main loops.", loops_count)
         log.info("Measured in total %s (%s%%) unique relays in %s minutes",
-                 len(measured_fp_set), new_measured_percent, main_loop_tdelta)
+                 len(self.measured_fp_set), new_measured_percent, main_loop_tdelta)
         log.info("%s relays still not measured.", len(not_measured_fp_set))
 
         # The case when it is equal will only happen when all the relays have been
         # measured.
-        if (new_measured_percent <= self.previous_measured_percent):
+        if (new_measured_percent <= self.previous_measurement_percent):
             log.warning("There is no progress measuring relays!.")
+
         self.previous_measurement_percent = new_measured_percent

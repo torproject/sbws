@@ -267,16 +267,13 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         log.critical("There are not any functional destinations.\n"
                      "It is recommended to set several destinations so that "
                      "the scanner can continue if one fails.")
-        # Exit the scanner with error stopping threads first.
-        stop_threads(signal.SIGTERM, None, 1)
-        # When the destinations can recover would be implemented;
-        # reason = 'Unable to get destination'
-        # log.debug(reason + ' to measure %s %s',
-        #           relay.nickname, relay.fingerprint)
-        # return [
-        #     ResultErrorDestination(relay, [], dest.url, our_nick,
-        #                            msg=reason),
-        #     ]
+        # NOTE: Because this is executed in a thread, stop_threads can not
+        # be call from here, it has to be call from the main thread.
+        # Instead set the singleton end event, that will call stop_threads
+        # from the main process.
+        # Errors with only one destination are set in ResultErrorStream.
+        settings.end_event.set()
+        return None
     # Pick a relay to help us measure the given relay. If the given relay is an
     # exit, then pick a non-exit. Otherwise pick an exit.
     helper = None
@@ -321,10 +318,9 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         log.debug('Destination %s unusable via circuit %s (%s), %s',
                   dest.url, circ_fps, nicknames, usable_data)
         cb.close_circuit(circ_id)
-        # TODO: Return a different/new type of ResultError?
-        msg = 'The destination seemed to have stopped being usable'
         return [
-            ResultErrorStream(relay, circ_fps, dest.url, our_nick, msg=msg),
+            ResultErrorStream(relay, circ_fps, dest.url, our_nick,
+                              msg=usable_data),
         ]
     assert is_usable
     assert 'content_length' in usable_data
@@ -561,7 +557,7 @@ def wait_for_results(num_relays_to_measure, pending_results):
       than the time to request over the network.)
     """
     num_last_measured = 1
-    while num_last_measured > 0:
+    while num_last_measured > 0 and not settings.end_event.is_set():
         log.info("Pending measurements: %s out of %s: ",
                  len(pending_results), num_relays_to_measure)
         time.sleep(TIMEOUT_MEASUREMENTS)

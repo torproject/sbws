@@ -122,9 +122,18 @@ HTTP_GET_HEADERS = {
 DESTINATION_VERIFY_CERTIFICATE = True
 # This number might need adjusted depending on the percentage of circuits and
 # HTTP requests failures.
-# While the scanner can not recover from some/all failing destionations,
-# set a big number so that it continues trying.
-MAXIMUM_NUMBER_DESTINATION_FAILURES = 100
+
+# Number of attempts to use a destination, that are stored, in order to decide
+# whether the destination is functional or not.
+NUM_DESTINATION_ATTEMPTS_STORED = 10
+# Time to wait before trying again a destination that wasn't functional.
+DELTA_SECONDS_RETRY_DESTINATION = 60 * 60 * 3
+# Number of consecutive times a destination can fail before considering it
+# not functional.
+MAX_NUM_DESTINATION_FAILURES = 3
+# By which factor to multiply DELTA_SECONDS_RETRY_DESTINATION when the
+# destination fail again.
+FACTOR_INCREMENT_DESTINATION_RETRY = 2
 
 
 def fail_hard(*a, **kw):

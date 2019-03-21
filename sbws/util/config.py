@@ -406,14 +406,16 @@ def _validate_destinations(conf):
     urls = {
         'url': {},
     }
-    all_valid_keys = list(urls.keys()) + ['verify', 'country']
+    all_valid_keys = list(urls.keys()) \
+        + ['verify', 'country', 'max_num_failures']
     for sec in dest_sections:
         if sec not in conf:
             errors.append('{} is an enabled destination but is not a '
                           'section in the config'.format(sec))
             continue
         errors.extend(_validate_section_keys(
-            conf, sec, all_valid_keys, err_tmpl, allow_missing=['verify']))
+            conf, sec, all_valid_keys, err_tmpl,
+            allow_missing=['verify', 'max_num_failures']))
         errors.extend(_validate_section_urls(conf, sec, urls, err_tmpl))
         errors.extend(_validate_country(conf, sec, 'country', err_tmpl))
     return errors

@@ -43,6 +43,28 @@ EXTRA_ARG_KEYVALUES = ['software', 'software_version', 'file_created',
 STATS_KEYVALUES = ['number_eligible_relays', 'minimum_number_eligible_relays',
                    'number_consensus_relays', 'percent_eligible_relays',
                    'minimum_percent_eligible_relays']
+
+# KeyValues that count the number of relays that are in the bandwidth file,
+# but ignored by Tor when voting, because they do not have a
+# measured bandwidth.
+BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED = [
+    # Number of relays that were measured but all the measurements failed
+    # because of network failures or it was
+    # not found a suitable helper relay
+    'recent_measurements_excluded_error_count',
+    # Number of relays that have successful measurements but the measurements
+    # were not away from each other in X time (by default 1 day).
+    'recent_measurements_excluded_near_count',
+    # Number of relays that have successful measurements and they are away from
+    # each other but they are not X time recent.
+    # By default this is 5 days, which is the same time the older
+    # the measurements can be by default.
+    'recent_measurements_excluded_old_count',
+    # Number of relays that have successful measurements and they are away from
+    # each other and recent
+    # but the number of measurements are less than X (by default 2).
+    'recent_measurements_excluded_few_count',
+]
 # Added in #29591
 # NOTE: recent_consensus_count, recent_priority_list_count,
 # recent_measurement_attempt_count and recent_priority_relay_count
@@ -67,19 +89,9 @@ BW_HEADER_KEYVALUES_MONITOR = [
     # something else we don't know yet
     # So far is the number of ResultError
     'recent_measurement_failure_count',
-    # The number of success results should be:
-    # the number of attempts - the number of failures
-    # 4.6 header: the number of successful results, created in the last 5 days,
-    # that were excluded by a filter
-    # This is the sum of the following 3 + not success results
-    # 'recent_measurement_exclusion_count',
-    'recent_measurement_exclusion_not_distanciated_count',
-    'recent_measurement_exclusion_not_recent_count',
-    'recent_measurement_exclusion_not_min_num_count',
-
     # The time it took to report about half of the network.
     'time_to_report_half_network',
-]
+] + BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED
 BANDWIDTH_HEADER_KEY_VALUES_INIT = \
     ['earliest_bandwidth', 'generator_started',
      'scanner_country', 'destinations_countries']\
@@ -136,15 +148,23 @@ BANDWIDTH_LINE_KEY_VALUES_MONITOR = [
     # something else we don't know yet
     # So far is the number of ResultError
     'relay_recent_measurement_failure_count',
-    # The number of success results should be:
-    # the number of attempts - the number of failures
-    # 4.8 relay:  the number of successful results, created in the last 5 days,
-    # that were excluded by a rule, for this relay
-    # This would be the sum of the following 3 + the number of not success
-    'relay_recent_measurement_exclusion_count',
-    'relay_recent_measurement_exclusion_not_distanciated',
-    'relay_recent_measurement_exclusion_not_recent_count',
-    'relay_recent_measurement_exclusion_not_min_num_count',
+    # Number of error results created in the last 5 days that are excluded.
+    # This is the sum of all the errors.
+    'relay_recent_measurements_excluded_error_count',
+    # The number of successful results, created in the last 5 days,
+    # that were excluded by a rule, for this relay.
+    # 'relay_recent_measurements_excluded_error_count' would be the
+    # sum of the following 3 + the number of error results.
+
+    # The number of successful measurements that are not X time away
+    # from each other (by default 1 day).
+    'relay_recent_measurements_excluded_near_count',
+    # The number of successful measurements that are away from each other
+    # but not X time recent (by default 5 days).
+    'relay_recent_measurements_excluded_old_count',
+    # The number of measurements excluded because they are not at least X
+    # (by default 2).
+    'relay_recent_measurements_excluded_few_count',
 ]
 BW_KEYVALUES_EXTRA = BW_KEYVALUES_FILE + BW_KEYVALUES_EXTRA_BWS \
                + BANDWIDTH_LINE_KEY_VALUES_MONITOR
@@ -488,6 +508,15 @@ class V3BWHeader(object):
         log.info("Estimated time to measure the network: %s hours.",
                  round(estimated_time / 60 / 60))
 
+    def add_relays_excluded_counters(self, exclusion_dict):
+        """
+        Add the monitoring KeyValues to the header about the number of
+        relays not included because they were not ``eligible``.
+        """
+        log.debug("Adding relays excluded counters.")
+        for k, v in exclusion_dict.items():
+            setattr(self, k, str(v))
+
 
 class V3BWLine(object):
     """
@@ -560,20 +589,51 @@ class V3BWLine(object):
                 str(max(relay_recent_priority_list_counts))
 
         success_results = [r for r in results if isinstance(r, ResultSuccess)]
+
+        # NOTE: The following 4 conditions exclude relays from the bandwidth
+        # file when the measurements does not satisfy some rules, what makes
+        # the relay non-`eligible`.
+        # In BANDWIDTH_LINE_KEY_VALUES_MONITOR it is explained what they mean.
+        # In BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED it is also
+        # explained the what it means the strings returned.
+        # They rules were introduced in #28061 and #27338
+        # In #28565 we introduce the KeyValues to know why they're excluded.
+        # In #28563 we report these relays, but make Tor ignore them.
+        # This might confirm #28042.
+
+        number_excluded_error = len(results) - len(success_results)
+        if number_excluded_error > 0:
+            # then the number of error results is the number of results
+            kwargs['relay_recent_measurements_excluded_error_count'] = \
+                number_excluded_error
         if not success_results:
-            return None
+            return None, 'recent_measurements_excluded_error_count'
+
         results_away = \
             cls.results_away_each_other(success_results, secs_away)
+        number_excluded_near = len(success_results) - len(results_away)
+        if number_excluded_near > 0:
+            kwargs['relay_recent_measurements_excluded_near_count'] = \
+                len(success_results) - len(results_away)
         if not results_away:
-            return None
+            return None, 'recent_measurements_excluded_near_count'
+
         # log.debug("Results away from each other: %s",
         #           [unixts_to_isodt_str(r.time) for r in results_away])
         results_recent = cls.results_recent_than(results_away, secs_recent)
+        number_excluded_old = len(results_away) - len(results_recent)
+        if number_excluded_old > 0:
+            kwargs['relay_recent_measurements_excluded_old_count'] = \
+                number_excluded_old
         if not results_recent:
-            return None
+            return None, 'recent_measurements_excluded_old_count'
+
         if not len(results_recent) >= min_num:
+            kwargs['relay_recent_measurements_excluded_few_count'] = \
+                len(results_recent)
             # log.debug('The number of results is less than %s', min_num)
-            return None
+            return None, 'recent_measurements_excluded_few_count'
+
         rtt = cls.rtt_from_results(results_recent)
         if rtt:
             kwargs['rtt'] = rtt
@@ -595,7 +655,7 @@ class V3BWLine(object):
         kwargs['desc_bw_obs_mean'] = \
             cls.desc_bw_obs_mean_from_results(results_recent)
         bwl = cls(node_id, bw, **kwargs)
-        return bwl
+        return bwl, None
 
     @classmethod
     def from_data(cls, data, fingerprint):
@@ -629,7 +689,7 @@ class V3BWLine(object):
                 return results
         # log.debug("Results are NOT away from each other in at least %ss: %s",
         #           secs_away, [unixts_to_isodt_str(r.time) for r in results])
-        return None
+        return []
 
     @staticmethod
     def results_recent_than(results, secs_recent=None):
@@ -802,12 +862,26 @@ class V3BWFile(object):
         number_consensus_relays = cls.read_number_consensus_relays(
             consensus_path)
         state = State(state_fpath)
+
+        # Create a dictionary with the number of relays excluded by any of the
+        # of the filtering rules that makes relays non-`eligible`.
+        # NOTE: In BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED it is
+        # explained what are the KeyValues.
+        # See also the comments in `from_results`.
+        exclusion_dict = dict(
+            [(k, 0) for k in BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED]
+            )
         for fp, values in results.items():
             # log.debug("Relay fp %s", fp)
-            line = V3BWLine.from_results(values, secs_recent, secs_away,
-                                         min_num)
+            line, reason = V3BWLine.from_results(values, secs_recent,
+                                                 secs_away, min_num)
             if line is not None:
                 bw_lines_raw.append(line)
+            else:
+                exclusion_dict[reason] = exclusion_dict.get(reason, 0) + 1
+        # Add the headers with the number of excluded relays by reason
+        header.add_relays_excluded_counters(exclusion_dict)
+
         if not bw_lines_raw:
             log.info("After applying restrictions to the raw results, "
                      "there is not any. Scaling can not be applied.")

@@ -209,7 +209,7 @@ class Relay:
             self, measurements_period=MEASUREMENTS_PERIOD):
         self._consensus_timestamps = \
             remove_old_consensus_timestamps(
-                copy.deepcopy(self._consensus_timestamps, measurements_period)
+                copy.deepcopy(self._consensus_timestamps), measurements_period
                 )
 
     def update_consensus_timestamps(self, timestamp=None):

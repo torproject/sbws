@@ -33,7 +33,7 @@ import requests
 import random
 
 from .. import settings
-from ..lib import heartbeat
+from ..lib.heartbeat import Heartbeat
 
 rng = random.SystemRandom()
 log = logging.getLogger(__name__)
@@ -479,7 +479,7 @@ def main_loop(args, conf, controller, relay_list, circuit_builder, result_dump,
     measured.
 
     """
-    hbeat = heartbeat(conf.getpath('paths', 'state_fname'))
+    hbeat = Heartbeat(conf.getpath('paths', 'state_fname'))
 
     # Set the time to wait for a thread to finish as the half of an HTTP
     # request timeout.
@@ -493,7 +493,7 @@ def main_loop(args, conf, controller, relay_list, circuit_builder, result_dump,
         loop_tstart = time.time()
 
         # Register relay fingerprints to the heartbeat module
-        hbeat.register_consensus_fpr(relay_list.relays_fingerprints)
+        hbeat.register_consensus_fprs(relay_list.relays_fingerprints)
 
         for target in relay_prioritizer.best_priority():
             # Don't start measuring a relay if sbws is stopping.

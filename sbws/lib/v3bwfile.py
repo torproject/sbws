@@ -130,6 +130,10 @@ BW_KEYVALUES_FILE = BW_KEYVALUES_BASIC + \
                      # Maybe these keys should not be included for the relays
                      # in which vote=1 and unmeasured=0.
                      'vote', 'unmeasured',
+                     # When there not enough eligible relays (not excluded)
+                     # under_min_report is 1, `vote` is 0.
+                     # Added in #29853.
+                     'under_min_report',
                      # Added in #292951
                      'error_second_relay', 'error_destination']
 BW_KEYVALUES_EXTRA_BWS = ['bw_median', 'bw_mean', 'desc_bw_avg', 'desc_bw_bur',
@@ -180,7 +184,8 @@ BW_KEYVALUES_EXTRA = BW_KEYVALUES_FILE + BW_KEYVALUES_EXTRA_BWS \
 # NOTE: tech-debt: assign boolean type to vote and unmeasured,
 # when the attributes are defined with a type, as stem does.
 BW_KEYVALUES_INT = ['bw', 'rtt', 'success', 'error_stream',
-                    'error_circ', 'error_misc', 'vote', 'unmeasured'] \
+                    'error_circ', 'error_misc', 'vote', 'unmeasured',
+                    'under_min_report'] \
                    + BW_KEYVALUES_EXTRA_BWS \
                    + BANDWIDTH_LINE_KEY_VALUES_MONITOR
 BW_KEYVALUES = BW_KEYVALUES_BASIC + BW_KEYVALUES_EXTRA

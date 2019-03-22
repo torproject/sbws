@@ -4,6 +4,7 @@ import json
 import logging
 import math
 import os.path
+from unittest import mock
 
 from sbws import __version__ as version
 from sbws.globals import (SPEC_VERSION, SBWS_SCALING, TORFLOW_SCALING,
@@ -264,6 +265,10 @@ def test_from_results_read(datadir, tmpdir, conf, args):
     # Scale BWLines using torflow method, since it's the default and BWLines
     # bandwidth is the raw bandwidth.
     expected_bwls = V3BWFile.bw_torflow_scale(raw_bwls)
+    # Since the scaled lines will be less than the 60% relays in the network,
+    # set under_min_report.
+    expected_bwls[0].under_min_report = '1'
+    expected_bwls[0].vote = '0'
     expected_f = V3BWFile(expected_header, expected_bwls)
     # This way is going to convert bw to KB
     v3bwfile = V3BWFile.from_results(results)
@@ -296,20 +301,42 @@ def test_sbws_scale(datadir):
     assert v3bwfile.bw_lines[0].bw == 8
 
 
-def test_torflow_scale(datadir):
+def num_consensus_relays(fpath):
+    return 1
+
+
+# To do not have to create a consensus-cache file and set the path,
+# mock the result since it only returns the number of relays.
+@mock.patch.object(V3BWFile, 'read_number_consensus_relays')
+def test_torflow_scale(mock_consensus, datadir, tmpdir, conf):
+    mock_consensus.return_value = 1
+    # state_fpath = str(tmpdir.join('.sbws', 'state.dat'))
+    state_fpath = conf['paths']['state_fpath']
     results = load_result_file(str(datadir.join("results.txt")))
-    v3bwfile = V3BWFile.from_results(results, scaling_method=TORFLOW_SCALING,
+    # Since v1.1.0, it'll write bw=1 if the minimum percent of measured relays
+    # wasn't reached. Therefore mock the consensus number.
+    # Because the consensus number is mocked, it'll try to read the sate path.
+    # Obtain it from conf, so that the root directory exists.
+    v3bwfile = V3BWFile.from_results(results, '', '',
+                                     state_fpath,
+                                     scaling_method=TORFLOW_SCALING,
                                      round_digs=TORFLOW_ROUND_DIG)
     assert v3bwfile.bw_lines[0].bw == 123
-    v3bwfile = V3BWFile.from_results(results, scaling_method=TORFLOW_SCALING,
+    v3bwfile = V3BWFile.from_results(results, '', '',
+                                     state_fpath,
+                                     scaling_method=TORFLOW_SCALING,
                                      torflow_cap=0.0001,
                                      round_digs=TORFLOW_ROUND_DIG)
     assert v3bwfile.bw_lines[0].bw == 123
-    v3bwfile = V3BWFile.from_results(results, scaling_method=TORFLOW_SCALING,
+    v3bwfile = V3BWFile.from_results(results, '', '',
+                                     state_fpath,
+                                     scaling_method=TORFLOW_SCALING,
                                      torflow_cap=1,
                                      round_digs=TORFLOW_ROUND_DIG)
     assert v3bwfile.bw_lines[0].bw == 123
-    v3bwfile = V3BWFile.from_results(results, scaling_method=TORFLOW_SCALING,
+    v3bwfile = V3BWFile.from_results(results, '', '',
+                                     state_fpath,
+                                     scaling_method=TORFLOW_SCALING,
                                      torflow_cap=1,
                                      round_digs=PROP276_ROUND_DIG)
     assert v3bwfile.bw_lines[0].bw == 120
@@ -390,12 +417,12 @@ def test_measured_progress_stats(datadir):
     bw_lines = V3BWFile.bw_torflow_scale(bw_lines_raw)
     assert len(bw_lines) == 3
     statsd, success = V3BWFile.measured_progress_stats(
-        bw_lines, number_consensus_relays, min_perc_reached_before)
+        len(bw_lines), number_consensus_relays, min_perc_reached_before)
     assert success
     assert statsd == statsd_exp
     number_consensus_relays = 6
     statsd, success = V3BWFile.measured_progress_stats(
-        bw_lines, number_consensus_relays, min_perc_reached_before)
+        len(bw_lines), number_consensus_relays, min_perc_reached_before)
     assert not success
     statsd_exp = {'percent_eligible_relays': 50,
                   'minimum_percent_eligible_relays': 60,
@@ -417,7 +444,7 @@ def test_update_progress(datadir, tmpdir):
         if line is not None:
             bw_lines_raw.append(line)
     bwfile = V3BWFile(header, [])
-    bwfile.update_progress(bw_lines_raw, header, number_consensus_relays,
+    bwfile.update_progress(len(bw_lines_raw), header, number_consensus_relays,
                            state)
     assert header.percent_eligible_relays == '50'
     assert state.get('min_perc_reached') is None
@@ -425,7 +452,7 @@ def test_update_progress(datadir, tmpdir):
     # relays
     number_consensus_relays = 3
     header = V3BWHeader(str(now_unixts()))
-    bwfile.update_progress(bw_lines_raw, header, number_consensus_relays,
+    bwfile.update_progress(len(bw_lines_raw), header, number_consensus_relays,
                            state)
     assert state.get('min_perc_reached') == now_isodt_str()
     assert header.minimum_number_eligible_relays == '2'

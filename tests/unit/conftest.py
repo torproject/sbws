@@ -179,10 +179,11 @@ def args(sbwshome_empty, parser, test_config_path):
 
 
 @pytest.fixture(scope='function')
-def conf(sbwshome_empty):
+def conf(sbwshome_empty, tmpdir):
     """Default configuration with sbws home in the tmp test dir."""
     conf = _get_default_config()
     conf['paths']['sbws_home'] = sbwshome_empty
+    conf['paths']['state_fpath'] = str(tmpdir.join('.sbws', 'state.dat'))
     return conf
 
 

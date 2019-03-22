@@ -13,7 +13,7 @@ from ..lib.circuitbuilder import GapsCircuitBuilder as CB
 from ..lib.resultdump import ResultDump
 from ..lib.resultdump import (
     ResultSuccess, ResultErrorCircuit, ResultErrorStream,
-    ResultErrorSecondRelay,  ResultError,  # ResultErrorDestination
+    ResultErrorSecondRelay,  ResultError, ResultErrorDestination
     )
 from ..lib.relaylist import RelayList
 from ..lib.relayprioritizer import RelayPrioritizer
@@ -261,20 +261,25 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
                 ]
     # Pick a destionation
     dest = destinations.next()
-    # If there is no any destination at this point, it can not continue.
+    # When there're no any functional destinations.
     if not dest:
-        # XXX: this should return a ResultError
-        # instead of stopping the scanner once a destination can be recovered.
+        # NOTE: When there're still functional destinations but only one of
+        # them fail, the error will be included in `ResultErrorStream`.
+        # Since this is being executed in a thread, the scanner can not
+        # be stop here, but the `end_event` signal can be set so that the
+        # main thread stop the scanner.
+        # It might be useful to store the fact that the destinations fail,
+        # so store here the error, and set the signal once the error is stored
+        # (in `resultump`).
         log.critical("There are not any functional destinations.\n"
                      "It is recommended to set several destinations so that "
                      "the scanner can continue if one fails.")
-        # NOTE: Because this is executed in a thread, stop_threads can not
-        # be call from here, it has to be call from the main thread.
-        # Instead set the singleton end event, that will call stop_threads
-        # from the main process.
-        # Errors with only one destination are set in ResultErrorStream.
-        settings.end_event.set()
-        return None
+        reason = "No functional destinations"
+        # Resultdump will set end_event after storing the error
+        return [
+            ResultErrorDestination(relay, [], '', our_nick, msg=reason),
+        ]
+
     # Pick a relay to help us measure the given relay. If the given relay is an
     # exit, then pick a non-exit. Otherwise pick an exit.
     helper = None

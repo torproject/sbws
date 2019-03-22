@@ -776,6 +776,15 @@ class ResultDump:
                   "destination {}: {}".format(
                     result.fingerprint, result.nickname, result.circ,
                     result.dest_url, result.msg)
+        # When the error is that there are not more functional destinations.
+        if result.type == "error-destination":
+            log.info("Shutting down because there are not functional "
+                     "destinations.")
+            # NOTE: Because this is executed in a thread, stop_threads can not
+            # be call from here, it has to be call from the main thread.
+            # Instead set the singleton end event, that will call stop_threads
+            # from the main process.
+            settings.end_event.set()
         log.info(msg)
 
     def enter(self):

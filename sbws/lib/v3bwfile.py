@@ -930,12 +930,17 @@ class V3BWFile(object):
         header.add_relays_excluded_counters(exclusion_dict)
 
         if not bw_lines_raw:
+            # It could be possible to scale the lines that were successful
+            # even if excluded, but is not done here.
             log.info("After applying restrictions to the raw results, "
                      "there is not any. Scaling can not be applied.")
+            # Update the header and log the progress.
             cls.update_progress(
-                cls, bw_lines_raw, header, number_consensus_relays, state)
-            # Create the bandwidth file with the excluded lines that does not
-            # have ``bw`` attribute
+                cls, 0, header, number_consensus_relays, state)
+            # Set the lines that would be excluded anyway (`vote=0`) with
+            # `under_min_report=1`
+            cls.set_under_min_report(bw_lines_excluded)
+            # Create the bandwidth file with the lines that would be excluded.
             return cls(header, bw_lines_excluded)
         if scaling_method == SBWS_SCALING:
             bw_lines = cls.bw_sbws_scale(bw_lines_raw, scale_constant)
@@ -945,8 +950,14 @@ class V3BWFile(object):
             bw_lines = cls.bw_torflow_scale(bw_lines_raw, torflow_obs,
                                             torflow_cap, round_digs)
             # log.debug(bw_lines[-1])
-            cls.update_progress(
-                cls, bw_lines, header, number_consensus_relays, state)
+            # Update the header and log the progress.
+            min_perc = cls.update_progress(
+                cls, len(bw_lines), header, number_consensus_relays, state
+                )
+            # If after scaling the number of lines is less than the percentage
+            # of lines to report, set them with `under_min_report`.
+            if not min_perc:
+                cls.set_under_min_report(bw_lines)
         else:
             bw_lines = cls.bw_kb(bw_lines_raw)
             # log.debug(bw_lines[-1])
@@ -1275,7 +1286,7 @@ class V3BWFile(object):
         return num
 
     @staticmethod
-    def measured_progress_stats(bw_lines, number_consensus_relays,
+    def measured_progress_stats(num_bw_lines, number_consensus_relays,
                                 min_perc_reached_before):
         """ Statistics about measurements progress,
         to be included in the header.
@@ -1293,14 +1304,14 @@ class V3BWFile(object):
         # It will not be updated to the last consensus, but the list of
         # measured relays is not either.
         assert isinstance(number_consensus_relays, int)
-        assert isinstance(bw_lines, list)
+        assert isinstance(num_bw_lines, int)
         statsd = {}
-        statsd['number_eligible_relays'] = len(bw_lines)
+        statsd['number_eligible_relays'] = num_bw_lines
         statsd['number_consensus_relays'] = number_consensus_relays
         statsd['minimum_number_eligible_relays'] = round(
             statsd['number_consensus_relays'] * MIN_REPORT / 100)
         statsd['percent_eligible_relays'] = round(
-            len(bw_lines) * 100 / statsd['number_consensus_relays'])
+            num_bw_lines * 100 / statsd['number_consensus_relays'])
         statsd['minimum_percent_eligible_relays'] = MIN_REPORT
         if statsd['number_eligible_relays'] < \
                 statsd['minimum_number_eligible_relays']:
@@ -1356,20 +1367,27 @@ class V3BWFile(object):
          ['sum_bw', 'mean_bw', 'median_bw', 'num',
           'max_bw', 'min_bw']]
 
-    def update_progress(self, bw_lines, header, number_consensus_relays,
+    def update_progress(self, num_bw_lines, header, number_consensus_relays,
                         state):
+        """
+        Returns True if the minimim percent of Bandwidth Lines was reached
+        and False otherwise.
+        Update the header with the progress.
+        """
         min_perc_reached_before = state.get('min_perc_reached')
         if number_consensus_relays is not None:
             statsd, success = self.measured_progress_stats(
-                bw_lines, number_consensus_relays, min_perc_reached_before)
+                num_bw_lines, number_consensus_relays, min_perc_reached_before)
             # add statistics about progress always
             header.add_stats(**statsd)
             if not success:
-                bw_lines = []
+                # From sbws 1.1.0 the lines are reported (#29853) even if they
+                # are less than the minimum percent.
                 state['min_perc_reached'] = None
+                return False
             else:
                 state['min_perc_reached'] = now_isodt_str()
-        return bw_lines
+                return True
 
     def bw_line_for_node_id(self, node_id):
         """Returns the bandwidth line for a given node fingerprint.

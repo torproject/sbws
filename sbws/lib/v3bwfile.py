@@ -978,6 +978,17 @@ class V3BWFile(object):
         return cls(header, bw_lines)
 
     @staticmethod
+    def set_under_min_report(bw_lines):
+        """
+        Mondify the Bandwidth Lines adding the KeyValue `under_min_report`,
+        `vote`.
+        """
+        log.debug("Setting `under_min_report` to %s lines.", len(bw_lines))
+        for l in bw_lines:
+            l.under_min_report = 1
+            l.vote = 0
+
+    @staticmethod
     def bw_kb(bw_lines, reverse=False):
         bw_lines_scaled = copy.deepcopy(bw_lines)
         for l in bw_lines_scaled:

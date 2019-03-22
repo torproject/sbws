@@ -143,7 +143,9 @@ class RelayPrioritizer:
         # Increment the number of times ``best_priority`` has been run.
         self.increment_priority_lists()
         # Increment the number of relays that have been "prioritized".
-        self.increment_priority_relays(upper_limit)
+        # Because in a small testing network the upper limit could be smaller
+        # than the number of relays in the network, use the length of the list.
+        self.increment_priority_relays(len(relays[0:upper_limit]))
         for relay in relays[0:upper_limit]:
             log.debug('Returning next relay %s with priority %f',
                       relay.nickname, relay.priority)

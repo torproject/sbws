@@ -136,6 +136,9 @@ Commits
 Each commit should reference the Tor Project Trac ticket (example: ``#12345``)
 and possibly the bugfix version.
 
+From version 1.0.3, the commit title should start by ``new`` or ``fix`` or
+``change``. The commit message should contain ``Closes: #bugnumber``.
+
 Try to make each commit a logically separate changes.::
 
   As a general rule, your messages should start with a single line that’s
@@ -258,6 +261,7 @@ Create a ./CHANGELOG.rst file.
 Each entry should reference the Tor Project Trac ticket (example: ``#12345``)
 and possibly the bugfix version.
 Until version 1.0.2 we have followed `keep a changelog`_ format.
+From version 1.0.3, run ``./scripts/maint/release.py`` to create new releases.
 
 .. _commit-msg:
 

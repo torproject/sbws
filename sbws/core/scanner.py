@@ -98,8 +98,11 @@ def timed_recv_from_server(session, dest, byte_range):
     try:
         # headers are merged with the session ones, not overwritten.
         session.get(dest.url, headers=HTTP_GET_HEADERS, verify=dest.verify)
-    # Catch any `requests` exception, so that it can stored in the Result
-    except requests.exceptions.RequestException as e:
+    # All `requests` exceptions could be caught with
+    # `requests.exceptions.RequestException`, but it seems that `requests`
+    # does not catch all the ssl exceptions and urllib3 doesn't seem to have
+    # a base exception class.
+    except Exception as e:
         log.debug(e)
         return False, e
     end_time = time.time()

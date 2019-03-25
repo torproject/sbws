@@ -5,9 +5,9 @@ from sbws.lib import destination
 
 
 def test_destination_is_functional():
-    eight_hours_ago = datetime.utcnow() - timedelta(hours=8)
-    four_hours_ago = datetime.utcnow() - timedelta(hours=4)
-    two_hours_ago = datetime.utcnow() - timedelta(hours=2)
+    eleven_mins_ago = datetime.utcnow() - timedelta(minutes=11)
+    six_mins_ago = datetime.utcnow() - timedelta(minutes=6)
+    four_mins_ago = datetime.utcnow() - timedelta(minutes=4)
 
     d = destination.Destination('unexistenturl', 0, False)
     assert d.is_functional()
@@ -29,19 +29,19 @@ def test_destination_is_functional():
     d.add_failure()
     d.add_failure()
     # And last failure was 2h ago
-    d.add_failure(two_hours_ago)
+    d.add_failure(four_mins_ago)
     assert d._are_last_attempts_failures()
     assert not d._is_last_try_old_enough()
     assert not d.is_functional()
 
     # But if the last failure was 4h ago, try to use it again
     # And last failure was 4h ago
-    d.add_failure(four_hours_ago)
+    d.add_failure(six_mins_ago)
     assert d._is_last_try_old_enough()
     assert d.is_functional()
 
     # If last failure was 8h ago, try to use it again again
-    d.add_failure(eight_hours_ago)
+    d.add_failure(eleven_mins_ago)
     assert d._is_last_try_old_enough()
     assert d.is_functional()
 

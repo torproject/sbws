@@ -229,12 +229,19 @@ class Destination:
         the time to try again is incremented and resetted as soon as the
         destination does not fail.
         """
+        # NOTE: does a destination fail because several threads are using
+        # it at the same time?
+        # If a destination fails for 1 minute and there're 3 threads, the
+        # 3 threads will fail.
+
         # Failed the last X consecutive times
         if self._are_last_attempts_failures():
+            # The log here will appear in all the the queued
+            #  relays and threads.
             log.warning("The last %s times the destination %s failed."
-                        "It will not be used again in %s hours.\n",
+                        "Disabled for %s minutes.",
                         self._max_num_failures, self.url,
-                        self._delta_seconds_retry / 60 / 60)
+                        self._delta_seconds_retry / 60)
             log.warning("Please, add more destinations or increment the "
                         "number of maximum number of consecutive failures "
                         "in the configuration.")
@@ -285,19 +292,22 @@ class Destination:
         return p
 
     @staticmethod
-    def from_config(conf_section, max_dl):
+    def from_config(conf_section, max_dl, number_threads):
         assert 'url' in conf_section
         url = conf_section['url']
         verify = _parse_verify_option(conf_section)
         try:
-            max_num_failures = conf_section.getint('max_num_failures')
+            # Because one a destination fails, all the threads that are using
+            # it at that moment will fail too, multiply by the number of
+            # threads.
+            max_num_failures = (conf_section.getint('max_num_failures')
+                                or MAX_NUM_DESTINATION_FAILURES)
         except ValueError:
-            log.warning("Configuration max_num_failures is wrong, ignoring.")
-            max_num_failures = None
-        if max_num_failures:
-            return Destination(url, max_dl, verify, max_num_failures)
-        else:
-            return Destination(url, max_dl, verify)
+            # If the operator did not setup the number, set to the default.
+            max_num_failures = MAX_NUM_DESTINATION_FAILURES
+
+        max_num_failures *= number_threads
+        return Destination(url, max_dl, verify, max_num_failures)
 
 
 class DestinationList:
@@ -331,7 +341,10 @@ class DestinationList:
             log.debug('Loading info for destination %s', key)
             dests.append(Destination.from_config(
                 conf[dest_sec],
-                conf.getint('scanner', 'max_download_size')))
+                # Multiply by the number of threads since all the threads will
+                # fail at the same time.
+                conf.getint('scanner', 'max_download_size'),
+                conf.getint('scanner', 'measurement_threads')))
         if len(dests) < 1:
             msg = 'No enabled destinations in config. Please see '\
                 'docs/source/man_sbws.ini.rst" or "man 5 sbws.ini" ' \

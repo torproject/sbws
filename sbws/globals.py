@@ -127,7 +127,9 @@ DESTINATION_VERIFY_CERTIFICATE = True
 # whether the destination is functional or not.
 NUM_DESTINATION_ATTEMPTS_STORED = 10
 # Time to wait before trying again a destination that wasn't functional.
-DELTA_SECONDS_RETRY_DESTINATION = 60 * 60 * 3
+# Because intermitent failures with CDN destinations, start trying again
+# after 5 min.
+DELTA_SECONDS_RETRY_DESTINATION = 60 * 5
 # Number of consecutive times a destination can fail before considering it
 # not functional.
 MAX_NUM_DESTINATION_FAILURES = 3

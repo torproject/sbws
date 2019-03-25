@@ -29,7 +29,6 @@ from multiprocessing.dummy import Pool
 import time
 import os
 import logging
-import requests
 import random
 
 from .. import settings
@@ -367,6 +366,19 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
 
 
 def dispatch_worker_thread(*a, **kw):
+    # If at the point where the relay is actually going to be measured there
+    # are not any functional destinations or the `end_event` is set, do not
+    # try to start measuring the relay, since it will fail anyway.
+    try:
+        # a[2] is the argument `destinations`
+        functional_destinations = a[2].functional_destinations
+    # In case the arguments or the method change, catch the possible exceptions
+    # but ignore here that there are not destinations.
+    except (IndexError, TypeError):
+        log.debug("Wrong argument or attribute.")
+        functional_destinations = True
+    if not functional_destinations or settings.end_event.is_set():
+        return None
     return measure_relay(*a, **kw)
 
 
@@ -530,7 +542,10 @@ def main_loop(args, conf, controller, relay_list, circuit_builder, result_dump,
 
         loop_tstop = time.time()
         loop_tdelta = (loop_tstop - loop_tstart) / 60
-        log.debug("Measured %s relays in %s minutes", num_relays, loop_tdelta)
+        # At this point, we know the relays that were queued to be measured.
+        # That does not mean they were actually measured.
+        log.debug("Attempted to measure %s relays in %s minutes",
+                  num_relays, loop_tdelta)
         # In a testing network, exit after first loop
         if controller.get_conf('TestingTorNetwork') == '1':
             log.info("In a testing network, exiting after the first loop.")

@@ -1,0 +1,144 @@
+network-status-version 3
+vote-status consensus
+consensus-method 28
+valid-after 2019-03-25 13:08:50
+fresh-until 2019-03-25 13:09:00
+valid-until 2019-03-25 13:09:20
+voting-delay 2 2
+client-versions 
+server-versions 
+known-flags Authority Exit Fast Guard HSDir NoEdConsensus Running Stable V2Dir Valid
+recommended-client-protocols Cons=1-2 Desc=1-2 DirCache=1 HSDir=1 HSIntro=3 HSRend=1 Link=4 Microdesc=1-2 Relay=2
+recommended-relay-protocols Cons=1-2 Desc=1-2 DirCache=1 HSDir=1 HSIntro=3 HSRend=1 Link=4 Microdesc=1-2 Relay=2
+required-client-protocols Cons=1-2 Desc=1-2 DirCache=1 HSDir=1 HSIntro=3 HSRend=1 Link=4 Microdesc=1-2 Relay=2
+required-relay-protocols Cons=1 Desc=1 DirCache=1 HSDir=1 HSIntro=3 HSRend=1 Link=3-4 Microdesc=1 Relay=1-2
+shared-rand-previous-value 0 zxJao+gBmFMSezvz/VXkEWEQJD5b/z+7AXNCGoLFVW0=
+shared-rand-current-value 3 zOVHVZs8fQfIcs1HSjWa8nwr4kls3aj+LNhJcE4vUPw=
+dir-source auth2 4EE103A081F400E6622F5461D51782B876BB5C24 127.10.0.2 127.10.0.2 2003 2002
+contact pastly@torproject.org
+vote-digest 9147EE32EA7B7FEE195EFFF8DD61BCBC044ACD1D
+dir-source auth3 8B85069C7FC0593801E6491A34100264FCE28980 127.10.0.3 127.10.0.3 2003 2002
+contact pastly@torproject.org
+vote-digest 21747518E052E648242156E67793D2B75A8462EF
+dir-source auth1 D7DBC517EFD2BA1A5012CF1BD0BB38F17C8160BD 127.10.0.1 127.10.0.1 2003 2002
+contact pastly@torproject.org
+vote-digest 9735B1C401CEED00AA4FAF84348F0E2DB88002A5
+r relay1mbyteMAB EXpFbJERFAdr6051esSLFswMzF8 g041Vrpm/01ukZ5oAW+KAcudmTI 2019-03-25 13:02:42 127.10.0.14 2002 2003
+s Fast Guard HSDir Running Stable V2Dir Valid
+v Tor 0.3.5.8
+pr Cons=1-2 Desc=1-2 DirCache=1-2 HSDir=1-2 HSIntro=3-4 HSRend=1-2 Link=1-5 LinkAuth=1,3 Microdesc=1-2 Relay=1-2
+w Bandwidth=0 Unmeasured=1
+p reject 1-65535
+r exit1 JwqGGr7SLsK2JRmLzNeyudv/yTw t7/OM287ZDaeItUVISJ9PisVHi0 2019-03-25 13:02:42 127.10.0.11 2002 2003
+s Exit Fast Guard HSDir Running Stable V2Dir Valid
+v Tor 0.3.5.8
+pr Cons=1-2 Desc=1-2 DirCache=1-2 HSDir=1-2 HSIntro=3-4 HSRend=1-2 Link=1-5 LinkAuth=1,3 Microdesc=1-2 Relay=1-2
+w Bandwidth=0 Unmeasured=1
+p accept 1-65535
+r relay1 Kr+6zmEWehAZpWyzWy4zYrl9hXA baev0r8l0sbx5foNr6L7jMQBz7c 2019-03-25 13:02:42 127.10.0.4 2002 2003
+s Fast Guard HSDir Running Stable V2Dir Valid
+v Tor 0.3.5.8
+pr Cons=1-2 Desc=1-2 DirCache=1-2 HSDir=1-2 HSIntro=3-4 HSRend=1-2 Link=1-5 LinkAuth=1,3 Microdesc=1-2 Relay=1-2
+w Bandwidth=0 Unmeasured=1
+p reject 1-65535
+r relay5 MrcXj3IB92QRqZ01UvNA01l9Vik 17SIRm6SJrDZDwBnb8FPqzqXD5E 2019-03-25 13:02:42 127.10.0.8 2002 2003
+s Fast Guard HSDir Running Stable V2Dir Valid
+v Tor 0.3.5.8
+pr Cons=1-2 Desc=1-2 DirCache=1-2 HSDir=1-2 HSIntro=3-4 HSRend=1-2 Link=1-5 LinkAuth=1,3 Microdesc=1-2 Relay=1-2
+w Bandwidth=0 Unmeasured=1
+p reject 1-65535
+r auth3 NeO4u3HIE1VkmuxYYuy37X79vFw DWMUpmsayhRW35zrevN7h1AFd2U 2019-03-25 13:02:56 127.10.0.3 2002 2003
+s Authority Fast Running V2Dir Valid
+v Tor 0.3.5.8
+pr Cons=1-2 Desc=1-2 DirCache=1-2 HSDir=1-2 HSIntro=3-4 HSRend=1-2 Link=1-5 LinkAuth=1,3 Microdesc=1-2 Relay=1-2
+w Bandwidth=0 Unmeasured=1
+p reject 1-65535
+r relay4 TWZOJH5TDKXNUXa4wabavJUx8LA xVCoP9aGJrtbCj39wMNsTTzufek 2019-03-25 13:02:42 127.10.0.7 2002 2003
+s Fast Guard HSDir Running Stable V2Dir Valid
+v Tor 0.3.5.8
+pr Cons=1-2 Desc=1-2 DirCache=1-2 HSDir=1-2 HSIntro=3-4 HSRend=1-2 Link=1-5 LinkAuth=1,3 Microdesc=1-2 Relay=1-2
+w Bandwidth=0 Unmeasured=1
+p reject 1-65535
+r relay3 aT9zGHYkvnYKrSoSxe2J2x3gRPU PRQtdZg7vi0s5AuBP2hvVwa+Hg4 2019-03-25 13:02:42 127.10.0.6 2002 2003
+s Fast Guard HSDir Running Stable V2Dir Valid
+v Tor 0.3.5.8
+pr Cons=1-2 Desc=1-2 DirCache=1-2 HSDir=1-2 HSIntro=3-4 HSRend=1-2 Link=1-5 LinkAuth=1,3 Microdesc=1-2 Relay=1-2
+w Bandwidth=0 Unmeasured=1
+p reject 1-65535
+r relay2 jmh+kdyrln9uTujkbmb2rQXHxiU ZyXj9jg668CPFfNGzP3M6R7W5eA 2019-03-25 13:02:43 127.10.0.5 2002 2003
+s Fast Running V2Dir Valid
+v Tor 0.3.5.8
+pr Cons=1-2 Desc=1-2 DirCache=1-2 HSDir=1-2 HSIntro=3-4 HSRend=1-2 Link=1-5 LinkAuth=1,3 Microdesc=1-2 Relay=1-2
+w Bandwidth=0 Unmeasured=1
+p reject 1-65535
+r relay1mbyteRBR k04G84o5HLcd+D7N4F3/XN46xJ0 AvNHG0R8ux15D/4pfDRafr96avM 2019-03-25 13:02:42 127.10.0.15 2002 2003
+s Fast Guard HSDir Running Stable V2Dir Valid
+v Tor 0.3.5.8
+pr Cons=1-2 Desc=1-2 DirCache=1-2 HSDir=1-2 HSIntro=3-4 HSRend=1-2 Link=1-5 LinkAuth=1,3 Microdesc=1-2 Relay=1-2
+w Bandwidth=0 Unmeasured=1
+p reject 1-65535
+r auth1 qkXBMCXAN/BW5zQWmJGHjtCIAjE aB5bSTH8rgroGvljDElcFN6Eauo 2019-03-25 13:02:47 127.10.0.1 2002 2003
+s Authority Fast Guard HSDir Running Stable V2Dir Valid
+v Tor 0.3.5.8
+pr Cons=1-2 Desc=1-2 DirCache=1-2 HSDir=1-2 HSIntro=3-4 HSRend=1-2 Link=1-5 LinkAuth=1,3 Microdesc=1-2 Relay=1-2
+w Bandwidth=0 Unmeasured=1
+p reject 1-65535
+r exit2 wGBrQUQj+aK7omebRABW47B/7IU dI5io9KalNyLFOFjvEoUbWvDB2U 2019-03-25 13:02:43 127.10.0.12 2002 2003
+s Exit Fast Running V2Dir Valid
+v Tor 0.3.5.8
+pr Cons=1-2 Desc=1-2 DirCache=1-2 HSDir=1-2 HSIntro=3-4 HSRend=1-2 Link=1-5 LinkAuth=1,3 Microdesc=1-2 Relay=1-2
+w Bandwidth=0 Unmeasured=1
+p accept 1-65535
+r relay6 x8UJRncBP1vBJBg8caSC0BVs3P4 X8bEx5uGoC+0zI/P1k+H8md7e/g 2019-03-25 13:02:43 127.10.0.9 2002 2003
+s Fast Running V2Dir Valid
+v Tor 0.3.5.8
+pr Cons=1-2 Desc=1-2 DirCache=1-2 HSDir=1-2 HSIntro=3-4 HSRend=1-2 Link=1-5 LinkAuth=1,3 Microdesc=1-2 Relay=1-2
+w Bandwidth=0 Unmeasured=1
+p reject 1-65535
+r auth2 57PJoAQNYo2siLAlGuYzTSjo9TE KDl2076V5kyGxbuYGsROm2LZKAA 2019-03-25 13:02:56 127.10.0.2 2002 2003
+s Authority Fast Running V2Dir Valid
+v Tor 0.3.5.8
+pr Cons=1-2 Desc=1-2 DirCache=1-2 HSDir=1-2 HSIntro=3-4 HSRend=1-2 Link=1-5 LinkAuth=1,3 Microdesc=1-2 Relay=1-2
+w Bandwidth=0 Unmeasured=1
+p reject 1-65535
+r relay7 6JTGWZf47JZVi1VBdu7qOcakPvY f4N5R25SZPF8qjpCYOQluKK1hjw 2019-03-25 13:02:43 127.10.0.10 2002 2003
+s Fast Running V2Dir Valid
+v Tor 0.3.5.8
+pr Cons=1-2 Desc=1-2 DirCache=1-2 HSDir=1-2 HSIntro=3-4 HSRend=1-2 Link=1-5 LinkAuth=1,3 Microdesc=1-2 Relay=1-2
+w Bandwidth=0 Unmeasured=1
+p reject 1-65535
+r exit3 /CZDJeqZ1Zf/lNqIN52rtkME3Z0 BgiTPSUaddDaGl1hWS9Vw6/jJTg 2019-03-25 13:02:43 127.10.0.13 2002 2003
+s Exit Fast Running V2Dir Valid
+v Tor 0.3.5.8
+pr Cons=1-2 Desc=1-2 DirCache=1-2 HSDir=1-2 HSIntro=3-4 HSRend=1-2 Link=1-5 LinkAuth=1,3 Microdesc=1-2 Relay=1-2
+w Bandwidth=0 Unmeasured=1
+p accept 1-65535
+directory-footer
+bandwidth-weights Wbd=3333 Wbe=0 Wbg=0 Wbm=10000 Wdb=10000 Web=10000 Wed=3333 Wee=10000 Weg=3333 Wem=10000 Wgb=10000 Wgd=3333 Wgg=10000 Wgm=10000 Wmb=10000 Wmd=3333 Wme=0 Wmg=0 Wmm=10000
+directory-signature 4EE103A081F400E6622F5461D51782B876BB5C24 9734950A2091BD2A6892A6AA0B53BEF3D85E2D2E
+-----BEGIN SIGNATURE-----
+VQZNfgZ81EmCqJUTTNf9JyphsOX4JaMtMSuHQx0Kr25jtznLZ3IGYssptgDWeD9F
+mCt3xHKQd1mtF9cxPtRKMhAb6Tn9qL3vI55lzYinxJ2/RQ0aCpJyeMaeVhd0Rgq6
+zz/tV9iCLBltksk3jZy7tl/Yo7NbIOV97oQNSRXHRtYtRr37ADvW/hC8jegtDEfc
+Nw3u/NMJnWTaO/2L4Mxh3/xBQP+Yhy0OQC6korX1HT4SnC9xVEl8xjV2/ShdObBx
+m4FLHd4qqoCXLfVHEMcAb/x2BO/GWdrREiSKX0//UpnTLzOFdz3+Al2m8+qDzSrO
+7D9qaS8IohSEoIvVPqa+CA==
+-----END SIGNATURE-----
+directory-signature 8B85069C7FC0593801E6491A34100264FCE28980 EA74AA3BF805F776E2BBC0C81BFDE45E74D3281E
+-----BEGIN SIGNATURE-----
+ZoSZOhNf6dqDe2OAIXTD8WV+BX7hHX3XfX9uCAC0LTwlr4bNRXHvV15I1NIK6x05
+Ptzz3Hgs9xaBqwa/VtcTyapxXy5uGNwAWCVbIrXL6LCbILRI5qh6vKy+CTXtY5Pt
+lmitMjstIMXTQ79WmGiIQsPlWM4w5zeD+T6g5E0RYdKylY1U3wDBXBc4jokrCG64
+mcY4FYQgn1S6VrAJZLAvQ2H8l6P7QqSmVQk9T4EDkwNsbYsm1oIwkTVw0d+pEZLb
+nZ/n525HDWDcWjeAhsicn9ptMMxBjpRqjxUnKZPPsQ95pWJ9a7T7/U+upuIuq7V/
+1cmRHWdBJwGHp0JISuzAJA==
+-----END SIGNATURE-----
+directory-signature D7DBC517EFD2BA1A5012CF1BD0BB38F17C8160BD 8E164C0799EA8FF145C8631FED8A4F512A3022CA
+-----BEGIN SIGNATURE-----
+Okb5iAC6le5ERMTOMxt8EqLNlLGJP7E5a/YdIJcjB6i33EXskIp5UQX69OQmEia8
+B6coFmof0UTJjR/KpacgG91+aE7mN6HNFogfWC8XIz+XFGlvgL14mQsvhv3aIXXx
+NCpGh1FSn3G/M2MyPVSaJhtCWfGBXrIzk3twkPsztWl4jOnSG+Tjsvp2PMnZXoXH
+gYhJjVDG625Y6oKbwVwRlCzidQrzFkX9CGrcp4o8UopOAm0V0W088LT8IcPLgvTH
+E/zY+w75r4jQXbBFUlfy2EAZ1wbP7CSBW3DVA6LZdIcO7domb+5P3aeZLYtmGulO
+4FLyzRArnIAdNEFKsE6pGg==
+-----END SIGNATURE-----

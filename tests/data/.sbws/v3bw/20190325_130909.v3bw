@@ -1,0 +1,40 @@
+1553519123
+version=1.2.0
+destinations_countries=ZZ
+earliest_bandwidth=2019-03-25T13:03:19
+file_created=2019-03-25T13:09:09
+generator_started=2019-03-25T13:03:06
+latest_bandwidth=2019-03-25T13:05:23
+minimum_number_eligible_relays=9
+minimum_percent_eligible_relays=60
+number_consensus_relays=15
+number_eligible_relays=0
+percent_eligible_relays=0
+recent_consensus_count=1
+recent_measurement_attempt_count=15
+recent_measurement_failure_count=0
+recent_measurements_excluded_error_count=11
+recent_measurements_excluded_few_count=4
+recent_measurements_excluded_near_count=0
+recent_measurements_excluded_old_count=0
+recent_priority_list_count=1
+recent_priority_relay_count=15
+scanner_country=ZZ
+software=sbws
+software_version=1.1.0-dev0
+=====
+bw=1 error_circ=0 error_destination=0 error_misc=0 error_second_relay=0 error_stream=0 master_key_ed25519=cj7V+PYPJvSANsvBOjZSiCvXuGHXFrpSnPqC46I6DgU nick=relay7 node_id=$E894C65997F8EC96558B554176EEEA39C6A43EF6 relay_in_recent_consensus_count=1 relay_recent_measurement_attempt_count=1 relay_recent_measurements_excluded_few_count=1 relay_recent_priority_list_count=1 success=1 time=2019-03-25T13:05:23 under_min_report=1 unmeasured=1 vote=0
+bw=1 error_circ=0 error_destination=0 error_misc=0 error_second_relay=0 error_stream=1 master_key_ed25519=Wiv9uOemlcFzRY1gZfBOpbQ+aJn6NG0Z/IArZFCdSdk nick=exit3 node_id=$FC264325EA99D597FF94DA88379DABB64304DD9D relay_in_recent_consensus_count=1 relay_recent_measurement_attempt_count=1 relay_recent_measurements_excluded_error_count=1 relay_recent_priority_list_count=1 success=0 time=2019-03-25T13:04:43 under_min_report=1 unmeasured=1 vote=0
+bw=1 error_circ=0 error_destination=0 error_misc=0 error_second_relay=0 error_stream=0 master_key_ed25519=2fXiF4T993i+vVwZZEQ4fYee+N8OThzCGeacvnVaNbo nick=relay1mbyteMAB node_id=$117A456C911114076BEB4E757AC48B16CC0CCC5F relay_in_recent_consensus_count=1 relay_recent_measurement_attempt_count=1 relay_recent_measurements_excluded_few_count=1 relay_recent_priority_list_count=1 success=1 time=2019-03-25T13:03:42 under_min_report=1 unmeasured=1 vote=0
+bw=1 error_circ=0 error_destination=0 error_misc=0 error_second_relay=0 error_stream=1 master_key_ed25519=NQspfAK/xkywFHV5LsQ5lLi2BmTKx2Imu4jacJ0d9os nick=relay4 node_id=$4D664E247E530CA5CD5176B8C1A6DABC9531F0B0 relay_in_recent_consensus_count=1 relay_recent_measurement_attempt_count=1 relay_recent_measurements_excluded_error_count=1 relay_recent_priority_list_count=1 success=0 time=2019-03-25T13:04:02 under_min_report=1 unmeasured=1 vote=0
+bw=1 error_circ=0 error_destination=0 error_misc=0 error_second_relay=0 error_stream=1 master_key_ed25519=5O+uCpFoBzsey33+Zzlgyy18/McmV1mpPJZ+DrZMKRc nick=relay5 node_id=$32B7178F7201F76411A99D3552F340D3597D5629 relay_in_recent_consensus_count=1 relay_recent_measurement_attempt_count=1 relay_recent_measurements_excluded_error_count=1 relay_recent_priority_list_count=1 success=0 time=2019-03-25T13:03:39 under_min_report=1 unmeasured=1 vote=0
+bw=1 error_circ=0 error_destination=0 error_misc=0 error_second_relay=0 error_stream=1 master_key_ed25519=uPz8ZZNm2Gcra7BauJP5PH+7uANRraYpCj7NFtp1KdM nick=auth2 node_id=$E7B3C9A0040D628DAC88B0251AE6334D28E8F531 relay_in_recent_consensus_count=1 relay_recent_measurement_attempt_count=1 relay_recent_measurements_excluded_error_count=1 relay_recent_priority_list_count=1 success=0 time=2019-03-25T13:04:22 under_min_report=1 unmeasured=1 vote=0
+bw=1 error_circ=0 error_destination=0 error_misc=0 error_second_relay=0 error_stream=1 master_key_ed25519=r29RWlFMIdU5GUvKsWGdhQIKjIpUzqgw0yNx/7IpPFM nick=auth3 node_id=$35E3B8BB71C81355649AEC5862ECB7ED7EFDBC5C relay_in_recent_consensus_count=1 relay_recent_measurement_attempt_count=1 relay_recent_measurements_excluded_error_count=1 relay_recent_priority_list_count=1 success=0 time=2019-03-25T13:03:52 under_min_report=1 unmeasured=1 vote=0
+bw=1 error_circ=0 error_destination=0 error_misc=0 error_second_relay=0 error_stream=0 master_key_ed25519=/PrTbpen3BrKNgiNRhAa93JQtnrT3LJX3Ka1+jvbWj4 nick=relay3 node_id=$693F73187624BE760AAD2A12C5ED89DB1DE044F5 relay_in_recent_consensus_count=1 relay_recent_measurement_attempt_count=1 relay_recent_measurements_excluded_few_count=1 relay_recent_priority_list_count=1 success=1 time=2019-03-25T13:04:12 under_min_report=1 unmeasured=1 vote=0
+bw=1 error_circ=0 error_destination=0 error_misc=0 error_second_relay=0 error_stream=0 master_key_ed25519=C506YEdasDDQqidu4G2VLMFOwaqMX28BYkuxr1+wI9o nick=exit1 node_id=$270A861ABED22EC2B625198BCCD7B2B9DBFFC93C relay_in_recent_consensus_count=1 relay_recent_measurement_attempt_count=1 relay_recent_measurements_excluded_few_count=1 relay_recent_priority_list_count=1 success=1 time=2019-03-25T13:04:47 under_min_report=1 unmeasured=1 vote=0
+bw=1 error_circ=0 error_destination=0 error_misc=0 error_second_relay=0 error_stream=1 master_key_ed25519=gnREYdkUN0uYI3zF8oB+Wwm4MhM6ETPX1hEyt2m2a+Y nick=relay6 node_id=$C7C5094677013F5BC124183C71A482D0156CDCFE relay_in_recent_consensus_count=1 relay_recent_measurement_attempt_count=1 relay_recent_measurements_excluded_error_count=1 relay_recent_priority_list_count=1 success=0 time=2019-03-25T13:05:07 under_min_report=1 unmeasured=1 vote=0
+bw=1 error_circ=0 error_destination=0 error_misc=0 error_second_relay=0 error_stream=1 master_key_ed25519=eR0HnYlzpOEGwxuFjZkGJZ6pu2eV1i6fd9lhF4UOMno nick=relay1mbyteRBR node_id=$934E06F38A391CB71DF83ECDE05DFF5CDE3AC49D relay_in_recent_consensus_count=1 relay_recent_measurement_attempt_count=1 relay_recent_measurements_excluded_error_count=1 relay_recent_priority_list_count=1 success=0 time=2019-03-25T13:04:32 under_min_report=1 unmeasured=1 vote=0
+bw=1 error_circ=0 error_destination=0 error_misc=0 error_second_relay=0 error_stream=1 master_key_ed25519=iriD8sIKS25WGc6mLesQ2okT1Tcn81AuqnEbItJeuvY nick=exit2 node_id=$C0606B414423F9A2BBA2679B440056E3B07FEC85 relay_in_recent_consensus_count=1 relay_recent_measurement_attempt_count=1 relay_recent_measurements_excluded_error_count=1 relay_recent_priority_list_count=1 success=0 time=2019-03-25T13:03:19 under_min_report=1 unmeasured=1 vote=0
+bw=1 error_circ=0 error_destination=0 error_misc=0 error_second_relay=0 error_stream=1 master_key_ed25519=wLglSEw9/DHfpNrlrqjVRSnGLVWfnm0vYxkryH4aT6Q nick=auth1 node_id=$AA45C13025C037F056E734169891878ED0880231 relay_in_recent_consensus_count=1 relay_recent_measurement_attempt_count=1 relay_recent_measurements_excluded_error_count=1 relay_recent_priority_list_count=1 success=0 time=2019-03-25T13:04:12 under_min_report=1 unmeasured=1 vote=0
+bw=1 error_circ=0 error_destination=0 error_misc=0 error_second_relay=0 error_stream=1 master_key_ed25519=Pymu1Z1eZRWgkE42xzDCYFLVKNtY743GKZzt6Im0OUw nick=relay2 node_id=$8E687E91DCAB967F6E4EE8E46E66F6AD05C7C625 relay_in_recent_consensus_count=1 relay_recent_measurement_attempt_count=1 relay_recent_measurements_excluded_error_count=1 relay_recent_priority_list_count=1 success=0 time=2019-03-25T13:04:57 under_min_report=1 unmeasured=1 vote=0
+bw=1 error_circ=0 error_destination=0 error_misc=0 error_second_relay=0 error_stream=1 master_key_ed25519=zOZX+yyD7EN1W/Y2wgjuvObpFOOWK+LZIWlKW0AOcIE nick=relay1 node_id=$2ABFBACE61167A1019A56CB35B2E3362B97D8570 relay_in_recent_consensus_count=1 relay_recent_measurement_attempt_count=1 relay_recent_measurements_excluded_error_count=1 relay_recent_priority_list_count=1 success=0 time=2019-03-25T13:03:29 under_min_report=1 unmeasured=1 vote=0

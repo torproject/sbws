@@ -228,9 +228,23 @@ class Relay:
         """
         assert isinstance(port, int)
         # if dind't get the descriptor, there isn't exit policy
-        if not self.exit_policy:
+        # When the attribute is gotten in getattr(self._desc, "exit_policy"),
+        # is possible that stem's _input_rules is None and raises an exception
+        # (#29899):
+        #   File "/usr/lib/python3/dist-packages/sbws/lib/relaylist.py", line 117, in can_exit_to_port  # noqa
+        #     if not self.exit_policy:
+        #   File "/usr/lib/python3/dist-packages/stem/exit_policy.py", line 512, in __len__  # noqa
+        #     return len(self._get_rules())
+        #   File "/usr/lib/python3/dist-packages/stem/exit_policy.py", line 464, in _get_rules  # noqa
+        #     for rule in decompressed_rules:
+        # TypeError: 'NoneType' object is not iterable
+        # Therefore, catch the exception here.
+        try:
+            if self.exit_policy:
+                return self.exit_policy.can_exit_to(port=port)
+        except TypeError:
             return False
-        return self.exit_policy.can_exit_to(port=port)
+        return False
 
     def is_exit_not_bad_allowing_port(self, port):
         return (Flag.BADEXIT not in self.flags and

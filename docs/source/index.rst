@@ -19,7 +19,6 @@ and in ``sbws`` Debian package:
    README
    INSTALL
    DEPLOY
-   CONTRIBUTING
    CHANGELOG
    AUTHORS
    man_sbws
@@ -37,6 +36,7 @@ Included in the
 .. toctree::
    :maxdepth: 1
 
+   contributing
    testing
    documenting
    how_works

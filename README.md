@@ -42,12 +42,6 @@ Deploying and running
 See [./DEPLOY.rst](DEPLOY.rst) (in local directory or GitHub) or
 [DEPLOY.html](DEPLOY.html) (local build or Read the Docs).
 
-Contributing
---------------
-
-See [./CONTRIBUTING.rst](CONTRIBUTING.rst) (in local directory or GitHub) or
-[CONTRIBUTING.html](CONTRIBUTING.html) (local build or Read the Docs).
-
 Changelog
 --------------
 

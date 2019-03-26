@@ -70,7 +70,7 @@ def dumpstacks():
     for thread_id, stack in sys._current_frames().items():
         log.critical("Thread: %s(%d)",
                      thread_id2name.get(thread_id, ""), thread_id)
-        log.critical(traceback.print_stack(stack))
+        log.critical(traceback.format_stack("".join(stack)))
     # If logging level is less than DEBUG (more verbose), start pdb so that
     # developers can debug the issue.
     if log.getEffectiveLevel() < logging.DEBUG:
@@ -635,8 +635,10 @@ def force_get_results(pending_results):
             log.critical(FILLUP_TICKET_MSG)
             # If the exception happened in the threads, `log.exception` does
             # not have the traceback.
-            log.warning("traceback %s",
-                        traceback.print_exception(type(e), e, e.__traceback__))
+            # Using `format_exception` instead of of `print_exception` to show
+            # the traceback in all the log handlers.
+            log.warning("".join(traceback.format_exception(
+                        type(e), e, e.__traceback__)))
 
 
 def run_speedtest(args, conf):

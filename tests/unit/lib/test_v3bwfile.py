@@ -474,3 +474,38 @@ def test_time_measure_half_network(caplog):
     assert header.time_to_report_half_network == '70200'  # 19.5h
     expected_log = "Estimated time to measure the network: 39 hours."  # 19.5*2
     assert caplog.records[-1].getMessage() == expected_log
+
+
+@mock.patch.object(V3BWFile, 'read_number_consensus_relays')
+def test_set_under_min_report(mock_consensus, conf, datadir):
+    # The number of relays (1) is the same as the ones in the consensus,
+    # therefore there is no any relay excluded and under_min_report is not set.
+    mock_consensus.return_value = 1
+    state_fpath = conf['paths']['state_fpath']
+    results = load_result_file(str(datadir.join("results.txt")))
+    v3bwfile = V3BWFile.from_results(results, '', '', state_fpath)
+    bwl = v3bwfile.bw_lines[0]
+    assert not hasattr(bwl, "vote")
+    assert not hasattr(bwl, "under_min_report")
+    assert bwl.bw != 1
+
+    # The number of relays is the same as the ones in the consensus,
+    # but after filtering there's no any, under_min_report is set to 1
+    # and unmeasured was also set to 1.
+    # After filtering the relay is excluded because there's only 1 success
+    # result and it should have at least 2 (min_num)
+    v3bwfile = V3BWFile.from_results(results, '', '', state_fpath, min_num=2)
+    bwl = v3bwfile.bw_lines[0]
+    assert bwl.vote == 0
+    assert bwl.under_min_report == 1
+    assert bwl.unmeasured == '1'
+    assert bwl.bw == 1
+
+    # The number of relays after scaling is than the 60% in the network,
+    # therefore the relays are excluded and under_min_report is set to 1.
+    mock_consensus.return_value = 3
+    v3bwfile = V3BWFile.from_results(results, '', '', state_fpath)
+    bwl = v3bwfile.bw_lines[0]
+    assert bwl.vote == 0
+    assert bwl.under_min_report == 1
+    assert bwl.bw != 1

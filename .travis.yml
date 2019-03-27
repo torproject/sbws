@@ -9,7 +9,7 @@ script:
   - tox
   # This is not in included in the tox envlist, in order to don't need Internet
   # when running tox
-  - tox -e doclinks
+  # - tox -e doclinks
   - tox -e clean
 
 before_install:

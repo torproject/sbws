@@ -626,8 +626,8 @@ class V3BWLine(object):
         # reason.
         # This could be done in a better way as part of a refactor #28684.
 
-        kwargs['vote'] = '0'
-        kwargs['unmeasured'] = '1'
+        kwargs['vote'] = 0
+        kwargs['unmeasured'] = 1
 
         exclusion_reason = None
 

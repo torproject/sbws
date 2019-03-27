@@ -267,8 +267,8 @@ def test_from_results_read(datadir, tmpdir, conf, args):
     expected_bwls = V3BWFile.bw_torflow_scale(raw_bwls)
     # Since the scaled lines will be less than the 60% relays in the network,
     # set under_min_report.
-    expected_bwls[0].under_min_report = '1'
-    expected_bwls[0].vote = '0'
+    expected_bwls[0].under_min_report = 1
+    expected_bwls[0].vote = 0
     expected_f = V3BWFile(expected_header, expected_bwls)
     # This way is going to convert bw to KB
     v3bwfile = V3BWFile.from_results(results)
@@ -369,8 +369,8 @@ def test_results_away_each_other(datadir):
     bwl, reason = V3BWLine.from_results(values, secs_away=secs_away, min_num=2)
     assert bwl.relay_recent_measurements_excluded_near_count == 2
     assert reason == 'recent_measurements_excluded_near_count'
-    assert bwl.vote == '0'
-    assert bwl.unmeasured == '1'
+    assert bwl.vote == 0
+    assert bwl.unmeasured == 1
 
     success_results = [r for r in values if isinstance(r, ResultSuccess)]
     assert len(success_results) >= min_num
@@ -391,8 +391,8 @@ def test_results_away_each_other(datadir):
     bwl, reason = V3BWLine.from_results(values, min_num=2)
     assert bwl.relay_recent_measurements_excluded_few_count == 1
     assert reason == 'recent_measurements_excluded_few_count'
-    assert bwl.vote == '0'
-    assert bwl.unmeasured == '1'
+    assert bwl.vote == 0
+    assert bwl.unmeasured == 1
 
     success_results = [r for r in values if isinstance(r, ResultSuccess)]
     assert len(success_results) < min_num
@@ -498,7 +498,7 @@ def test_set_under_min_report(mock_consensus, conf, datadir):
     bwl = v3bwfile.bw_lines[0]
     assert bwl.vote == 0
     assert bwl.under_min_report == 1
-    assert bwl.unmeasured == '1'
+    assert bwl.unmeasured == 1
     assert bwl.bw == 1
 
     # The number of relays after scaling is than the 60% in the network,

@@ -7,6 +7,50 @@ The format is based on `Keep a
 Changelog <http://keepachangelog.com/en/1.0.0/>`__ and this project
 adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__.
 
+v1.1.0 (2019-03-27)
+-------------------
+
+New
+~~~
+
+- V3bwfile: Report excluded relays.
+  Closes: #28565.
+- V3bwfile: Add time to report half network.
+  Closes: #28983
+- Destination: Recover destination when it failed.
+  Closes: #29589.
+- V3bwfile: Report relays that fail to be measured.
+  Closes: #28567.
+- V3bwfile: Report relays that are not measured measured.
+  Closes: #28566
+- V3bwfile: Add KeyValues to monitor relays.
+  Closes: #29591.
+- Docs: document that authorities are not measured.
+  Closes: #29722
+- Scanner: Warn when there is no progress.
+  Closes: #28652
+
+Fix
+~~~
+- v3bwfile: Report relays even when they don't reach a minimum number.
+  Closes: #29853.
+- Minor fixes. Closes #29891.
+- Relaylist: Convert consensus bandwidth to bytes.
+
+
+v1.0.5 (2019-03-06)
+-------------------
+
+- Release v1.0.5.
+  this time with the correct version
+
+v1.0.4 (2019-03-06)
+-------------------
+
+- Release v1.0.4.
+  because there was a commit missing between `1.0.3` and `1.0.4-dev0`
+  and what is released as `1.0.3` has version `1.0.4-dev0` and it
+  can not be fixed now.
 
 v1.0.3 (2019-02-28)
 -------------------

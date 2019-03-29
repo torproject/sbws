@@ -64,6 +64,6 @@ class Heartbeat(object):
         # The case when it is equal will only happen when all the relays
         # have been measured.
         if (new_measured_percent <= self.previous_measurement_percent):
-            log.warning("There is no progress measuring relays!.")
+            log.warning("There is no progress measuring new unique relays.")
 
         self.previous_measurement_percent = new_measured_percent

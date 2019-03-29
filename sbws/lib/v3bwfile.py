@@ -1045,13 +1045,25 @@ class V3BWFile(object):
     @staticmethod
     def is_max_bw_diff_perc_reached(bw_lines,
                                     max_bw_diff_perc=MAX_BW_DIFF_PERC):
-        sum_consensus_bw = sum([l.desc_bw_obs_last for l in bw_lines])
-        sum_bw = sum([l.bw for l in bw_lines])
-        diff = min(sum_consensus_bw, sum_bw) / max(sum_consensus_bw, sum_bw)
-        diff_perc = diff * 100
-        log.info("The difference between the total consensus bandwidth "
-                 "and the total measured bandwidth is %s%% percent",
-                 diff_perc)
+        # Since old versions were not storing consensus bandwidth, use getattr.
+        sum_consensus_bw = sum([l.consensus_bandwidth for l in bw_lines
+                                if getattr(l, 'consensus_bandwidth', None)])
+        # Because the scaled bandwidth is in KB, but not the stored consensus
+        # bandwidth, multiply by 1000.
+        # Do not count 1 bandwidths for the relays that were excluded
+        # and exclude also the bw of the relays that did not stored consensus,
+        # since they are not included either in the sum of the consensus.
+        sum_bw = sum([l.bw for l in bw_lines
+                      if getattr(l, 'consensus_bandwidth', None)
+                      and getattr(l, 'unmeasured', 0) == 0]) * 1000
+        # Percentage difference
+        diff_perc = (
+            abs(sum_consensus_bw - sum_bw)
+            / ((sum_consensus_bw + sum_bw) / 2)
+            ) * 100
+        log.info("The difference between the total consensus bandwidth (%s)"
+                 "and the total measured bandwidth (%s) is %s%%.",
+                 sum_consensus_bw, sum_bw, round(diff_perc))
         if diff_perc > MAX_BW_DIFF_PERC:
             log.warning("It is more than %s%%", max_bw_diff_perc)
             return True
@@ -1227,6 +1239,12 @@ class V3BWFile(object):
         log.debug('muf %s', muf)
         log.debug('hlimit %s', hlimit)
         for l in bw_lines_tf:
+            # Because earlier versions did not store this values, check first
+            # they exists. Do not report any error, since they will be stored
+            if not(l.desc_bw_obs_last or l.desc_bw_obs_mean and l.desc_bw_avg):
+                log.debug("Skipping %s from scaling, because there were not "
+                          "descriptor bandwidths.", l.nick)
+                continue
             if desc_bw_obs_type == TORFLOW_OBS_LAST:
                 desc_bw_obs = l.desc_bw_obs_last
             elif desc_bw_obs_type == TORFLOW_OBS_MEAN:

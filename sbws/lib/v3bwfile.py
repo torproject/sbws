@@ -15,6 +15,9 @@ from sbws.globals import (SPEC_VERSION, BW_LINE_SIZE, SBWS_SCALE_CONSTANT,
                           TORFLOW_SCALING, SBWS_SCALING, TORFLOW_BW_MARGIN,
                           TORFLOW_OBS_LAST, TORFLOW_OBS_MEAN,
                           PROP276_ROUND_DIG, MIN_REPORT, MAX_BW_DIFF_PERC)
+
+# Using Stem's code header constant to don't maintain 2 versions.
+from .stem_bandwidth_file import HEADER_ATTR, _int
 from sbws.lib.resultdump import ResultSuccess, _ResultType
 from sbws.util.filelock import DirectoryLock
 from sbws.util.timestamp import (now_isodt_str, unixts_to_isodt_str,
@@ -27,15 +30,14 @@ LINE_SEP = '\n'
 KEYVALUE_SEP_V1 = '='
 KEYVALUE_SEP_V2 = ' '
 
-# NOTE: in a future refactor make make all the KeyValues be a dictionary
-# with their type, so that it's more similar to stem parser.
-
+# NOTE: Start using Stem's header constant in 1.1.1-dev0.
+#
 # Header KeyValues
 # =================
-# List of the extra KeyValues accepted by the class
-EXTRA_ARG_KEYVALUES = ['software', 'software_version', 'file_created',
-                       'earliest_bandwidth', 'generator_started',
-                       'scanner_country', 'destinations_countries']
+
+# XXX: These constants need to be kept even if using Stem's header one.
+# Unless Stem's will add a property type to the attributes.
+
 # number_eligible_relays is the number that ends in the bandwidth file
 # ie, have not been excluded by one of the filters in 4. below
 # They should be call recent_measurement_included_count to be congruent
@@ -44,74 +46,82 @@ STATS_KEYVALUES = ['number_eligible_relays', 'minimum_number_eligible_relays',
                    'number_consensus_relays', 'percent_eligible_relays',
                    'minimum_percent_eligible_relays']
 
-# KeyValues that count the number of relays that are in the bandwidth file,
-# but ignored by Tor when voting, because they do not have a
-# measured bandwidth.
-BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED = [
-    # Number of relays that were measured but all the measurements failed
-    # because of network failures or it was
-    # not found a suitable helper relay
-    'recent_measurements_excluded_error_count',
-    # Number of relays that have successful measurements but the measurements
-    # were not away from each other in X time (by default 1 day).
-    'recent_measurements_excluded_near_count',
-    # Number of relays that have successful measurements and they are away from
-    # each other but they are not X time recent.
-    # By default this is 5 days, which is the same time the older
-    # the measurements can be by default.
-    'recent_measurements_excluded_old_count',
-    # Number of relays that have successful measurements and they are away from
-    # each other and recent
-    # but the number of measurements are less than X (by default 2).
-    'recent_measurements_excluded_few_count',
-]
-# Added in #29591
-# NOTE: recent_consensus_count, recent_priority_list_count,
-# recent_measurement_attempt_count and recent_priority_relay_count
-# are not reset when the scanner is stop.
-# They will accumulate the values since the scanner was ever started.
-BW_HEADER_KEYVALUES_MONITOR = [
-    # 1.1 header: the number of different consensuses, that sbws has seen,
-    # since the last 5 days
-    'recent_consensus_count',
-    # 2.4 Number of times a priority list has been created
-    'recent_priority_list_count',
-    # 2.5 Number of relays that there were in a priority list
-    # [50, number of relays in the network * 0.05]
-    'recent_priority_relay_count',
-    # 3.6 header: the number of times that sbws has tried to measure any relay,
-    # since the last 5 days
-    # This would be the number of times a relays were in a priority list
-    'recent_measurement_attempt_count',
-    # 3.7 header: the number of times that sbws has tried to measure any relay,
-    # since the last 5 days, but it didn't work
-    # This should be the number of attempts - number of ResultSuccess -
-    # something else we don't know yet
-    # So far is the number of ResultError
-    'recent_measurement_failure_count',
-    # The time it took to report about half of the network.
-    'time_to_report_half_network',
-] + BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED
-BANDWIDTH_HEADER_KEY_VALUES_INIT = \
-    ['earliest_bandwidth', 'generator_started',
-     'scanner_country', 'destinations_countries']\
-    + STATS_KEYVALUES \
-    + BW_HEADER_KEYVALUES_MONITOR
+# # KeyValues that count the number of relays that are in the bandwidth file,
+# # but ignored by Tor when voting, because they do not have a
+# # measured bandwidth.
+# BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED = [
+#     # Number of relays that were measured but all the measurements failed
+#     # because of network failures or it was
+#     # not found a suitable helper relay
+#     'recent_measurements_excluded_error_count',
+#     # Number of relays that have successful measurements but the measurements
+#     # were not away from each other in X time (by default 1 day).
+#     'recent_measurements_excluded_near_count',
+#     # Number of relays that have successful measurements and they are away
+#     # from each other but they are not X time recent.
+#     # By default this is 5 days, which is the same time the older
+#     # the measurements can be by default.
+#     'recent_measurements_excluded_old_count',
+#     # Number of relays that have successful measurements and they are away
+#     # from each other and recent
+#     # but the number of measurements are less than X (by default 2).
+#     'recent_measurements_excluded_few_count',
+# ]
 
-KEYVALUES_INT = STATS_KEYVALUES + BW_HEADER_KEYVALUES_MONITOR
-# List of all unordered KeyValues currently being used to generate the file
-UNORDERED_KEYVALUES = EXTRA_ARG_KEYVALUES + STATS_KEYVALUES + \
-                      ['latest_bandwidth'] + \
-                      BW_HEADER_KEYVALUES_MONITOR
-# List of all the KeyValues currently being used to generate the file
-ALL_KEYVALUES = ['version'] + UNORDERED_KEYVALUES
+# The stem's attribute name for these Keys starts with this string.
+BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED = \
+    [k for n, (k, _) in HEADER_ATTR.items()
+     if n.startswith("recent_stats.relay_failures.")]
+
+# The commented code is kept so that
+# it can be known what each Key means.
+
+# # Added in #29591
+# # NOTE: recent_consensus_count, recent_priority_list_count,
+# # recent_measurement_attempt_count and recent_priority_relay_count
+# # are not reset when the scanner is stop.
+# # They will accumulate the values since the scanner was ever started.
+# BW_HEADER_KEYVALUES_MONITOR = [
+#     # 1.1 header: the number of different consensuses, that sbws has seen,
+#     # since the last 5 days
+#     'recent_consensus_count',
+#     # 2.4 Number of times a priority list has been created
+#     'recent_priority_list_count',
+#     # 2.5 Number of relays that there were in a priority list
+#     # [50, number of relays in the network * 0.05]
+#     'recent_priority_relay_count',
+#     # 3.6 header: the number of times that sbws has tried to measure any
+#     # relay,s ince the last 5 days
+#     # This would be the number of times a relays were in a priority list
+#     'recent_measurement_attempt_count',
+#     # 3.7 header: the number of times that sbws has tried to measure any
+#     # relay, since the last 5 days, but it didn't work
+#     # This should be the number of attempts - number of ResultSuccess -
+#     # something else we don't know yet
+#     # So far is the number of ResultError
+#     'recent_measurement_failure_count',
+#     # The time it took to report about half of the network.
+#     'time_to_report_half_network',
+# ] + BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED
+# BANDWIDTH_HEADER_KEY_VALUES_INIT = \
+#     ['earliest_bandwidth', 'generator_started',
+#      'scanner_country', 'destinations_countries']\
+#     + STATS_KEYVALUES \
+#     + BW_HEADER_KEYVALUES_MONITOR
+
+# XXX: The following constants are kept for compatibility with the generator/
+# parser here. They should be replaced by Stem's one.
+KEYVALUES_INT = [k for k, t in HEADER_ATTR.values() if t is _int]
+# # List of all unordered KeyValues currently being used to generate the file
+UNORDERED_KEYVALUES = [k for k, _ in HEADER_ATTR.values()]
+UNORDERED_KEYVALUES.remove('version')
 
 TERMINATOR = '====='
 
 # Bandwidth Lines KeyValues
 # =========================
 # Num header lines in v1.X.X using all the KeyValues
-NUM_LINES_HEADER_V1 = len(ALL_KEYVALUES) + 2
+NUM_LINES_HEADER_V1 = len(HEADER_ATTR) + 2
 LINE_TERMINATOR = TERMINATOR + LINE_SEP
 
 # KeyValue separator in Bandwidth Lines
@@ -250,11 +260,21 @@ class V3BWHeader(object):
           when the generator started
     """
     def __init__(self, timestamp, **kwargs):
+        # XXX: do not convert all the arguments to string here, convert them
+        # only in __str__ and check their actual types.
         assert isinstance(timestamp, str)
         for v in kwargs.values():
             assert isinstance(v, str)
         self.timestamp = timestamp
-        # KeyValues with default value when not given by kwargs
+
+        # Initialize all defined attrs,
+        # XXX: Since using the stem's name for the attributes will require
+        # other refactoring here, use the name in the actual file.
+        header_keys = [k for k, _ in HEADER_ATTR.values()]
+        [setattr(self, k, v) for k, v in kwargs.items() if k in header_keys]
+
+        # Then initialize the ones with defaults, if they weren't already.
+        # Ideally these defaults could be defined in the HEADER_ATTR constant.
         self.version = kwargs.get('version', SPEC_VERSION)
         self.software = kwargs.get('software', 'sbws')
         self.software_version = kwargs.get('software_version', __version__)
@@ -262,8 +282,6 @@ class V3BWHeader(object):
         # latest_bandwidth should not be in kwargs, since it MUST be the
         # same as timestamp
         self.latest_bandwidth = unixts_to_isodt_str(timestamp)
-        [setattr(self, k, v) for k, v in kwargs.items()
-         if k in BANDWIDTH_HEADER_KEY_VALUES_INIT]
 
     def __str__(self):
         if self.version.startswith('1.'):
@@ -337,9 +355,10 @@ class V3BWHeader(object):
             log.warn('Terminator is not in lines')
             return None
         ts = lines[0]
+        header_keys = [k for k, _ in HEADER_ATTR.values()]
         kwargs = dict([l.split(KEYVALUE_SEP_V1)
                        for l in lines[:index_terminator]
-                       if l.split(KEYVALUE_SEP_V1)[0] in ALL_KEYVALUES])
+                       if l.split(KEYVALUE_SEP_V1)[0] in header_keys])
         h = cls(ts, **kwargs)
         # last line is new line
         return h, lines[index_terminator + 1:-1]

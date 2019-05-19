@@ -16,7 +16,9 @@ from sbws.globals import (SPEC_VERSION, BW_LINE_SIZE, SBWS_SCALE_CONSTANT,
                           TORFLOW_OBS_LAST, TORFLOW_OBS_MEAN,
                           PROP276_ROUND_DIG, MIN_REPORT, MAX_BW_DIFF_PERC)
 
-# Using Stem's code header constant to don't maintain 2 versions.
+# XXX: replace this line by:
+# from stem.descriptor.bandwidth_file import HEADER_ATTR, _int
+# when stem releases 1.8.0. More information in stem_bandwidth_file.py
 from .stem_bandwidth_file import HEADER_ATTR, _int
 from sbws.lib.resultdump import ResultSuccess, _ResultType
 from sbws.util.filelock import DirectoryLock

@@ -1,5 +1,9 @@
-"""Stem's Bandwidth file parser part.
-To be removed on Stem's release 1.8.0."""
+"""Stem's Bandwidth file HEADER_ATTR part as it is in stem's commit
+658dd5281604eb9c63a91e529501947ecc65ef6b, which will be included in the next
+Stem's release, 1.8.0, except ``_date`` because depends on other stem's module.
+"""
+# XXX: Remove this file when stem releases 1.8.0.
+from ..util.timestamp import isostr_to_dt_obj
 
 # Converts header attributes to a given type. Malformed fields should be
 # ignored according to the spec.
@@ -14,7 +18,7 @@ def _int(val):
 
 def _date(val):
   try:
-    return stem.util.str_tools._parse_iso_timestamp(val)
+    return isostr_to_dt_obj(val)
   except ValueError:
     return None  # not an iso formatted date
 

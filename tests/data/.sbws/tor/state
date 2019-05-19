@@ -1,0 +1,17 @@
+# Tor state file last generated on 2019-05-11 06:32:31 local time
+# Other times below are in UTC
+# You *do not* need to edit this file.
+
+Guard in=default rsa_id=270A861ABED22EC2B625198BCCD7B2B9DBFFC93C nickname=exit1 sampled_on=2019-05-01T10:58:03 sampled_by=0.3.5.8 listed=1
+Guard in=default rsa_id=117A456C911114076BEB4E757AC48B16CC0CCC5F nickname=relay1mbyteMAB sampled_on=2019-05-04T00:54:05 sampled_by=0.3.5.8 listed=1
+Guard in=default rsa_id=693F73187624BE760AAD2A12C5ED89DB1DE044F5 nickname=relay3 sampled_on=2019-05-03T16:41:51 sampled_by=0.3.5.8 listed=1
+Guard in=default rsa_id=E894C65997F8EC96558B554176EEEA39C6A43EF6 nickname=relay7 sampled_on=2019-05-09T10:13:49 sampled_by=0.3.5.8 listed=1
+Guard in=default rsa_id=4D664E247E530CA5CD5176B8C1A6DABC9531F0B0 nickname=relay4 sampled_on=2019-05-05T14:37:27 sampled_by=0.3.5.8 listed=1
+Guard in=default rsa_id=AA45C13025C037F056E734169891878ED0880231 nickname=auth1 sampled_on=2019-05-07T20:41:43 sampled_by=0.3.5.8 listed=1
+Guard in=default rsa_id=C0606B414423F9A2BBA2679B440056E3B07FEC85 nickname=exit2 sampled_on=2019-05-10T02:02:09 sampled_by=0.3.5.8 listed=1
+Guard in=default rsa_id=FC264325EA99D597FF94DA88379DABB64304DD9D nickname=exit3 sampled_on=2019-05-03T08:12:26 sampled_by=0.3.5.8 listed=1
+Guard in=default rsa_id=8E687E91DCAB967F6E4EE8E46E66F6AD05C7C625 nickname=relay2 sampled_on=2019-05-06T13:53:54 sampled_by=0.3.5.8 listed=1
+Guard in=default rsa_id=35E3B8BB71C81355649AEC5862ECB7ED7EFDBC5C nickname=auth3 sampled_on=2019-05-04T02:49:33 sampled_by=0.3.5.8 listed=1
+Guard in=default rsa_id=C7C5094677013F5BC124183C71A482D0156CDCFE nickname=relay6 sampled_on=2019-05-10T15:04:58 sampled_by=0.3.5.8 listed=1
+TorVersion Tor 0.3.5.8
+LastWritten 2019-05-11 06:32:31

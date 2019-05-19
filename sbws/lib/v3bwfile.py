@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 """Classes and functions that create the bandwidth measurements document
-(v3bw) used by bandwidth authorities."""
+(v3bw) used by bandwidth authorities.
+
+See https://gitweb.torproject.org/torspec.git/tree/bandwidth-file-spec.txt for
+more information on the meaning of the ``KeyValues``
+"""
 
 import copy
 import logging
@@ -32,87 +36,23 @@ LINE_SEP = '\n'
 KEYVALUE_SEP_V1 = '='
 KEYVALUE_SEP_V2 = ' '
 
-# NOTE: Start using Stem's header constant in 1.1.1-dev0.
-#
 # Header KeyValues
 # =================
 
 # XXX: These constants need to be kept even if using Stem's header one.
 # Unless Stem's will add a property type to the attributes.
-
-# number_eligible_relays is the number that ends in the bandwidth file
-# ie, have not been excluded by one of the filters in 4. below
-# They should be call recent_measurement_included_count to be congruent
-# with the other KeyValues.
 STATS_KEYVALUES = ['number_eligible_relays', 'minimum_number_eligible_relays',
                    'number_consensus_relays', 'percent_eligible_relays',
                    'minimum_percent_eligible_relays']
-
-# # KeyValues that count the number of relays that are in the bandwidth file,
-# # but ignored by Tor when voting, because they do not have a
-# # measured bandwidth.
-# BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED = [
-#     # Number of relays that were measured but all the measurements failed
-#     # because of network failures or it was
-#     # not found a suitable helper relay
-#     'recent_measurements_excluded_error_count',
-#     # Number of relays that have successful measurements but the measurements
-#     # were not away from each other in X time (by default 1 day).
-#     'recent_measurements_excluded_near_count',
-#     # Number of relays that have successful measurements and they are away
-#     # from each other but they are not X time recent.
-#     # By default this is 5 days, which is the same time the older
-#     # the measurements can be by default.
-#     'recent_measurements_excluded_old_count',
-#     # Number of relays that have successful measurements and they are away
-#     # from each other and recent
-#     # but the number of measurements are less than X (by default 2).
-#     'recent_measurements_excluded_few_count',
-# ]
 
 # The stem's attribute name for these Keys starts with this string.
 BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED = \
     [k for n, (k, _) in HEADER_ATTR.items()
      if n.startswith("recent_stats.relay_failures.")]
 
-# The commented code is kept so that
-# it can be known what each Key means.
-
-# # Added in #29591
-# # NOTE: recent_consensus_count, recent_priority_list_count,
-# # recent_measurement_attempt_count and recent_priority_relay_count
-# # are not reset when the scanner is stop.
-# # They will accumulate the values since the scanner was ever started.
-# BW_HEADER_KEYVALUES_MONITOR = [
-#     # 1.1 header: the number of different consensuses, that sbws has seen,
-#     # since the last 5 days
-#     'recent_consensus_count',
-#     # 2.4 Number of times a priority list has been created
-#     'recent_priority_list_count',
-#     # 2.5 Number of relays that there were in a priority list
-#     # [50, number of relays in the network * 0.05]
-#     'recent_priority_relay_count',
-#     # 3.6 header: the number of times that sbws has tried to measure any
-#     # relay,s ince the last 5 days
-#     # This would be the number of times a relays were in a priority list
-#     'recent_measurement_attempt_count',
-#     # 3.7 header: the number of times that sbws has tried to measure any
-#     # relay, since the last 5 days, but it didn't work
-#     # This should be the number of attempts - number of ResultSuccess -
-#     # something else we don't know yet
-#     # So far is the number of ResultError
-#     'recent_measurement_failure_count',
-#     # The time it took to report about half of the network.
-#     'time_to_report_half_network',
-# ] + BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED
-# BANDWIDTH_HEADER_KEY_VALUES_INIT = \
-#     ['earliest_bandwidth', 'generator_started',
-#      'scanner_country', 'destinations_countries']\
-#     + STATS_KEYVALUES \
-#     + BW_HEADER_KEYVALUES_MONITOR
-
 # XXX: The following constants are kept for compatibility with the generator/
-# parser here. They should be replaced by Stem's one.
+# parser here. Use stem's parser/generator when possible and refactor this
+# code when stem releases 1.8.0.
 KEYVALUES_INT = [k for k, t in HEADER_ATTR.values() if t is _int]
 # # List of all unordered KeyValues currently being used to generate the file
 UNORDERED_KEYVALUES = [k for k, _ in HEADER_ATTR.values()]

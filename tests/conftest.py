@@ -77,7 +77,6 @@ def measurements(mock_time, sbws_conf):
     # Because load_recent_results_in_datadir will use time.time()
     # to decide which results are recent.
     mock_time.return_value = FAKE_TIME
-    print("measurements", sbws_conf.getpath('paths', 'datadir'))
     measurements = resultdump \
         .load_recent_results_in_datadir(
             sbws_conf.getint('general', 'data_period'),

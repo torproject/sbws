@@ -1017,6 +1017,8 @@ class V3BWFile(object):
         sum_bw = sum([l.bw for l in bw_lines
                       if getattr(l, 'consensus_bandwidth', None)
                       and getattr(l, 'unmeasured', 0) == 0]) * 1000
+        # For tests without consensus bandwidth, avoid division by 0
+        sum_bw = sum_bw or 1
         # Percentage difference
         diff_perc = (
             abs(sum_consensus_bw - sum_bw)

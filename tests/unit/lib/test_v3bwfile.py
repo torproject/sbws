@@ -7,8 +7,11 @@ import os.path
 from unittest import mock
 
 from sbws import __version__ as version
+from sbws import settings
+# XXX: refactor, these constants can be used from settings.
 from sbws.globals import (SPEC_VERSION, SBWS_SCALING, TORFLOW_SCALING,
                           MIN_REPORT, TORFLOW_ROUND_DIG, PROP276_ROUND_DIG)
+from sbws.lib import destination
 from sbws.lib.resultdump import Result, load_result_file, ResultSuccess
 from sbws.lib.v3bwfile import (
     V3BWHeader, V3BWLine, TERMINATOR, LINE_SEP,
@@ -509,3 +512,35 @@ def test_set_under_min_report(mock_consensus, conf, datadir):
     assert bwl.vote == 0
     assert bwl.under_min_report == 1
     assert bwl.bw != 1
+
+
+def test_header_from_results_parse(sbws_conf, measurements,
+                                   bandwidth_file_headers):
+    """Generate a bandwidth file from the measurements' files
+    generated with the test network and ensure it's the same as the
+    bandwidth file also generated with the test network.
+
+    1. generate bw file from measurements files
+    2. parse data bw file
+    3. compare generated bw files with the parsed data bw files
+    """
+    scanner_country = sbws_conf['scanner'].get('country')
+    destinations_countries = destination \
+        .parse_destinations_countries(sbws_conf)
+
+    bw_file = V3BWFile.from_results(
+        measurements, scanner_country, destinations_countries,
+        sbws_conf.getpath('paths', 'state_fname'),
+        settings.SBWS_SCALE_CONSTANT, settings.TORFLOW_SCALING,
+        secs_away=settings.DAY_SECS,
+        min_num=settings.NUM_MIN_RESULTS,
+        consensus_path=os.path.join(
+            sbws_conf.getpath('tor', 'datadir'), "cached-consensus")
+        )
+    # Replace timestamps.
+    [setattr(bw_file.header, k, v) for k, v in bandwidth_file_headers.items()]
+
+    expected_bw_file = V3BWFile(None, None)\
+        .from_v1_fpath(sbws_conf.getpath('paths', 'v3bw_fname'))
+
+    assert str(bw_file.header) == str(expected_bw_file.header)

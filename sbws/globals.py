@@ -36,6 +36,28 @@ TORRC_STARTING_POINT = {
     'SafeLogging': '0',
     'LogTimeGranularity': '1',
     'ProtocolWarnings': '1',
+    # Text and options from
+    # https://stem.torproject.org/tutorials/mirror_mirror_on_the_wall.html#can-i-get-descriptors-from-the-tor-process
+    #
+    # Descriptors have a range of time during which they're valid. To get the
+    # most recent descriptor information, regardless of if Tor needs it or not,
+    # set the following.
+    'FetchDirInfoEarly':  '1',
+    'FetchDirInfoExtraEarly': '1',
+
+    # Tor doesn't need all descriptors to function. In particular...
+    #
+    #   * Tor no longer downloads server descriptors by default, opting
+    #     for microdescriptors instead.
+    #
+    #   * If you aren't actively using Tor as a client then Tor will
+    #     eventually stop downloading descriptor information altogether
+    #     to relieve load on the network.
+    #
+    # To download descriptors regardless of if they're needed by the
+    # Tor process or not set...
+
+    'FetchUselessDescriptors': '1'
 }
 # Options that need to be set at runtime.
 TORRC_RUNTIME_OPTIONS = {

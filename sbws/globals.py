@@ -49,8 +49,7 @@ TORRC_STARTING_POINT = {
     #     eventually stop downloading descriptor information altogether
     #     to relieve load on the network.
     #
-    # To download descriptors regardless of if they're needed by the
-    # Tor process or not set...
+    # To make Tor keep fetching descriptors, even when idle.
 
     'FetchUselessDescriptors': '1'
 }

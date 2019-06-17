@@ -440,7 +440,7 @@ class RelayList:
                 # Update the consensus and descriptor data.
                 r.set_router_status(new_relays_dict[r.fingerprint])
                 try:
-                    descriptor = c.get_server_descriptor(r.pringerprint,
+                    descriptor = c.get_server_descriptor(r.fingerprint,
                                                          default=None)
                     if not descriptor:
                         log.warning("Could not get a descriptor for %s (%s)",

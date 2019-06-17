@@ -45,11 +45,6 @@ TORRC_STARTING_POINT = {
     'FetchDirInfoEarly':  '1',
     'FetchDirInfoExtraEarly': '1',
 
-    # Tor doesn't need all descriptors to function. In particular...
-    #
-    #   * Tor no longer downloads server descriptors by default, opting
-    #     for microdescriptors instead.
-    #
     #   * If you aren't actively using Tor as a client then Tor will
     #     eventually stop downloading descriptor information altogether
     #     to relieve load on the network.

@@ -275,6 +275,28 @@ class Relay:
             self.relay_recent_priority_list_count = 0
         self.relay_recent_priority_list_count += 1
 
+    # NOTE: in a future refactor, a Relay wrapper could keep a `dequeue` of all
+    # the descriptors seen and the timestamp.
+    def set_server_descriptor(self, server_descriptor):
+        """Set the server descriptor of the Relay.
+
+        Every time there's a new descriptor, the Relay object should not be
+        lost, therefore, give a way to keep the object setting the new
+        descriptor.
+        """
+        self._desc = server_descriptor
+
+    # NOTE: in a future refactor, a Relay wrapper could keep a `dequeue` of all
+    # the consensus seen and the timestamp, what would replace the list of
+    # just consensus timestamps.
+    def set_router_status(self, router_status):
+        """Set the router status (from the consensus) of the Relay.
+
+        Every time there's a new descriptor, the Relay object should not be
+        lost, therefore, give a way to keep the object setting the new
+        descriptor.
+        """
+        self._ns = router_status
 
 class RelayList:
     ''' Keeps a list of all relays in the current Tor network and updates it
@@ -414,6 +436,17 @@ class RelayList:
         for r in relays:
             if r.fingerprint in new_relays_dict.keys():
                 r.update_consensus_timestamps(timestamp)
+                # Update the consensus and descriptor data.
+                r.set_router_status(new_relays_dict[r.fingerprint])
+                try:
+                    descriptor = c.get_server_descriptor(r.pringerprint,
+                                                         default=None)
+                    if not descriptor:
+                        log.warning("Could not get a descriptor for %s (%s)",
+                                    r.fingerprint, r.nickname)
+                except (DescriptorUnavailable, ControllerError) as e:
+                    log.exception(e)
+                r.set_server_descriptor(descriptor)
                 new_relays_dict.pop(r.fingerprint)
                 new_relays.append(r)
 

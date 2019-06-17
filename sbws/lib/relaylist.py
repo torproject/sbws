@@ -298,6 +298,7 @@ class Relay:
         """
         self._ns = router_status
 
+
 class RelayList:
     ''' Keeps a list of all relays in the current Tor network and updates it
     transparently in the background. Provides useful interfaces for getting

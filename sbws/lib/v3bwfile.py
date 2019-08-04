@@ -1241,14 +1241,24 @@ class V3BWFile(object):
         for l in bw_lines_tf:
             # Because earlier versions did not store this values, check first
             # they exists. Do not report any error, since they will be stored
-            if not(l.desc_bw_obs_last or l.desc_bw_obs_mean and l.desc_bw_avg):
-                log.debug("Skipping %s from scaling, because there were not "
-                          "descriptor bandwidths.", l.nick)
+            if not(l.desc_bw_avg):
+                log.debug("Skipping %s from scaling, because there was no "
+                          "descriptor average bandwidth.", l.nick)
                 continue
             if desc_bw_obs_type == TORFLOW_OBS_LAST:
-                desc_bw_obs = l.desc_bw_obs_last
+                if l.desc_bw_obs_last:
+                    desc_bw_obs = l.desc_bw_obs_last
+                else:
+                    log.debug("Skipping %s from scaling, because there was no "
+                              "last descriptor observed bandwidth.", l.nick)
+                    continue
             elif desc_bw_obs_type == TORFLOW_OBS_MEAN:
-                desc_bw_obs = l.desc_bw_obs_mean
+                if l.desc_bw_obs_mean:
+                    desc_bw_obs = l.desc_bw_obs_mean
+                else:
+                    log.debug("Skipping %s from scaling, because there was no "
+                              "mean descriptor observed bandwidth.", l.nick)
+                    continue
             # Excerpt from bandwidth-file-spec.txt section 2.3
             # A relay's MaxAdvertisedBandwidth limits the bandwidth-avg in its
             # descriptor.

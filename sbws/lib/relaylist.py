@@ -288,6 +288,17 @@ class Relay:
             self.relay_recent_priority_list_count = 0
         self.relay_recent_priority_list_count += 1
 
+    # XXX: tech-debt: replace `_desc` attr by a a `dequee` of the last
+    # descriptors seen for this relay and the timestamp.
+    def update_server_descriptor(self, server_descriptor):
+        """Update this relay server descriptor (from the consensus."""
+        self._desc = server_descriptor
+
+    # XXX: tech-debt: replace `_ns` attr by a a `dequee` of the last
+    # router statuses seen for this relay and the timestampt.
+    def update_router_status(self, router_status):
+        """Update this relay router status (from the consensus)."""
+        self._ns = router_status
 
 
 class RelayList:
@@ -427,9 +438,22 @@ class RelayList:
         relays = copy.deepcopy(self._relays)
         for r in relays:
             if r.fingerprint in new_relays_dict.keys():
+                # If a relay in the previous consensus and is in the current
+                # one, update its timestamp, router status and descriptor.
+                fp = r.fingerprint
                 r.update_consensus_timestamps(timestamp)
-                new_relays_dict.pop(r.fingerprint)
+                # new_relays_dict[fp] is the router status.
+                r.update_router_status(new_relays_dict[fp])
+                try:
+                    descriptor = c.get_server_descriptor(fp, default=None)
+                except (DescriptorUnavailable, ControllerError) as e:
+                    log.exception("Exception trying to get desc %s", e)
+                r.update_server_descriptor(descriptor)
+                # Add it to the new list of relays.
                 new_relays.append(r)
+                # And remove it from the new consensus dict, as it has
+                # already added to the new list.
+                new_relays_dict.pop(fp)
 
         # Add the relays that were not in the previous consensus
         # If there was an relay in some older previous consensus,

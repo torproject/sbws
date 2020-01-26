@@ -175,34 +175,47 @@ class Relay:
             return self._consensus_timestamps[-1]
         return None
 
+    def _append_consensus_timestamp_if_later(self, timestamp):
+        """Append timestamp to the list of consensus timestamps, if it is later
+           than the most recent existing timestamp, or there are no timestamps.
+           Should only be called by _add_consensus_timestamp().
+           timestamp must not be None, and it must not be zero.
+        """
+        if not timestamp:
+            log.info('Bad timestamp %s, skipping consensus timestamp '
+                     'update for  relay %s', timestamp, self.fingerprint)
+            return
+        # The consensus timestamp list was initialized.
+        if self.last_consensus_timestamp is not None:
+            # timestamp is more recent than the most recent stored
+            # consensus timestamp.
+            if timestamp > self.last_consensus_timestamp:
+                # Add timestamp
+                self._consensus_timestamps.append(timestamp)
+        # The consensus timestamp list was not initialized.
+        else:
+            # Add timestamp
+            self._consensus_timestamps.append(timestamp)
+
     def _add_consensus_timestamp(self, timestamp=None):
         """Add the consensus timestamp in which this relay is present.
         """
         # It is possible to access to the relay's consensensus Valid-After
+        # so believe it, rather than the supplied timestamp
         if self.consensus_valid_after is not None:
-            # The consensus timestamp list was initialized.
-            if self.last_consensus_timestamp is not None:
-                # Valid-After is more recent than the most recent stored
-                # consensus timestamp.
-                if self.consensus_valid_after > self.last_consensus_timestamp:
-                    # Add Valid-After
-                    self._consensus_timestamps.append(
-                        self.consensus_valid_after
-                        )
-            # The consensus timestamp list was not initialized.
-            else:
-                # Add Valid-After
-                self._consensus_timestamps.append(self.consensus_valid_after)
-        # If there was already a list the timestamp arg is more recent than
-        # the most recent timestamp stored,
-        elif (self.last_consensus_timestamp is not None
-              and timestamp > self.last_consensus_timestamp):
+            self._append_consensus_timestamp_if_later(
+                self.consensus_valid_after
+                )
+        elif timestamp:
             # Add the arg timestamp.
-            self._consensus_timestamps.append(timestamp)
+            self._append_consensus_timestamp_if_later(timestamp)
         # In any other case
         else:
+            log.warning('Bad timestamp %s, using current time for consensus '
+                        'timestamp update for relay %s',
+                        timestamp, self.fingerprint)
             # Add the current datetime
-            self._consensus_timestamps.append(
+            self._append_consensus_timestamp_if_later(
                 datetime.utcnow().replace(microsecond=0))
 
     def _remove_old_consensus_timestamps(

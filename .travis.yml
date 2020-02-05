@@ -3,6 +3,10 @@ language: python
 # But we add this line to show the python version in the Travis UI
 python: "3.6"
 
+sudo: false
+
+cache: pip
+
 env:
   matrix:
     ## This matrix entry is required, but it doesn't actually create any jobs
@@ -135,6 +139,9 @@ script:
   # - tox -e doclinks
   - tox -e clean
 
+after_success:
+  # gather Python coverage
+  - tox -e stats
 
 notifications:
   irc:

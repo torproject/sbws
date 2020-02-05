@@ -1,5 +1,7 @@
 """Util functions to convert between timestamp formats"""
-from datetime import datetime
+from datetime import datetime, timedelta
+
+from ..globals import MEASUREMENTS_PERIOD
 
 
 def dt_obj_to_isodt_str(dt):
@@ -71,3 +73,22 @@ def unixts_to_str(unixts):
     # than int or float
     assert isinstance(unixts, int) or isinstance(unixts, float)
     return str(unixts)
+
+
+# XXX: tech-debt: replace all the code that check whether a
+# measurement or relay is older than the measurement period by this.
+def is_old(timestamp, measurements_period=MEASUREMENTS_PERIOD):
+    """Whether the given timestamp is older that the given measurements
+    period.
+    """
+    if not isinstance(timestamp, datetime):
+        if isinstance(timestamp, str):
+            # This will raise an exception if the string is not correctly
+            # formatted.
+            timestamp = isostr_to_dt_obj(timestamp)
+        else:
+            # This will raise an exception if the type is not int or float or
+            # is not actually a timestamp
+            timestamp = unixts_to_dt_obj(timestamp)
+    oldest_date = datetime.utcnow() - timedelta(measurements_period)
+    return timestamp > oldest_date

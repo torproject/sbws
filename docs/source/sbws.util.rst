@@ -44,14 +44,6 @@ sbws.util.stem module
     :undoc-members:
     :show-inheritance:
 
-sbws.util.userquery module
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. automodule:: sbws.util.userquery
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 
 Module contents
 ---------------

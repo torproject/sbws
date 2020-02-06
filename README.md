@@ -1,6 +1,6 @@
 # Readme
 
-[![Build Status](https://travis-ci.org/torproject/sbws.svg?branch=master)](https://travis-ci.org/https://travis-ci.org/torproject/sbws)
+[![Build Status](https://travis-ci.org/torproject/sbws.svg?branch=master)](https://travis-ci.org/torproject/sbws)
 
 Simple Bandwidth Scanner (called `sbws`) is a Tor bandwidth scanner that
 generates bandwidth files to be used by Directory Authorities.

@@ -34,16 +34,26 @@ KEYVALUE_SEP_V2 = ' '
 # =================
 # KeyValues that need to be in a specific order in the Bandwidth File.
 HEADER_KEYS_V1_1_ORDERED = ['version']
-# List of the extra KeyValues accepted by the class
-HEADER_KEYS_V1X = [
+# KeyValues that are not initialized from arguments nor depend on the state
+# file nor the measurements.
+HEADER_KEYS_V1_1_SELF_INIT = [
     "software",
     "software_version",
     "file_created",
-    "earliest_bandwidth",
-    "generator_started",
-    "scanner_country",
-    "destinations_countries",
+    "latest_bandwidth",
 ]
+# KeyValues that are initialized from arguments.
+HEADER_KEYS_V1_1_TO_INIT = [
+    "earliest_bandwidth",
+    "generator_started"
+]
+
+# KeyValues added in the Bandwidth File v1.3.0
+HEADER_KEYS_V1_3 = [
+    "scanner_country",
+    "destinations_countries"
+]
+
 # number_eligible_relays is the number that ends in the bandwidth file
 # ie, have not been excluded by one of the filters in 4. below
 # They should be call recent_measurement_included_count to be congruent
@@ -112,9 +122,13 @@ HEADER_INIT_KEYS = \
 
 HEADER_INT_KEYS = HEADER_KEYS_V1_2 + HEADER_KEYS_V1_4
 # List of all unordered KeyValues currently being used to generate the file
-HEADER_UNORDERED_KEYS = HEADER_KEYS_V1X + HEADER_KEYS_V1_2 + \
-                      ['latest_bandwidth'] + \
-                      HEADER_KEYS_V1_4
+HEADER_UNORDERED_KEYS = (
+    HEADER_KEYS_V1_1_SELF_INIT
+    + HEADER_KEYS_V1_1_TO_INIT
+    + HEADER_KEYS_V1_3
+    + HEADER_KEYS_V1_2
+    + HEADER_KEYS_V1_4
+)
 # List of all the KeyValues currently being used to generate the file
 HEADER_ALL_KEYS = HEADER_KEYS_V1_1_ORDERED + HEADER_UNORDERED_KEYS
 

@@ -33,16 +33,26 @@ KEYVALUE_SEP_V2 = ' '
 # Header KeyValues
 # =================
 # List of the extra KeyValues accepted by the class
-HEADER_KEYS_V1X = ['software', 'software_version', 'file_created',
-                       'earliest_bandwidth', 'generator_started',
-                       'scanner_country', 'destinations_countries']
+HEADER_KEYS_V1X = [
+    "software",
+    "software_version",
+    "file_created",
+    "earliest_bandwidth",
+    "generator_started",
+    "scanner_country",
+    "destinations_countries",
+]
 # number_eligible_relays is the number that ends in the bandwidth file
 # ie, have not been excluded by one of the filters in 4. below
 # They should be call recent_measurement_included_count to be congruent
 # with the other KeyValues.
-HEADER_KEYS_V1_2 = ['number_eligible_relays', 'minimum_number_eligible_relays',
-                   'number_consensus_relays', 'percent_eligible_relays',
-                   'minimum_percent_eligible_relays']
+HEADER_KEYS_V1_2 = [
+    "number_eligible_relays",
+    "minimum_number_eligible_relays",
+    "number_consensus_relays",
+    "percent_eligible_relays",
+    "minimum_percent_eligible_relays",
+]
 
 # KeyValues that count the number of relays that are in the bandwidth file,
 # but ignored by Tor when voting, because they do not have a
@@ -136,10 +146,16 @@ BWLINE_KEYS_V1_1 = BWLINE_KEYS_V0 + \
                      'under_min_report',
                      # Added in #292951
                      'error_second_relay', 'error_destination']
-BWLINE_KEYS_V1_2 = ['bw_median', 'bw_mean', 'desc_bw_avg', 'desc_bw_bur',
-                          'desc_bw_obs_last', 'desc_bw_obs_mean',
-                          'consensus_bandwidth',
-                          'consensus_bandwidth_is_unmeasured']
+BWLINE_KEYS_V1_2 = [
+    "bw_median",
+    "bw_mean",
+    "desc_bw_avg",
+    "desc_bw_bur",
+    "desc_bw_obs_last",
+    "desc_bw_obs_mean",
+    "consensus_bandwidth",
+    "consensus_bandwidth_is_unmeasured",
+]
 
 # Added in #292951
 BWLINE_KEYS_V1_4 = [
@@ -183,11 +199,21 @@ BWLINE_KEYS_V1 = BWLINE_KEYS_V1_1 + BWLINE_KEYS_V1_2 \
                + BWLINE_KEYS_V1_4
 # NOTE: tech-debt: assign boolean type to vote and unmeasured,
 # when the attributes are defined with a type, as stem does.
-BWLINE_INT_KEYS = ['bw', 'rtt', 'success', 'error_stream',
-                    'error_circ', 'error_misc', 'vote', 'unmeasured',
-                    'under_min_report'] \
-                   + BWLINE_KEYS_V1_2 \
-                   + BWLINE_KEYS_V1_4
+BWLINE_INT_KEYS = (
+    [
+        "bw",
+        "rtt",
+        "success",
+        "error_stream",
+        "error_circ",
+        "error_misc",
+        "vote",
+        "unmeasured",
+        "under_min_report",
+    ]
+    + BWLINE_KEYS_V1_2
+    + BWLINE_KEYS_V1_4
+)
 BWLINE_ALL_KEYS = BWLINE_KEYS_V0 + BWLINE_KEYS_V1
 
 

@@ -32,6 +32,8 @@ KEYVALUE_SEP_V2 = ' '
 
 # Header KeyValues
 # =================
+# KeyValues that need to be in a specific order in the Bandwidth File.
+HEADER_KEYS_V1_1_ORDERED = ['version']
 # List of the extra KeyValues accepted by the class
 HEADER_KEYS_V1X = [
     "software",
@@ -114,7 +116,7 @@ HEADER_UNORDERED_KEYS = HEADER_KEYS_V1X + HEADER_KEYS_V1_2 + \
                       ['latest_bandwidth'] + \
                       HEADER_KEYS_V1_4
 # List of all the KeyValues currently being used to generate the file
-HEADER_ALL_KEYS = ['version'] + HEADER_UNORDERED_KEYS
+HEADER_ALL_KEYS = HEADER_KEYS_V1_1_ORDERED + HEADER_UNORDERED_KEYS
 
 TERMINATOR = '====='
 

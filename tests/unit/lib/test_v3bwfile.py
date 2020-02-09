@@ -14,7 +14,7 @@ from sbws.lib.v3bwfile import (
     V3BWHeader, V3BWLine, TERMINATOR, LINE_SEP,
     KEYVALUE_SEP_V1, num_results_of_type,
     V3BWFile, round_sig_dig,
-    BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED
+    HEADER_RECENT_MEASUREMENTS_EXCLUDED_KEYS
     )
 from sbws.util.timestamp import now_fname, now_isodt_str, now_unixts
 
@@ -258,7 +258,7 @@ def test_from_results_read(datadir, tmpdir, conf, args):
                                  earliest_bandwidth=earliest_bandwidth,
                                  latest_bandwidth=latest_bandwidth)
     exclusion_dict = dict(
-        [(k, 0) for k in BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED]
+        [(k, 0) for k in HEADER_RECENT_MEASUREMENTS_EXCLUDED_KEYS]
         )
     expected_header.add_relays_excluded_counters(exclusion_dict)
     raw_bwls = [V3BWLine.from_results(results[fp])[0] for fp in results]

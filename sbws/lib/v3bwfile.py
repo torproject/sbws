@@ -33,21 +33,21 @@ KEYVALUE_SEP_V2 = ' '
 # Header KeyValues
 # =================
 # List of the extra KeyValues accepted by the class
-EXTRA_ARG_KEYVALUES = ['software', 'software_version', 'file_created',
+HEADER_KEYS_V1X = ['software', 'software_version', 'file_created',
                        'earliest_bandwidth', 'generator_started',
                        'scanner_country', 'destinations_countries']
 # number_eligible_relays is the number that ends in the bandwidth file
 # ie, have not been excluded by one of the filters in 4. below
 # They should be call recent_measurement_included_count to be congruent
 # with the other KeyValues.
-STATS_KEYVALUES = ['number_eligible_relays', 'minimum_number_eligible_relays',
+HEADER_KEYS_V1_2 = ['number_eligible_relays', 'minimum_number_eligible_relays',
                    'number_consensus_relays', 'percent_eligible_relays',
                    'minimum_percent_eligible_relays']
 
 # KeyValues that count the number of relays that are in the bandwidth file,
 # but ignored by Tor when voting, because they do not have a
 # measured bandwidth.
-BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED = [
+HEADER_RECENT_MEASUREMENTS_EXCLUDED_KEYS = [
     # Number of relays that were measured but all the measurements failed
     # because of network failures or it was
     # not found a suitable helper relay
@@ -70,7 +70,7 @@ BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED = [
 # recent_measurement_attempt_count and recent_priority_relay_count
 # are not reset when the scanner is stop.
 # They will accumulate the values since the scanner was ever started.
-BW_HEADER_KEYVALUES_MONITOR = [
+HEADER_KEYS_V1_4 = [
     # 1.1 header: the number of different consensuses, that sbws has seen,
     # since the last 5 days
     'recent_consensus_count',
@@ -91,34 +91,34 @@ BW_HEADER_KEYVALUES_MONITOR = [
     'recent_measurement_failure_count',
     # The time it took to report about half of the network.
     'time_to_report_half_network',
-] + BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED
-BANDWIDTH_HEADER_KEY_VALUES_INIT = \
+] + HEADER_RECENT_MEASUREMENTS_EXCLUDED_KEYS
+HEADER_INIT_KEYS = \
     ['earliest_bandwidth', 'generator_started',
      'scanner_country', 'destinations_countries']\
-    + STATS_KEYVALUES \
-    + BW_HEADER_KEYVALUES_MONITOR
+    + HEADER_KEYS_V1_2 \
+    + HEADER_KEYS_V1_4
 
-KEYVALUES_INT = STATS_KEYVALUES + BW_HEADER_KEYVALUES_MONITOR
+HEADER_INT_KEYS = HEADER_KEYS_V1_2 + HEADER_KEYS_V1_4
 # List of all unordered KeyValues currently being used to generate the file
-UNORDERED_KEYVALUES = EXTRA_ARG_KEYVALUES + STATS_KEYVALUES + \
+HEADER_UNORDERED_KEYS = HEADER_KEYS_V1X + HEADER_KEYS_V1_2 + \
                       ['latest_bandwidth'] + \
-                      BW_HEADER_KEYVALUES_MONITOR
+                      HEADER_KEYS_V1_4
 # List of all the KeyValues currently being used to generate the file
-ALL_KEYVALUES = ['version'] + UNORDERED_KEYVALUES
+HEADER_ALL_KEYS = ['version'] + HEADER_UNORDERED_KEYS
 
 TERMINATOR = '====='
 
 # Bandwidth Lines KeyValues
 # =========================
 # Num header lines in v1.X.X using all the KeyValues
-NUM_LINES_HEADER_V1 = len(ALL_KEYVALUES) + 2
+NUM_LINES_HEADER_V1 = len(HEADER_ALL_KEYS) + 2
 LINE_TERMINATOR = TERMINATOR + LINE_SEP
 
 # KeyValue separator in Bandwidth Lines
-BW_KEYVALUE_SEP_V1 = ' '
+BWLINE_KEYVALUES_SEP_V1 = ' '
 # not inclding in the files the extra bws for now
-BW_KEYVALUES_BASIC = ['node_id', 'bw']
-BW_KEYVALUES_FILE = BW_KEYVALUES_BASIC + \
+BWLINE_KEYS_V0 = ['node_id', 'bw']
+BWLINE_KEYS_V1_1 = BWLINE_KEYS_V0 + \
                     ['master_key_ed25519', 'nick', 'rtt', 'time',
                      'success', 'error_stream', 'error_circ', 'error_misc',
                      # `vote=0` is used for the relays that were excluded to
@@ -136,13 +136,13 @@ BW_KEYVALUES_FILE = BW_KEYVALUES_BASIC + \
                      'under_min_report',
                      # Added in #292951
                      'error_second_relay', 'error_destination']
-BW_KEYVALUES_EXTRA_BWS = ['bw_median', 'bw_mean', 'desc_bw_avg', 'desc_bw_bur',
+BWLINE_KEYS_V1_2 = ['bw_median', 'bw_mean', 'desc_bw_avg', 'desc_bw_bur',
                           'desc_bw_obs_last', 'desc_bw_obs_mean',
                           'consensus_bandwidth',
                           'consensus_bandwidth_is_unmeasured']
 
 # Added in #292951
-BANDWIDTH_LINE_KEY_VALUES_MONITOR = [
+BWLINE_KEYS_V1_4 = [
     # 1.2 relay: the number of different consensuses, that sbws has seen,
     # since the last 5 days, that have this relay
     'relay_in_recent_consensus_count',
@@ -179,16 +179,16 @@ BANDWIDTH_LINE_KEY_VALUES_MONITOR = [
     # (by default 2).
     'relay_recent_measurements_excluded_few_count',
 ]
-BW_KEYVALUES_EXTRA = BW_KEYVALUES_FILE + BW_KEYVALUES_EXTRA_BWS \
-               + BANDWIDTH_LINE_KEY_VALUES_MONITOR
+BWLINE_KEYS_V1 = BWLINE_KEYS_V1_1 + BWLINE_KEYS_V1_2 \
+               + BWLINE_KEYS_V1_4
 # NOTE: tech-debt: assign boolean type to vote and unmeasured,
 # when the attributes are defined with a type, as stem does.
-BW_KEYVALUES_INT = ['bw', 'rtt', 'success', 'error_stream',
+BWLINE_INT_KEYS = ['bw', 'rtt', 'success', 'error_stream',
                     'error_circ', 'error_misc', 'vote', 'unmeasured',
                     'under_min_report'] \
-                   + BW_KEYVALUES_EXTRA_BWS \
-                   + BANDWIDTH_LINE_KEY_VALUES_MONITOR
-BW_KEYVALUES = BW_KEYVALUES_BASIC + BW_KEYVALUES_EXTRA
+                   + BWLINE_KEYS_V1_2 \
+                   + BWLINE_KEYS_V1_4
+BWLINE_ALL_KEYS = BWLINE_KEYS_V0 + BWLINE_KEYS_V1
 
 
 def round_sig_dig(n, digits=PROP276_ROUND_DIG):
@@ -263,7 +263,7 @@ class V3BWHeader(object):
         # same as timestamp
         self.latest_bandwidth = unixts_to_isodt_str(timestamp)
         [setattr(self, k, v) for k, v in kwargs.items()
-         if k in BANDWIDTH_HEADER_KEY_VALUES_INIT]
+         if k in HEADER_INIT_KEYS]
 
     def __str__(self):
         if self.version.startswith('1.'):
@@ -339,7 +339,7 @@ class V3BWHeader(object):
         ts = lines[0]
         kwargs = dict([l.split(KEYVALUE_SEP_V1)
                        for l in lines[:index_terminator]
-                       if l.split(KEYVALUE_SEP_V1)[0] in ALL_KEYVALUES])
+                       if l.split(KEYVALUE_SEP_V1)[0] in HEADER_ALL_KEYS])
         h = cls(ts, **kwargs)
         # last line is new line
         return h, lines[index_terminator + 1:-1]
@@ -427,7 +427,7 @@ class V3BWHeader(object):
         """Return list of KeyValue tuples that do not have specific order."""
         # sort the list to generate determinist headers
         keyvalue_tuple_ls = sorted([(k, v) for k, v in self.__dict__.items()
-                                    if k in UNORDERED_KEYVALUES])
+                                    if k in HEADER_UNORDERED_KEYS])
         return keyvalue_tuple_ls
 
     @property
@@ -470,7 +470,7 @@ class V3BWHeader(object):
     def add_stats(self, **kwargs):
         # Using kwargs because attributes might chage.
         [setattr(self, k, str(v)) for k, v in kwargs.items()
-         if k in STATS_KEYVALUES]
+         if k in HEADER_KEYS_V1_2]
 
     def add_time_report_half_network(self):
         """Add to the header the time it took to measure half of the network.
@@ -553,7 +553,7 @@ class V3BWLine(object):
         self.node_id = node_id
         self.bw = bw
         [setattr(self, k, v) for k, v in kwargs.items()
-         if k in BW_KEYVALUES_EXTRA]
+         if k in BWLINE_KEYS_V1]
 
     def __str__(self):
         return self.bw_strv1
@@ -604,8 +604,8 @@ class V3BWLine(object):
         # NOTE: The following 4 conditions exclude relays from the bandwidth
         # file when the measurements does not satisfy some rules, what makes
         # the relay non-`eligible`.
-        # In BANDWIDTH_LINE_KEY_VALUES_MONITOR it is explained what they mean.
-        # In BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED it is also
+        # In BWLINE_KEYS_V1_4 it is explained what they mean.
+        # In HEADER_RECENT_MEASUREMENTS_EXCLUDED_KEYS it is also
         # explained the what it means the strings returned.
         # They rules were introduced in #28061 and #27338
         # In #28565 we introduce the KeyValues to know why they're excluded.
@@ -708,10 +708,10 @@ class V3BWLine(object):
     def from_bw_line_v1(cls, line):
         assert isinstance(line, str)
         kwargs = dict([kv.split(KEYVALUE_SEP_V1)
-                       for kv in line.split(BW_KEYVALUE_SEP_V1)
-                       if kv.split(KEYVALUE_SEP_V1)[0] in BW_KEYVALUES])
+                       for kv in line.split(BWLINE_KEYVALUES_SEP_V1)
+                       if kv.split(KEYVALUE_SEP_V1)[0] in BWLINE_ALL_KEYS])
         for k, v in kwargs.items():
-            if k in BW_KEYVALUES_INT:
+            if k in BWLINE_INT_KEYS:
                 kwargs[k] = int(v)
         node_id = kwargs['node_id']
         bw = kwargs['bw']
@@ -829,7 +829,7 @@ class V3BWLine(object):
         """Return list of KeyValue Bandwidth Line tuples."""
         # sort the list to generate determinist headers
         keyvalue_tuple_ls = sorted([(k, v) for k, v in self.__dict__.items()
-                                    if k in BW_KEYVALUES])
+                                    if k in BWLINE_ALL_KEYS])
         return keyvalue_tuple_ls
 
     @property
@@ -844,7 +844,7 @@ class V3BWLine(object):
     @property
     def bw_strv1(self):
         """Return Bandwidth Line string following spec v1.X.X."""
-        bw_line_str = BW_KEYVALUE_SEP_V1.join(
+        bw_line_str = BWLINE_KEYVALUES_SEP_V1.join(
                         self.bw_keyvalue_v1str_ls) + LINE_SEP
         if len(bw_line_str) > BW_LINE_SIZE:
             # if this is the case, probably there are too many KeyValues,
@@ -908,11 +908,11 @@ class V3BWFile(object):
 
         # Create a dictionary with the number of relays excluded by any of the
         # of the filtering rules that makes relays non-`eligible`.
-        # NOTE: In BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED it is
+        # NOTE: In HEADER_RECENT_MEASUREMENTS_EXCLUDED_KEYS it is
         # explained what are the KeyValues.
         # See also the comments in `from_results`.
         exclusion_dict = dict(
-            [(k, 0) for k in BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED]
+            [(k, 0) for k in HEADER_RECENT_MEASUREMENTS_EXCLUDED_KEYS]
             )
         for fp, values in results.items():
             # log.debug("Relay fp %s", fp)

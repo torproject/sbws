@@ -120,11 +120,14 @@ HEADER_KEYS_V1_4 = [
     # The time it took to report about half of the network.
     'time_to_report_half_network',
 ] + HEADER_RECENT_MEASUREMENTS_EXCLUDED_KEYS
-HEADER_INIT_KEYS = \
-    ['earliest_bandwidth', 'generator_started',
-     'scanner_country', 'destinations_countries']\
-    + HEADER_KEYS_V1_2 \
+
+# KeyValues that are initialized from arguments, not self-initialized.
+HEADER_INIT_KEYS = (
+    HEADER_KEYS_V1_1_TO_INIT
+    + HEADER_KEYS_V1_3
+    + HEADER_KEYS_V1_2
     + HEADER_KEYS_V1_4
+)
 
 HEADER_INT_KEYS = HEADER_KEYS_V1_2 + HEADER_KEYS_V1_4
 # List of all unordered KeyValues currently being used to generate the file

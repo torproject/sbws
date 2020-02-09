@@ -50,10 +50,14 @@ earliest_bandwidth_l = KEYVALUE_SEP_V1.join(['earliest_bandwidth',
 generator_started = '2018-04-16T14:09:05'
 generator_started_l = KEYVALUE_SEP_V1.join(['generator_started',
                                            generator_started])
+tor_version = '0.4.2.5'
+tor_version_l = KEYVALUE_SEP_V1.join(['tor_version', tor_version])
+
 header_extra_ls = [timestamp_l, version_l,
                    earliest_bandwidth_l, file_created_l, generator_started_l,
                    latest_bandwidth_l,
-                   software_l, software_version_l, TERMINATOR]
+                   software_l, software_version_l, tor_version_l,
+                   TERMINATOR]
 header_extra_str = LINE_SEP.join(header_extra_ls) + LINE_SEP
 
 # Line produced without any scaling.
@@ -90,7 +94,8 @@ def test_v3bwheader_extra_str():
     header = V3BWHeader(timestamp_l,
                         file_created=file_created,
                         generator_started=generator_started,
-                        earliest_bandwidth=earliest_bandwidth)
+                        earliest_bandwidth=earliest_bandwidth,
+                        tor_version=tor_version)
     assert header_extra_str == str(header)
 
 
@@ -98,7 +103,8 @@ def test_v3bwheader_from_lines():
     header_obj = V3BWHeader(timestamp_l,
                             file_created=file_created,
                             generator_started=generator_started,
-                            earliest_bandwidth=earliest_bandwidth)
+                            earliest_bandwidth=earliest_bandwidth,
+                            tor_version=tor_version)
     header, _ = V3BWHeader.from_lines_v1(header_extra_ls)
     assert str(header_obj) == str(header)
 
@@ -107,7 +113,8 @@ def test_v3bwheader_from_text():
     header_obj = V3BWHeader(timestamp_l,
                             file_created=file_created,
                             generator_started=generator_started,
-                            earliest_bandwidth=earliest_bandwidth)
+                            earliest_bandwidth=earliest_bandwidth,
+                            tor_version=tor_version)
     header, _ = V3BWHeader.from_text_v1(header_extra_str)
     assert str(header_obj) == str(header)
 

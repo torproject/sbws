@@ -679,9 +679,14 @@ def run_speedtest(args, conf):
     # When there will be a refactor where conf is global, this can be removed
     # from here.
     state = State(conf.getpath('paths', 'state_fname'))
+    # XXX: tech-debt: create new function to obtain the controller and to
+    # write the state, so that a unit test to check the state tor version can
+    # be created
+    # Store tor version whenever the scanner starts.
+    state['tor_version'] = str(controller.get_version())
     # Call only once to initialize http_headers
     settings.init_http_headers(conf.get('scanner', 'nickname'), state['uuid'],
-                               str(controller.get_version()))
+                               state['tor_version'])
     # To do not have to pass args and conf to RelayList, pass an extra
     # argument with the data_period
     measurements_period = conf.getint('general', 'data_period')

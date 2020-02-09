@@ -294,6 +294,7 @@ class Relay:
         measurement period.
         """
         return timestamp.is_old(self.last_consensus_timestamp)
+
     # XXX: tech-debt: replace `_desc` attr by a a `dequee` of the last
     # descriptors seen for this relay and the timestamp.
     def update_server_descriptor(self, server_descriptor):

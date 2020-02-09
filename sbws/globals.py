@@ -36,6 +36,14 @@ TORRC_STARTING_POINT = {
     'SafeLogging': '0',
     'LogTimeGranularity': '1',
     'ProtocolWarnings': '1',
+    # To be able to responde to MaxAdvertisedBandwidth as soon as possible.
+    # If ``FetchDirInfoExtraEarly` is set, but not
+    # `FetchDirInfoEarly`, Tor will throw this error:
+    # `FetchDirInfoExtraEarly requires that you also set FetchDirInfoEarly`
+    'FetchDirInfoEarly': '1',
+    'FetchDirInfoExtraEarly': '1',
+    # To make Tor keep fetching descriptors, even when idle.
+    'FetchUselessDescriptors': '1'
 }
 # Options that need to be set at runtime.
 TORRC_RUNTIME_OPTIONS = {

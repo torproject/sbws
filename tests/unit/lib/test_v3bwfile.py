@@ -11,10 +11,10 @@ from sbws.globals import (SPEC_VERSION, SBWS_SCALING, TORFLOW_SCALING,
                           MIN_REPORT, TORFLOW_ROUND_DIG, PROP276_ROUND_DIG)
 from sbws.lib.resultdump import Result, load_result_file, ResultSuccess
 from sbws.lib.v3bwfile import (
-    V3BWHeader, V3BWLine, TERMINATOR, LINE_SEP,
+    V3BWHeader, V3BWLine, TERMINATOR, LINES_SEP,
     KEYVALUE_SEP_V1, num_results_of_type,
     V3BWFile, round_sig_dig,
-    BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED
+    HEADER_RECENT_MEASUREMENTS_EXCLUDED_KEYS
     )
 from sbws.util.timestamp import now_fname, now_isodt_str, now_unixts
 
@@ -43,7 +43,7 @@ header_ls = [timestamp_l, version_l, destinations_countries_l, file_created_l,
              latest_bandwidth_l,
              # attempts_l, failure_l,
              scanner_country_l, software_l, software_version_l, TERMINATOR]
-header_str = LINE_SEP.join(header_ls) + LINE_SEP
+header_str = LINES_SEP.join(header_ls) + LINES_SEP
 earliest_bandwidth = '2018-04-16T14:09:07'
 earliest_bandwidth_l = KEYVALUE_SEP_V1.join(['earliest_bandwidth',
                                             earliest_bandwidth])
@@ -54,7 +54,7 @@ header_extra_ls = [timestamp_l, version_l,
                    earliest_bandwidth_l, file_created_l, generator_started_l,
                    latest_bandwidth_l,
                    software_l, software_version_l, TERMINATOR]
-header_extra_str = LINE_SEP.join(header_extra_ls) + LINE_SEP
+header_extra_str = LINES_SEP.join(header_extra_ls) + LINES_SEP
 
 # Line produced without any scaling.
 # unmeasured and vote are not congruent with the exclusion,
@@ -258,7 +258,7 @@ def test_from_results_read(datadir, tmpdir, conf, args):
                                  earliest_bandwidth=earliest_bandwidth,
                                  latest_bandwidth=latest_bandwidth)
     exclusion_dict = dict(
-        [(k, 0) for k in BW_HEADER_KEYVALUES_RECENT_MEASUREMENTS_EXCLUDED]
+        [(k, 0) for k in HEADER_RECENT_MEASUREMENTS_EXCLUDED_KEYS]
         )
     expected_header.add_relays_excluded_counters(exclusion_dict)
     raw_bwls = [V3BWLine.from_results(results[fp])[0] for fp in results]

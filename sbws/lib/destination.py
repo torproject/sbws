@@ -11,6 +11,7 @@ import sbws.util.stem as stem_utils
 from ..globals import (
     MAX_NUM_DESTINATION_FAILURES,
     DELTA_SECONDS_RETRY_DESTINATION,
+    MAX_SECONDS_RETRY_DESTINATION,
     NUM_DESTINATION_ATTEMPTS_STORED,
     FACTOR_INCREMENT_DESTINATION_RETRY
     )
@@ -121,7 +122,7 @@ def connect_to_destination_over_circuit(dest, circ_id, session, cont, max_dl):
             '{} not {}'.format(requests.codes.ok, head.status_code)
     if 'content-length' not in head.headers:
         dest.add_failure()
-        return False, error_prefix + 'we except the header Content-Length '\
+        return False, error_prefix + 'we expect the header Content-Length '\
             'to exist in the response'
     content_length = int(head.headers['content-length'])
     if max_dl > content_length:
@@ -143,6 +144,7 @@ class Destination:
     def __init__(self, url, max_dl, verify,
                  max_num_failures=MAX_NUM_DESTINATION_FAILURES,
                  delta_seconds_retry=DELTA_SECONDS_RETRY_DESTINATION,
+                 max_seconds_between_retries=MAX_SECONDS_RETRY_DESTINATION,
                  num_attempts_stored=NUM_DESTINATION_ATTEMPTS_STORED,
                  factor_increment_retry=FACTOR_INCREMENT_DESTINATION_RETRY):
         """Initalizes the Web server from which the data is downloaded.
@@ -169,6 +171,8 @@ class Destination:
         # Default delta time to try a destination that was not functional.
         self._default_delta_seconds_retry = delta_seconds_retry
         self._delta_seconds_retry = delta_seconds_retry
+        # A cap on the time to wait between destination retries.
+        self._max_seconds_between_retries = max_seconds_between_retries
         # Using a deque (FIFO) to do not grow forever and
         # to do not have to remove old attempts.
         # Store tuples of timestamp and whether the destination succed or not
@@ -201,20 +205,30 @@ class Destination:
         Increment the time a destination will be tried again by a ``factor``.
         """
         self._delta_seconds_retry *= factor or self._factor
-        log.info("Incremented the time to try destination %s to %s hours.",
-                 self.url, self._delta_seconds_retry / 60 / 60)
+        if self._delta_seconds_retry > self._max_seconds_between_retries:
+            self._delta_seconds_retry = self._max_seconds_between_retries
+            log.info("Incremented the time to try destination %s past the "
+                     "limit, capping it at %s hours.",
+                     self.url, self._delta_seconds_retry / 60 / 60)
+        else:
+            log.info("Incremented the time to try destination %s to %s hours.",
+                     self.url, self._delta_seconds_retry / 60 / 60)
+
+    def _get_last_try_in_seconds_ago(self):
+        """
+        Return the delta between the last try and now, as positive seconds.
+        """
+        # Timestamp of the last attempt.
+        last_time = self._attempts[-1][0]
+        return (datetime.datetime.utcnow() - last_time).total_seconds()
 
     def _is_last_try_old_enough(self, n=None):
         """
         Return True if the last time it was used it was ``n`` seconds ago.
         """
-        # Timestamp of the last attempt.
-        last_time = self._attempts[-1][0]
         # If the last attempt is older than _delta_seconds_retry, try again
-        return (datetime.datetime.utcnow()
-                - datetime.timedelta(seconds=self._delta_seconds_retry)
-                > last_time)
-        return False
+        return (self._get_last_try_in_seconds_ago() >
+                self._delta_seconds_retry)
 
     def is_functional(self):
         """Whether connections to a destination are failing or not.
@@ -238,18 +252,21 @@ class Destination:
         if self._are_last_attempts_failures():
             # The log here will appear in all the the queued
             #  relays and threads.
-            log.warning("The last %s times the destination %s failed."
-                        "Disabled for %s minutes.",
+            log.warning("The last %s times the destination %s failed. "
+                        "It last ran %s seconds ago. "
+                        "Disabled for %s seconds.",
                         self._max_num_failures, self.url,
-                        self._delta_seconds_retry / 60)
+                        self._get_last_try_in_seconds_ago(),
+                        self._delta_seconds_retry)
             log.warning("Please, add more destinations or increment the "
                         "number of maximum number of consecutive failures "
                         "in the configuration.")
             # It was not used for a while and the last time it was used
             # was long ago, then try again
             if self._is_last_try_old_enough():
-                log.info("The destination %s was not tried for %s hours, "
-                         "it is going to by tried again.")
+                log.info("The destination %s was not tried for %s seconds, "
+                         "it is going to by tried again.", self.url,
+                         self._get_last_try_in_seconds_ago())
                 # Set the next time to retry higher, in case this attempt fails
                 self._increment_time_to_retry()
                 return True

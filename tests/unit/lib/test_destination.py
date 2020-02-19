@@ -1,6 +1,7 @@
 """Unit tests for sbws.lib.destination."""
 from datetime import datetime, timedelta
 
+from sbws.globals import MAX_SECONDS_RETRY_DESTINATION
 from sbws.lib import destination
 
 
@@ -8,6 +9,12 @@ def test_destination_is_functional():
     eleven_mins_ago = datetime.utcnow() - timedelta(minutes=11)
     six_mins_ago = datetime.utcnow() - timedelta(minutes=6)
     four_mins_ago = datetime.utcnow() - timedelta(minutes=4)
+    # Make last time tried a bit bigger than the half of the maximum, so that
+    # it's bigger than the delta time to retry, and when delta time to retry
+    # is muliplied by a factor (2) it reaches the maximum.
+    long_ago = datetime.utcnow() - timedelta(
+        (MAX_SECONDS_RETRY_DESTINATION / 2) + 2
+    )
 
     d = destination.Destination('unexistenturl', 0, False)
     assert d.is_functional()
@@ -52,3 +59,16 @@ def test_destination_is_functional():
     assert d.is_functional()
     # And the delta to try is resetted
     assert not d._is_last_try_old_enough()
+
+    # When the delta time to retry a destination increase too much,
+    # set it to a maximum, and try the destination again
+    d.add_failure()
+    d.add_failure()
+    d.add_failure(long_ago)
+    # Pretend the delta seconds was already set to a bit more than
+    # half the maximum.
+    d._delta_seconds_retry = (MAX_SECONDS_RETRY_DESTINATION / 2) + 1
+    assert d._are_last_attempts_failures()
+    assert d._is_last_try_old_enough()
+    assert d.is_functional()
+    assert d._delta_seconds_retry == MAX_SECONDS_RETRY_DESTINATION

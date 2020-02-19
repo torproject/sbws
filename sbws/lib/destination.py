@@ -11,7 +11,7 @@ import sbws.util.stem as stem_utils
 from ..globals import (
     MAX_NUM_DESTINATION_FAILURES,
     DELTA_SECONDS_RETRY_DESTINATION,
-    MAX_SECONDS_BETWEEN_DESTINATION_RETRIES,
+    MAX_SECONDS_RETRY_DESTINATION,
     NUM_DESTINATION_ATTEMPTS_STORED,
     FACTOR_INCREMENT_DESTINATION_RETRY
     )
@@ -144,7 +144,7 @@ class Destination:
     def __init__(self, url, max_dl, verify,
                  max_num_failures=MAX_NUM_DESTINATION_FAILURES,
                  delta_seconds_retry=DELTA_SECONDS_RETRY_DESTINATION,
-                 max_seconds_between_retries=MAX_SECONDS_BETWEEN_DESTINATION_RETRIES,
+                 max_seconds_between_retries=MAX_SECONDS_RETRY_DESTINATION,
                  num_attempts_stored=NUM_DESTINATION_ATTEMPTS_STORED,
                  factor_increment_retry=FACTOR_INCREMENT_DESTINATION_RETRY):
         """Initalizes the Web server from which the data is downloaded.

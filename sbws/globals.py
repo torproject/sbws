@@ -140,7 +140,7 @@ NUM_DESTINATION_ATTEMPTS_STORED = 10
 DELTA_SECONDS_RETRY_DESTINATION = 60 * 5
 # No matter what, do not increase the wait time between destination reties
 # past this value.
-MAX_SECONDS_BETWEEN_DESTINATION_RETRIES = 60 * 60 * 3
+MAX_SECONDS_RETRY_DESTINATION = 60 * 60 * 3
 # Number of consecutive times a destination can fail before considering it
 # not functional.
 MAX_NUM_DESTINATION_FAILURES = 3

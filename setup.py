@@ -4,6 +4,9 @@ from setuptools import setup, find_packages
 # To use a consistent encoding
 from codecs import open
 import os
+# To generate the version at build time based on
+# git describe --tags --dirty --always
+import versioneer
 
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -31,17 +34,10 @@ def get_data_files():
     pass
 
 
-def find_version():
-    with open(os.path.join("sbws", "__init__.py")) as fp:
-        for line in fp:
-            if "__version__" in line.strip():
-                version = line.split("=", 1)[1].strip().strip("'")
-                return version
-
-
 setup(
     name='sbws',
-    version=find_version(),
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
     description='Simple Bandwidth Scanner',
     long_description=long_description(),
     long_description_content_type="text/markdown",

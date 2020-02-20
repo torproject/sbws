@@ -1,4 +1,6 @@
-__version__ = '1.1.1-dev0'
+from ._version import get_versions
+__version__ = get_versions()['version']
+del get_versions
 
 import threading  # noqa
 

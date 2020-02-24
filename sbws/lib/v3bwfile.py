@@ -163,8 +163,7 @@ LINE_TERMINATOR = TERMINATOR + LINE_SEP
 BWLINE_KEYVALUES_SEP_V1 = ' '
 # not inclding in the files the extra bws for now
 BWLINE_KEYS_V0 = ['node_id', 'bw']
-BWLINE_KEYS_V1_1 = BWLINE_KEYS_V0 + \
-                    ['master_key_ed25519', 'nick', 'rtt', 'time',
+BWLINE_KEYS_V1_1 = ['master_key_ed25519', 'nick', 'rtt', 'time',
                      'success', 'error_stream', 'error_circ', 'error_misc',
                      # Added in #292951
                      'error_second_relay', 'error_destination']
@@ -232,7 +231,7 @@ BWLINE_KEYS_V1_4 = [
     # Added in #29853.
     'under_min_report',
 ]
-BWLINE_KEYS_V1 = BWLINE_KEYS_V1_1 + BWLINE_KEYS_V1_2 \
+BWLINE_KEYS_V1 = BWLINE_KEYS_V0 + BWLINE_KEYS_V1_1 + BWLINE_KEYS_V1_2 \
                + BWLINE_KEYS_V1_4
 # NOTE: tech-debt: assign boolean type to vote and unmeasured,
 # when the attributes are defined with a type, as stem does.
@@ -248,7 +247,7 @@ BWLINE_INT_KEYS = (
     + BWLINE_KEYS_V1_2
     + BWLINE_KEYS_V1_4
 )
-BWLINE_ALL_KEYS = BWLINE_KEYS_V0 + BWLINE_KEYS_V1
+BWLINE_ALL_KEYS = BWLINE_KEYS_V1
 
 
 def round_sig_dig(n, digits=PROP276_ROUND_DIG):

@@ -45,7 +45,7 @@ HEADER_KEYS_V1_1_SELF_INIT = [
 # KeyValues that are initialized from arguments.
 HEADER_KEYS_V1_1_TO_INIT = [
     "earliest_bandwidth",
-    "generator_started"
+    "generator_started",
 ]
 
 # number_eligible_relays is the number that ends in the bandwidth file
@@ -63,7 +63,7 @@ HEADER_KEYS_V1_2 = [
 # KeyValues added in the Bandwidth File v1.3.0
 HEADER_KEYS_V1_3 = [
     "scanner_country",
-    "destinations_countries"
+    "destinations_countries",
 ]
 
 # KeyValues that count the number of relays that are in the bandwidth file,

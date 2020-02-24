@@ -256,7 +256,6 @@ BWLINE_INT_KEYS = (
     + BWLINE_KEYS_V1_2
     + BWLINE_KEYS_V1_4
 )
-BWLINE_ALL_KEYS = BWLINE_KEYS_V1
 
 
 def round_sig_dig(n, digits=PROP276_ROUND_DIG):
@@ -786,7 +785,7 @@ class V3BWLine(object):
         assert isinstance(line, str)
         kwargs = dict([kv.split(KEYVALUE_SEP_V1)
                        for kv in line.split(BWLINE_KEYVALUES_SEP_V1)
-                       if kv.split(KEYVALUE_SEP_V1)[0] in BWLINE_ALL_KEYS])
+                       if kv.split(KEYVALUE_SEP_V1)[0] in BWLINE_KEYS_V1])
         for k, v in kwargs.items():
             if k in BWLINE_INT_KEYS:
                 kwargs[k] = int(v)
@@ -906,7 +905,7 @@ class V3BWLine(object):
         """Return list of KeyValue Bandwidth Line tuples."""
         # sort the list to generate determinist headers
         keyvalue_tuple_ls = sorted([(k, v) for k, v in self.__dict__.items()
-                                    if k in BWLINE_ALL_KEYS])
+                                    if k in BWLINE_KEYS_V1])
         return keyvalue_tuple_ls
 
     @property

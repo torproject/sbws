@@ -54,12 +54,6 @@ HEADER_KEYS_V1_1_TO_INIT = [
     "generator_started",
 ]
 
-# KeyValues added in the Bandwidth File v1.3.0
-HEADER_KEYS_V1_3 = [
-    "scanner_country",
-    "destinations_countries",
-]
-
 # number_eligible_relays is the number that ends in the bandwidth file
 # ie, have not been excluded by one of the filters in 4. below
 # They should be call recent_measurement_included_count to be congruent
@@ -70,6 +64,12 @@ HEADER_KEYS_V1_2 = [
     "number_consensus_relays",
     "percent_eligible_relays",
     "minimum_percent_eligible_relays",
+]
+
+# KeyValues added in the Bandwidth File v1.3.0
+HEADER_KEYS_V1_3 = [
+    "scanner_country",
+    "destinations_countries",
 ]
 
 # KeyValues that count the number of relays that are in the bandwidth file,

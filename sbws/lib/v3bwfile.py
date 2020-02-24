@@ -34,9 +34,15 @@ KEYVALUE_SEP_V2 = ' '
 # =================
 # KeyValues that need to be in a specific order in the Bandwidth File.
 HEADER_KEYS_V1_1_ORDERED = ['version']
-# KeyValues that are not initialized from arguments nor depend on the state
-# file nor the measurements.
-HEADER_KEYS_V1_1_SELF_INIT = [
+# KeyValues that are not initialized from the state file nor the measurements.
+# They can also be pass as an argument to `Header` to overwrite default values,
+# what is done in unit tests.
+# `latest bandwidth` is special cause it gets its value from timestamp, which
+# is not a KeyValue, but it's always pass as an agument.
+# It could be separaed in other list, but so far there is no need, cause:
+# 1. when it's pass to the Header to initialize it, it's just ignored.
+# 2. when the file is created, it's took into account.
+HEADER_KEYS_V1_1_SELF_INITIALIZED = [
     "software",
     "software_version",
     "file_created",
@@ -135,7 +141,7 @@ HEADER_INIT_KEYS = (
 HEADER_INT_KEYS = HEADER_KEYS_V1_2 + HEADER_KEYS_V1_4
 # List of all unordered KeyValues currently being used to generate the file
 HEADER_UNORDERED_KEYS = (
-    HEADER_KEYS_V1_1_SELF_INIT
+    HEADER_KEYS_V1_1_SELF_INITIALIZED
     + HEADER_KEYS_V1_1_TO_INIT
     + HEADER_KEYS_V1_3
     + HEADER_KEYS_V1_2

@@ -166,19 +166,6 @@ BWLINE_KEYS_V0 = ['node_id', 'bw']
 BWLINE_KEYS_V1_1 = BWLINE_KEYS_V0 + \
                     ['master_key_ed25519', 'nick', 'rtt', 'time',
                      'success', 'error_stream', 'error_circ', 'error_misc',
-                     # `vote=0` is used for the relays that were excluded to
-                     # be reported in the bandwidth file and now they are
-                     # reported.
-                     # It tells Tor to do not vote on the relay.
-                     # `unmeasured=1` is used for the same relays and it is
-                     # added in case Tor would vote on them in future versions.
-                     # Maybe these keys should not be included for the relays
-                     # in which vote=1 and unmeasured=0.
-                     'vote', 'unmeasured',
-                     # When there not enough eligible relays (not excluded)
-                     # under_min_report is 1, `vote` is 0.
-                     # Added in #29853.
-                     'under_min_report',
                      # Added in #292951
                      'error_second_relay', 'error_destination']
 BWLINE_KEYS_V1_2 = [
@@ -231,6 +218,19 @@ BWLINE_KEYS_V1_4 = [
     # The number of measurements excluded because they are not at least X
     # (by default 2).
     'relay_recent_measurements_excluded_few_count',
+    # `vote=0` is used for the relays that were excluded to
+    # be reported in the bandwidth file and now they are
+    # reported.
+    # It tells Tor to do not vote on the relay.
+    # `unmeasured=1` is used for the same relays and it is
+    # added in case Tor would vote on them in future versions.
+    # Maybe these keys should not be included for the relays
+    # in which vote=1 and unmeasured=0.
+    'vote', 'unmeasured',
+    # When there not enough eligible relays (not excluded)
+    # under_min_report is 1, `vote` is 0.
+    # Added in #29853.
+    'under_min_report',
 ]
 BWLINE_KEYS_V1 = BWLINE_KEYS_V1_1 + BWLINE_KEYS_V1_2 \
                + BWLINE_KEYS_V1_4
@@ -244,9 +244,6 @@ BWLINE_INT_KEYS = (
         "error_stream",
         "error_circ",
         "error_misc",
-        "vote",
-        "unmeasured",
-        "under_min_report",
     ]
     + BWLINE_KEYS_V1_2
     + BWLINE_KEYS_V1_4

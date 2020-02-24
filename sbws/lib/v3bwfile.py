@@ -186,6 +186,8 @@ BWLINE_KEYS_V1_2 = [
     "consensus_bandwidth_is_unmeasured",
 ]
 
+# There were no bandwidth lines key added in the specification version 1.3
+
 # Added in #292951
 BWLINE_KEYS_V1_4 = [
     # 1.2 relay: the number of different consensuses, that sbws has seen,

@@ -23,7 +23,7 @@ from sbws.util.state import State
 
 log = logging.getLogger(__name__)
 
-LINES_SEP = '\n'
+LINE_SEP = '\n'
 KEYVALUE_SEP_V1 = '='
 KEYVALUE_SEP_V2 = ' '
 
@@ -151,7 +151,7 @@ TERMINATOR = '====='
 # =========================
 # Num header lines in v1.X.X using all the KeyValues
 NUM_LINES_HEADER_V1 = len(HEADER_ALL_KEYS) + 2
-LINE_TERMINATOR = TERMINATOR + LINES_SEP
+LINE_TERMINATOR = TERMINATOR + LINE_SEP
 
 # KeyValue separator in Bandwidth Lines
 BWLINE_KEYVALUES_SEP_V1 = ' '
@@ -417,7 +417,7 @@ class V3BWHeader(object):
         :returns: tuple of V3BWHeader object and non-header lines
         """
         assert isinstance(text, str)
-        return self.from_lines_v1(text.split(LINES_SEP))
+        return self.from_lines_v1(text.split(LINE_SEP))
 
     @classmethod
     def from_lines_v100(cls, lines):
@@ -511,7 +511,7 @@ class V3BWHeader(object):
     @property
     def strv1(self):
         """Return header string following spec v1.X.X."""
-        header_str = LINES_SEP.join(self.keyvalue_v1str_ls) + LINES_SEP + \
+        header_str = LINE_SEP.join(self.keyvalue_v1str_ls) + LINE_SEP + \
             LINE_TERMINATOR
         return header_str
 
@@ -525,13 +525,13 @@ class V3BWHeader(object):
     @property
     def strv2(self):
         """Return header string following spec v2.X.X."""
-        header_str = LINES_SEP.join(self.keyvalue_v2_ls) + LINES_SEP + \
+        header_str = LINE_SEP.join(self.keyvalue_v2_ls) + LINE_SEP + \
             LINE_TERMINATOR
         return header_str
 
     @property
     def num_lines(self):
-        return len(self.__str__().split(LINES_SEP))
+        return len(self.__str__().split(LINE_SEP))
 
     def add_stats(self, **kwargs):
         # Using kwargs because attributes might chage.
@@ -911,7 +911,7 @@ class V3BWLine(object):
     def bw_strv1(self):
         """Return Bandwidth Line string following spec v1.X.X."""
         bw_line_str = BWLINE_KEYVALUES_SEP_V1.join(
-                        self.bw_keyvalue_v1str_ls) + LINES_SEP
+                        self.bw_keyvalue_v1str_ls) + LINE_SEP
         if len(bw_line_str) > BW_LINE_SIZE:
             # if this is the case, probably there are too many KeyValues,
             # or the limit needs to be changed in Tor
@@ -1038,7 +1038,7 @@ class V3BWFile(object):
         log.info('Parsing bandwidth file %s', fpath)
         with open(fpath) as fd:
             text = fd.read()
-        all_lines = text.split(LINES_SEP)
+        all_lines = text.split(LINE_SEP)
         header, lines = V3BWHeader.from_lines_v1(all_lines)
         bw_lines = [V3BWLine.from_bw_line_v1(line) for line in lines]
         return cls(header, bw_lines)
@@ -1048,7 +1048,7 @@ class V3BWFile(object):
         log.info('Parsing bandwidth file %s', fpath)
         with open(fpath) as fd:
             text = fd.read()
-        all_lines = text.split(LINES_SEP)
+        all_lines = text.split(LINE_SEP)
         header, lines = V3BWHeader.from_lines_v100(all_lines)
         bw_lines = sorted([V3BWLine.from_bw_line_v1(l) for l in lines],
                           key=lambda l: l.bw)

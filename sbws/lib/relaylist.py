@@ -471,7 +471,7 @@ class RelayList:
             # If the relay is not in the current consensus but is not "old"
             # yet, add it to the new list of relays too, though its timestamp,
             # router status and descriptor can't be updated.
-            elif not r.is_old(self._measurements_period):
+            elif not r.is_old():
                 new_relays.append(r)
             # Otherwise, don't add it to the new list of relays.
             # For debugging, count the old relays that will be discarded.

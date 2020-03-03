@@ -91,4 +91,4 @@ def is_old(timestamp, measurements_period=MEASUREMENTS_PERIOD):
             # is not actually a timestamp
             timestamp = unixts_to_dt_obj(timestamp)
     oldest_date = datetime.utcnow() - timedelta(measurements_period)
-    return timestamp > oldest_date
+    return timestamp < oldest_date

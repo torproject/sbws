@@ -456,9 +456,9 @@ class RelayList:
                 # If a relay in the previous consensus and is in the current
                 # one, update its timestamp, router status and descriptor.
                 fp = r.fingerprint
-                r.update_consensus_timestamps(timestamp)
                 # new_relays_dict[fp] is the router status.
                 r.update_router_status(new_relays_dict[fp])
+                r.update_consensus_timestamps(timestamp)
                 try:
                     descriptor = c.get_server_descriptor(fp, default=None)
                 except (DescriptorUnavailable, ControllerError) as e:

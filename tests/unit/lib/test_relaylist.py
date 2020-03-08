@@ -38,6 +38,7 @@ def test_init_relays(
     with freeze_time("2020-02-29 10:00:00"):
         relay_list = RelayList(args, conf, controller=controller)
     assert len(relay_list._consensus_timestamps) == 1
+    assert len(relay_list._relays[0]._consensus_timestamps) == 1
     # The actual number of relays in the consensus
     assert len(relay_list._relays) == 6433
     fps = {r.fingerprint for r in relay_list._relays}
@@ -48,6 +49,7 @@ def test_init_relays(
         # Call relays update the list of relays.
         relay_list.relays
     assert len(relay_list._consensus_timestamps) == 2
+    assert len(relay_list._relays[0]._consensus_timestamps) == 2
     # Check that the number of relays is now the previous one plus the relays
     # that are in the new consensus that there were not in the previous one.
     fps_1h_later = {r.fingerprint for r in relay_list._relays}
@@ -60,6 +62,7 @@ def test_init_relays(
     with freeze_time("2020-03-05 10:00:01"):
         relay_list.relays
     assert len(relay_list._consensus_timestamps) == 2
+    assert len(relay_list._relays[0]._consensus_timestamps) == 2
     fps_5days_later = {r.fingerprint for r in relay_list._relays}
     # The number of added relays will be the number of relays in this
     # consensus that were not in the other 2 conensuses

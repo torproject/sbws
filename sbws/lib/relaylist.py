@@ -24,9 +24,11 @@ def remove_old_consensus_timestamps(
     :param int measurements_period:
     :returns list: a new list of ``consensus_timestamps``
     """
-    oldest_date = datetime.utcnow() - timedelta(seconds=measurements_period)
-    new_consensus_timestamps = \
-        [t for t in consensus_timestamps if t >= oldest_date]
+    new_consensus_timestamps = [
+        t
+        for t in consensus_timestamps
+        if not timestamp.is_old(t, measurements_period)
+    ]
     return new_consensus_timestamps
 
 

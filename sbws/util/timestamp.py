@@ -86,9 +86,9 @@ def is_old(timestamp, measurements_period=MEASUREMENTS_PERIOD):
             # This will raise an exception if the string is not correctly
             # formatted.
             timestamp = isostr_to_dt_obj(timestamp)
-        else:
+        elif isinstance(timestamp, int) or isinstance(timestamp, float):
             # This will raise an exception if the type is not int or float or
             # is not actually a timestamp
             timestamp = unixts_to_dt_obj(timestamp)
-    oldest_date = datetime.utcnow() - timedelta(measurements_period)
-    return timestamp > oldest_date
+    oldest_date = datetime.utcnow() - timedelta(seconds=measurements_period)
+    return timestamp < oldest_date

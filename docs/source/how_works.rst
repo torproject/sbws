@@ -25,6 +25,8 @@ by a :term:`directory authority` to report relays’ bandwidth in its vote.
    :height: 200px
    :align: center
 
+.. image:: ./images/dirauths_bwauths.png
+
 Intialization
 ~~~~~~~~~~~~~~
 

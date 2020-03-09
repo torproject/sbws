@@ -24,9 +24,11 @@ def remove_old_consensus_timestamps(
     :param int measurements_period:
     :returns list: a new list of ``consensus_timestamps``
     """
-    oldest_date = datetime.utcnow() - timedelta(measurements_period)
-    new_consensus_timestamps = \
-        [t for t in consensus_timestamps if t >= oldest_date]
+    new_consensus_timestamps = [
+        t
+        for t in consensus_timestamps
+        if not timestamp.is_old(t, measurements_period)
+    ]
     return new_consensus_timestamps
 
 
@@ -454,9 +456,9 @@ class RelayList:
                 # If a relay in the previous consensus and is in the current
                 # one, update its timestamp, router status and descriptor.
                 fp = r.fingerprint
-                r.update_consensus_timestamps(timestamp)
                 # new_relays_dict[fp] is the router status.
                 r.update_router_status(new_relays_dict[fp])
+                r.update_consensus_timestamps(timestamp)
                 try:
                     descriptor = c.get_server_descriptor(fp, default=None)
                 except (DescriptorUnavailable, ControllerError) as e:
@@ -471,7 +473,7 @@ class RelayList:
             # If the relay is not in the current consensus but is not "old"
             # yet, add it to the new list of relays too, though its timestamp,
             # router status and descriptor can't be updated.
-            elif not r.is_old(self._measurements_period):
+            elif not r.is_old():
                 new_relays.append(r)
             # Otherwise, don't add it to the new list of relays.
             # For debugging, count the old relays that will be discarded.
@@ -483,11 +485,12 @@ class RelayList:
             r = Relay(ns.fingerprint, c, ns=ns, timestamp=timestamp)
             new_relays.append(r)
 
+        days = self._measurements_period / (60 * 60 * 24)
         log.debug("Previous number of relays being measured %d",
                   len(self._relays))
         log.debug("Number of relays not in the in the consensus in the last "
                   "%d days: %d.",
-                  self._measurements_period, num_old_relays)
+                  days, num_old_relays)
         log.debug("Number of relays to measure with the current consensus: "
                   "%d", len(new_relays))
         return new_relays

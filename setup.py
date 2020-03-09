@@ -75,7 +75,7 @@ setup(
     extras_require={
         # vulture: find unused code
         'dev': ['flake8', 'vulture'],
-        'test': ['tox', 'pytest', 'coverage'],
+        'test': ['tox', 'pytest', 'coverage', 'freezegun'],
         # recommonmark: to make sphinx render markdown
         'doc': ['sphinx', 'recommonmark', 'pylint'],
     },

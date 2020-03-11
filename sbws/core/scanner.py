@@ -460,7 +460,7 @@ def result_putter_error(target):
 
 
 def main_loop(args, conf, controller, relay_list, circuit_builder, result_dump,
-              relay_prioritizer, destinations, max_pending_results, pool):
+              relay_prioritizer, destinations, pool):
     """Starts and reuse the threads that measure the relays forever.
 
     It starts a loop that will be run while there is not and event signaling
@@ -701,8 +701,7 @@ def run_speedtest(args, conf):
     max_pending_results = conf.getint('scanner', 'measurement_threads')
     pool = Pool(max_pending_results)
     try:
-        main_loop(args, conf, controller, rl, cb, rd, rp, destinations,
-                  max_pending_results, pool)
+        main_loop(args, conf, controller, rl, cb, rd, rp, destinations, pool)
     except KeyboardInterrupt:
         log.info("Interrupted by the user.")
         stop_threads(signal.SIGINT, None)

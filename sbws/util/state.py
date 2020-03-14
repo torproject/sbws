@@ -90,3 +90,18 @@ class State:
     def __contains__(self, item):
         self._state = self._read()
         return self._state.__contains__(item)
+
+    def count(self, k):
+        """
+        Returns the length if the key value is a list
+        or the sum of number if the key value is a list of list
+        or the key value
+        or None if the state doesn't have the key.
+        """
+        if self.get(k):
+            if isinstance(self._state[k], list):
+                if isinstance(self._state[k][0], list):
+                    return sum(map(lambda x: x[1], self._state[k]))
+                return len(self._state[k])
+            return self.get(k)
+        return None

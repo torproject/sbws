@@ -117,3 +117,12 @@ def test_state_iter(tmpdir):
     for key in d:
         state[key] = d[key]
     assert set([key for key in state]) == set(d)
+
+
+def test_two_instances(tmpdir):
+    """Test that 2 different intances don't overwrite each other"""
+    s1 = State(os.path.join(str(tmpdir), 'state.dat'))
+    s2 = State(os.path.join(str(tmpdir), 'state.dat'))
+    s1["x"] = "foo"
+    s2["y"] = "bar"
+    assert s2["x"] == "foo"

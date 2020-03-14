@@ -4,16 +4,12 @@ import json
 
 
 class State:
-    '''
-    State allows one to atomically access and update a simple state file on
-    disk across threads and across processes.
+    """
+    `json` wrapper to read a json file every time it gets a key and to write
+    to the file every time a key is set.
 
-    To put it blunty, due to limited developer time and his inability to
-    quickly find a way to safely access and update more complex data types
-    (namely, collections like list, set, and dict), you may only store simple
-    types of data as enumerated in _ALLOWED_TYPES. Keys must be strings.
-
-    Data is stored as JSON on disk in the provided file file.
+    Every time a key is got or set, the file is locked, to atomically access
+    and update the file across threads and across processes.
 
     >>> state = State('foo.state')
     >>> # state == {}
@@ -40,8 +36,8 @@ class State:
     >>> # We can do many of the same things with a State object as with a dict
     >>> for key in state: print(key)
     >>> # Prints 'linux', 'age', and 'name'
-    '''
-    _ALLOWED_TYPES = (int, float, str, bool, type(None))
+
+    """
 
     def __init__(self, fname):
         self._fname = fname
@@ -68,35 +64,19 @@ class State:
         Implements a dictionary ``get`` method reading and locking
         a json file.
         """
-        if not isinstance(key, str):
-            raise TypeError(
-                'Keys must be strings. %s is a %s' % (key, type(key)))
         self._state = self._read()
         return self._state.get(key, d)
 
     def __getitem__(self, key):
-        if not isinstance(key, str):
-            raise TypeError(
-                'Keys must be strings. %s is a %s' % (key, type(key)))
         self._state = self._read()
         return self._state.__getitem__(key)
 
     def __delitem__(self, key):
-        if not isinstance(key, str):
-            raise TypeError(
-                'Keys must be strings. %s is a %s' % (key, type(key)))
         self._state = self._read()
         self._state.__delitem__(key)
         self._write()
 
     def __setitem__(self, key, value):
-        if not isinstance(key, str):
-            raise TypeError(
-                'Keys must be strings. %s is a %s' % (key, type(key)))
-        if type(value) not in State._ALLOWED_TYPES:
-            raise TypeError(
-                'May only store value with type in %s, not %s' %
-                (State._ALLOWED_TYPES, type(value)))
         # NOTE: important, read the file before setting the key,
         # otherwise if other instances are creating other keys, they're lost.
         self._state = self._read()

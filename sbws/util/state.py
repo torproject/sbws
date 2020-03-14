@@ -97,6 +97,9 @@ class State:
             raise TypeError(
                 'May only store value with type in %s, not %s' %
                 (State._ALLOWED_TYPES, type(value)))
+        # NOTE: important, read the file before setting the key,
+        # otherwise if other instances are creating other keys, they're lost.
+        self._state = self._read()
         self._state.__setitem__(key, value)
         self._write()
 

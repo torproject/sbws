@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from freezegun import freeze_time
 
 from sbws.lib.relaylist import RelayList, remove_old_consensus_timestamps
+from sbws.util.state import State
 
 
 def test_remove_old_consensus_timestamps():
@@ -31,13 +32,14 @@ def test_init_relays(
     new consensus is received.
     Test that the number of consesus timesamps and relays is correct.
     """
+    state = State(conf['paths']['state_fpath'])
     # There is no need to mock datetime to update the consensus, since the
     # actual date will be always later.
     # But it's needed to have the correct list of timestamps both for RelayList
     # and Relay.
     with freeze_time("2020-02-29 10:00:00"):
-        relay_list = RelayList(args, conf, controller=controller)
-    assert len(relay_list._consensus_timestamps) == 1
+        relay_list = RelayList(args, conf, controller, state=state)
+    assert relay_list.recent_consensus_count == 1
     assert len(relay_list._relays[0]._consensus_timestamps) == 1
     # The actual number of relays in the consensus
     assert len(relay_list._relays) == 6433
@@ -48,7 +50,7 @@ def test_init_relays(
     with freeze_time("2020-02-29 11:00:00"):
         # Call relays update the list of relays.
         relay_list.relays
-    assert len(relay_list._consensus_timestamps) == 2
+    assert relay_list.recent_consensus_count == 2
     assert len(relay_list._relays[0]._consensus_timestamps) == 2
     # Check that the number of relays is now the previous one plus the relays
     # that are in the new consensus that there were not in the previous one.
@@ -61,7 +63,7 @@ def test_init_relays(
     relay_list._controller = controller_5days_later
     with freeze_time("2020-03-05 10:00:01"):
         relay_list.relays
-    assert len(relay_list._consensus_timestamps) == 2
+    assert relay_list.recent_consensus_count == 2
     assert len(relay_list._relays[0]._consensus_timestamps) == 2
     fps_5days_later = {r.fingerprint for r in relay_list._relays}
     # The number of added relays will be the number of relays in this

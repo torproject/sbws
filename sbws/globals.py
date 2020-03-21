@@ -148,6 +148,10 @@ MAX_NUM_DESTINATION_FAILURES = 3
 # destination fail again.
 FACTOR_INCREMENT_DESTINATION_RETRY = 2
 
+# Constants to check health KeyValues in the bandwidth file
+PERIOD_DAYS = int(MEASUREMENTS_PERIOD / (24 * 60 * 60))
+MAX_RECENT_CONSENSUS_COUNT = PERIOD_DAYS * 24  # 120
+
 
 def fail_hard(*a, **kw):
     ''' Log something ... and then exit as fast as possible '''

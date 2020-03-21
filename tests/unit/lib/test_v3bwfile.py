@@ -16,6 +16,7 @@ from sbws.lib.v3bwfile import (
     V3BWFile, round_sig_dig,
     HEADER_RECENT_MEASUREMENTS_EXCLUDED_KEYS
     )
+from sbws.util.state import CustomDecoder
 from sbws.util.timestamp import now_fname, now_isodt_str, now_unixts
 
 timestamp = 1523974147
@@ -248,7 +249,7 @@ def test_v3bwline_from_results_file(datadir):
     lines = datadir.readlines('results.txt')
     d = dict()
     for line in lines:
-        r = Result.from_dict(json.loads(line.strip()))
+        r = Result.from_dict(json.loads(line.strip(), cls=CustomDecoder))
         fp = r.fingerprint
         if fp not in d:
             d[fp] = []
@@ -521,11 +522,21 @@ def test_set_under_min_report(mock_consensus, conf, datadir):
 def test_generator_started(root_data_path, datadir):
     state_fpath = os.path.join(root_data_path, '.sbws/state.dat')
     # The method is correct
-    assert "2019-03-25T13:03:06" == V3BWHeader.generator_started_from_file(
+    assert "2020-02-29T10:00:00" == V3BWHeader.generator_started_from_file(
         state_fpath
     )
     # `results` does not matter here, using them to not have an empty list.
     results = load_result_file(str(datadir.join("results.txt")))
     header = V3BWHeader.from_results(results, '', '', state_fpath)
     # And the header is correct
-    assert "2019-03-25T13:03:06" == header.generator_started
+    assert "2020-02-29T10:00:00" == header.generator_started
+
+
+def test_recent_consensus_count(root_data_path, datadir):
+    # This state has recent_consensus_count
+    state_fpath = os.path.join(root_data_path, '.sbws/state.dat')
+    assert "1" == V3BWHeader.consensus_count_from_file(state_fpath)
+    # `results` does not matter here, using them to not have an empty list.
+    results = load_result_file(str(datadir.join("results.txt")))
+    header = V3BWHeader.from_results(results, '', '', state_fpath)
+    assert "1" == header.recent_consensus_count

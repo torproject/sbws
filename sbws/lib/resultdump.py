@@ -12,6 +12,7 @@ from datetime import timedelta
 from enum import Enum
 from sbws.globals import RESULT_VERSION, fail_hard
 from sbws.util.filelock import DirectoryLock
+from sbws.util.json import CustomEncoder, CustomDecoder
 from sbws.lib.relaylist import Relay
 from .. import settings
 
@@ -45,7 +46,9 @@ def load_result_file(fname, success_only=False):
             for line in fd:
                 num_total += 1
                 try:
-                    r = Result.from_dict(json.loads(line.strip()))
+                    r = Result.from_dict(
+                        json.loads(line.strip(), cls=CustomDecoder)
+                    )
                 except json.decoder.JSONDecodeError:
                     log.warning('Could not decode result %s', line.strip())
                     r = None
@@ -416,7 +419,7 @@ class Result:
                 'Unknown result type {}'.format(d['type']))
 
     def __str__(self):
-        return json.dumps(self.to_dict())
+        return json.dumps(self.to_dict(), cls=CustomEncoder)
 
 
 class ResultError(Result):

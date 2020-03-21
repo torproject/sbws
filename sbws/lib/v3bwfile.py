@@ -655,26 +655,29 @@ class V3BWLine(object):
             kwargs['master_key_ed25519'] = results[0].master_key_ed25519
         kwargs['time'] = cls.last_time_from_results(results)
         kwargs.update(cls.result_types_from_results(results))
-        consensuses_count = \
-            [r.relay_in_recent_consensus_count for r in results
-             if getattr(r, 'relay_in_recent_consensus_count', None)]
-        if consensuses_count:
-            consensus_count = max(consensuses_count)
-            kwargs['relay_in_recent_consensus_count'] = str(consensus_count)
 
-        measurements_attempts = \
-            [r.relay_recent_measurement_attempt_count for r in results
-             if getattr(r, 'relay_recent_measurement_attempt_count', None)]
-        if measurements_attempts:
-            kwargs['relay_recent_measurement_attempt_count'] = \
-                str(max(measurements_attempts))
+        # If it has not the attribute, return list to be able to call len
+        # If it has the attribute, but it is None, return also list
+        kwargs['relay_in_recent_consensus_count'] = str(
+            max([
+                len(getattr(r, 'relay_in_recent_consensus', []) or [])
+                for r in results
+            ])
+        )
 
-        relay_recent_priority_list_counts = \
-            [r.relay_recent_priority_list_count for r in results
-             if getattr(r, 'relay_recent_priority_list_count', None)]
-        if relay_recent_priority_list_counts:
-            kwargs['relay_recent_priority_list_count'] = \
-                str(max(relay_recent_priority_list_counts))
+        kwargs['relay_recent_priority_list_count'] = str(
+            max([
+                len(getattr(r, 'relay_recent_priority_list', []) or [])
+                for r in results
+            ])
+        )
+
+        kwargs['relay_recent_measurement_attempt_count'] = str(
+            max([
+                len(getattr(r, 'relay_recent_measurement_attempt', []) or [])
+                for r in results
+            ])
+        )
 
         success_results = [r for r in results if isinstance(r, ResultSuccess)]
 

@@ -1,5 +1,5 @@
 """relaylist.py unit tests."""
-from datetime import datetime, timedelta
+from datetime import datetime
 
 # When datetime is imported as a class (`from datetime import datetime`) it can
 # not be mocked because it is a built-in type. It can only be mocked when
@@ -7,21 +7,8 @@ from datetime import datetime, timedelta
 # freezegun is able to mock any datetime object, it also allows comparations.
 from freezegun import freeze_time
 
-from sbws.lib.relaylist import RelayList, remove_old_consensus_timestamps
+from sbws.lib.relaylist import Relay, RelayList
 from sbws.util.state import State
-
-
-def test_remove_old_consensus_timestamps():
-    days_ago = datetime(2020, 3, 1)
-    timestamps = [days_ago] + [
-        days_ago + timedelta(days=x) for x in range(1, 5)
-    ]
-    with freeze_time(days_ago + timedelta(days=5, seconds=1)):
-        new_timestamps = remove_old_consensus_timestamps(
-            timestamps, 5 * 24 * 60 * 60
-        )
-    assert len(new_timestamps) == len(timestamps) - 1
-    assert days_ago not in new_timestamps
 
 
 def test_init_relays(
@@ -40,7 +27,7 @@ def test_init_relays(
     with freeze_time("2020-02-29 10:00:00"):
         relay_list = RelayList(args, conf, controller, state=state)
     assert relay_list.recent_consensus_count == 1
-    assert len(relay_list._relays[0]._consensus_timestamps) == 1
+    assert relay_list._relays[0].relay_in_recent_consensus_count == 1
     # The actual number of relays in the consensus
     assert len(relay_list._relays) == 6433
     fps = {r.fingerprint for r in relay_list._relays}
@@ -51,7 +38,7 @@ def test_init_relays(
         # Call relays update the list of relays.
         relay_list.relays
     assert relay_list.recent_consensus_count == 2
-    assert len(relay_list._relays[0]._consensus_timestamps) == 2
+    assert relay_list._relays[0].relay_in_recent_consensus_count == 2
     # Check that the number of relays is now the previous one plus the relays
     # that are in the new consensus that there were not in the previous one.
     fps_1h_later = {r.fingerprint for r in relay_list._relays}
@@ -64,7 +51,7 @@ def test_init_relays(
     with freeze_time("2020-03-05 10:00:01"):
         relay_list.relays
     assert relay_list.recent_consensus_count == 2
-    assert len(relay_list._relays[0]._consensus_timestamps) == 2
+    assert relay_list._relays[0].relay_in_recent_consensus_count == 2
     fps_5days_later = {r.fingerprint for r in relay_list._relays}
     # The number of added relays will be the number of relays in this
     # consensus that were not in the other 2 conensuses
@@ -117,3 +104,76 @@ def test_increment_recent_measurement_attempt(args, conf, controller):
         relay_list.increment_recent_measurement_attempt()
     assert 3 == relay_list.recent_measurement_attempt_count
     assert 3 == len(state["recent_measurement_attempt"])
+
+
+def test_increment_relay_recent_measurement_attempt(
+    controller, router_status, server_descriptor
+):
+    """Test that incrementing the measurement attempts do not go on forever
+
+    And instead it only counts the number of attempts in the last days.
+    """
+    # For this test it does not matter that the consensus timestamps
+    # are not correct.
+    now = datetime.utcnow()
+    relay = Relay("A" * 40, controller, timestamp=now)
+    # The initial count is 0 and the state does not have that key.
+    assert 0 == relay.relay_recent_measurement_attempt_count
+
+    # Pretend that a measurement attempt is made.
+    with freeze_time("2020-02-29 10:00:00"):
+        relay.increment_relay_recent_measurement_attempt()
+    assert 1 == relay.relay_recent_measurement_attempt_count
+
+    # And a second measurement attempt is made 4 days later.
+    with freeze_time("2020-03-04 10:00:00"):
+        relay.increment_relay_recent_measurement_attempt()
+    assert 2 == relay.relay_recent_measurement_attempt_count
+
+    # And a third measurement attempt is made 5 days later.
+    with freeze_time("2020-03-05 10:00:00"):
+        relay.increment_relay_recent_measurement_attempt()
+    assert 3 == relay.relay_recent_measurement_attempt_count
+
+    # And a fourth measurement attempt is made 6 days later. The first one is
+    # now removed and not counted.
+    with freeze_time("2020-03-06 10:00:00"):
+        relay.increment_relay_recent_measurement_attempt()
+    assert 3 == relay.relay_recent_measurement_attempt_count
+    # XXX: Write to a Result and load it back
+
+
+def test_increment_relay_recent_priority_list(
+    controller, router_status, server_descriptor
+):
+    """Test that incrementing the priority lists do not go on forever
+
+    And instead it only counts the number of priority lists in the last days.
+    """
+    # For this test it does not matter that the consensus timestamps
+    # are not correct.
+    now = datetime.utcnow()
+    relay = Relay("A" * 40, controller, timestamp=now)
+    # The initial count is 0 and the state does not have that key.
+    assert 0 == relay.relay_recent_priority_list_count
+
+    # Pretend that a measurement attempt is made.
+    with freeze_time("2020-02-29 10:00:00"):
+        relay.increment_relay_recent_priority_list()
+    assert 1 == relay.relay_recent_priority_list_count
+
+    # And a second measurement attempt is made 4 days later.
+    with freeze_time("2020-03-04 10:00:00"):
+        relay.increment_relay_recent_priority_list()
+    assert 2 == relay.relay_recent_priority_list_count
+
+    # And a third measurement attempt is made 5 days later.
+    with freeze_time("2020-03-05 10:00:00"):
+        relay.increment_relay_recent_priority_list()
+    assert 3 == relay.relay_recent_priority_list_count
+
+    # And a fourth measurement attempt is made 6 days later. The first one is
+    # now removed and not counted.
+    with freeze_time("2020-03-06 10:00:00"):
+        relay.increment_relay_recent_priority_list()
+    assert 3 == relay.relay_recent_priority_list_count

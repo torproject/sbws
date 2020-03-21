@@ -93,6 +93,28 @@ def controller_5days_later(router_statuses_5days_later):
     return controller
 
 
+@pytest.fixture(scope="session")
+def server_descriptors(root_data_path):
+    p = os.path.join(root_data_path, "2020-02-29-10-05-00-server-descriptors")
+    server_descriptors = descriptor.parse_file(p)
+    server_descriptors_list = list(server_descriptors)
+    return server_descriptors_list
+
+
+@pytest.fixture(scope="session")
+def server_descriptor(server_descriptors):
+    return server_descriptors[0]
+
+
+@pytest.fixture(scope="session")
+def router_status(server_descriptor, router_statuses):
+    rs = [
+        ns
+        for ns in router_statuses
+        if ns.fingerprint == server_descriptor.fingerprint
+    ][0]
+    return rs
+
 # Because of the function scoped `args` in `tests.unit.conftest`, this has to
 # be function scoped too.
 @pytest.fixture(scope='function')

@@ -2,6 +2,8 @@ from sbws.util.filelock import FileLock
 import os
 import json
 
+from .json import CustomDecoder, CustomEncoder
+
 
 class State:
     """
@@ -48,12 +50,12 @@ class State:
             return {}
         with FileLock(self._fname):
             with open(self._fname, 'rt') as fd:
-                return json.load(fd)
+                return json.load(fd, cls=CustomDecoder)
 
     def _write(self):
         with FileLock(self._fname):
             with open(self._fname, 'wt') as fd:
-                return json.dump(self._state, fd, indent=4)
+                return json.dump(self._state, fd, indent=4, cls=CustomEncoder)
 
     def __len__(self):
         self._state = self._read()

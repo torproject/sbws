@@ -75,3 +75,45 @@ def test_init_relays(
     # The number of relays will be the number of relays in the cosensus plus
     # the added ones minus the removed ones.
     assert 6925 == 6505 + len(added_fps) - len(removed_fps)
+
+
+def test_increment_recent_measurement_attempt(args, conf, controller):
+    """Test that incrementing the measurement attempts does not grow foreever
+
+    And instead it only counts the number of attempts in the last days.
+    It also test that the state files is updated correctly.
+    """
+    state = State(conf['paths']['state_fpath'])
+    # For this test it does not matter that the consensus timestamps or relays
+    # are not correct.
+    relay_list = RelayList(args, conf, controller=controller, state=state)
+    # The initial count is 0 and the state does not have that key.
+    assert 0 == relay_list.recent_measurement_attempt_count
+    assert not state.get("recent_measurement_attempt", None)
+
+    # Pretend that a measurement attempt is made.
+    with freeze_time("2020-02-29 10:00:00"):
+        relay_list.increment_recent_measurement_attempt()
+    assert 1 == relay_list.recent_measurement_attempt_count
+    assert [datetime(2020, 2, 29, 10, 0)] == state[
+        "recent_measurement_attempt"
+    ]
+
+    # And a second measurement attempt is made 4 days later.
+    with freeze_time("2020-03-04 10:00:00"):
+        relay_list.increment_recent_measurement_attempt()
+    assert 2 == relay_list.recent_measurement_attempt_count
+    assert 2 == len(state["recent_measurement_attempt"])
+
+    # And a third measurement attempt is made 5 days later.
+    with freeze_time("2020-03-05 10:00:00"):
+        relay_list.increment_recent_measurement_attempt()
+    assert 3 == relay_list.recent_measurement_attempt_count
+    assert 3 == len(state["recent_measurement_attempt"])
+
+    # And a forth measurement attempt is made 6 days later. The first one is
+    # now removed and not counted.
+    with freeze_time("2020-03-06 10:00:00"):
+        relay_list.increment_recent_measurement_attempt()
+    assert 3 == relay_list.recent_measurement_attempt_count
+    assert 3 == len(state["recent_measurement_attempt"])

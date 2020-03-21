@@ -10,6 +10,7 @@ from threading import Lock
 
 from ..globals import (
     MAX_RECENT_CONSENSUS_COUNT,
+    MAX_RECENT_PRIORITY_RELAY_COUNT,
     MEASUREMENTS_PERIOD
 )
 from ..util import timestamp, timestamps
@@ -334,12 +335,10 @@ class RelayList:
         self._relays = []
         # The period of time for which the measurements are keep.
         self._measurements_period = measurements_period
-        self._state = state
-        # NOTE: blocking: writes to disk
-        if self._state:
-            if self._state.get('recent_measurement_attempt_count', None) \
-                    is None:
-                self._state['recent_measurement_attempt_count'] = 0
+        self._recent_measurement_attempt = timestamps.DateTimeSeq(
+            [], MAX_RECENT_PRIORITY_RELAY_COUNT, state,
+            "recent_measurement_attempt"
+        )
         self._refresh()
 
     def _need_refresh(self):
@@ -502,7 +501,7 @@ class RelayList:
         return [r for r in self.exits
                 if r.is_exit_not_bad_allowing_port(port)]
 
-    def increment_recent_measurement_attempt_count(self):
+    def increment_recent_measurement_attempt(self):
         """
         Increment the number of times that any relay has been queued to be
         measured.
@@ -512,5 +511,8 @@ class RelayList:
         It is read and stored in a ``state`` file.
         """
         # NOTE: blocking, writes to file!
-        if self._state:
-            self._state['recent_measurement_attempt_count'] += 1
+        self._recent_measurement_attempt.update()
+
+    @property
+    def recent_measurement_attempt_count(self):
+        return len(self._recent_measurement_attempt)

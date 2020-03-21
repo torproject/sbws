@@ -162,5 +162,5 @@ class RelayPrioritizer:
             del(relay.priority)
             # Increment the number of times a realy was "prioritized" to be
             # measured.
-            relay.increment_relay_recent_priority_list_count()
+            relay.increment_relay_recent_priority_list()
             yield relay

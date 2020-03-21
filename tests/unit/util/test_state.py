@@ -83,3 +83,11 @@ def test_two_instances(tmpdir):
     s1["x"] = "foo"
     s2["y"] = "bar"
     assert s2["x"] == "foo"
+
+
+def test_datetime_values(tmpdir):
+    import datetime
+    state = State(os.path.join(str(tmpdir), 'state.dat'))
+    now = datetime.datetime.utcnow().replace(microsecond=0)
+    state["datetimes"] = now
+    assert now == state["datetimes"]

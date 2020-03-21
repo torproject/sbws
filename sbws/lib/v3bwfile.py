@@ -470,7 +470,7 @@ class V3BWHeader(object):
         in the recent (by default 5) days from the state file.
         """
         state = State(state_fpath)
-        return state.get('recent_measurement_attempt_count', None)
+        return state.count('recent_measurement_attempt')
 
     @staticmethod
     def recent_priority_list_count_from_file(state_fpath):

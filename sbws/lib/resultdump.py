@@ -584,7 +584,14 @@ class ResultErrorSecondRelay(ResultError):
         return ResultErrorSecondRelay(
             Result.Relay(
                 d['fingerprint'], d['nickname'], d['address'],
-                d['master_key_ed25519']),
+                d['master_key_ed25519'],
+                relay_in_recent_consensus=  # noqa
+                    d.get('relay_in_recent_consensus', None),  # noqa
+                relay_recent_measurement_attempt=  # noqa
+                    d.get('relay_recent_measurement_attempt', None),  # noqa
+                relay_recent_priority_list=  # noqa
+                    d.get('relay_recent_priority_list', None),  # noqa
+                ),
             d['circ'], d['dest_url'], d['scanner'],
             msg=d['msg'], t=d['time'])
 
@@ -619,8 +626,15 @@ class ResultErrorDestination(ResultError):
         return ResultErrorSecondRelay(
             Result.Relay(
                 d['fingerprint'], d['nickname'], d['address'],
-                d['master_key_ed25519']),
-            d['circ'], d['dest_url'], d['scanner'],
+                d['master_key_ed25519'],
+                d['circ'], d['dest_url'], d['scanner'],
+                relay_in_recent_consensus=  # noqa
+                    d.get('relay_in_recent_consensus', None),  # noqa
+                relay_recent_measurement_attempt=  # noqa
+                    d.get('relay_recent_measurement_attempt', None),  # noqa
+                relay_recent_priority_list=  # noqa
+                    d.get('relay_recent_priority_list', None),  # noqa
+                ),
             msg=d['msg'], t=d['time'])
 
     def to_dict(self):

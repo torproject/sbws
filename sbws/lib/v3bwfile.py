@@ -481,7 +481,7 @@ class V3BWHeader(object):
         in the recent (by default 5) days from the state file.
         """
         state = State(state_fpath)
-        return state.get('recent_priority_list_count', None)
+        return state.count('recent_priority_list')
 
     @staticmethod
     def recent_priority_relay_count_from_file(state_fpath):
@@ -490,7 +490,7 @@ class V3BWHeader(object):
         in the recent (by default 5) days from the state file.
         """
         state = State(state_fpath)
-        return state.get('recent_priority_relay_count', None)
+        return state.count('recent_priority_relay')
 
     @staticmethod
     def latest_bandwidth_from_results(results):

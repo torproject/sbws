@@ -5,6 +5,10 @@ from unittest import mock
 
 from stem import descriptor
 
+from sbws import settings
+from sbws.lib import relaylist
+from sbws.lib import relayprioritizer
+from sbws.lib import resultdump
 from sbws.util.parser import create_parser
 
 
@@ -87,3 +91,29 @@ def controller_5days_later(router_statuses_5days_later):
     controller = mock.Mock()
     controller.get_network_statuses.return_value = router_statuses_5days_later
     return controller
+
+
+# Because of the function scoped `args` in `tests.unit.conftest`, this has to
+# be function scoped too.
+@pytest.fixture(scope='function')
+def relay_list(args, conf, controller):
+    """Returns a RelayList containing the Relays in the controller"""
+    return relaylist.RelayList(args, conf, controller)
+
+
+@pytest.fixture(scope='function')
+def result_dump(args, conf):
+    """Returns a ResultDump without Results"""
+    # To stop the thread that would be waiting for new results
+    settings.set_end_event()
+    return resultdump.ResultDump(args, conf)
+
+
+@pytest.fixture(scope="function")
+def relay_prioritizer(args, conf_results, relay_list, result_dump):
+    """
+    Returns a RelayPrioritizer with a RelayList and a ResultDump.
+    """
+    return relayprioritizer.RelayPrioritizer(
+        args, conf_results, relay_list, result_dump
+    )

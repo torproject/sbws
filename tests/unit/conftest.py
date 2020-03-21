@@ -187,6 +187,17 @@ def conf(sbwshome_empty, tmpdir):
     return conf
 
 
+@pytest.fixture(scope='function')
+def conf_results(sbwshome_success_result_two_relays, conf):
+    """Minimal configuration having a datadir
+
+    So that `ResultDump` does not raise AssertionError.
+
+    """
+    conf['paths']['sbws_home'] = sbwshome_success_result_two_relays
+    return conf
+
+
 @pytest.fixture()
 def result():
     return RESULT

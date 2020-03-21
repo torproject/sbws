@@ -68,11 +68,15 @@ OBS_BW = 524288
 BW = 600000
 UNMEASURED = False
 
+now = datetime.utcnow()
+
 RELAY1 = Result.Relay(FP1, NICK1, IP1, ED25519,
                       average_bandwidth=AVG_BW, burst_bandwidth=BUR_BW,
                       observed_bandwidth=OBS_BW, consensus_bandwidth=BW,
                       consensus_bandwidth_is_unmeasured=UNMEASURED,
-                      relay_in_recent_consensus_count=2)
+                      relay_in_recent_consensus=[now],
+                      relay_recent_measurement_attempt=[now],
+                      relay_recent_priority_list=[now])
 RELAY2 = Result.Relay(FP2, NICK2, IP2, ED25519)
 
 RESULT = Result(RELAY1, CIRC12, DEST_URL, SCANNER, t=TIME1)
@@ -96,7 +100,9 @@ RELAY_DICT = {
     "relay_observed_bandwidth": OBS_BW,
     "consensus_bandwidth": BW,
     "consensus_bandwidth_is_unmeasured": UNMEASURED,
-    "relay_in_recent_consensus_count": 2,
+    "relay_in_recent_consensus": [now],
+    "relay_recent_measurement_attempt": [now],
+    "relay_recent_priority_list": [now],
 }
 
 BASE_RESULT_NO_RELAY_DICT = {

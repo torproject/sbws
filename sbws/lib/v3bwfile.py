@@ -367,7 +367,7 @@ class V3BWHeader(object):
         if destinations_countries is not None:
             kwargs['destinations_countries'] = destinations_countries
         if recent_consensus_count is not None:
-            kwargs['recent_consensus_count'] = str(recent_consensus_count)
+            kwargs['recent_consensus_count'] = recent_consensus_count
 
         recent_measurement_attempt_count = \
             cls.recent_measurement_attempt_count_from_file(state_fpath)
@@ -457,10 +457,9 @@ class V3BWHeader(object):
     @staticmethod
     def consensus_count_from_file(state_fpath):
         state = State(state_fpath)
-        if 'recent_consensus_count' in state:
-            return state['recent_consensus_count']
-        else:
-            return None
+        if state.count("recent_consensus"):
+            return str(state.count("recent_consensus"))
+        return None
 
     # NOTE: in future refactor store state in the class
     @staticmethod

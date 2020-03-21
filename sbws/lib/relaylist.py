@@ -8,8 +8,11 @@ import random
 import logging
 from threading import Lock
 
-from ..globals import MEASUREMENTS_PERIOD
-from ..util import timestamp
+from ..globals import (
+    MAX_RECENT_CONSENSUS_COUNT,
+    MEASUREMENTS_PERIOD
+)
+from ..util import timestamp, timestamps
 
 log = logging.getLogger(__name__)
 
@@ -322,7 +325,9 @@ class RelayList:
         self.rng = random.SystemRandom()
         self._refresh_lock = Lock()
         # To track all the consensus seen.
-        self._consensus_timestamps = []
+        self._recent_consensus = timestamps.DateTimeSeq(
+            [], MAX_RECENT_CONSENSUS_COUNT, state, "recent_consensus"
+        )
         # Initialize so that there's no error trying to access to it.
         # In future refactor, change to a dictionary, where the keys are
         # the relays' fingerprint.
@@ -345,15 +350,7 @@ class RelayList:
     @property
     def last_consensus_timestamp(self):
         """Returns the datetime when the last consensus was obtained."""
-        if (getattr(self, "_consensus_timestamps")
-                and self._consensus_timestamps):
-            return self._consensus_timestamps[-1]
-        # If the object was not created from __init__, it won't have
-        # consensus_timestamps attribute or it might be empty.
-        # In this case force new update.
-        # Anytime more than 1h in the past will be old.
-        self._consensus_timestamps = []
-        return datetime.utcnow() - timedelta(seconds=60*61)
+        return self._recent_consensus.last()
 
     @property
     def relays(self):
@@ -419,12 +416,6 @@ class RelayList:
     def _relays_without_flag(self, flag):
         return [r for r in self.relays if flag not in r.flags]
 
-    def _remove_old_consensus_timestamps(self):
-        self._consensus_timestamps = remove_old_consensus_timestamps(
-            copy.deepcopy(self._consensus_timestamps),
-            self._measurements_period
-            )
-
     def _init_relays(self):
         """Returns a new list of relays that are in the current consensus.
         And update the consensus timestamp list with the current one.
@@ -441,8 +432,7 @@ class RelayList:
 
         # Find the timestamp of the last consensus.
         timestamp = valid_after_from_network_statuses(network_statuses)
-        self._consensus_timestamps.append(timestamp)
-        self._remove_old_consensus_timestamps()
+        self._recent_consensus.update(timestamp)
 
         new_relays = []
 
@@ -502,14 +492,11 @@ class RelayList:
         log.info("Number of consensuses obtained in the last %s days: %s.",
                  int(self._measurements_period / 24 / 60 / 60),
                  self.recent_consensus_count)
-        # NOTE: blocking, writes to file!
-        if self._state is not None:
-            self._state['recent_consensus_count'] = self.recent_consensus_count
 
     @property
     def recent_consensus_count(self):
         """Number of times a new consensus was obtained."""
-        return len(self._consensus_timestamps)
+        return len(self._recent_consensus)
 
     def exits_not_bad_allowing_port(self, port):
         return [r for r in self.exits

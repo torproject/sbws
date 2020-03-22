@@ -296,14 +296,6 @@ def end_event():
 
 
 @pytest.fixture(scope='function')
-def rd(args, conf, end_event):
+def rd(args, conf_results):
     from sbws.lib.resultdump import ResultDump
-    # in Travis the next line gives the error:
-    # TypeError: __init__() takes 3 positional arguments but 4 were given
-    # No idea why.
-    # Returning None to disable the test in case ResultDump can not be
-    # initialized.
-    try:
-        return ResultDump(args, conf, end_event)
-    except TypeError:
-        return None
+    return ResultDump(args, conf_results)

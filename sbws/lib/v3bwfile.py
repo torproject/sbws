@@ -18,7 +18,8 @@ from sbws.globals import (SPEC_VERSION, BW_LINE_SIZE, SBWS_SCALE_CONSTANT,
 from sbws.lib.resultdump import ResultSuccess, _ResultType
 from sbws.util.filelock import DirectoryLock
 from sbws.util.timestamp import (now_isodt_str, unixts_to_isodt_str,
-                                 now_unixts, isostr_to_dt_obj)
+                                 now_unixts, isostr_to_dt_obj,
+                                 dt_obj_to_isodt_str)
 from sbws.util.state import State
 
 log = logging.getLogger(__name__)
@@ -448,7 +449,8 @@ class V3BWHeader(object):
         '''
         state = State(state_fpath)
         if 'scanner_started' in state:
-            return state['scanner_started']
+            # From v1.1.0-dev `state` is capable of converting strs to datetime
+            return dt_obj_to_isodt_str(state['scanner_started'])
         else:
             return None
 

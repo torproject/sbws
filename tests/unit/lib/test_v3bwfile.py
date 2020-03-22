@@ -516,3 +516,17 @@ def test_set_under_min_report(mock_consensus, conf, datadir):
     assert bwl.vote == 0
     assert bwl.under_min_report == 1
     assert bwl.bw != 1
+
+
+def test_generator_started(root_data_path, datadir):
+    # This state has recent_consensus_count
+    state_fpath = os.path.join(root_data_path, '.sbws/state.dat')
+    # The method is correct
+    assert "2020-02-29T10:00:00" == V3BWHeader.generator_started_from_file(
+        state_fpath
+    )
+    # `results` does not matter here, using them to don't have an empty list.
+    results = load_result_file(str(datadir.join("results.txt")))
+    header = V3BWHeader.from_results(results, '', '', state_fpath)
+    # And the header is correct
+    assert "2020-02-29T10:00:00" == header.generator_started

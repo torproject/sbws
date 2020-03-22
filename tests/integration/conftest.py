@@ -36,15 +36,15 @@ def tmpdir(tmpdir_factory, request):
 
 @pytest.fixture(scope='session')
 def sbwshome_empty(tmpdir):
-    """Create sbws home inside of the tests tmp dir without initializing."""
-    home = tmpdir.join('.sbws')
-    os.makedirs(home.strpath, exist_ok=True)
-    return home.strpath
+    """Create sbws home inside of the test net tmp dir without initializing."""
+    home = "/tmp/.sbws"
+    os.makedirs(home, exist_ok=True)
+    return home
 
 
 @pytest.fixture(scope='session')
 def sbwshome_dir(sbwshome_empty):
-    """Create sbws home inside of the tests tmp dir without initializing."""
+    """Create sbws home inside of the tes net tmp dir without initializing."""
     os.makedirs(os.path.join(sbwshome_empty, 'datadir'), exist_ok=True)
     return sbwshome_empty
 
@@ -69,6 +69,7 @@ def conf(sbwshome_dir):
     """Default configuration with sbws home in the tmp test dir."""
     conf = _get_default_config()
     conf['paths']['sbws_home'] = sbwshome_dir
+    conf["paths"]["state_fpath"] = os.path.join(sbwshome_dir, "state.dat")
     conf['tor']['run_dpath'] = os.path.join(sbwshome_dir, 'tor', 'run')
     conf['destinations']['foo'] = 'on'
     conf['destinations.foo'] = {}

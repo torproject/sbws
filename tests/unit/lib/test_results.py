@@ -9,6 +9,8 @@ from sbws.lib.resultdump import ResultErrorStream
 from sbws.lib.resultdump import _ResultType
 from tests.unit.globals import monotonic_time
 
+from sbws.lib.relaylist import Relay
+
 
 def test_Result(result):
     '''
@@ -232,3 +234,60 @@ def test_ResultErrorAuth_from_dict(time_mock):
     assert isinstance(r1, ResultErrorAuth)
     assert isinstance(r2, ResultErrorAuth)
     assert str(r1) == str(r2)
+
+
+def test_relay_in_recent_consensus_count(
+    args, conf_results, controller, router_status, server_descriptor
+):
+    relay = Relay(
+        router_status.fingerprint,
+        controller,
+        ns=router_status,
+        desc=server_descriptor,
+    )
+    # Initialize the ResulSuccess as `measure_relay` does
+    r = ResultSuccess(
+        [], 2000, relay, ["A", "B"], "http://localhost/bw", "scanner_nick",
+    )
+    assert 1 == len(r.relay_in_recent_consensus)
+    relay.update_relay_in_recent_consensus()
+    r = ResultSuccess(
+        [], 2000, relay, ["A", "B"], "http://localhost/bw", "scanner_nick",
+    )
+    assert 2 == len(r.relay_in_recent_consensus)
+
+
+def test_relay_recent_measurement_attempt_count(
+    args, conf_results, controller, router_status, server_descriptor
+):
+    relay = Relay(
+        router_status.fingerprint,
+        controller,
+        ns=router_status,
+        desc=server_descriptor,
+    )
+    relay.increment_relay_recent_measurement_attempt()
+    relay.increment_relay_recent_measurement_attempt()
+    # Initialize the ResulSuccess as `measure_relay` does
+    r = ResultSuccess(
+        [], 2000, relay, ["A", "B"], "http://localhost/bw", "scanner_nick",
+    )
+    assert 2 == len(r.relay_recent_measurement_attempt)
+
+
+def test_relay_recent_priority_list_count(
+    args, conf_results, controller, router_status, server_descriptor
+):
+    relay = Relay(
+        router_status.fingerprint,
+        controller,
+        ns=router_status,
+        desc=server_descriptor,
+    )
+    relay.increment_relay_recent_priority_list()
+    relay.increment_relay_recent_priority_list()
+    # Initialize the ResulSuccess as `measure_relay` does
+    r = ResultSuccess(
+        [], 2000, relay, ["A", "B"], "http://localhost/bw", "scanner_nick",
+    )
+    assert 2 == len(r.relay_recent_priority_list)

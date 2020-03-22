@@ -379,7 +379,8 @@ class V3BWHeader(object):
         # failures = attempts - all mesaurements
         # Works only in the case that old measurements files already had
         # measurements count
-        if recent_measurement_attempt_count is not None:
+        # If this is None or 0, the failures can't be calculated
+        if recent_measurement_attempt_count:
             all_measurements = 0
             for result_list in results.values():
                 all_measurements += len(result_list)

@@ -45,7 +45,7 @@ class Heartbeat(object):
         Log the percentage, the number of relays measured and not measured,
         the number of loops and the time elapsed since it started measuring.
         """
-        loops_count = self.state_dict.get('recent_priority_list_count', 0)
+        loops_count = self.state_dict.count('recent_priority_list')
 
         not_measured_fp_set = self.consensus_fp_set.difference(
             self.measured_fp_set

@@ -19,5 +19,9 @@ def test_total_measured_percent(conf, caplog):
     hbeat.print_heartbeat_message()
 
     assert hbeat.previous_measurement_percent == 67
-    caplog.records[1].getMessage().find("Measured in total 2 (67%)")
-    caplog.records[2].getMessage().find("1 relays still not measured")
+    assert 0 == caplog.records[1].getMessage().find(
+        "Measured in total 2 (67%)"
+    )
+    assert 0 == caplog.records[2].getMessage().find(
+        "1 relays still not measured"
+    )

@@ -96,3 +96,91 @@ the same version at buildtime and runtime.
 
 See `<https://github.com/MartinThoma/MartinThoma.github.io/blob/1235fcdecda4d71b42fc07bfe7db327a27e7bcde/content/2018-11-13-python-package-versions.md>`_
 for other comparative versioning python packages.
+
+
+Changing Bandwidth file monitoring KeyValues
+--------------------------------------------
+
+In version 1.1.0 we added KeyValues call ``recent_X_count`` and
+``relay_X_count`` which implied to modify serveral parts of the code.
+
+We only stored numbers for simpliciy, but then the value of this numbers
+accumulate over the time and there is no way to know to which number decrease
+since some of the main objects are not recreated at runtime and do not have
+attributes about when they were created or updated.
+The relations between the object do no follow usual one-to-many or many-to-many
+relationships either, to be able to induce some numbers from the related
+objects.
+
+The only way we could think to solve this is to store list of timestamps,
+instead of just numbers, as an attribute in the objects that need to store
+some counting.
+
+Where the values of the keys come from?
+```````````````````````````````````````
+
+In the file system, there are only two types of files were these values can be
+stored:
+- the results files in ``datadir``
+- the ``state.dat`` file
+
+Because of the structure of the content in the results files, they can store
+KeyValues for the relays, but not for the headers, which need to be stored in
+the ``state.dat`` file.
+
+The classes that manage these KeyValues are:
+
+``RelayList``:
+
+- recent_consensus_count
+- recent_measurement_attempt_count
+
+``RelayPrioritizer``:
+
+- recent_priority_list_count
+- recent_priority_relay_count
+
+``Relay`` and ``Result``:
+
+- relay_in_recent_consensus_count
+- relay_recent_measurement_attempt_count
+- relay_recent_priority_list_count
+
+Transition from numbers to datetimes
+````````````````````````````````````
+
+The KeyValues named ``_count`` in the results and the state will be ignored
+when sbws is restarted with this change, since they will be written without
+``_count`` names in these files json .
+
+We could add code to count this in the transition to this version, but these
+numbers are wrong anyway and we don't think it's worth the effort since they
+will be correct after 5 days and they have been wrong for long time.
+
+Additionally ``recent_measurement_failure_count`` will be negative, since it's
+calculated as ``recent_measurement_attempt_count`` minus all the results.
+While the total number of results in the last 5 days is corrrect, the number of
+the attempts won't be until 5 days have pass.
+
+Disadvantages
+`````````````
+
+``sbws generate``, with 27795 measurement attempts takes 1min instead of a few
+seconds.
+The same happens with the ``RelayPrioritizer.best_priority``, though so far
+that seems ok since it's a python generator in a thread and the measurements
+start before it has calculated all the priorities.
+The same happens with the ``ResultDump`` that read/write the data in a thread.
+
+Conclussion
+```````````
+
+All these changes required lot of effort and are not optimal. It was the way
+we could correct and maintain 1.1.0 version.
+If a 2.0 version happens, we highly recommend re-design the data structures to
+use a database using a well maintained ORM library, which will avoid the
+limitations of json files, errors in data types conversions and which is
+optimized for the type of counting and statistics we aim to.
+
+.. note:: Documentation about a possible version 2.0 and the steps to change
+   the code from 1.X needs to be created.

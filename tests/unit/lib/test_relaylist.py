@@ -71,9 +71,8 @@ def test_increment_recent_measurement_attempt(args, conf, controller):
     It also tests that the state file is updated correctly.
     """
     state = State(conf['paths']['state_fpath'])
-    # For this test it does not matter that the consensus timestamps or relays
-    # are not correct.
-    relay_list = RelayList(args, conf, controller=controller, state=state)
+    with freeze_time("2020-02-29 10:00:00"):
+        relay_list = RelayList(args, conf, controller=controller, state=state)
     # The initial count is 0 and the state does not have that key.
     assert 0 == relay_list.recent_measurement_attempt_count
     assert not state.get("recent_measurement_attempt", None)

@@ -3,6 +3,7 @@ import pytest
 import os.path
 from unittest import mock
 
+from freezegun import freeze_time
 from stem import descriptor
 
 from sbws import settings
@@ -120,7 +121,8 @@ def router_status(server_descriptor, router_statuses):
 @pytest.fixture(scope='function')
 def relay_list(args, conf, controller):
     """Returns a RelayList containing the Relays in the controller"""
-    return relaylist.RelayList(args, conf, controller)
+    with freeze_time("2020-02-29 10:00:00"):
+        return relaylist.RelayList(args, conf, controller)
 
 
 @pytest.fixture(scope='function')

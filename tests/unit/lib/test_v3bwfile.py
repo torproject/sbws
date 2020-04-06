@@ -548,7 +548,7 @@ def test_recent_measurement_attempt_count(root_data_path, datadir):
     assert 15 == V3BWHeader.recent_measurement_attempt_count_from_file(
         state_fpath
     )
-    # `results` does not matter here, using them to don't have an empty list.
+    # `results` does not matter here, using them to not have an empty list.
     results = load_result_file(str(datadir.join("results.txt")))
     header = V3BWHeader.from_results(results, '', '', state_fpath)
     assert "15" == header.recent_measurement_attempt_count

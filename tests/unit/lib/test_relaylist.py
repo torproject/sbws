@@ -65,10 +65,10 @@ def test_init_relays(
 
 
 def test_increment_recent_measurement_attempt(args, conf, controller):
-    """Test that incrementing the measurement attempts does not grow foreever
+    """Test that incrementing the measurement attempts does not go on forever
 
     And instead it only counts the number of attempts in the last days.
-    It also test that the state files is updated correctly.
+    It also tests that the state file is updated correctly.
     """
     state = State(conf['paths']['state_fpath'])
     # For this test it does not matter that the consensus timestamps or relays
@@ -98,7 +98,7 @@ def test_increment_recent_measurement_attempt(args, conf, controller):
     assert 3 == relay_list.recent_measurement_attempt_count
     assert 3 == len(state["recent_measurement_attempt"])
 
-    # And a forth measurement attempt is made 6 days later. The first one is
+    # And a fourth measurement attempt is made 6 days later. The first one is
     # now removed and not counted.
     with freeze_time("2020-03-06 10:00:00"):
         relay_list.increment_recent_measurement_attempt()

@@ -19,7 +19,7 @@ def test_update_datetime_seq(conf):
     )
     new_dts = dt_seq.update()
     # The updated list will not contain the 2 first (left) datetimes and it
-    # will have one last timestamp (right.)
+    # will have one last timestamp (right).
     assert new_dts[:-1] == dts[2:]
     assert 5 == state.count("recent_measurement_attempt")
     assert 5 == len(dt_seq)
@@ -34,9 +34,11 @@ def test_update_datetime_int_seq(conf):
         dts, state=state, state_key="recent_measurement_attempt"
     )
     new_dts = dt_seq.update()
-    # The updated list will not contain the 2 first (left) datetimes and it
-    # will have one last timestamp (right.)
+    # The updated list will not contain the 2 first (left) tuples and it
+    # will have one last tuple (right).
+    # The last tuple have 0 as the integer, instead of 2, so the count will be
+    # 2 * 4 = 8
     assert new_dts[:-1] == dts[2:]
     assert 8 == state.count("recent_measurement_attempt")
-    # Because the last one added, add 0 in the 2nd item of the tuple
+    # And `len` should return the same.
     assert 8 == len(dt_seq)

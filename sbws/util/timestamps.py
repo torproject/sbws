@@ -1,6 +1,6 @@
 """Util classes to manipulate sequences of datetime timestamps.
 
-Optionally update also an state file.
+Optionally update also a state file.
 
 """
 # Workarounds to store datetimes for objects because they are not compossed
@@ -9,14 +9,13 @@ import collections
 from datetime import datetime, timedelta
 import logging
 
-from sbws.globals import MEASUREMENTS_PERIOD
 from sbws.util.timestamp import is_old
 
 log = logging.getLogger(__name__)
 
 
 class DateTimeSeq(collections.deque):
-    """Store and manage a datetime sequence and optionally and state file."""
+    """Store and manage a datetime sequence and optionally a state file."""
 
     def __init__(self, iterable=[], maxlen=None, state=None, state_key=None):
         self._maxlen = maxlen
@@ -24,12 +23,12 @@ class DateTimeSeq(collections.deque):
         self._state = state
         self._state_key = state_key
 
-    def _remove_old(self, measurements_period=MEASUREMENTS_PERIOD):
+    def _remove_old(self):
         self._items = collections.deque(
             filter(lambda x: not is_old(x), self._items), maxlen=self._maxlen
         )
 
-    def update(self, dt=None, measurements_period=MEASUREMENTS_PERIOD):
+    def update(self, dt=None):
         self._remove_old()
         self._items.append(dt or datetime.utcnow().replace(microsecond=0))
         if self._state is not None and self._state_key:
@@ -50,9 +49,9 @@ class DateTimeSeq(collections.deque):
 
 class DateTimeIntSeq(collections.deque):
     """
-    Stores and manage a sequence of lists compossed by a datetime and an int.
+    Store and manage a sequence of lists composed of a datetime and an int.
 
-    Optionally stores and manage an state file.
+    Optionally store and manage an state file.
     """
 
     def __init__(self, iterable=[], maxlen=None, state=None, state_key=None):
@@ -61,18 +60,16 @@ class DateTimeIntSeq(collections.deque):
         self._state = state
         self._state_key = state_key
 
-    def _remove_old(self, measurements_period=MEASUREMENTS_PERIOD):
+    def _remove_old(self):
         self._items = collections.deque(
             filter(lambda x: not is_old(x[0]), self._items),
             maxlen=self._maxlen,
         )
 
-    def update(
-        self, dt=None, number=0, measurements_period=MEASUREMENTS_PERIOD
-    ):
+    def update(self, dt=None, number=0):
         self._remove_old()
-        # Because json serializes tuples to list, use list instead of tuple
-        # to facilitate comparations.
+        # Because json serializes tuples to lists, use list instead of tuple
+        # to facilitate comparisons.
         self._items.append(
             [dt or datetime.utcnow().replace(microsecond=0), number]
         )

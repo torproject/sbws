@@ -14,7 +14,7 @@ class CustomEncoder(json.JSONEncoder):
         if isinstance(obj, datetime.datetime):
             return obj.replace(microsecond=0).isoformat()
         else:
-            return super(CustomEncoder, self).default(obj)
+            return super().default(obj)
 
 
 class CustomDecoder(json.JSONDecoder):

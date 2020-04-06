@@ -52,5 +52,3 @@ def test_decode_encode_roundtrip():
     d = json.loads(STATE, cls=CustomDecoder)
     s = json.dumps(d, cls=CustomEncoder, indent=4, sort_keys=True)
     assert s == STATE
-    d1 = json.loads(s, cls=CustomDecoder)
-    assert d == d1

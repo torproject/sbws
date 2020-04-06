@@ -458,8 +458,9 @@ class V3BWHeader(object):
     @staticmethod
     def consensus_count_from_file(state_fpath):
         state = State(state_fpath)
-        if state.count("recent_consensus"):
-            return str(state.count("recent_consensus"))
+        count = state.count("recent_consensus")
+        if count:
+            return str(count)
         return None
 
     # NOTE: in future refactor store state in the class

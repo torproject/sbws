@@ -148,7 +148,7 @@ MAX_NUM_DESTINATION_FAILURES = 3
 # destination fail again.
 FACTOR_INCREMENT_DESTINATION_RETRY = 2
 
-# Constants to check health KeyValues in the bandiwdth file
+# Constants to check health KeyValues in the bandwidth file
 PERIOD_DAYS = int(MEASUREMENTS_PERIOD / (24 * 60 * 60))
 MAX_RECENT_CONSENSUS_COUNT = PERIOD_DAYS * 24  # 120
 # XXX: This was only defined in `config.default.ini`, it should be read from

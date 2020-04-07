@@ -555,7 +555,7 @@ def test_recent_measurement_attempt_count(root_data_path, datadir):
 
 
 def test_recent_priority_list_count(root_data_path, datadir):
-    # This state has recent_priority_list_count
+    # This state has recent_priority_list
     state_fpath = os.path.join(root_data_path, '.sbws/state.dat')
     assert 1 == V3BWHeader.recent_priority_list_count_from_file(state_fpath)
     # `results` does not matter here, using them to don't have an empty list.

@@ -6,6 +6,7 @@ import copy
 import time
 import logging
 
+from ..globals import MAX_RECENT_PRIORITY_RELAY_COUNT
 from ..util import state, timestamps
 
 log = logging.getLogger(__name__)
@@ -28,7 +29,8 @@ class RelayPrioritizer:
             [], 120, self._state, "recent_priority_list"
         )
         self._recent_priority_relay = timestamps.DateTimeIntSeq(
-            [], 36000, self._state, "recent_priority_relay"
+            [],  MAX_RECENT_PRIORITY_RELAY_COUNT, self._state,
+            "recent_priority_relay"
         )
 
     def increment_recent_priority_list(self):

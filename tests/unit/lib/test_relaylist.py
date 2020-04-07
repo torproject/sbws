@@ -109,7 +109,7 @@ def test_increment_recent_measurement_attempt(args, conf, controller):
 def test_increment_relay_recent_measurement_attempt(
     controller, router_status, server_descriptor
 ):
-    """Test that incrementing the measurement attempts does not grow foreever
+    """Test that incrementing the measurement attempts do not go on forever
 
     And instead it only counts the number of attempts in the last days.
     """
@@ -135,7 +135,7 @@ def test_increment_relay_recent_measurement_attempt(
         relay.increment_relay_recent_measurement_attempt()
     assert 3 == relay.relay_recent_measurement_attempt_count
 
-    # And a forth measurement attempt is made 6 days later. The first one is
+    # And a fourth measurement attempt is made 6 days later. The first one is
     # now removed and not counted.
     with freeze_time("2020-03-06 10:00:00"):
         relay.increment_relay_recent_measurement_attempt()
@@ -146,9 +146,9 @@ def test_increment_relay_recent_measurement_attempt(
 def test_increment_relay_recent_priority_list(
     controller, router_status, server_descriptor
 ):
-    """Test that incrementing the measurement attempts does not grow foreever
+    """Test that incrementing the priority lists do not go on forever
 
-    And instead it only counts the number of attempts in the last days.
+    And instead it only counts the number of priority lists in the last days.
     """
     # For this test it does not matter that the consensus timestamps
     # are not correct.
@@ -172,7 +172,7 @@ def test_increment_relay_recent_priority_list(
         relay.increment_relay_recent_priority_list()
     assert 3 == relay.relay_recent_priority_list_count
 
-    # And a forth measurement attempt is made 6 days later. The first one is
+    # And a fourth measurement attempt is made 6 days later. The first one is
     # now removed and not counted.
     with freeze_time("2020-03-06 10:00:00"):
         relay.increment_relay_recent_priority_list()

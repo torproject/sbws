@@ -245,7 +245,7 @@ def test_relay_in_recent_consensus_count(
         ns=router_status,
         desc=server_descriptor,
     )
-    # Initialize the ResulSuccess as `measure_relay` does
+    # Initialize the ResultSuccess as `measure_relay` does
     r = ResultSuccess(
         [], 2000, relay, ["A", "B"], "http://localhost/bw", "scanner_nick",
     )
@@ -268,7 +268,7 @@ def test_relay_recent_measurement_attempt_count(
     )
     relay.increment_relay_recent_measurement_attempt()
     relay.increment_relay_recent_measurement_attempt()
-    # Initialize the ResulSuccess as `measure_relay` does
+    # Initialize the ResultSuccess as `measure_relay` does
     r = ResultSuccess(
         [], 2000, relay, ["A", "B"], "http://localhost/bw", "scanner_nick",
     )
@@ -286,7 +286,7 @@ def test_relay_recent_priority_list_count(
     )
     relay.increment_relay_recent_priority_list()
     relay.increment_relay_recent_priority_list()
-    # Initialize the ResulSuccess as `measure_relay` does
+    # Initialize the ResultSuccess as `measure_relay` does
     r = ResultSuccess(
         [], 2000, relay, ["A", "B"], "http://localhost/bw", "scanner_nick",
     )

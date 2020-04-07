@@ -44,7 +44,7 @@ def sbwshome_empty(tmpdir):
 
 @pytest.fixture(scope='session')
 def sbwshome_dir(sbwshome_empty):
-    """Create sbws home inside of the tes net tmp dir without initializing."""
+    """Create sbws home inside of the test net tmp dir without initializing."""
     os.makedirs(os.path.join(sbwshome_empty, 'datadir'), exist_ok=True)
     return sbwshome_empty
 

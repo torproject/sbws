@@ -36,7 +36,7 @@ A first solution would be to obtain the git revision at runtime, but:
   the git revision of that other repository.
 
 So next solution was to obtain the git revision at build/install time.
-To achive this, an script should be call from the installer or at runtime
+To achive this, an script should be called from the installer or at runtime
 whenever `__version__` needs to be read.
 
 While it could be implemented by us, there're two external tools that achive

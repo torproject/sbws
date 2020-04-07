@@ -6,7 +6,7 @@ from stem import descriptor
 from sbws.globals import (
     PERIOD_DAYS,
     FRACTION_RELAYS,
-    MAX_RECENT_PRIORITY_RELAY_COUNT,  # 36000
+    MAX_RECENT_PRIORITY_RELAY_COUNT,  # 48000
     MAX_RECENT_PRIORITY_LIST_COUNT,  # 120
     MAX_RECENT_CONSENSUS_COUNT,  # 120
 )
@@ -42,16 +42,16 @@ REPORT_TEMPLATE_BWFILE = (
 REPORT_TEMPLATE_BWHEADER = """
 Header,
 recent_consensus_count >= min, {self.is_consensus_gte_min}
-recent_consensus_count < max, {self.is_consensus_lt_max}
+recent_consensus_count <= max, {self.is_consensus_lte_max}
 recent_priority_list_count >= min, {self.is_priority_list_gte_min}
-recent_priority_list_count < max, {self.is_priority_list_lt_max}
+recent_priority_list_count <= max, {self.is_priority_list_lte_max}
 recent_priority_relay_count >= min, {self.is_priority_relay_gte_min}
-recent_priority_relay_count < max, {self.is_priority_relay_lt_max}
+recent_priority_relay_count <= max, {self.is_priority_relay_lte_max}
 """ + (
     "recent_measurement_attempt_count >= min, "
     "{self.is_measurement_attempt_gte_min}\n"
-    "recent_measurement_attempt_count < max, "
-    "{self.is_measurement_attempt_lt_max}\n"
+    "recent_measurement_attempt_count <= max, "
+    "{self.is_measurement_attempt_lte_max}\n"
     "recent_measurement_attempt_count == recent_priority_relay_count, "
     "{self.is_attempt_e_priority_relay}\n"
     "recent_measurement_attempt_count >= total excluded, "
@@ -64,13 +64,10 @@ relays correct, {self.are_bwlines_correct}
 """
 
 REPORT_TEMPLATE_BWLINE = """
-recent_measurement_attempt_count >= recent_measurement_failure_count,
-{is_relay_recent_consensus_count_lte_recent_consensus_count}
+relay_recent_measurement_attempt_count <= relay_recent_priority_list_count,
+{self.is_relay_recent_measurement_attempt_count_lte_relay_recent_priority_list_count}
 relay_recent_priority_list_count <= relay_recent_consensus_count,
 {self.is_relay_recent_priority_list_count_lte_relay_recent_consensus_count}
-relay_recent_consensus_count <= recent_consensus_count,
-{self.is_relay_recent_consensus_count_lte_recent_consensus_count}
-
 """
 
 
@@ -182,16 +179,18 @@ class BwHeader:
             return cls(bwfile.header)
 
     @property
-    def is_consensus_lt_max(self):
-        return self.recent_consensus_count < MAX_RECENT_CONSENSUS_COUNT
+    def is_consensus_lte_max(self):
+        return self.recent_consensus_count <= MAX_RECENT_CONSENSUS_COUNT
 
     @property
     def is_consensus_gte_min(self):
         return self.recent_consensus_count >= MIN_RECENT_CONSENSUS_COUNT
 
     @property
-    def is_priority_list_lt_max(self):
-        return self.recent_priority_list_count < MAX_RECENT_PRIORITY_LIST_COUNT
+    def is_priority_list_lte_max(self):
+        return (
+            self.recent_priority_list_count <= MAX_RECENT_PRIORITY_LIST_COUNT
+        )
 
     @property
     def is_priority_list_gte_min(self):
@@ -200,9 +199,9 @@ class BwHeader:
         )
 
     @property
-    def is_priority_relay_lt_max(self):
+    def is_priority_relay_lte_max(self):
         return (
-            self.recent_priority_relay_count < MAX_RECENT_PRIORITY_RELAY_COUNT
+            self.recent_priority_relay_count <= MAX_RECENT_PRIORITY_RELAY_COUNT
         )
 
     @property
@@ -219,10 +218,10 @@ class BwHeader:
         )
 
     @property
-    def is_measurement_attempt_lt_max(self):
+    def is_measurement_attempt_lte_max(self):
         return (
             self.recent_measurement_attempt_count
-            < MAX_RECENT_MEASUREMENT_ATTEMPT_COUNT
+            <= MAX_RECENT_MEASUREMENT_ATTEMPT_COUNT
         )
 
     @property

@@ -7,7 +7,7 @@ from sbws.lib.bwfile_health import BwFile
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f", "--file-path", help="Banwidth file path.")
+    parser.add_argument("-f", "--file-path", help="Bandwidth file path.")
 
     args = parser.parse_args()
 

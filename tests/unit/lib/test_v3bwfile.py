@@ -16,6 +16,7 @@ from sbws.lib.v3bwfile import (
     V3BWFile, round_sig_dig,
     HEADER_RECENT_MEASUREMENTS_EXCLUDED_KEYS
     )
+from sbws.util.state import CustomDecoder
 from sbws.util.timestamp import now_fname, now_isodt_str, now_unixts
 
 timestamp = 1523974147
@@ -68,12 +69,13 @@ raw_bwl_str = "bw=56 bw_mean=61423 bw_median=55656 "\
     "consensus_bandwidth=600000 consensus_bandwidth_is_unmeasured=False "\
     "desc_bw_avg=1000000000 desc_bw_bur=123456 desc_bw_obs_last=524288 "\
     "desc_bw_obs_mean=524288 error_circ=0 error_destination=0 error_misc=0 " \
-    "error_second_relay=0 error_stream=1 " \
+    "error_second_relay=0 error_stream=2 " \
     "master_key_ed25519=g+Shk00y9Md0hg1S6ptnuc/wWKbADBgdjT0Kg+TSF3s " \
     "nick=A " \
     "node_id=$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA "\
+    "relay_in_recent_consensus_count=3 "\
     "relay_recent_measurement_attempt_count=2 "\
-    "relay_recent_measurements_excluded_error_count=1 "\
+    "relay_recent_measurements_excluded_error_count=2 "\
     "relay_recent_priority_list_count=3 "\
     "rtt=456 success=1 " \
     "time=2018-04-17T14:09:07\n"
@@ -248,7 +250,7 @@ def test_v3bwline_from_results_file(datadir):
     lines = datadir.readlines('results.txt')
     d = dict()
     for line in lines:
-        r = Result.from_dict(json.loads(line.strip()))
+        r = Result.from_dict(json.loads(line.strip(), cls=CustomDecoder))
         fp = r.fingerprint
         if fp not in d:
             d[fp] = []
@@ -516,3 +518,78 @@ def test_set_under_min_report(mock_consensus, conf, datadir):
     assert bwl.vote == 0
     assert bwl.under_min_report == 1
     assert bwl.bw != 1
+
+
+def test_generator_started(root_data_path, datadir):
+    state_fpath = os.path.join(root_data_path, '.sbws/state.dat')
+    # The method is correct
+    assert "2020-02-29T10:00:00" == V3BWHeader.generator_started_from_file(
+        state_fpath
+    )
+    # `results` does not matter here, using them to not have an empty list.
+    results = load_result_file(str(datadir.join("results.txt")))
+    header = V3BWHeader.from_results(results, '', '', state_fpath)
+    # And the header is correct
+    assert "2020-02-29T10:00:00" == header.generator_started
+
+
+def test_recent_consensus_count(root_data_path, datadir):
+    # This state has recent_consensus_count
+    state_fpath = os.path.join(root_data_path, '.sbws/state.dat')
+    assert "1" == V3BWHeader.consensus_count_from_file(state_fpath)
+    # `results` does not matter here, using them to not have an empty list.
+    results = load_result_file(str(datadir.join("results.txt")))
+    header = V3BWHeader.from_results(results, '', '', state_fpath)
+    assert "1" == header.recent_consensus_count
+
+
+def test_recent_measurement_attempt_count(root_data_path, datadir):
+    state_fpath = os.path.join(root_data_path, '.sbws/state.dat')
+    assert 15 == V3BWHeader.recent_measurement_attempt_count_from_file(
+        state_fpath
+    )
+    # `results` does not matter here, using them to not have an empty list.
+    results = load_result_file(str(datadir.join("results.txt")))
+    header = V3BWHeader.from_results(results, '', '', state_fpath)
+    assert "15" == header.recent_measurement_attempt_count
+
+
+def test_recent_priority_list_count(root_data_path, datadir):
+    # This state has recent_priority_list
+    state_fpath = os.path.join(root_data_path, '.sbws/state.dat')
+    assert 1 == V3BWHeader.recent_priority_list_count_from_file(state_fpath)
+    # `results` does not matter here, using them to don't have an empty list.
+    results = load_result_file(str(datadir.join("results.txt")))
+    header = V3BWHeader.from_results(results, '', '', state_fpath)
+    assert "1" == header.recent_priority_list_count
+
+
+def test_recent_priority_relay_count(root_data_path, datadir):
+    # This state has recent_priority_relay_count
+    state_fpath = os.path.join(root_data_path, '.sbws/state.dat')
+    assert 15 == V3BWHeader.recent_priority_relay_count_from_file(state_fpath)
+    # `results` does not matter here, using them to don't have an empty list.
+    results = load_result_file(str(datadir.join("results.txt")))
+    header = V3BWHeader.from_results(results, '', '', state_fpath)
+    assert "15" == header.recent_priority_relay_count
+
+
+def test_relay_recent_measurement_attempt_count(root_data_path, datadir):
+    results = load_result_file(str(datadir.join("results.txt")))
+    for fp, values in results.items():
+        line = V3BWLine.from_results(values)
+    assert "2" == line[0].relay_recent_measurement_attempt_count
+
+
+def test_relay_recent_priority_list_count(root_data_path, datadir):
+    results = load_result_file(str(datadir.join("results.txt")))
+    for fp, values in results.items():
+        line = V3BWLine.from_results(values)
+    assert "3" == line[0].relay_recent_priority_list_count
+
+
+def test_relay_in_recent_consensus_count(root_data_path, datadir):
+    results = load_result_file(str(datadir.join("results.txt")))
+    for fp, values in results.items():
+        line = V3BWLine.from_results(values)
+    assert "3" == line[0].relay_in_recent_consensus_count

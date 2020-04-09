@@ -148,6 +148,26 @@ MAX_NUM_DESTINATION_FAILURES = 3
 # destination fail again.
 FACTOR_INCREMENT_DESTINATION_RETRY = 2
 
+# Constants to check health KeyValues in the bandwidth file
+PERIOD_DAYS = int(MEASUREMENTS_PERIOD / (24 * 60 * 60))
+MAX_RECENT_CONSENSUS_COUNT = PERIOD_DAYS * 24  # 120
+# XXX: This was only defined in `config.default.ini`, it should be read from
+# here.
+FRACTION_RELAYS = 0.05
+# A priority list currently takes more than 3h, ideally it should only take 1h.
+MIN_HOURS_PRIORITY_LIST = 1
+# As of 2020, there're less than 7000 relays.
+MAX_RELAYS = 8000
+# 120
+MAX_RECENT_PRIORITY_LIST_COUNT = int(
+    PERIOD_DAYS * 24 / MIN_HOURS_PRIORITY_LIST
+)
+MAX_RELAYS_PER_PRIORITY_LIST = int(MAX_RELAYS * FRACTION_RELAYS)  # 400
+# 48000
+MAX_RECENT_PRIORITY_RELAY_COUNT = (
+    MAX_RECENT_PRIORITY_LIST_COUNT * MAX_RELAYS_PER_PRIORITY_LIST
+)
+
 
 def fail_hard(*a, **kw):
     ''' Log something ... and then exit as fast as possible '''

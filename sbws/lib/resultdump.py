@@ -12,6 +12,7 @@ from datetime import timedelta
 from enum import Enum
 from sbws.globals import RESULT_VERSION, fail_hard
 from sbws.util.filelock import DirectoryLock
+from sbws.util.json import CustomEncoder, CustomDecoder
 from sbws.lib.relaylist import Relay
 from .. import settings
 
@@ -45,7 +46,9 @@ def load_result_file(fname, success_only=False):
             for line in fd:
                 num_total += 1
                 try:
-                    r = Result.from_dict(json.loads(line.strip()))
+                    r = Result.from_dict(
+                        json.loads(line.strip(), cls=CustomDecoder)
+                    )
                 except json.decoder.JSONDecodeError:
                     log.warning('Could not decode result %s', line.strip())
                     r = None
@@ -222,9 +225,9 @@ class Result:
                      consensus_bandwidth_is_unmeasured=None,
                      # Counters to be stored by relay and not per measurement,
                      # since the measurements might fail.
-                     relay_in_recent_consensus_count=None,
-                     relay_recent_measurement_attempt_count=None,
-                     relay_recent_priority_list_count=None):
+                     relay_in_recent_consensus=None,
+                     relay_recent_measurement_attempt=None,
+                     relay_recent_priority_list=None):
             """
             Initializes a ``Result.Relay``.
 
@@ -244,15 +247,14 @@ class Result:
             self.consensus_bandwidth = consensus_bandwidth
             self.consensus_bandwidth_is_unmeasured = \
                 consensus_bandwidth_is_unmeasured
-            self.relay_in_recent_consensus_count = \
-                relay_in_recent_consensus_count
-            self.relay_recent_measurement_attempt_count = \
-                relay_recent_measurement_attempt_count
-            self.relay_recent_priority_list_count = \
-                relay_recent_priority_list_count
+            self.relay_in_recent_consensus = \
+                relay_in_recent_consensus
+            self.relay_recent_measurement_attempt = \
+                relay_recent_measurement_attempt
+            self.relay_recent_priority_list = \
+                relay_recent_priority_list
 
-    def __init__(self, relay, circ, dest_url, scanner_nick, t=None,
-                 relay_in_recent_consensus_count=None):
+    def __init__(self, relay, circ, dest_url, scanner_nick, t=None):
         """
         Initilizes the measurement and the relay with all the relay attributes.
         """
@@ -264,9 +266,9 @@ class Result:
             relay.observed_bandwidth,
             relay.consensus_bandwidth,
             relay.consensus_bandwidth_is_unmeasured,
-            relay.relay_in_recent_consensus_count,
-            relay.relay_recent_measurement_attempt_count,
-            relay.relay_recent_priority_list_count
+            relay.relay_in_recent_consensus,
+            relay.relay_recent_measurement_attempt,
+            relay.relay_recent_priority_list
             )
         self._circ = circ
         self._dest_url = dest_url
@@ -314,27 +316,27 @@ class Result:
         return self._relay.master_key_ed25519
 
     @property
-    def relay_in_recent_consensus_count(self):
+    def relay_in_recent_consensus(self):
         """Number of times the relay was in a consensus."""
-        return self._relay.relay_in_recent_consensus_count
+        return self._relay.relay_in_recent_consensus
 
     @property
-    def relay_recent_measurement_attempt_count(self):
+    def relay_recent_measurement_attempt(self):
         """Returns the relay recent measurements attemps.
 
         It is initialized in :class:`~sbws.lib.relaylist.Relay` and
         incremented in :func:`~sbws.core.scanner.main_loop`.
         """
-        return self._relay.relay_recent_measurement_attempt_count
+        return self._relay.relay_recent_measurement_attempt
 
     @property
-    def relay_recent_priority_list_count(self):
+    def relay_recent_priority_list(self):
         """Returns the relay recent "prioritization"s to be measured.
 
         It is initialized in :class:`~sbws.lib.relaylist.Relay` and
         incremented in :func:`~sbws.core.scanner.main_loop`.
         """
-        return self._relay.relay_recent_priority_list_count
+        return self._relay.relay_recent_priority_list
 
     @property
     def circ(self):
@@ -368,12 +370,12 @@ class Result:
             'type': self.type,
             'scanner': self.scanner,
             'version': self.version,
-            'relay_in_recent_consensus_count':
-                self.relay_in_recent_consensus_count,
-            'relay_recent_measurement_attempt_count':
-                self.relay_recent_measurement_attempt_count,
-            'relay_recent_priority_list_count':
-                self.relay_recent_priority_list_count,
+            'relay_in_recent_consensus':
+                self.relay_in_recent_consensus,
+            'relay_recent_measurement_attempt':
+                self.relay_recent_measurement_attempt,
+            'relay_recent_priority_list':
+                self.relay_recent_priority_list,
         }
 
     @staticmethod
@@ -416,7 +418,7 @@ class Result:
                 'Unknown result type {}'.format(d['type']))
 
     def __str__(self):
-        return json.dumps(self.to_dict())
+        return json.dumps(self.to_dict(), cls=CustomEncoder)
 
 
 class ResultError(Result):
@@ -456,12 +458,12 @@ class ResultError(Result):
             Result.Relay(
                 d['fingerprint'], d['nickname'], d['address'],
                 d['master_key_ed25519'],
-                relay_in_recent_consensus_count=  # noqa
-                    d.get('relay_in_recent_consensus_count', None),  # noqa
-                relay_recent_measurement_attempt_count=  # noqa
-                    d.get('relay_recent_measurement_attempt_count', None),  # noqa
-                relay_recent_priority_list_count=  # noqa
-                    d.get('relay_recent_priority_list_count', None),  # noqa
+                relay_in_recent_consensus=  # noqa
+                    d.get('relay_in_recent_consensus', None),  # noqa
+                relay_recent_measurement_attempt=  # noqa
+                    d.get('relay_recent_measurement_attempt', None),  # noqa
+                relay_recent_priority_list=  # noqa
+                    d.get('relay_recent_priority_list', None),  # noqa
                 ),
             d['circ'], d['dest_url'], d['scanner'],
             msg=d['msg'], t=d['time'])
@@ -504,12 +506,12 @@ class ResultErrorCircuit(ResultError):
             Result.Relay(
                 d['fingerprint'], d['nickname'], d['address'],
                 d['master_key_ed25519'],
-                relay_in_recent_consensus_count=  # noqa
-                    d.get('relay_in_recent_consensus_count', None),  # noqa
-                relay_recent_measurement_attempt_count=  # noqa
-                    d.get('relay_recent_measurement_attempt_count', None),  # noqa
-                relay_recent_priority_list_count=  # noqa
-                    d.get('relay_recent_priority_list_count', None),  # noqa
+                relay_in_recent_consensus=  # noqa
+                    d.get('relay_in_recent_consensus', None),  # noqa
+                relay_recent_measurement_attempt=  # noqa
+                    d.get('relay_recent_measurement_attempt', None),  # noqa
+                relay_recent_priority_list=  # noqa
+                    d.get('relay_recent_priority_list', None),  # noqa
                 ),
             d['circ'], d['dest_url'], d['scanner'],
             msg=d['msg'], t=d['time'])
@@ -534,12 +536,12 @@ class ResultErrorStream(ResultError):
             Result.Relay(
                 d['fingerprint'], d['nickname'], d['address'],
                 d['master_key_ed25519'],
-                relay_in_recent_consensus_count=  # noqa
-                    d.get('relay_in_recent_consensus_count', None),  # noqa
-                relay_recent_measurement_attempt_count=  # noqa
-                    d.get('relay_recent_measurement_attempt_count', None),  # noqa
-                relay_recent_priority_list_count=  # noqa
-                    d.get('relay_recent_priority_list_count', None),  # noqa
+                relay_in_recent_consensus=  # noqa
+                    d.get('relay_in_recent_consensus', None),  # noqa
+                relay_recent_measurement_attempt=  # noqa
+                    d.get('relay_recent_measurement_attempt', None),  # noqa
+                relay_recent_priority_list=  # noqa
+                    d.get('relay_recent_priority_list', None),  # noqa
                 ),
             d['circ'], d['dest_url'], d['scanner'],
             msg=d['msg'], t=d['time'])
@@ -582,7 +584,14 @@ class ResultErrorSecondRelay(ResultError):
         return ResultErrorSecondRelay(
             Result.Relay(
                 d['fingerprint'], d['nickname'], d['address'],
-                d['master_key_ed25519']),
+                d['master_key_ed25519'],
+                relay_in_recent_consensus=  # noqa
+                    d.get('relay_in_recent_consensus', None),  # noqa
+                relay_recent_measurement_attempt=  # noqa
+                    d.get('relay_recent_measurement_attempt', None),  # noqa
+                relay_recent_priority_list=  # noqa
+                    d.get('relay_recent_priority_list', None),  # noqa
+                ),
             d['circ'], d['dest_url'], d['scanner'],
             msg=d['msg'], t=d['time'])
 
@@ -617,8 +626,15 @@ class ResultErrorDestination(ResultError):
         return ResultErrorSecondRelay(
             Result.Relay(
                 d['fingerprint'], d['nickname'], d['address'],
-                d['master_key_ed25519']),
-            d['circ'], d['dest_url'], d['scanner'],
+                d['master_key_ed25519'],
+                d['circ'], d['dest_url'], d['scanner'],
+                relay_in_recent_consensus=  # noqa
+                    d.get('relay_in_recent_consensus', None),  # noqa
+                relay_recent_measurement_attempt=  # noqa
+                    d.get('relay_recent_measurement_attempt', None),  # noqa
+                relay_recent_priority_list=  # noqa
+                    d.get('relay_recent_priority_list', None),  # noqa
+                ),
             msg=d['msg'], t=d['time'])
 
     def to_dict(self):
@@ -654,12 +670,12 @@ class ResultErrorAuth(ResultError):
             Result.Relay(
                 d['fingerprint'], d['nickname'], d['address'],
                 d['master_key_ed25519'],
-                relay_in_recent_consensus_count=  # noqa
-                    d.get('relay_in_recent_consensus_count', None),  # noqa
-                relay_recent_measurement_attempt_count=  # noqa
-                    d.get('relay_recent_measurement_attempt_count', None),  # noqa
-                relay_recent_priority_list_count=  # noqa
-                    d.get('relay_recent_priority_list_count', None),  # noqa
+                relay_in_recent_consensus=  # noqa
+                    d.get('relay_in_recent_consensus', None),  # noqa
+                relay_recent_measurement_attempt=  # noqa
+                    d.get('relay_recent_measurement_attempt', None),  # noqa
+                relay_recent_priority_list=  # noqa
+                    d.get('relay_recent_priority_list', None),  # noqa
                 ),
             d['circ'], d['dest_url'], d['scanner'],
             msg=d['msg'], t=d['time'])
@@ -698,12 +714,12 @@ class ResultSuccess(Result):
                 d.get('relay_burst_bandwidth'), d['relay_observed_bandwidth'],
                 d.get('consensus_bandwidth'),
                 d.get('consensus_bandwidth_is_unmeasured'),
-                relay_in_recent_consensus_count=  # noqa
-                    d.get('relay_in_recent_consensus_count', None),  # noqa
-                relay_recent_measurement_attempt_count=  # noqa
-                    d.get('relay_recent_measurement_attempt_count', None),  # noqa
-                relay_recent_priority_list_count=  # noqa
-                    d.get('relay_recent_priority_list_count', None),  # noqa
+                relay_in_recent_consensus=  # noqa
+                    d.get('relay_in_recent_consensus', None),  # noqa
+                relay_recent_measurement_attempt=  # noqa
+                    d.get('relay_recent_measurement_attempt', None),  # noqa
+                relay_recent_priority_list=  # noqa
+                    d.get('relay_recent_priority_list', None),  # noqa
                 ),
             d['circ'], d['dest_url'], d['scanner'],
             t=d['time'])

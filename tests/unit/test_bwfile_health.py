@@ -18,7 +18,7 @@ def test_bwlines_health(capsys, root_data_path):
         root_data_path, "2020-03-22-08-35-00-bandwidth"
     ))
     out = (
-        "\nrelay_recent_measurement_attempt_count <= relay_recent_priority_list_count,\n"  #noqa
+        "\nrelay_recent_measurement_attempt_count <= relay_recent_priority_list_count,\n"  # noqa
         "True\n"
         "relay_recent_priority_list_count <= relay_recent_consensus_count,\n"
         "True\n\n"

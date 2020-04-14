@@ -68,11 +68,15 @@ OBS_BW = 524288
 BW = 600000
 UNMEASURED = False
 
+now = datetime.utcnow()
+
 RELAY1 = Result.Relay(FP1, NICK1, IP1, ED25519,
                       average_bandwidth=AVG_BW, burst_bandwidth=BUR_BW,
                       observed_bandwidth=OBS_BW, consensus_bandwidth=BW,
                       consensus_bandwidth_is_unmeasured=UNMEASURED,
-                      relay_in_recent_consensus_count=2)
+                      relay_in_recent_consensus=[now],
+                      relay_recent_measurement_attempt=[now],
+                      relay_recent_priority_list=[now])
 RELAY2 = Result.Relay(FP2, NICK2, IP2, ED25519)
 
 RESULT = Result(RELAY1, CIRC12, DEST_URL, SCANNER, t=TIME1)
@@ -96,7 +100,9 @@ RELAY_DICT = {
     "relay_observed_bandwidth": OBS_BW,
     "consensus_bandwidth": BW,
     "consensus_bandwidth_is_unmeasured": UNMEASURED,
-    "relay_in_recent_consensus_count": 2,
+    "relay_in_recent_consensus": [now],
+    "relay_recent_measurement_attempt": [now],
+    "relay_recent_priority_list": [now],
 }
 
 BASE_RESULT_NO_RELAY_DICT = {
@@ -184,6 +190,17 @@ def conf(sbwshome_empty, tmpdir):
     conf = _get_default_config()
     conf['paths']['sbws_home'] = sbwshome_empty
     conf['paths']['state_fpath'] = str(tmpdir.join('.sbws', 'state.dat'))
+    return conf
+
+
+@pytest.fixture(scope='function')
+def conf_results(sbwshome_success_result_two_relays, conf):
+    """Minimal configuration having a datadir
+
+    So that `ResultDump` does not raise AssertionError.
+
+    """
+    conf['paths']['sbws_home'] = sbwshome_success_result_two_relays
     return conf
 
 
@@ -279,14 +296,6 @@ def end_event():
 
 
 @pytest.fixture(scope='function')
-def rd(args, conf, end_event):
+def rd(args, conf_results):
     from sbws.lib.resultdump import ResultDump
-    # in Travis the next line gives the error:
-    # TypeError: __init__() takes 3 positional arguments but 4 were given
-    # No idea why.
-    # Returning None to disable the test in case ResultDump can not be
-    # initialized.
-    try:
-        return ResultDump(args, conf, end_event)
-    except TypeError:
-        return None
+    return ResultDump(args, conf_results)

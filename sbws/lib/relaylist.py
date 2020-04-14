@@ -8,28 +8,15 @@ import random
 import logging
 from threading import Lock
 
-from ..globals import MEASUREMENTS_PERIOD
-from ..util import timestamp
+from ..globals import (
+    MAX_RECENT_CONSENSUS_COUNT,
+    MAX_RECENT_PRIORITY_RELAY_COUNT,
+    MAX_RECENT_PRIORITY_LIST_COUNT,
+    MEASUREMENTS_PERIOD
+)
+from ..util import timestamp, timestamps
 
 log = logging.getLogger(__name__)
-
-
-def remove_old_consensus_timestamps(
-        consensus_timestamps, measurements_period=MEASUREMENTS_PERIOD):
-    """
-    Remove the consensus timestamps that are older than period for which
-    the measurements are keep from a list of consensus_timestamps.
-
-    :param list consensus_timestamps:
-    :param int measurements_period:
-    :returns list: a new list of ``consensus_timestamps``
-    """
-    new_consensus_timestamps = [
-        t
-        for t in consensus_timestamps
-        if not timestamp.is_old(t, measurements_period)
-    ]
-    return new_consensus_timestamps
 
 
 def valid_after_from_network_statuses(network_statuses):
@@ -80,14 +67,20 @@ class Relay:
                 self._desc = cont.get_server_descriptor(fp, default=None)
             except (DescriptorUnavailable, ControllerError) as e:
                 log.exception("Exception trying to get desc %s", e)
-        self._consensus_timestamps = []
-        self._add_consensus_timestamp(timestamp)
+        self.relay_in_recent_consensus = timestamps.DateTimeSeq(
+            [], MAX_RECENT_CONSENSUS_COUNT
+        )
+        self.update_relay_in_recent_consensus()
         # The number of times that a relay is "prioritized" to be measured.
         # It is incremented in ``RelayPrioritizer.best_priority``
-        self.relay_recent_priority_list_count = 0
+        self.relay_recent_priority_list = timestamps.DateTimeSeq(
+            [], MAX_RECENT_PRIORITY_LIST_COUNT
+        )
         # The number of times that a relay has been queued to be measured.
         # It is incremented in ``scanner.main_loop``
-        self.relay_recent_measurement_attempt_count = 0
+        self.relay_recent_measurement_attempt = timestamps.DateTimeSeq(
+            [], MAX_RECENT_PRIORITY_LIST_COUNT
+        )
 
     def _from_desc(self, attr):
         if not self._desc:
@@ -174,68 +167,15 @@ class Relay:
 
     @property
     def last_consensus_timestamp(self):
-        if len(self._consensus_timestamps) >= 1:
-            return self._consensus_timestamps[-1]
-        return None
+        return self.relay_in_recent_consensus.last()
 
-    def _append_consensus_timestamp_if_later(self, timestamp):
-        """Append timestamp to the list of consensus timestamps, if it is later
-           than the most recent existing timestamp, or there are no timestamps.
-           Should only be called by _add_consensus_timestamp().
-           timestamp must not be None, and it must not be zero.
-        """
-        if not timestamp:
-            log.info('Bad timestamp %s, skipping consensus timestamp '
-                     'update for  relay %s', timestamp, self.fingerprint)
-            return
-        # The consensus timestamp list was initialized.
-        if self.last_consensus_timestamp is not None:
-            # timestamp is more recent than the most recent stored
-            # consensus timestamp.
-            if timestamp > self.last_consensus_timestamp:
-                # Add timestamp
-                self._consensus_timestamps.append(timestamp)
-        # The consensus timestamp list was not initialized.
-        else:
-            # Add timestamp
-            self._consensus_timestamps.append(timestamp)
-
-    def _add_consensus_timestamp(self, timestamp=None):
-        """Add the consensus timestamp in which this relay is present.
-        """
-        # It is possible to access to the relay's consensensus Valid-After
-        # so believe it, rather than the supplied timestamp
-        if self.consensus_valid_after is not None:
-            self._append_consensus_timestamp_if_later(
-                self.consensus_valid_after
-                )
-        elif timestamp:
-            # Add the arg timestamp.
-            self._append_consensus_timestamp_if_later(timestamp)
-        # In any other case
-        else:
-            log.warning('Bad timestamp %s, using current time for consensus '
-                        'timestamp update for relay %s',
-                        timestamp, self.fingerprint)
-            # Add the current datetime
-            self._append_consensus_timestamp_if_later(
-                datetime.utcnow().replace(microsecond=0))
-
-    def _remove_old_consensus_timestamps(
-            self, measurements_period=MEASUREMENTS_PERIOD):
-        self._consensus_timestamps = \
-            remove_old_consensus_timestamps(
-                copy.deepcopy(self._consensus_timestamps), measurements_period
-                )
-
-    def update_consensus_timestamps(self, timestamp=None):
-        self._add_consensus_timestamp(timestamp)
-        self._remove_old_consensus_timestamps()
+    def update_relay_in_recent_consensus(self, timestamp=None):
+        self.relay_in_recent_consensus.update(timestamp)
 
     @property
     def relay_in_recent_consensus_count(self):
         """Number of times the relay was in a conensus."""
-        return len(self._consensus_timestamps)
+        return len(self.relay_in_recent_consensus)
 
     def can_exit_to_port(self, port):
         """
@@ -267,19 +207,20 @@ class Relay:
                 Flag.EXIT in self.flags and
                 self.can_exit_to_port(port))
 
-    def increment_relay_recent_measurement_attempt_count(self):
+    def increment_relay_recent_measurement_attempt(self):
         """
         Increment The number of times that a relay has been queued
         to be measured.
 
         It is call from :funf:`~sbws.core.scaner.main_loop`.
         """
-        # If it was not in the previous measurements version, start counting
-        if self.relay_recent_measurement_attempt_count is None:
-            self.relay_recent_measurement_attempt_count = 0
-        self.relay_recent_measurement_attempt_count += 1
+        self.relay_recent_measurement_attempt.update()
 
-    def increment_relay_recent_priority_list_count(self):
+    @property
+    def relay_recent_measurement_attempt_count(self):
+        return len(self.relay_recent_measurement_attempt)
+
+    def increment_relay_recent_priority_list(self):
         """
         The number of times that a relay is "prioritized" to be measured.
 
@@ -287,9 +228,11 @@ class Relay:
         :meth:`~sbws.lib.relayprioritizer.RelayPrioritizer.best_priority`.
         """
         # If it was not in the previous measurements version, start counting
-        if self.relay_recent_priority_list_count is None:
-            self.relay_recent_priority_list_count = 0
-        self.relay_recent_priority_list_count += 1
+        self.relay_recent_priority_list.update()
+
+    @property
+    def relay_recent_priority_list_count(self):
+        return len(self.relay_recent_priority_list)
 
     def is_old(self):
         """Whether the last consensus seen for this relay is older than the
@@ -322,19 +265,22 @@ class RelayList:
         self.rng = random.SystemRandom()
         self._refresh_lock = Lock()
         # To track all the consensus seen.
-        self._consensus_timestamps = []
+        self._recent_consensus = timestamps.DateTimeSeq(
+            [], MAX_RECENT_CONSENSUS_COUNT, state, "recent_consensus"
+        )
         # Initialize so that there's no error trying to access to it.
         # In future refactor, change to a dictionary, where the keys are
         # the relays' fingerprint.
         self._relays = []
         # The period of time for which the measurements are keep.
         self._measurements_period = measurements_period
-        self._state = state
-        # NOTE: blocking: writes to disk
-        if self._state:
-            if self._state.get('recent_measurement_attempt_count', None) \
-                    is None:
-                self._state['recent_measurement_attempt_count'] = 0
+        self._recent_measurement_attempt = timestamps.DateTimeSeq(
+            [], MAX_RECENT_PRIORITY_RELAY_COUNT, state,
+            "recent_measurement_attempt"
+        )
+        # Start with 0 for the min bw for our second hops
+        self._exit_min_bw = 0
+        self._non_exit_min_bw = 0
         self._refresh()
 
     def _need_refresh(self):
@@ -345,15 +291,7 @@ class RelayList:
     @property
     def last_consensus_timestamp(self):
         """Returns the datetime when the last consensus was obtained."""
-        if (getattr(self, "_consensus_timestamps")
-                and self._consensus_timestamps):
-            return self._consensus_timestamps[-1]
-        # If the object was not created from __init__, it won't have
-        # consensus_timestamps attribute or it might be empty.
-        # In this case force new update.
-        # Anytime more than 1h in the past will be old.
-        self._consensus_timestamps = []
-        return datetime.utcnow() - timedelta(seconds=60*61)
+        return self._recent_consensus.last()
 
     @property
     def relays(self):
@@ -419,12 +357,6 @@ class RelayList:
     def _relays_without_flag(self, flag):
         return [r for r in self.relays if flag not in r.flags]
 
-    def _remove_old_consensus_timestamps(self):
-        self._consensus_timestamps = remove_old_consensus_timestamps(
-            copy.deepcopy(self._consensus_timestamps),
-            self._measurements_period
-            )
-
     def _init_relays(self):
         """Returns a new list of relays that are in the current consensus.
         And update the consensus timestamp list with the current one.
@@ -441,8 +373,7 @@ class RelayList:
 
         # Find the timestamp of the last consensus.
         timestamp = valid_after_from_network_statuses(network_statuses)
-        self._consensus_timestamps.append(timestamp)
-        self._remove_old_consensus_timestamps()
+        self._recent_consensus.update(timestamp)
 
         new_relays = []
 
@@ -458,7 +389,7 @@ class RelayList:
                 fp = r.fingerprint
                 # new_relays_dict[fp] is the router status.
                 r.update_router_status(new_relays_dict[fp])
-                r.update_consensus_timestamps(timestamp)
+                r.update_relay_in_recent_consensus(timestamp)
                 try:
                     descriptor = c.get_server_descriptor(fp, default=None)
                 except (DescriptorUnavailable, ControllerError) as e:
@@ -502,20 +433,21 @@ class RelayList:
         log.info("Number of consensuses obtained in the last %s days: %s.",
                  int(self._measurements_period / 24 / 60 / 60),
                  self.recent_consensus_count)
-        # NOTE: blocking, writes to file!
-        if self._state is not None:
-            self._state['recent_consensus_count'] = self.recent_consensus_count
+
+        # Calculate minimum bandwidth value for 2nd hop after we refreshed
+        # our available relays.
+        self._calculate_min_bw_second_hop()
 
     @property
     def recent_consensus_count(self):
         """Number of times a new consensus was obtained."""
-        return len(self._consensus_timestamps)
+        return len(self._recent_consensus)
 
     def exits_not_bad_allowing_port(self, port):
         return [r for r in self.exits
                 if r.is_exit_not_bad_allowing_port(port)]
 
-    def increment_recent_measurement_attempt_count(self):
+    def increment_recent_measurement_attempt(self):
         """
         Increment the number of times that any relay has been queued to be
         measured.
@@ -525,5 +457,36 @@ class RelayList:
         It is read and stored in a ``state`` file.
         """
         # NOTE: blocking, writes to file!
-        if self._state:
-            self._state['recent_measurement_attempt_count'] += 1
+        self._recent_measurement_attempt.update()
+
+    @property
+    def recent_measurement_attempt_count(self):
+        return len(self._recent_measurement_attempt)
+
+    def _calculate_min_bw_second_hop(self):
+        """
+        Calculates the minimum bandwidth for both exit and non-exit relays
+        chosen as a second hop by picking the lowest bandwidth value available
+        from the top 75% of the respective category.
+        """
+        # Sort our sets of candidates according to bw, lowest amount first.
+        # It's okay to keep things simple for the calculation and go over all
+        # exits, including badexits.
+        exit_candidates = sorted(self.exits,
+                                 key=lambda r: r.consensus_bandwidth)
+        non_exit_candidates = sorted(self.non_exits,
+                                     key=lambda r: r.consensus_bandwidth)
+        # We know the bandwidth is sorted from least to most. Dividing the
+        # length of the available relays by 4 gives us the position of the
+        # relay with the lowest bandwidth from the top 75%. We do this both
+        # for our exit and non-exit candidates.
+        pos = int(len(exit_candidates)/4)
+        self._exit_min_bw = exit_candidates[pos].consensus_bandwidth
+        pos = int(len(non_exit_candidates)/4)
+        self._non_exit_min_bw = non_exit_candidates[pos].consensus_bandwidth
+
+    def exit_min_bw(self):
+        return self._exit_min_bw
+
+    def non_exit_min_bw(self):
+        return self._non_exit_min_bw

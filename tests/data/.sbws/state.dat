@@ -1,9 +1,35 @@
 {
-    "uuid": "806218a0-3ce5-4778-b839-d6faf6798405",
-    "scanner_started": "2019-03-25T13:03:06",
-    "recent_consensus_count": 1,
-    "recent_priority_list_count": 1,
-    "recent_measurement_attempt_count": 15,
-    "min_perc_reached": null,
-    "recent_priority_relay_count": 15
+    "scanner_started": "2020-02-29T10:00:00",
+    "uuid": "e4ecf294-f253-478c-8660-28cbdfc690de",
+    "tor_version": "0.4.2.6",
+    "recent_consensus": [
+        "2020-03-18T13:26:46"
+    ],
+    "recent_priority_list": [
+        "2020-03-18T13:26:46"
+    ],
+    "recent_priority_relay": [
+        [
+            "2020-03-18T13:26:46",
+            15
+        ]
+    ],
+    "recent_measurement_attempt": [
+        "2020-03-18T13:26:46",
+        "2020-03-18T13:26:46",
+        "2020-03-18T13:26:46",
+        "2020-03-18T13:26:46",
+        "2020-03-18T13:26:46",
+        "2020-03-18T13:26:46",
+        "2020-03-18T13:26:46",
+        "2020-03-18T13:26:46",
+        "2020-03-18T13:26:46",
+        "2020-03-18T13:26:46",
+        "2020-03-18T13:26:46",
+        "2020-03-18T13:26:46",
+        "2020-03-18T13:26:46",
+        "2020-03-18T13:26:46",
+        "2020-03-18T13:26:46"
+    ],
+    "min_perc_reached": null
 }

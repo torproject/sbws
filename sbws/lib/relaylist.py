@@ -278,6 +278,9 @@ class RelayList:
             [], MAX_RECENT_PRIORITY_RELAY_COUNT, state,
             "recent_measurement_attempt"
         )
+        # Start with 0 for the min bw for our second hops
+        self._exit_min_bw = 0
+        self._non_exit_min_bw = 0
         self._refresh()
 
     def _need_refresh(self):
@@ -431,6 +434,10 @@ class RelayList:
                  int(self._measurements_period / 24 / 60 / 60),
                  self.recent_consensus_count)
 
+        # Calculate minimum bandwidth value for 2nd hop after we refreshed
+        # our available relays.
+        self._calculate_min_bw_second_hop()
+
     @property
     def recent_consensus_count(self):
         """Number of times a new consensus was obtained."""
@@ -455,3 +462,31 @@ class RelayList:
     @property
     def recent_measurement_attempt_count(self):
         return len(self._recent_measurement_attempt)
+
+    def _calculate_min_bw_second_hop(self):
+        """
+        Calculates the minimum bandwidth for both exit and non-exit relays
+        chosen as a second hop by picking the lowest bandwidth value available
+        from the top 75% of the respective category.
+        """
+        # Sort our sets of candidates according to bw, lowest amount first.
+        # It's okay to keep things simple for the calculation and go over all
+        # exits, including badexits.
+        exit_candidates = sorted(self.exits,
+                                 key=lambda r: r.consensus_bandwidth)
+        non_exit_candidates = sorted(self.non_exits,
+                                     key=lambda r: r.consensus_bandwidth)
+        # We know the bandwidth is sorted from least to most. Dividing the
+        # length of the available relays by 4 gives us the position of the
+        # relay with the lowest bandwidth from the top 75%. We do this both
+        # for our exit and non-exit candidates.
+        pos = int(len(exit_candidates)/4)
+        self._exit_min_bw = exit_candidates[pos].consensus_bandwidth
+        pos = int(len(non_exit_candidates)/4)
+        self._non_exit_min_bw = non_exit_candidates[pos].consensus_bandwidth
+
+    def exit_min_bw(self):
+        return self._exit_min_bw
+
+    def non_exit_min_bw(self):
+        return self._non_exit_min_bw

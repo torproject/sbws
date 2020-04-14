@@ -18,6 +18,8 @@ def test_init_relays(
     Test `init_relays` when creating the RelayList the first time and when a
     new consensus is received.
     Test that the number of consesus timesamps and relays is correct.
+    Additionally, make sure the calculated min bw for the second hop for
+    exit/non-exit relays is correct, too.
     """
     state = State(conf['paths']['state_fpath'])
     # There is no need to mock datetime to update the consensus, since the
@@ -31,6 +33,9 @@ def test_init_relays(
     # The actual number of relays in the consensus
     assert len(relay_list._relays) == 6433
     fps = {r.fingerprint for r in relay_list._relays}
+    # The calculated min bw for the second hop
+    assert 2100000 == relay_list._exit_min_bw
+    assert 220000 == relay_list._non_exit_min_bw
 
     # One hour later there is a new consensus
     relay_list._controller = controller_1h_later
@@ -44,6 +49,9 @@ def test_init_relays(
     fps_1h_later = {r.fingerprint for r in relay_list._relays}
     added_fps = fps_1h_later.difference(fps)
     assert 6505 == 6433 + len(added_fps)
+    # The calculated min bw for the second hop
+    assert 2120000 == relay_list._exit_min_bw
+    assert 200000 == relay_list._non_exit_min_bw
 
     # Five days later plus 1 second.
     # The first consensus timestamp will get removed.
@@ -62,6 +70,9 @@ def test_init_relays(
     # The number of relays will be the number of relays in the cosensus plus
     # the added ones minus the removed ones.
     assert 6925 == 6505 + len(added_fps) - len(removed_fps)
+    # The calculated min bw for the second hop
+    assert 2790000 == relay_list._exit_min_bw
+    assert 110000 == relay_list._non_exit_min_bw
 
 
 def test_increment_recent_measurement_attempt(args, conf, controller):
@@ -71,9 +82,8 @@ def test_increment_recent_measurement_attempt(args, conf, controller):
     It also tests that the state file is updated correctly.
     """
     state = State(conf['paths']['state_fpath'])
-    # For this test it does not matter that the consensus timestamps or relays
-    # are not correct.
-    relay_list = RelayList(args, conf, controller=controller, state=state)
+    with freeze_time("2020-02-29 10:00:00"):
+        relay_list = RelayList(args, conf, controller=controller, state=state)
     # The initial count is 0 and the state does not have that key.
     assert 0 == relay_list.recent_measurement_attempt_count
     assert not state.get("recent_measurement_attempt", None)

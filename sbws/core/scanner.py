@@ -211,10 +211,16 @@ def _pick_ideal_second_hop(relay, dest, rl, cont, is_exit):
         else rl.non_exits
     if not len(candidates):
         return None
+    min_relay_bw = rl.exit_min_bw() if is_exit else rl.non_exit_min_bw()
     log.debug('Picking a 2nd hop to measure %s from %d choices. is_exit=%s',
               relay.nickname, len(candidates), is_exit)
     for min_bw_factor in [2, 1.75, 1.5, 1.25, 1]:
         min_bw = relay.consensus_bandwidth * min_bw_factor
+        # We might have a really slow/new relay. Try to measure it properly by
+        # using only relays with or above our calculated min_relay_bw (see:
+        # _calculate_min_bw_second_hop() in relaylist.py).
+        if min_bw < min_relay_bw:
+            min_bw = min_relay_bw
         new_candidates = stem_utils.only_relays_with_bandwidth(
             cont, candidates, min_bw=min_bw)
         if len(new_candidates) > 0:

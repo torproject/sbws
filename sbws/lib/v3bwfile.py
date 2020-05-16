@@ -15,6 +15,7 @@ from sbws.globals import (SPEC_VERSION, BW_LINE_SIZE, SBWS_SCALE_CONSTANT,
                           TORFLOW_SCALING, SBWS_SCALING, TORFLOW_BW_MARGIN,
                           TORFLOW_OBS_LAST, TORFLOW_OBS_MEAN,
                           PROP276_ROUND_DIG, MIN_REPORT, MAX_BW_DIFF_PERC)
+from sbws.lib import scaling
 from sbws.lib.resultdump import ResultSuccess, _ResultType
 from sbws.util.filelock import DirectoryLock
 from sbws.util.timestamp import (now_isodt_str, unixts_to_isodt_str,
@@ -631,8 +632,10 @@ class V3BWLine(object):
         assert node_id.startswith('$')
         self.node_id = node_id
         self.bw = bw
+        # For now, we do not want to add ``bw_filt`` to the bandwidth file,
+        # therefore it is set here but not added to ``BWLINE_KEYS_V1``.
         [setattr(self, k, v) for k, v in kwargs.items()
-         if k in BWLINE_KEYS_V1]
+         if k in BWLINE_KEYS_V1 + ["bw_filt"]]
 
     def __str__(self):
         return self.bw_strv1
@@ -762,7 +765,11 @@ class V3BWLine(object):
         if rtt:
             kwargs['rtt'] = rtt
         bw = cls.bw_median_from_results(results_recent)
+        # XXX: all the class functions could use the bw_measurements instead of
+        # obtaining them each time or use a class Measurements.
+        bw_measurements = scaling.bw_measurements_from_results(results_recent)
         kwargs['bw_mean'] = cls.bw_mean_from_results(results_recent)
+        kwargs['bw_filt'] = scaling.bw_filt(bw_measurements)
         kwargs['bw_median'] = cls.bw_median_from_results(
             results_recent)
         kwargs['desc_bw_avg'] = \
@@ -1311,7 +1318,8 @@ class V3BWFile(object):
         # mean (Torflow's strm_avg)
         mu = mean([l.bw_mean for l in bw_lines])
         # filtered mean (Torflow's filt_avg)
-        muf = mean([max(l.bw_mean, mu) for l in bw_lines])
+        muf = mean([l.bw_filt for l in bw_lines])
+
         # bw sum (Torflow's tot_net_bw or tot_sbw)
         sum_bw = sum([l.bw_mean for l in bw_lines])
         # Torflow's clipping
@@ -1369,7 +1377,7 @@ class V3BWFile(object):
                 min_bandwidth = min(desc_bw, l.consensus_bandwidth)
             # Torflow's scaling
             ratio_stream = l.bw_mean / mu
-            ratio_stream_filtered = max(l.bw_mean, mu) / muf
+            ratio_stream_filtered = l.bw_filt / muf
             ratio = max(ratio_stream, ratio_stream_filtered)
             bw_scaled = ratio * min_bandwidth
             # round and convert to KB

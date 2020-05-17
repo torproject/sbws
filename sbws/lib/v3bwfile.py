@@ -1154,7 +1154,8 @@ class V3BWFile(object):
         # Percentage difference
         diff_perc = (
             abs(sum_consensus_bw - sum_bw)
-            / ((sum_consensus_bw + sum_bw) / 2)
+            # Avoid ZeroDivisionError
+            / (max(1, (sum_consensus_bw + sum_bw)) / 2)
             ) * 100
         log.info("The difference between the total consensus bandwidth (%s)"
                  "and the total measured bandwidth (%s) is %s%%.",
@@ -1356,23 +1357,39 @@ class V3BWFile(object):
             # descriptors' bandwidth-observed, because that penalises new
             # relays.
             # See https://trac.torproject.org/projects/tor/ticket/8494
-            if l.desc_bw_bur is not None:
-                # Because in previous versions results were not storing
-                # desc_bw_bur
-                desc_bw = min(desc_bw_obs, l.desc_bw_bur, l.desc_bw_avg)
+            # If the observed bandwidth is None, it is not possible to
+            # calculate the minimum with the other descriptors.
+            # Only in this case, take the consensus bandwidth.
+            # In the case that descriptor average or burst are None,
+            # ignore them since it must be a bug in ``Resultdump``, already
+            # logged in x_bw/bandwidth_x_from_results, but scale.
+            if desc_bw_obs is not None:
+                if l.desc_bw_bur is not None:
+                    if l.desc_bw_avg is not None:
+                        desc_bw = min(
+                            desc_bw_obs, l.desc_bw_bur, l.desc_bw_avg
+                        )
+                    else:
+                        desc_bw = min(desc_bw_obs, l.desc_bw_bur)
+                else:
+                    if l.desc_bw_avg is not None:
+                        desc_bw = min(desc_bw_obs, l.desc_bw_avg)
+                    else:
+                        desc_bw = desc_bw_obs
+                # If the relay is unmeasured and consensus bandwidth is None or
+                # 0, use the descriptor bandwidth
+                if l.consensus_bandwidth_is_unmeasured \
+                        or not l.consensus_bandwidth:
+                    min_bandwidth = desc_bw_obs
+                else:
+                    min_bandwidth = min(desc_bw, l.consensus_bandwidth)
+            elif l.consensus_bandwidth is not None:
+                min_bandwidth = l.consensus_bandwidth
             else:
-                desc_bw = min(desc_bw_obs, l.desc_bw_avg)
-            # In previous versions results were not storing consensus_bandwidth
-            if l.consensus_bandwidth_is_unmeasured \
-                    or l.consensus_bandwidth is None:
-                min_bandwidth = desc_bw
-            # If the relay is measured, use the minimum between the descriptors
-            # bandwidth and the consensus bandwidth, so that
-            # MaxAdvertisedBandwidth limits the consensus weight
-            # The consensus bandwidth in a measured relay has been obtained
-            # doing the same calculation as here
-            else:
-                min_bandwidth = min(desc_bw, l.consensus_bandwidth)
+                log.warning("Can not scale relay missing descriptor and"
+                            " consensus bandwidth.")
+                continue
+
             # Torflow's scaling
             ratio_stream = l.bw_mean / mu
             ratio_stream_filtered = l.bw_filt / muf

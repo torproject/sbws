@@ -642,7 +642,7 @@ class V3BWLine(object):
 
     @classmethod
     def from_results(cls, results, secs_recent=None, secs_away=None,
-                     min_num=0):
+                     min_num=0, router_statuses_d=None):
         """Convert sbws results to relays' Bandwidth Lines
 
         ``bs`` stands for Bytes/seconds
@@ -756,6 +756,23 @@ class V3BWLine(object):
                 'recent_measurements_excluded_few_count'
             return (cls(node_id, 1, **kwargs), exclusion_reason)
 
+        # Use the last consensus if available, since the results' consensus
+        # values come from the moment the measurement was made.
+        if router_statuses_d and node_id in router_statuses_d:
+            consensus_bandwidth = \
+                router_statuses_d[node_id].bandwidth * 1000
+            consensus_bandwidth_is_unmeasured = \
+                router_statuses_d[node_id].is_unmeasured
+        else:
+            consensus_bandwidth = \
+                cls.consensus_bandwidth_from_results(results_recent)
+            consensus_bandwidth_is_unmeasured = \
+                cls.consensus_bandwidth_is_unmeasured_from_results(
+                    results_recent)
+        # If there is no last observed bandwidth, there won't be mean either.
+        desc_bw_obs_last = \
+            cls.desc_bw_obs_last_from_results(results_recent)
+
         # For any line not excluded, do not include vote and unmeasured
         # KeyValues
         del kwargs['vote']
@@ -776,15 +793,13 @@ class V3BWLine(object):
             cls.desc_bw_avg_from_results(results_recent)
         kwargs['desc_bw_bur'] = \
             cls.desc_bw_bur_from_results(results_recent)
-        kwargs['consensus_bandwidth'] = \
-            cls.consensus_bandwidth_from_results(results_recent)
+        kwargs['consensus_bandwidth'] = consensus_bandwidth
         kwargs['consensus_bandwidth_is_unmeasured'] = \
-            cls.consensus_bandwidth_is_unmeasured_from_results(
-                results_recent)
-        kwargs['desc_bw_obs_last'] = \
-            cls.desc_bw_obs_last_from_results(results_recent)
+            consensus_bandwidth_is_unmeasured
+        kwargs['desc_bw_obs_last'] = desc_bw_obs_last
         kwargs['desc_bw_obs_mean'] = \
             cls.desc_bw_obs_mean_from_results(results_recent)
+
         bwl = cls(node_id, bw, **kwargs)
         return bwl, None
 
@@ -997,8 +1012,10 @@ class V3BWFile(object):
                                          destinations_countries, state_fpath)
         bw_lines_raw = []
         bw_lines_excluded = []
-        number_consensus_relays = cls.read_number_consensus_relays(
-            consensus_path)
+        router_statuses_d = cls.read_router_statuses(consensus_path)
+        # XXX: Use router_statuses_d to not parse again the file.
+        number_consensus_relays = \
+            cls.read_number_consensus_relays(consensus_path)
         state = State(state_fpath)
 
         # Create a dictionary with the number of relays excluded by any of the
@@ -1012,7 +1029,8 @@ class V3BWFile(object):
         for fp, values in results.items():
             # log.debug("Relay fp %s", fp)
             line, reason = V3BWLine.from_results(values, secs_recent,
-                                                 secs_away, min_num)
+                                                 secs_away, min_num,
+                                                 router_statuses_d)
             # If there is no reason it means the line will not be excluded.
             if not reason:
                 bw_lines_raw.append(line)
@@ -1416,6 +1434,20 @@ class V3BWFile(object):
                      "consensus file is not found.")
         log.debug("Number of relays in the network %s", num)
         return num
+
+    @staticmethod
+    def read_router_statuses(consensus_path):
+        """Read the router statuses from the cached consensus file."""
+        router_statuses_d = None
+        try:
+            router_statuses_d = dict([
+                (r.fingerprint, r)
+                for r in parse_file(consensus_path)
+            ])
+        except (FileNotFoundError, AttributeError):
+            log.warning("It is not possible to obtain the last consensus"
+                        "cached file %s.", consensus_path)
+        return router_statuses_d
 
     @staticmethod
     def measured_progress_stats(num_bw_lines, number_consensus_relays,

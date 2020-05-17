@@ -1395,10 +1395,10 @@ class V3BWFile(object):
             ratio_stream_filtered = l.bw_filt / muf
             ratio = max(ratio_stream, ratio_stream_filtered)
             bw_scaled = ratio * min_bandwidth
+            # Cap maximum bw
+            bw_scaled = min(hlimit, bw_scaled)
             # round and convert to KB
             bw_new = kb_round_x_sig_dig(bw_scaled, digits=num_round_dig)
-            # Cap maximum bw
-            bw_new = min(hlimit, bw_new)
             # avoid 0
             l.bw = max(bw_new, 1)
         return sorted(bw_lines_tf, key=lambda x: x.bw, reverse=reverse)

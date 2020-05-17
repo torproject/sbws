@@ -869,6 +869,7 @@ class V3BWLine(object):
         for r in reversed(results):
             if r.relay_average_bandwidth is not None:
                 return r.relay_average_bandwidth
+        log.warning("Descriptor average bandwidth is None.")
         return None
 
     @staticmethod
@@ -877,6 +878,7 @@ class V3BWLine(object):
         for r in reversed(results):
             if r.relay_burst_bandwidth is not None:
                 return r.relay_burst_bandwidth
+        log.warning("Descriptor burst bandwidth is None.")
         return None
 
     @staticmethod
@@ -885,6 +887,7 @@ class V3BWLine(object):
         for r in reversed(results):
             if r.consensus_bandwidth is not None:
                 return r.consensus_bandwidth
+        log.warning("Consensus bandwidth is None.")
         return None
 
     @staticmethod
@@ -893,6 +896,7 @@ class V3BWLine(object):
         for r in reversed(results):
             if r.consensus_bandwidth_is_unmeasured is not None:
                 return r.consensus_bandwidth_is_unmeasured
+            log.warning("Consensus bandwidth is unmeasured is None.")
         return None
 
     @staticmethod
@@ -912,6 +916,7 @@ class V3BWLine(object):
         for r in reversed(results):
             if r.relay_observed_bandwidth is not None:
                 return r.relay_observed_bandwidth
+        log.warning("Descriptor observed bandwidth is None.")
         return None
 
     @property

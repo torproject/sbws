@@ -1060,8 +1060,10 @@ class V3BWFile(object):
             cls.warn_if_not_accurate_enough(bw_lines, scale_constant)
             # log.debug(bw_lines[-1])
         elif scaling_method == TORFLOW_SCALING:
-            bw_lines = cls.bw_torflow_scale(bw_lines_raw, torflow_obs,
-                                            torflow_cap, round_digs)
+            bw_lines = cls.bw_torflow_scale(
+                bw_lines_raw, torflow_obs, torflow_cap, round_digs,
+                router_statuses_d=router_statuses_d
+            )
             # log.debug(bw_lines[-1])
             # Update the header and log the progress.
             min_perc = cls.update_progress(
@@ -1186,7 +1188,8 @@ class V3BWFile(object):
     @staticmethod
     def bw_torflow_scale(bw_lines, desc_bw_obs_type=TORFLOW_OBS_MEAN,
                          cap=TORFLOW_BW_MARGIN,
-                         num_round_dig=PROP276_ROUND_DIG, reverse=False):
+                         num_round_dig=PROP276_ROUND_DIG, reverse=False,
+                         router_statuses_d=None):
         """
         Obtain final bandwidth measurements applying Torflow's scaling
         method.
@@ -1344,15 +1347,12 @@ class V3BWFile(object):
         mu = mean([l.bw_mean for l in bw_lines])
         # filtered mean (Torflow's filt_avg)
         muf = mean([l.bw_filt for l in bw_lines])
-
-        # bw sum (Torflow's tot_net_bw or tot_sbw)
-        sum_bw = sum([l.bw_mean for l in bw_lines])
-        # Torflow's clipping
-        hlimit = sum_bw * cap
-        log.debug('sum %s', sum_bw)
         log.debug('mu %s', mu)
         log.debug('muf %s', muf)
-        log.debug('hlimit %s', hlimit)
+
+        # Torflow's ``tot_net_bw``, sum of the scaled bandwidth for the relays
+        # that are in the last consensus
+        sum_bw = 0
         for l in bw_lines_tf:
             # First, obtain the observed bandwidth, later check what to do
             # if it is 0 or None.
@@ -1412,9 +1412,27 @@ class V3BWFile(object):
             ratio_stream = l.bw_mean / mu
             ratio_stream_filtered = l.bw_filt / muf
             ratio = max(ratio_stream, ratio_stream_filtered)
-            bw_scaled = ratio * min_bandwidth
-            # Cap maximum bw
-            bw_scaled = min(hlimit, bw_scaled)
+
+            # Assign it to an attribute, so it's not lost before capping and
+            # rounding
+            l.bw = ratio * min_bandwidth
+
+            # If the consensus is available, sum only the bw for the relays
+            # that are in the consensus
+            if router_statuses_d:
+                if l.node_id.replace("$", "") in router_statuses_d:
+                    sum_bw += l.bw
+            # Otherwise sum all bw, for compatibility with tests that were not
+            # using the consensus file.
+            else:
+                sum_bw += l.bw
+
+        # Cap maximum bw, only possible when the ``sum_bw`` is calculated.
+        # Torflow's clipping
+        hlimit = sum_bw * cap
+        log.debug("sum_bw: %s, hlimit: %s", sum_bw, hlimit)
+        for l in bw_lines_tf:
+            bw_scaled = min(hlimit, l.bw)
             # round and convert to KB
             bw_new = kb_round_x_sig_dig(bw_scaled, digits=num_round_dig)
             # avoid 0

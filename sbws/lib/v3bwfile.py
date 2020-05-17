@@ -773,6 +773,13 @@ class V3BWLine(object):
         desc_bw_obs_last = \
             cls.desc_bw_obs_last_from_results(results_recent)
 
+        # Exclude also relays without consensus bandwidth nor observed
+        # bandwidth, since they can't be scaled
+        if (desc_bw_obs_last is None and consensus_bandwidth is None):
+            # This reason is not counted, not added in the file, but it will
+            # have vote = 0
+            return(cls(node_id, 1), "no_consensus_no_observed_bw")
+
         # For any line not excluded, do not include vote and unmeasured
         # KeyValues
         del kwargs['vote']

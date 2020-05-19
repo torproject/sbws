@@ -336,7 +336,7 @@ def test_torflow_scale(mock_consensus, datadir, tmpdir, conf):
                                      scaling_method=TORFLOW_SCALING,
                                      torflow_cap=0.0001,
                                      round_digs=TORFLOW_ROUND_DIG)
-    assert v3bwfile.bw_lines[0].bw == 123
+    assert v3bwfile.bw_lines[0].bw == 6.1423000000000005
     v3bwfile = V3BWFile.from_results(results, '', '',
                                      state_fpath,
                                      scaling_method=TORFLOW_SCALING,

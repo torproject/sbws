@@ -1330,7 +1330,7 @@ class V3BWFile(object):
         # bw sum (Torflow's tot_net_bw or tot_sbw)
         sum_bw = sum([l.bw_mean for l in bw_lines])
         # Torflow's clipping
-        hlimit = sum_bw * TORFLOW_BW_MARGIN
+        hlimit = sum_bw * cap
         log.debug('sum %s', sum_bw)
         log.debug('mu %s', mu)
         log.debug('muf %s', muf)

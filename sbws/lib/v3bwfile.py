@@ -1077,7 +1077,9 @@ class V3BWFile(object):
             bw_lines = cls.bw_kb(bw_lines_raw)
             # log.debug(bw_lines[-1])
         # Not using the result for now, just warning
-        cls.is_max_bw_diff_perc_reached(bw_lines, max_bw_diff_perc)
+        cls.is_max_bw_diff_perc_reached(
+            bw_lines, max_bw_diff_perc, router_statuses_d
+        )
         header.add_time_report_half_network()
         f = cls(header, bw_lines + bw_lines_excluded)
         return f
@@ -1159,18 +1161,22 @@ class V3BWFile(object):
 
     @staticmethod
     def is_max_bw_diff_perc_reached(bw_lines,
-                                    max_bw_diff_perc=MAX_BW_DIFF_PERC):
-        # Since old versions were not storing consensus bandwidth, use getattr.
-        sum_consensus_bw = sum([l.consensus_bandwidth for l in bw_lines
-                                if getattr(l, 'consensus_bandwidth', None)])
+                                    max_bw_diff_perc=MAX_BW_DIFF_PERC,
+                                    router_statuses_d=None):
+        if router_statuses_d:
+            sum_consensus_bw = sum(list(map(
+                lambda x: x.bandwidth * 1000,
+                router_statuses_d.values()
+            )))
+        else:
+            sum_consensus_bw = sum([
+                l.consensus_bandwidth for l in bw_lines
+                if getattr(l, 'consensus_bandwidth', None)
+            ])
         # Because the scaled bandwidth is in KB, but not the stored consensus
         # bandwidth, multiply by 1000.
-        # Do not count 1 bandwidths for the relays that were excluded
-        # and exclude also the bw of the relays that did not stored consensus,
-        # since they are not included either in the sum of the consensus.
-        sum_bw = sum([l.bw for l in bw_lines
-                      if getattr(l, 'consensus_bandwidth', None)
-                      and getattr(l, 'unmeasured', 0) == 0]) * 1000
+        # Do not count the bandwidths for the relays that were excluded
+        sum_bw = sum([l.bw for l in bw_lines if getattr(l, "vote", 1)]) * 1000
         # Percentage difference
         diff_perc = (
             abs(sum_consensus_bw - sum_bw)

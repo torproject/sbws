@@ -902,7 +902,8 @@ class V3BWLine(object):
             if r.relay_observed_bandwidth is not None:
                 desc_bw_obs_ls.append(r.relay_observed_bandwidth)
         if desc_bw_obs_ls:
-            return max(round(mean(desc_bw_obs_ls)), 1)
+            return round(mean(desc_bw_obs_ls))
+        log.warning("Descriptor observed bandwidth is None.")
         return None
 
     @staticmethod

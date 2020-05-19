@@ -5,28 +5,28 @@ Torflow measurements aggregation
 
 From Torflow's README.spec.txt (section 2.2)::
 
-    In this way, the resulting network status consensus bandwidth values  # NOQA
-    are effectively re-weighted proportional to how much faster the node  # NOQA
+    In this way, the resulting network status consensus bandwidth values
+    are effectively re-weighted proportional to how much faster the node
     was as compared to the rest of the network.
 
 The variables and steps used in Torflow:
 
 **strm_bw**::
 
-    The strm_bw field is the average (mean) of all the streams for the relay  # NOQA
+    The strm_bw field is the average (mean) of all the streams for the relay
     identified by the fingerprint field.
     strm_bw = sum(bw stream x)/|n stream|
 
 **filt_bw**::
 
-    The filt_bw field is computed similarly, but only the streams equal to  # NOQA
-    or greater than the strm_bw are counted in order to filter very slow  # NOQA
+    The filt_bw field is computed similarly, but only the streams equal to
+    or greater than the strm_bw are counted in order to filter very slow
     streams due to slow node pairings.
 
 **filt_sbw and strm_sbw**::
 
     for rs in RouterStats.query.filter(stats_clause).\
-          options(eagerload_all('router.streams.circuit.routers')).all():  # NOQA
+          options(eagerload_all('router.streams.circuit.routers')).all():
       tot_sbw = 0
       sbw_cnt = 0
       for s in rs.router.streams:
@@ -48,13 +48,13 @@ The variables and steps used in Torflow:
 
 **filt_avg, and strm_avg**::
 
-    Once we have determined the most recent measurements for each node, we  # NOQA
-    compute an average of the filt_bw fields over all nodes we have measured.  # NOQA
+    Once we have determined the most recent measurements for each node, we
+    compute an average of the filt_bw fields over all nodes we have measured.
 
 ::
 
-    filt_avg = sum(map(lambda n: n.filt_bw, nodes.itervalues()))/float(len(nodes))  # NOQA
-    strm_avg = sum(map(lambda n: n.strm_bw, nodes.itervalues()))/float(len(nodes))  # NOQA
+    filt_avg = sum(map(lambda n: n.filt_bw, nodes.itervalues()))/float(len(nodes))
+    strm_avg = sum(map(lambda n: n.strm_bw, nodes.itervalues()))/float(len(nodes))
 
 **true_filt_avg and true_strm_avg**::
 
@@ -72,7 +72,7 @@ In the non-pid case, all types of nodes get the same avg
 
 **n.ratio**::
 
-    These averages are used to produce ratios for each node by dividing the  # NOQA
+    These averages are used to produce ratios for each node by dividing the
     measured value for that node by the network average.
 
 ::
@@ -91,15 +91,15 @@ It is the minimum of all the descriptor bandwidth values::
     bw_observed = min(bws)
 
     return Router(ns.idhex, ns.nickname, bw_observed, dead, exitpolicy,
-    ns.flags, ip, version, os, uptime, published, contact, rate_limited,  # NOQA
+    ns.flags, ip, version, os, uptime, published, contact, rate_limited,
     ns.orhash, ns.bandwidth, extra_info_digest, ns.unmeasured)
 
     self.desc_bw = max(bw,1) # Avoid div by 0
 
 **new_bw**::
 
-    These ratios are then multiplied by the most recent observed descriptor  # NOQA
-    bandwidth we have available for each node, to produce a new value for  # NOQA
+    These ratios are then multiplied by the most recent observed descriptor
+    bandwidth we have available for each node, to produce a new value for
     the network status consensus process.
 
 ::
@@ -115,7 +115,7 @@ The descriptor observed bandwidth is multiplied by the ratio.
 ::
 
     if n.new_bw > tot_net_bw*NODE_CAP:
-      plog("INFO", "Clipping extremely fast "+n.node_class()+" node "+n.idhex+"="+n.nick+  # NOQA
+      plog("INFO", "Clipping extremely fast "+n.node_class()+" node "+n.idhex+"="+n.nick+
             " at "+str(100*NODE_CAP)+"% of network capacity ("+
             str(n.new_bw)+"->"+str(int(tot_net_bw*NODE_CAP))+") "+
             " pid_error="+str(n.pid_error)+

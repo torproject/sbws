@@ -1434,9 +1434,7 @@ class V3BWFile(object):
         for l in bw_lines_tf:
             bw_scaled = min(hlimit, l.bw)
             # round and convert to KB
-            bw_new = kb_round_x_sig_dig(bw_scaled, digits=num_round_dig)
-            # avoid 0
-            l.bw = max(bw_new, 1)
+            l.bw = kb_round_x_sig_dig(bw_scaled, digits=num_round_dig)
         return sorted(bw_lines_tf, key=lambda x: x.bw, reverse=reverse)
 
     @staticmethod

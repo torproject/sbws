@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """Classes and functions that create the bandwidth measurements document
 (v3bw) used by bandwidth authorities."""
+# flake8: noqa: E741
+# (E741 ambiguous variable name), when using l.
 
 import copy
 import logging

@@ -672,19 +672,25 @@ class V3BWLine(object):
             ])
         )
 
-        kwargs['relay_recent_priority_list_count'] = str(
-            max([
-                len(getattr(r, 'relay_recent_priority_list', []) or [])
-                for r in results
-            ])
-        )
+        # Workaround for #34309.
+        # Because of a bug, probably in relaylist, resultdump, relayprioritizer
+        # or scanner, only the last timestamp is being stored in each result.
+        # Temporally count the number of timestamps for all results.
+        # If there is an unexpected failure and the result is not stored, this
+        # number would be lower than what would be the correct one.
+        # This should happen rarely or never.
+        ts = set([])
+        for r in results:
+            if getattr(r, "relay_recent_priority_list", None):
+                ts.update(r.relay_recent_priority_list)
+        kwargs["relay_recent_priority_list_count"] = str(len(ts))
 
-        kwargs['relay_recent_measurement_attempt_count'] = str(
-            max([
-                len(getattr(r, 'relay_recent_measurement_attempt', []) or [])
-                for r in results
-            ])
-        )
+        # Same comment as the previous paragraph.
+        ts = set()
+        for r in results:
+            if getattr(r, "relay_recent_measurement_attempt", None):
+                ts.update(r.relay_recent_measurement_attempt)
+        kwargs["relay_recent_measurement_attempt_count"] = str(len(ts))
 
         success_results = [r for r in results if isinstance(r, ResultSuccess)]
 

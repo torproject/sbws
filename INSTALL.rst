@@ -42,6 +42,10 @@ Installing sbws from source
 Clone ``sbws``::
 
     git clone https://git.torproject.org/sbws.git
+    git checkout maint-1.1
+
+The branch ``maint-1.1`` is the last stable version and the one that should be
+used in production.
 
 and install it::
 

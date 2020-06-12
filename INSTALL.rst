@@ -22,7 +22,7 @@ System requirements
 --------------------
 
 - Tor (last stable version is recommended)
-- Python 3 (>= 3.5)
+- Python 3 (>= 3.6)
 - virtualenv_ (while there is not ``stem`` release > 1.6.0, it is
   recommended to install the required python dependencies in a virtualenv)
 

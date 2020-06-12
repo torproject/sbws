@@ -3,10 +3,9 @@
 Installing Simple Bandwidth Scanner
 ===================================
 
-The recommended method  is to install it from your system
-distribution.
+The recommended method  is to install it from your system package manager.
 
-In Debian/Ubuntu systems::
+In Debian_/Ubuntu_ systems::
 
     sudo apt install sbws
 
@@ -15,6 +14,8 @@ To install also the documentation::
     sudo apt install sbws-doc
 
 You might need to check in which releases is the package available.
+
+There is a port_ for FreeBSD.
 
 Continue reading to install ``sbws`` in other ways.
 
@@ -93,3 +94,6 @@ are 10MB and it will keep 50 rotated log files.
 .. _pytest: https://docs.pytest.org/
 .. _tox: https://tox.readthedocs.io
 .. _Coverage: https://coverage.readthedocs.io/
+.. _port: https://www.freshports.org/net/py-sbws/
+.. _Debian: https://packages.debian.org/search?keywords=sbws&searchon=names&suite=all&section=all
+.. _Ubuntu: https://packages.ubuntu.com/search?keywords=sbws&searchon=names&suite=all&section=all

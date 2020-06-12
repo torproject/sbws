@@ -80,7 +80,7 @@ System physical requirements
 -----------------------------
 
 - Bandwidth: at least 12.5MB/s (100 Mbit/s).
-- Free RAM: at least 1.5GB
+- Free RAM: at least 2GB
 - Free disk: at least 3GB
 
 ``sbws`` and its dependencies need around 20MB of disk space.

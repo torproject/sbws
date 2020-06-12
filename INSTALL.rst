@@ -24,12 +24,6 @@ System requirements
 
 - Tor (last stable version is recommended)
 - Python 3 (>= 3.6)
-- virtualenv_ (while there is not ``stem`` release > 1.6.0, it is
-  recommended to install the required python dependencies in a virtualenv)
-
-In Debian::
-
-    sudo apt install tor python3 virtualenv
 
 Python dependencies
 --------------------
@@ -37,9 +31,30 @@ Python dependencies
 - Stem_ >= 1.7.0
 - Requests_ (with socks_ support) >= 2.10.0
 
-To install the Python dependencies, create a ``virtualenv`` first
+It is recommend to install the dependencies from your system package manager.
+If that is not possible, because the Python dependencies are not available in
+your system, you can install them from their sources.
+We only recommend using pip_ for development or testing.
 
-::
+Installing sbws from source
+---------------------------
+
+Clone ``sbws``::
+
+    git clone https://git.torproject.org/sbws.git
+
+and install it::
+
+    cd sbws
+    python3 setup.py install
+
+Installing sbws for development or testing
+------------------------------------------
+
+If you use pip_, it is recommended to use virtualenv_, to avoid having
+different versions of the same libraries in your system.
+
+To create a ``virtualenv``::
 
     virtualenv venv -p /usr/bin/python3
     source venv/bin/activate
@@ -50,7 +65,10 @@ Clone ``sbws``::
 
 Install the python dependencies::
 
-    cd sbws && pip install .
+    cd sbws && pip install -e .
+
+Configuration and deployment
+----------------------------
 
 ``sbws`` needs :term:`destination` s to request files from.
 
@@ -97,3 +115,4 @@ are 10MB and it will keep 50 rotated log files.
 .. _port: https://www.freshports.org/net/py-sbws/
 .. _Debian: https://packages.debian.org/search?keywords=sbws&searchon=names&suite=all&section=all
 .. _Ubuntu: https://packages.ubuntu.com/search?keywords=sbws&searchon=names&suite=all&section=all
+.. _pip: https://pypi.org/project/pip/

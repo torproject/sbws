@@ -14,6 +14,8 @@ To install also the documentation::
 
     sudo apt install sbws-doc
 
+You might need to check in which releases is the package available.
+
 Continue reading to install ``sbws`` in other ways.
 
 System requirements

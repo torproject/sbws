@@ -45,6 +45,7 @@ Included in the
    config
    config_tor
    sbws
+   torflow_aggr
    implementation
    bandwidth_distribution
    tor_bandwidth_files

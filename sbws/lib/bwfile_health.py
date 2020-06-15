@@ -1,4 +1,6 @@
 """Expected bandwidth file values for KeyValues."""
+# flake8: noqa: E741
+# (E741 ambiguous variable name), when using l.
 import logging
 
 from stem import descriptor

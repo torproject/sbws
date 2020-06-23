@@ -81,8 +81,17 @@ TORFLOW_OBS_MEAN = 1
 TORFLOW_OBS_DECAYING = 3
 TORFLOW_ROUND_DIG = 3
 PROP276_ROUND_DIG = 2
-DAY_SECS = 86400
-NUM_MIN_RESULTS = 2
+# Number of seconds the measurements for a relay have to be distant from each
+# other, otherwise the relay would be excluded from the relays to vote on.
+# Ideally, this should be 86400 seconds (1 day).
+# To have sbws vote on approximately the same number of relays as Torflow,
+# leave it as None, to not exclude measurements.
+DAY_SECS = None
+# Minimum number of measurements for a relay to be included as a relay to vote
+# on.
+# Ideally, this should be 2.
+# As the constant before, leave it as 1 to not exclude measurements.
+NUM_MIN_RESULTS = 1
 MIN_REPORT = 60
 # Maximum difference between the total consensus bandwidth and the total in
 # in the bandwidth lines in percentage

@@ -23,8 +23,8 @@ of the Tor bandwidth authorities, to avoid creating unnecessary traffic.
 
 **ADVICE**: It is recommended to read this documentation at
 [Read the Docs](https://sbws.rtfd.io). In
-[Github](https://github.com/torproject/sbws) some links won't be properly
-rendered.
+[Tor Project Gitlab](https://gitlab.torproject.org/tpo/network-health/sbws)
+(tpo Gitlab) some links won't be properly rendered.
 It can also be read after installing the Debian package ``sbws-doc`` in
 ``/usr/share/doc/sbws`` or after building it locally as explained in
 ``./docs/source/documenting.rst``.
@@ -33,19 +33,19 @@ It can also be read after installing the Debian package ``sbws-doc`` in
 Installing
 ------------
 
-See [./INSTALL.rst](INSTALL.rst) (in local directory or GitHub) or
+See [./INSTALL.rst](INSTALL.rst) (in local directory or tpo Gitlab) or
 [INSTALL.html](INSTALL.html) (local build or Read the Docs).
 
 Deploying and running
 ---------------------
 
-See [./DEPLOY.rst](DEPLOY.rst) (in local directory or GitHub) or
+See [./DEPLOY.rst](DEPLOY.rst) (in local directory or tpo Gitlab) or
 [DEPLOY.html](DEPLOY.html) (local build or Read the Docs).
 
 Changelog
 --------------
 
-See [./CHANGELOG.rst](CHANGELOG.rst) (in local directory or GitHub) or
+See [./CHANGELOG.rst](CHANGELOG.rst) (in local directory or tpo Gitlab) or
 [CHANGELOG.html](CHANGELOG.html)  (local build or Read the Docs).
 
 Documentation
@@ -66,5 +66,5 @@ software in ./LICENSE.md
 
 ## Authors
 
-See [./AUTHORS.md](AUTHORS.md) (in local directory or GitHub) or
+See [./AUTHORS.md](AUTHORS.md) (in local directory or tpo Gitlab) or
 [AUTHORS.html](AUTHORS.html) (local build or Read the Docs).

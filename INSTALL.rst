@@ -76,7 +76,7 @@ Configuration and deployment
 
 ``sbws`` needs :term:`destination` s to request files from.
 
-Please, see `<DEPLOY.rst>`_ (in the local directory or GitHub) or
+Please, see `<DEPLOY.rst>`_ (in the local directory or Tor Project Gitlab) or
 `<DEPLOY.html>`_ (local build or Read the Docs)
 to configure, deploy and run ``sbws``.
 

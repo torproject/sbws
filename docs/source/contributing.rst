@@ -18,7 +18,7 @@ Bug reports or feature requests
 .. _ticket-ref:
 
 * Open a issue in
-  `Tor Project Trac <https://gitlab.torproject.org/tpo/network-health/sbws/-/issues>`_ .
+  `Tor Project Gitlab <https://gitlab.torproject.org/tpo/network-health/sbws/-/issues>`_ .
 
 Code/documentation patches
 ---------------------------
@@ -42,7 +42,7 @@ The following are guidelines we aim to follow.
 Steps to create a PR
 ~~~~~~~~~~~~~~~~~~~~~
 
-1. Create a ticket in Tor Project Trac (:ref:`Open ticket <ticket-ref>`)
+1. Create a issue in Tor Project Gitlab (:ref:`Open issue <ticket-ref>`)
 2. Clone ``sbws`` via the Github web interface
    https://github.com/torproject/sbws
 3. Clone the repository locally
@@ -132,7 +132,7 @@ but not all.
 Commits
 ~~~~~~~~~
 
-Each commit should reference the Tor Project Trac ticket (example: ``#12345``)
+Each commit should reference the Tor Project Gitlab issue (example: ``#12345``)
 and possibly the bugfix version.
 
 Try to make each commit a logically separate changes.::
@@ -254,7 +254,7 @@ Before major releases, ensure that:
 .. _changelog:
 
 Create a ./CHANGELOG.rst file.
-Each entry should reference the Tor Project Trac ticket (example: ``#12345``)
+Each entry should reference the Tor Project Gitlab issue (example: ``#12345``)
 and possibly the bugfix version.
 Until version 1.0.2 we have followed `keep a changelog`_ format.
 

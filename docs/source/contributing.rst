@@ -227,8 +227,9 @@ Reviewers:
   extra spaces, etc.)
 - Should not push to master new features while there are open MRs to review.
 
-Currently, the reviewers are the persons that have contributed to the code:
-pastly, teor, juga.
+Currently, the reviewers are `gk <https://gitlab.torproject.org/gk>`_,
+`ahf <https://gitlab.torproject.org/ahf>`_,
+`juga <https://gitlab.torproject.org/juga>`_.
 
 .. _releases-ref:
 

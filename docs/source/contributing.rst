@@ -17,9 +17,8 @@ Bug reports or feature requests
 
 .. _ticket-ref:
 
-* Open a ticket in
-  `Tor Project Trac <https://trac.torproject.org>`_
-  and assign the component to ``Core Tor``/``sbws``.
+* Open a issue in
+  `Tor Project Trac <https://gitlab.torproject.org/tpo/network-health/sbws/-/issues>`_ .
 
 Code/documentation patches
 ---------------------------

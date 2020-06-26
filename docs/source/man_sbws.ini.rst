@@ -226,4 +226,4 @@ SEE ALSO
 BUGS
 ----
 
-Please report bugs at https://trac.torproject.org/.
+Please report bugs at https://gitlab.torproject.org/tpo/network-health/sbws/-/issues/.

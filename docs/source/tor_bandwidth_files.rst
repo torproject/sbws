@@ -18,7 +18,7 @@ To appear in Tor v0.4.1.x:
 
     bandwidth-file-digest sha256=01234567890123456789abcdefghijkl
 
-https://trac.torproject.org/projects/tor/ticket/26698
+https://gitlab.torproject.org/tpo/core/tor/-/issues/26698
 
 Directory authorities' bandwidth file URL
 -----------------------------------------
@@ -29,4 +29,4 @@ To appear in Tor v0.4.1.x:
 
     /tor/status-vote/next/bandwidth.z
 
-https://trac.torproject.org/projects/tor/ticket/21377
+https://gitlab.torproject.org/tpo/core/tor/-/issues/21377

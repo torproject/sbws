@@ -116,6 +116,7 @@ def router_status(server_descriptor, router_statuses):
     ][0]
     return rs
 
+
 # Because of the function scoped `args` in `tests.unit.conftest`, this has to
 # be function scoped too.
 @pytest.fixture(scope='function')

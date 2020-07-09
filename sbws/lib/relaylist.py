@@ -197,7 +197,9 @@ class Relay:
         # Therefore, catch the exception here.
         try:
             if self.exit_policy:
-                return self.exit_policy.can_exit_to(port=port)
+                # Using `strict` to ensure it can exit to ALL domains
+                # and ips and that port. See #40006.
+                return self.exit_policy.can_exit_to(port=port, strict=True)
         except TypeError:
             return False
         return False

@@ -30,6 +30,9 @@ destination requirements
 - Bandwidth: at least 12.5MB/s (100 Mbit/s).
 - Network traffic: around 12-15GB/day.
 
+If possible, use a `Content delivery network`_ (CDN) in order to make the
+destination IP closer to the scanner exit.
+
 scanner setup
 ----------------------
 
@@ -38,17 +41,20 @@ or `<INSTALL.html>`_  (local build or Read the Docs).
 
 To run the ``scanner`` it is mandatory to create a configuration file with at
 least one ``destination``.
-It is recommended to set several ``destination``s so that the ``scanner`` can
+It is recommended to set several ``destinations`` so that the ``scanner`` can
 continue if one fails.
 
-If ``sbws`` is installed from the Debian package, then create a file in
-``/etc/sbws/sbws.ini`` like in the following example:
+If ``sbws`` is installed from the Debian package, then create the configuration
+file in ``/etc/sbws/sbws.ini``.
+You can see an example with all the possible options here, note that you don't
+need to include all of that and that everything that starts with ``#`` and
+``;`` is a comment:
 
 .. literalinclude:: /examples/sbws.example.ini
     :caption: Example sbws.example.ini
 
 If ``sbws`` is installed from the sources as a non-root user then create the
-file in ``~/.sbws.ini``.
+configuration file in ``~/.sbws.ini``.
 
 More details about the configuration file can be found in
 ``./docs/source/man_sbws.ini.rst`` (in the local directory or GitHub) or
@@ -58,3 +64,5 @@ More details about the configuration file can be found in
 See also ``./docs/source/man_sbws.rst`` (in the local directory or GitHub) or
 `<man_sbws.html>`_ (local build or Read the Docs) or ``man sbws`` (system
 package).
+
+.. _Content delivery network: https://en.wikipedia.org/wiki/Content_delivery_network

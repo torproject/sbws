@@ -21,7 +21,7 @@ All in sequence and doesn't recover from any previous step.
 
 It assumes that:
 - gitchangelog and semantic_version are installed
-- the next prerelease version is the release version + "-dev0"
+- the program version can be obtained with ``sbws.__version__``
 - the official tarball releases are at gitlab.torproject.org
 - the key to sign the release is only one and is available in the system
 
@@ -44,8 +44,6 @@ import sbws
 
 
 def obtain_release_version(version):
-    # Ensure this is a prerelease version (eg 1.0.3-dev0)
-    assert version.prerelease
     release_type_dict = {
         1: version.next_patch(),
         2: version.next_minor(),

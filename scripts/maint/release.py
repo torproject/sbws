@@ -13,7 +13,7 @@ It will:
    commit it and commit changelog
 4. Create a version with the tag and sign it
 5. Push the commit and tag to the repository
-6. Obtain the release tarball from Github
+6. Obtain the release tarball
 7. Sign the release tarball
 8. Modify the program to the next prerelease version and commit it
 9. Push the commit
@@ -23,10 +23,8 @@ All in sequence and doesn't recover from any previous step.
 It assumes that:
 - the program version is in ``__init__.py.__version__``
 - gitchangelog and semantic_version are installed
-- we are in the master branch
-- the remote repository to push is origin
 - the next prerelease version is the release version + "-dev0"
-- the official releases tarballs are in Github (because no access to dist.tpo)
+- the official tarball releases are at gitlab.torproject.org
 - the key to sign the release is only one and is available in the system
 
 """
@@ -130,44 +128,21 @@ def main(args):
                      '-m', '"Release version {}."'.format(release_version)])
 
     print("\n5. Push commit and tag")
-    print("----------------------")
-    print("\nPush now so that the Github tarball will have the"
-          " correct tag...")
-    input("Press enter when you are sure everything is correct.")
-    subprocess.call(['git', 'push', 'origin', 'master'])
+    print("------------------------")
+    print("\nPush now so that the Gitlab creates the tarball from the new "
+          " commit and tag, eg:")
+    print("git push myremote mybranch")
+    print("git push myremote --tags")
+    input("Press enter when you are done.")
 
-    # While we use Github releases and not dist.tpo
-    print("\n6. Create release tarball")
-    print("-------------------------")
-
-    print("\nCreating a release tarball...")
+    print("\n6. Obtain the release tarball")
+    print("-------------------------------")
+    print("Obtaining Gitlab tarball...")
     subprocess.call(
-        "git archive --format=tar.gz --prefix=sbws-{}/ "
-        "-o v{}.tar.gz v{}"
-        .format(release_version, release_version, release_version).split(' ')
-    )
-    print("\nCreating tarball hash file...")
-    fd = open('v{}.tar.gz.sha256'.format(release_version), 'w')
-    subprocess.call("sha256sum v{}.tar.gz".format(release_version).split(' '),
-                    stdout=fd)
-    fd.close()
-
-    print("Obtaining Github tarball...")
-    # This will overwrite local tarball, but that's fine since the hash file
-    # won't be overwritten.
-    subprocess.call(
-        "wget https://github.com/torproject/sbws/archive/v{}.tar.gz "
+        "wget https://gitlab.torproject.org/tpo/network-health/sbws/-/archive/v{}/sbws-v{}.tar.gz "
         "-O v{}.tar.gz"
-        .format(release_version, release_version).split(' ')
+        .format(release_version, release_version, release_version).split(' ')
         )
-
-    print("Verifying Github tarball and local one are the same...")
-    try:
-        subprocess.check_call("sha256sum -c v{}.tar.gz.sha256"
-                              .format(release_version).split(' '))
-    except subprocess.CalledProcessError:
-        print("Tarballs are not the same")
-        sys.exit(1)
 
     print("\n7. Create the tarball signature")
     print("-------------------------------")
@@ -178,7 +153,7 @@ def main(args):
                     .format(keyid, release_version, release_version)
                     .split(' '))
 
-    print("\nUpload the signature manually to Github.")
+    print("\nUpload the signature manually to Gitlab.")
     input("Press enter when done.")
     print("\nRelease done!!!.")
 

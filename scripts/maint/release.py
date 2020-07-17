@@ -4,7 +4,14 @@
 
 usage: release.py GPG_KEY_IDENTIFIER
 
-It will:
+This is a fast and dirty script to help release new sbws versions.
+It does not intent to cover all possible cases and errors because this is out
+of the scope of sbws.
+There are other tools [*] that help manage release tags, branches and
+changelogs, but we should not add more requirements to sbws to just release a
+new version.
+
+This script will:
 0. Detect the current program version
 1. Ask which version to release
 2. Update the changelog automatically with ``gitchangelog``
@@ -17,13 +24,16 @@ It will:
 8. Modify the program to the next prerelease version and commit it
 9. Push the commit
 
-All in sequence and doesn't recover from any previous step.
+All is done in sequence and doesn't recover from any previous step.
 
 It assumes that:
 - the program version can be obtained with ``sbws.__version__``
 - ``gitchangelog`` and ``semantic_version`` python packages are installed
 - the official tarball releases are at gitlab.torproject.org
 - the key to sign the release is only one and is available in the system
+
+[*] See for instance https://semantic-release.gitbook.io,
+    https://github.com/GitTools/GitVersion
 
 """
 import re

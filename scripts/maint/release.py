@@ -9,8 +9,7 @@ It will:
 1. Ask which version to release
 2. Update the changelog automatically with ``gitchangelog``
    and leave the option to user to manually edit it
-3. Modify the program version to release version,
-   commit it and commit changelog
+3. Commit the changelog
 4. Create a version with the tag and sign it
 5. Push the commit and tag to the repository
 6. Obtain the release tarball
@@ -21,7 +20,6 @@ It will:
 All in sequence and doesn't recover from any previous step.
 
 It assumes that:
-- the program version is in ``__init__.py.__version__``
 - gitchangelog and semantic_version are installed
 - the next prerelease version is the release version + "-dev0"
 - the official tarball releases are at gitlab.torproject.org
@@ -66,15 +64,6 @@ def obtain_release_version(version):
         sys.exit(1)
 
 
-def replace_version(old_version, new_version):
-    with open(sbws.__file__, 'r+') as f:
-        text = f.read()
-        text = re.sub(str(old_version), str(new_version), text)
-        f.seek(0)
-        f.write(text)
-        f.truncate()
-
-
 def obtain_next_prerelease_version(release_version):
     # Assuming that we are only jumping from release to `-dev0`
     next_prerelease_version = semantic_version.Version(
@@ -112,12 +101,9 @@ def main(args):
     print("\nRemoving the tag...")
     subprocess.call(['git', 'tag', '-d', 'v{}'.format(release_version)])
 
-    print("\n3. Modify program version")
+    print("\n3. Commit the changelog")
     print("--------------------------")
-    print("\nReplacing __init__.py version with the release version...")
-    replace_version(current_version, release_version)
-
-    print("\nCommiting __init__.py and CHANGELOG.rst...")
+    print("\nCommiting CHANGELOG.rst...")
     subprocess.call(['git', 'commit',
                      '-am', '"Release version {}."'.format(release_version)])
 

@@ -20,8 +20,8 @@ It will:
 All in sequence and doesn't recover from any previous step.
 
 It assumes that:
-- gitchangelog and semantic_version are installed
 - the program version can be obtained with ``sbws.__version__``
+- ``gitchangelog`` and ``semantic_version`` python packages are installed
 - the official tarball releases are at gitlab.torproject.org
 - the key to sign the release is only one and is available in the system
 

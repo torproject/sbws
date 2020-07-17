@@ -62,14 +62,6 @@ def obtain_release_version(version):
         sys.exit(1)
 
 
-def obtain_next_prerelease_version(release_version):
-    # Assuming that we are only jumping from release to `-dev0`
-    next_prerelease_version = semantic_version.Version(
-        str(release_version.next_patch()) + "-dev0"
-        )
-    return next_prerelease_version
-
-
 def main(args):
     print(__doc__)
     try:
@@ -141,22 +133,16 @@ def main(args):
     input("Press enter when done.")
     print("\nRelease done!!!.")
 
-    print("\n8. Create next prerelease version")
-    print("---------------------------------")
-    next_prerelease_version = obtain_next_prerelease_version(release_version)
-    print("\nReplacing the version in the program with "
-          "the next prerelease version...")
-    replace_version(release_version, next_prerelease_version)
-
-    print("\nCommitting the prerelease version...")
-    subprocess.call(['git', 'commit',
-                     '-am', '"Bump to {}."'.format(next_prerelease_version)])
-
-    print("\n9. Push commit")
-    print("--------------")
-    input("Press enter when you are sure everything is correct.")
-    subprocess.call(['git', 'push', 'origin', 'master'])
-    print("Done!")
+    print("\n8. Create next prerelease branch")
+    print("----------------------------------")
+    print("\nIf this release happens in a maintainance branch, merge the "
+          "the commit to master and push, eg:"
+          "git checkout master"
+          "git merge --no-ff mybranch"
+          "git push myremote master")
+    next_branch_version = "maint{}".format(release_version)
+    print("And create the next prerelease branch, eg:")
+          "git checkout -b {}".format(next_branch_version)
 
 
 if __name__ == "__main__":

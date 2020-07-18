@@ -135,9 +135,19 @@ Commits
 
 Each commit should reference the Tor Project Trac ticket (example: ``#12345``)
 and possibly the bugfix version.
+The commit message should contain ``Closes: #bugnumber``.
 
-From version 1.0.3, the commit title should start by ``new`` or ``fix`` or
-``change``. The commit message should contain ``Closes: #bugnumber``.
+From version 1.0.2 we started to prefix the summary with the subpackage or
+component, though we have not standarized the words to use, eg: ``scanner``,
+``generate``, ``v3bwfile``, ``relaylist``, ``doc``, ``test``, ``CI``.
+
+From version 1.0.3, we also started to prefix the summary with ``new``,
+``fix`` or ``chg``, so that `gitchangelog`_ automatically generates different
+sections in the CHANGELOG.
+
+From version 1.1.0 we started to use the words ``new``, ``chg`` and ``fix``,
+not in the sense `gitchangelog`_ use them, but to match sematic versioning
+changes major, minor and patch.
 
 Try to make each commit a logically separate changes.::
 
@@ -261,7 +271,10 @@ Create a ./CHANGELOG.rst file.
 Each entry should reference the Tor Project Trac ticket (example: ``#12345``)
 and possibly the bugfix version.
 Until version 1.0.2 we have followed `keep a changelog`_ format.
-From version 1.0.3, run ``./scripts/maint/release.py`` to create new releases.
+
+From version 1.1.x, run ``./scripts/maint/release.py`` to create new releases.
+It uses `gitchangelog`_ to automatically add new CHANGELOG entries from the
+commits' messages.
 
 .. _commit-msg:
 
@@ -299,3 +312,4 @@ Example commit message
 .. _`keep a changelog`: https://keepachangelog.com/en/1.0.0/
 .. _`semantic versioning`: https://semver.org/
 .. _`vulture`: https://pypi.org/project/vulture/
+.. _`gitchangelog`: https://github.com/vaab/gitchangelog

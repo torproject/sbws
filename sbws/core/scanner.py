@@ -43,7 +43,9 @@ rd = None
 controller = None
 
 FILLUP_TICKET_MSG = """Something went wrong.
-Please create a ticket in https://trac.torproject.org with this traceback."""
+Please create an issue at
+https://gitlab.torproject.org/tpo/network-health/sbws/-/issues with this
+traceback."""
 
 
 def stop_threads(signal, frame, exit_code=0):

@@ -17,16 +17,16 @@ Bug reports or feature requests
 
 .. _ticket-ref:
 
-* Open a ticket in
-  `Tor Project Trac <https://trac.torproject.org>`_
-  and assign the component to ``Core Tor``/``sbws``.
+* Open a issue in
+  `Tor Project Gitlab <https://gitlab.torproject.org/tpo/network-health/sbws/-/issues>`_ .
 
 Code/documentation patches
 ---------------------------
 
 The sbws canonical repository is https://gitweb.torproject.org/sbws.git,
-but we review patches using the Github canonical repository
-(https://github.com/torproject/sbws) Pull Requests (PR).
+but we review patches using the Gitlab repository
+(https://gitlab.torproject.org/tpo/network-health/sbws/-/merge_requests)
+Merge Requests (MR).
 
 To know more about ``sbws`` code,
 
@@ -40,12 +40,12 @@ To know more about ``sbws`` code,
 
 The following are guidelines we aim to follow.
 
-Steps to create a PR
+Steps to create a MR
 ~~~~~~~~~~~~~~~~~~~~~
 
-1. Create a ticket in Tor Project Trac (:ref:`Open ticket <ticket-ref>`)
-2. Clone ``sbws`` via the Github web interface
-   https://github.com/torproject/sbws
+1. Create a issue in Tor Project Gitlab (:ref:`Open issue <ticket-ref>`)
+2. Fork ``sbws`` via the Gitlab web interface:
+   https://gitlab.torproject.org/tpo/network-health/sbws
 3. Clone the repository locally
 4. Install ``sbws`` as explained in ./INSTALL.rst and ./TESTING.rst
    Use ``pip install -e <>``
@@ -57,11 +57,23 @@ Steps to create a PR
 7. Write code (:ref:`codestyle-ref`), tests, documentation,
    extra files (:ref:`extrafiles-ref`), commit (:ref:`commits-ref`), etc.
 8. Ensure tests pass (./TESTING.rst).
-9. Push your branch to your repository. If you have an account in Travis,
-   you can see whether it pass the tests in Github and in
-   https://travis-ci.org/youruser/sbws/
-10. Create a PR from your branch to https://github.com/torproject/sbws
-11. Change the Trac ticket status to ``needs_review``
+9. Push your branch to your Gitlab repository.
+
+We are temporally using Github Travis to ensure tests pass. For this:
+
+10. Clone ``sbws`` via the Github web interface:
+    https://github.com/torproject/sbws
+11. Push your branch to your Github repository.
+
+12. If you have an account in Travis, you can see whether it pass the tests in
+    Github and at https://travis-ci.org/youruser/sbws/
+
+Finally:
+
+13. Create a MR from your branch at
+    https://gitlab.torproject.org/tpo/network-health/sbws
+
+
 
 .. _codestyle-ref:
 
@@ -133,7 +145,7 @@ but not all.
 Commits
 ~~~~~~~~~
 
-Each commit should reference the Tor Project Trac ticket (example: ``#12345``)
+Each commit should reference the Tor Project Gitlab issue (example: ``#12345``)
 and possibly the bugfix version.
 The commit message should contain ``Closes: #bugnumber``.
 
@@ -168,27 +180,27 @@ Template originally written by `Tim Pope`_: :ref:`example commit <commit-msg>`
 Code being reviewed workflow
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-When a PR is being reviewed, new changes might be needed:
+When a MR is being reviewed, new changes might be needed:
 
 - If the change does not modify a previous change, create new commits and push.
 - If the change modifies a previous change and it's small,
   `git commit fixup <https://git-scm.com/docs/git-commit#Documentation/git-commit.txt---fixupltcommitgt>`_
-  should be used. When it is agreed that the PR is ready, create a new branch
+  should be used. When it is agreed that the MR is ready, create a new branch
   named ``mybranch_02`` and run:
 
   .. code-block:: bash
 
     rebase --autosquash
 
-  push, create new PR and close old PR mentioning the number of the new PR.
-- If the review takes long and when it's ready code related to the PR has changed
+  push, create new MR and close old MR mentioning the number of the new MR.
+- If the review takes long and when it's ready code related to the MR has changed
   in master, create a new branch named ``mybranch_02`` and run:
 
   .. code-block:: bash
 
     rebase master
 
-  push, create new PR and close old PR mentioning the number of the new PR.
+  push, create new MR and close old MR mentioning the number of the new MR.
 
 [MERG]_
 
@@ -210,26 +222,27 @@ Reviewers:
 - Should let the contributor know what to improve/change.
 - Should not push code to the contributor's branch.
 - Should wait for contributor's changes or feedback after changes are requested,
-  before merging or closing a PR.
-- Should merge (not rebase) the PR.
+  before merging or closing a MR.
+- Should merge (not rebase) the MR.
 - If rebase is needed due to changes in master, the contributor should create
   a new branch named `xxx_rebased` based on the reviewed branch, rebase and
-  create a new PR from it, as explained above.
+  create a new MR from it, as explained above.
 - If new changes are needed when the contributor's branch is ready to merge,
   the reviewer can create a new branch based on the contributor's branch,
-  push the changes and merge that PR.
+  push the changes and merge that MR.
   The contributor should be notified about it.
-- If the reviewer realize that new changes are needed after the PR has been
+- If the reviewer realize that new changes are needed after the MR has been
   merged, the reviewer can push to master, notifying the contributor about the
   changes.
 - Because currently there are not many reviewers, reviewers can merge their own
-  PR if there was not any feedback after a week.
+  MR if there was not any feedback after a week.
 - Should not push directly to master, unless changes are trivial (typos,
   extra spaces, etc.)
-- Should not push to master new features while there are open PRs to review.
+- Should not push to master new features while there are open MRs to review.
 
-Currently, the reviewers are the persons that have contributed to the code:
-pastly, teor, juga.
+Currently, the reviewers are `gk <https://gitlab.torproject.org/gk>`_,
+`ahf <https://gitlab.torproject.org/ahf>`_,
+`juga <https://gitlab.torproject.org/juga>`_.
 
 .. _releases-ref:
 
@@ -268,7 +281,7 @@ Before major releases, ensure that:
 .. _changelog:
 
 Create a ./CHANGELOG.rst file.
-Each entry should reference the Tor Project Trac ticket (example: ``#12345``)
+Each entry should reference the Tor Project Gitlab issue (example: ``#12345``)
 and possibly the bugfix version.
 Until version 1.0.2 we have followed `keep a changelog`_ format.
 

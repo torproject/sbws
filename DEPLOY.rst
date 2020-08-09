@@ -36,8 +36,8 @@ destination IP closer to the scanner exit.
 scanner setup
 ----------------------
 
-Install sbws according to `<INSTALL.rst>`_ (in the local directory or GitHub)
-or `<INSTALL.html>`_  (local build or Read the Docs).
+Install sbws according to `<INSTALL.rst>`_ (in the local directory or Tor
+Project Gitlab) or `<INSTALL.html>`_  (local build or Read the Docs).
 
 To run the ``scanner`` it is mandatory to create a configuration file with at
 least one ``destination``.
@@ -57,12 +57,12 @@ If ``sbws`` is installed from the sources as a non-root user then create the
 configuration file in ``~/.sbws.ini``.
 
 More details about the configuration file can be found in
-``./docs/source/man_sbws.ini.rst`` (in the local directory or GitHub) or
-`<man_sbws.ini.html>`_  (local build or Read the Docs) or
+``./docs/source/man_sbws.ini.rst`` (in the local directory or Tor Project
+Gitlab) or `<man_sbws.ini.html>`_  (local build or Read the Docs) or
 ``man sbws.ini`` (system package).
 
-See also ``./docs/source/man_sbws.rst`` (in the local directory or GitHub) or
-`<man_sbws.html>`_ (local build or Read the Docs) or ``man sbws`` (system
-package).
+See also ``./docs/source/man_sbws.rst`` (in the local directory or Tor Project
+Gitlab) or `<man_sbws.html>`_ (local build or Read the Docs) or ``man sbws``
+(system package).
 
 .. _Content delivery network: https://en.wikipedia.org/wiki/Content_delivery_network

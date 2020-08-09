@@ -1250,7 +1250,7 @@ class V3BWFile(object):
             # Generators SHOULD NOT limit measured bandwidths based on
             # descriptors' bandwidth-observed, because that penalises new
             # relays.
-            # See https://trac.torproject.org/projects/tor/ticket/8494
+            # See https://gitlab.torproject.org/tpo/core/tor/-/issues/8494
             # If the observed bandwidth is None, it is not possible to
             # calculate the minimum with the other descriptors.
             # Only in this case, take the consensus bandwidth.

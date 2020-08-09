@@ -114,4 +114,4 @@ https://gitweb.torproject.org/torspec.git/tree/bandwidth-file-spec.txt,
 BUGS
 ----
 
-Please report bugs at https://trac.torproject.org/.
+Please report bugs at https://gitlab.torproject.org/tpo/network-health/sbws/-/issues/.

@@ -63,19 +63,12 @@ Steps to create a MR
    extra files (:ref:`extrafiles-ref`), commit (:ref:`commits-ref`), etc.
 8. Ensure tests pass (./TESTING.rst).
 9. Push your branch to your Gitlab repository.
-
-We are temporally using Github Travis to ensure tests pass. For this:
-
-10. Clone ``sbws`` via the Github web interface:
-    https://github.com/torproject/sbws
-11. Push your branch to your Github repository.
-
-12. If you have an account in Travis, you can see whether it pass the tests in
-    Github and at https://travis-ci.org/youruser/sbws/
+10. Ensure the CI tests are passing
+    (https://gitlab.torproject.org/tpo/network-health/sbws/-/pipelines)
 
 Finally:
 
-13. Create a MR from your branch at
+11. Create a MR from your branch at
     https://gitlab.torproject.org/tpo/network-health/sbws
 
 

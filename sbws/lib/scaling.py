@@ -14,6 +14,10 @@ def bw_filt(bw_measurements):
     It is the equivalent to Torflow's ``filt_sbw``.
     ``mu`` in this function is the equivalent to Torflow's ``sbw``.
     """
-    mu = mean(bw_measurements)
-    bws_gte_mean = filter(lambda bw: bw >= mu, bw_measurements)
-    return mean(bws_gte_mean)
+    mu = 1
+    if bw_measurements:
+        mu = mean(bw_measurements)
+    bws_gte_mean = list(filter(lambda bw: bw >= mu, bw_measurements))
+    if bws_gte_mean:
+        return mean(bws_gte_mean)
+    return 1

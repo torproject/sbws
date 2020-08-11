@@ -51,9 +51,14 @@ Steps to create a MR
    Use ``pip install -e <>``
 5. If needed install the documentation and build it as explained in
    ./DOCUMENTATION.rst
-6. Create a new branch, named ``ticketXXX``.
-   Optionally, name it with a string explaining what it does,
-   ie ``ticketXXX_contributing``
+6. Create a new feature branch.
+   If the issue solves a bug, base the branch on the latest maintained version,
+   eg. ``maint-1.1`` and name it with the name of the base branch plus
+   ``_bugXXX``, where `XXX` is the number of the issue.
+   If the issue is a new feature, base the branch on the `master` branch and
+   name it ``ticketXXX``.
+   Optionally, the last part of the branch name can be any string, eg.
+   ``maint-1.1_bugXXX_contributing``.
 7. Write code (:ref:`codestyle-ref`), tests, documentation,
    extra files (:ref:`extrafiles-ref`), commit (:ref:`commits-ref`), etc.
 8. Ensure tests pass (./TESTING.rst).

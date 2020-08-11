@@ -181,6 +181,10 @@ class Relay:
         """
         Returns True if the relay has an exit policy and the policy accepts
         exiting to the given portself or False otherwise.
+
+        The exits that are IPv6 only or IPv4 but rejecting some public networks
+        will return false.
+        On July 2020, there were 67 out of 1095 exits like this.
         """
         assert isinstance(port, int)
         # if dind't get the descriptor, there isn't exit policy
@@ -199,7 +203,12 @@ class Relay:
             if self.exit_policy:
                 # Using `strict` to ensure it can exit to ALL domains
                 # and ips and that port. See #40006.
-                return self.exit_policy.can_exit_to(port=port, strict=True)
+                # Using `strip_private` to ignore reject rules to private
+                # networks.
+                return (
+                    self.exit_policy.strip_private()
+                    .can_exit_to(port=port, strict=True)
+                )
         except TypeError:
             return False
         return False

@@ -260,6 +260,8 @@ BWLINE_INT_KEYS = (
     + BWLINE_KEYS_V1_2
     + BWLINE_KEYS_V1_4
 )
+# This is boolean, not int.
+BWLINE_INT_KEYS.remove('consensus_bandwidth_is_unmeasured')
 
 
 def round_sig_dig(n, digits=PROP276_ROUND_DIG):

@@ -30,7 +30,7 @@ class Relay {
   int @p average_bandwidth
   int @p burst_bandwidth
   int @p consensus_bandwidth
-  int @p consensus_bandwidth_is_unmeasured
+  bool @p consensus_bandwidth_is_unmeasured
   obj _from_ns(attr)
   obj _from_desc(attr)
   bool can_exit_to_port(int port)

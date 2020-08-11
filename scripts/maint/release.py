@@ -36,7 +36,6 @@ It assumes that:
     https://github.com/GitTools/GitVersion
 
 """
-import re
 import subprocess
 import sys
 try:
@@ -125,7 +124,7 @@ def main(args):
     print("-------------------------------")
     print("Obtaining Gitlab tarball...")
     subprocess.call(
-        "wget https://gitlab.torproject.org/tpo/network-health/sbws/-/archive/v{}/sbws-v{}.tar.gz "
+        "wget https://gitlab.torproject.org/tpo/network-health/sbws/-/archive/v{}/sbws-v{}.tar.gz "  # noqa
         "-O v{}.tar.gz"
         .format(release_version, release_version, release_version).split(' ')
         )
@@ -151,8 +150,8 @@ def main(args):
           "git merge --no-ff mybranch"
           "git push myremote master")
     next_branch_version = "maint{}".format(release_version)
-    print("And create the next prerelease branch, eg:")
-          "git checkout -b {}".format(next_branch_version)
+    print("And create the next prerelease branch, eg:"
+          "git checkout -b {}".format(next_branch_version))
 
 
 if __name__ == "__main__":

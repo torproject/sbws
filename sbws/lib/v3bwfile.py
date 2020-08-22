@@ -869,13 +869,19 @@ class V3BWLine(object):
 
     @staticmethod
     def bw_median_from_results(results):
-        return max(round(median([dl['amount'] / dl['duration']
-                                 for r in results for dl in r.downloads])), 1)
+        bws = [dl['amount'] / dl['duration']
+               for r in results for dl in r.downloads]
+        if bws:
+            return max(round(median(bws)), 1)
+        return 1
 
     @staticmethod
     def bw_mean_from_results(results):
-        return max(round(mean([dl['amount'] / dl['duration']
-                               for r in results for dl in r.downloads])), 1)
+        bws = [dl['amount'] / dl['duration']
+               for r in results for dl in r.downloads]
+        if bws:
+            return max(round(mean(bws)), 1)
+        return 1
 
     @staticmethod
     def last_time_from_results(results):

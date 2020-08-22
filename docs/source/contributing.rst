@@ -51,26 +51,24 @@ Steps to create a MR
    Use ``pip install -e <>``
 5. If needed install the documentation and build it as explained in
    ./DOCUMENTATION.rst
-6. Create a new branch, named ``ticketXXX``.
-   Optionally, name it with a string explaining what it does,
-   ie ``ticketXXX_contributing``
+6. Create a new feature branch.
+   If the issue solves a bug, base the branch on the latest maintained version,
+   eg. ``maint-1.1`` and name it with the name of the base branch plus
+   ``_bugXXX``, where `XXX` is the number of the issue.
+   If the issue is a new feature, base the branch on the `master` branch and
+   name it ``ticketXXX``.
+   Optionally, the last part of the branch name can be any string, eg.
+   ``maint-1.1_bugXXX_contributing``.
 7. Write code (:ref:`codestyle-ref`), tests, documentation,
    extra files (:ref:`extrafiles-ref`), commit (:ref:`commits-ref`), etc.
 8. Ensure tests pass (./TESTING.rst).
 9. Push your branch to your Gitlab repository.
-
-We are temporally using Github Travis to ensure tests pass. For this:
-
-10. Clone ``sbws`` via the Github web interface:
-    https://github.com/torproject/sbws
-11. Push your branch to your Github repository.
-
-12. If you have an account in Travis, you can see whether it pass the tests in
-    Github and at https://travis-ci.org/youruser/sbws/
+10. Ensure the CI tests are passing
+    (https://gitlab.torproject.org/tpo/network-health/sbws/-/pipelines)
 
 Finally:
 
-13. Create a MR from your branch at
+11. Create a MR from your branch at
     https://gitlab.torproject.org/tpo/network-health/sbws
 
 

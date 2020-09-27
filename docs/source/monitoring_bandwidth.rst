@@ -1,6 +1,17 @@
 Monitoring bandwidth changes in the Tor Network
 ================================================
 
+Total consensus weights across bandwidth authorities
+----------------------------------------------------
+
+It should be approximately equal for all bwauths.
+
+.. image:: images/totalcw.png
+   :alt: total consensus weight
+
+
+​https://metrics.torproject.org/totalcw.html
+
 Total bandwidth
 ---------------
 
@@ -23,13 +34,3 @@ Should not increase.
 
 
 ​https://metrics.torproject.org/torperf.html
-
-
-Total consensus weights across bandwidth authorities
-----------------------------------------------------
-
-.. image:: images/totalcw.png
-   :alt: total consensus weight
-
-
-​https://metrics.torproject.org/totalcw.html

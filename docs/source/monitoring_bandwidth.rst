@@ -24,6 +24,13 @@ It should be approximately equal for all bwauths.
 
 ​https://metrics.torproject.org/totalcw.html
 
+
+Not measured relays and descriptors and consensus updates
+---------------------------------------------------------
+
+Run the tool https://gitlab.torproject.org/juga/bwauthealth.
+
+
 Total bandwidth
 ---------------
 

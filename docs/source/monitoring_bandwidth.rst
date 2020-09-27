@@ -1,6 +1,18 @@
 Monitoring bandwidth changes in the Tor Network
 ================================================
 
+Bwauths number of measured relays
+---------------------------------
+
+It should be approximately equal for all bwauths.
+
+.. image:: images/20200927_consensushealth_bwauths.png
+   :alt: bwauths measured relays
+
+https://consensus-health.torproject.org/graphs.html#votedaboutgraphs
+
+http://tgnv2pssfumdedyw.onion/graphs.html#votedaboutgraphs
+
 Total consensus weights across bandwidth authorities
 ----------------------------------------------------
 

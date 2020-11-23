@@ -4,6 +4,7 @@ import json
 import logging
 import math
 import os.path
+import pytest
 from unittest import mock
 
 from sbws import __version__ as version
@@ -588,6 +589,7 @@ def test_recent_consensus_count(root_data_path, datadir):
     assert "1" == header.recent_consensus_count
 
 
+@pytest.mark.skip(reason="increment_recent_measurement_attempt() disabled")
 def test_recent_measurement_attempt_count(root_data_path, datadir):
     state_fpath = os.path.join(root_data_path, '.sbws/state.dat')
     assert 15 == V3BWHeader.recent_measurement_attempt_count_from_file(

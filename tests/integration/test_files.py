@@ -32,7 +32,9 @@ def test_state(conf):
     assert 1 == state.count("recent_consensus")
     assert 1 == state.count("recent_priority_list")
     assert 15 == state.count("recent_priority_relay")
-    assert 15 == state.count("recent_measurement_attempt")
+    # Because of 40023, it's 0. Change to 15 if we store it again at some point
+    # assert 15 == state.count("recent_measurement_attempt")
+    assert not state.count("recent_measurement_attempt")
 
 
 def test_v3bwfile(conf):
@@ -42,7 +44,8 @@ def test_v3bwfile(conf):
     assert "1" == bwfile.header.recent_consensus_count
     assert "1" == bwfile.header.recent_priority_list_count
     assert "15" == bwfile.header.recent_priority_relay_count
-    assert "15" == bwfile.header.recent_measurement_attempt_count
+    # Because of 40023, there is not this header
+    # assert "15" == bwfile.header.recent_measurement_attempt_count
     for bwline in bwfile.bw_lines:
         assert 1 == bwline.relay_in_recent_consensus_count
         assert 1 == bwline.relay_recent_priority_list_count

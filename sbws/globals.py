@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 
 RESULT_VERSION = 4
 WIRE_VERSION = 1
-SPEC_VERSION = '1.4.0'
+SPEC_VERSION = '1.5.0'
 
 # This is a dictionary of torrc options we always want to set when launching
 # Tor and that do not depend on any runtime configuration

@@ -1,7 +1,5 @@
 from stem import CircuitExtensionFailed, InvalidRequest, ProtocolError, Timeout
 from stem import InvalidArguments, ControllerError, SocketClosed
-import random
-from .relaylist import Relay
 import logging
 
 log = logging.getLogger(__name__)
@@ -25,23 +23,13 @@ class CircuitBuilder:
     them, but CircuitBuilder will keep track of existing circuits and close
     them when it is deleted.
     '''
-    def __init__(self, args, conf, controller, relay_list,
+    # XXX: In new major version, remove args and conf, they are not used.
+    def __init__(self, args, conf, controller, relay_list=None,
                  close_circuits_on_exit=True):
         self.controller = controller
-        self.rng = random.SystemRandom()
-        self.relay_list = relay_list
         self.built_circuits = set()
         self.close_circuits_on_exit = close_circuits_on_exit
         self.circuit_timeout = conf.getint('general', 'circuit_timeout')
-
-    @property
-    def relays(self):
-        return self.relay_list.relays
-
-    def build_circuit(self, *a, **kw):
-        ''' Implementations of this method should build the circuit and return
-        its (str) ID. If it cannot be built, it should return None. '''
-        raise NotImplementedError()
 
     def close_circuit(self, circ_id):
         try:

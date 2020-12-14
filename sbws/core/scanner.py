@@ -318,6 +318,17 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
 
     # Build the circuit
     circ_id, reason = cb.build_circuit(circ_fps)
+    if not circ_id and relay.fingerprint == circ_fps[0]:
+        # We detected that some exits fail to build circuits as 1st hop.
+        # If that's the case, try again using them as 2nd hop.
+        # We could reuse the helper, but it does not need to be an exit now,
+        # so choose other again.
+        helper = _pick_ideal_second_hop(
+            relay, dest, rl, cb.controller, is_exit=False)
+        if helper:
+            circ_fps = [helper.fingerprint, relay.fingerprint]
+            nicknames = [helper.nickname, relay.nickname]
+        circ_id, reason = cb.build_circuit(circ_fps)
     if not circ_id:
         log.debug('Could not build circuit with path %s (%s): %s ',
                   circ_fps, nicknames, reason)

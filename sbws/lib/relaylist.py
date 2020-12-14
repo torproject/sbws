@@ -205,6 +205,11 @@ class Relay:
                 # and ips and that port. See #40006.
                 # Using `strip_private` to ignore reject rules to private
                 # networks.
+                # We could increase the chances that the exit can exit
+                # checking IPv6 with:
+                # ``or self.exit_policy_v6.can_exit_to(port=443, strict=True)``
+                # But if it can still not exit to our Web server, then we
+                # should retry to measure it as entry.
                 return (
                     self.exit_policy.strip_private()
                     .can_exit_to(port=port, strict=True)

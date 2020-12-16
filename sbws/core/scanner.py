@@ -679,8 +679,7 @@ def run_speedtest(args, conf):
 
     """
     global rd, pool, controller
-    controller, _ = stem_utils.init_controller(
-        path=conf.getpath('tor', 'control_socket'))
+    controller = stem_utils.init_controller(conf)
     if not controller:
         controller = stem_utils.launch_tor(conf)
     else:

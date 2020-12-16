@@ -60,27 +60,19 @@ def remove_event_listener(controller, func):
         log.exception("Exception trying to remove event %s", e)
 
 
-def init_controller(port=None, path=None, set_custom_stream_settings=True):
-    # NOTE: we do not currently support a control port even though the rest of
-    # this function will pretend like port could be set.
-    assert port is None
-    # make sure only one is set
-    assert port is not None or path is not None
-    assert not (port is not None and path is not None)
-    # and for the one that is set, make sure it is likely valid
-    assert port is None or isinstance(port, int)
-    assert path is None or isinstance(path, str)
+def init_controller(conf):
     c = None
-    if port:
-        c = _init_controller_port(port)
-        if not c:
-            return None, 'Unable to reach tor on control port'
+    # If the external control port is set, use it to initialize the controller.
+    control_port = conf['tor']['external_control_port']
+    if control_port:
+        control_port = int(control_port)
+        # If it can not connect, the program will exit here
+        c = _init_controller_port(control_port)
     else:
-        c = _init_controller_socket(path)
-        if not c:
-            return None, 'Unable to reach tor on control socket'
-    assert c is not None
-    return c, ''
+        c = _init_controller_socket(
+            socket=conf.getpath('tor', 'control_socket')
+        )
+    return c
 
 
 def is_bootstrapped(c):

@@ -110,8 +110,9 @@ def _init_controller_port(port):
         c = Controller.from_port(port=port)
         c.authenticate()
     except (IncorrectSocketType, SocketError):
-        return None
+        fail_hard("Unable to connect to control port %s.", port)
     # TODO: Allow for auth via more than just CookieAuthentication
+    log.info("Connected to tor via port %s", port)
     return c
 
 
@@ -127,6 +128,7 @@ def _init_controller_socket(socket):
         log.exception("Error initting controller socket: %s", e)
         return None
     # TODO: Allow for auth via more than just CookieAuthentication
+    log.info("Connected to tor via socket %s", socket)
     return c
 
 
@@ -233,6 +235,7 @@ def launch_tor(conf):
             torrc, init_msg_handler=log.debug, take_ownership=True)
     except Exception as e:
         fail_hard('Error trying to launch tor: %s', e)
+    log.info("Started own tor.")
     # And return a controller to it
     cont = _init_controller_socket(conf.getpath('tor', 'control_socket'))
     # Set options that can fail at runtime
@@ -240,8 +243,7 @@ def launch_tor(conf):
     # Set runtime options
     set_torrc_runtime_options(cont)
 
-    log.info('Started and connected to Tor %s via %s', cont.get_version(),
-             conf.getpath('tor', 'control_socket'))
+    log.info('Started or connected to Tor %s.', cont.get_version())
     return cont
 
 

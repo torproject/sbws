@@ -93,6 +93,10 @@ tor
     sbws's owned tor pid file. (Default: ~/.sbws/tor/sbws/tor.pid)
   log = STR
     sbws's owned tor directory log files. (Default: ~/.sbws/tor/log)
+  external_control_port = INT
+    tor control port to connect to. Useful to run integration tests with
+    chutney.
+    (Default: not set. If set, it takes preference over the control socket)
   extra_lines =
     sbws's tor extra configuration. (Default: None)
 

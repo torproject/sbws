@@ -181,9 +181,12 @@ def set_torrc_options_can_fail(controller):
     for k, v in TORRC_OPTIONS_CAN_FAIL.items():
         try:
             controller.set_conf(k, v)
-        except InvalidArguments as error:
+        except (InvalidArguments, InvalidRequest) as error:
             log.debug('Ignoring option not supported by this Tor version. %s',
                       error)
+        except ControllerError as e:
+            log.exception(e)
+            exit(1)
 
 
 def launch_tor(conf):

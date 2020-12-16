@@ -6,7 +6,6 @@ from stem import (SocketError, InvalidRequest, UnsatisfiableRequest,
                   ProtocolError, SocketClosed)
 from stem.connection import IncorrectSocketType
 import stem.process
-from configparser import ConfigParser
 from threading import RLock
 import copy
 import logging
@@ -68,10 +67,8 @@ def init_controller(conf):
         control_port = int(control_port)
         # If it can not connect, the program will exit here
         c = _init_controller_port(control_port)
-    else:
-        c = _init_controller_socket(
-            socket=conf.getpath('tor', 'control_socket')
-        )
+    # There is no configuration for external control socket, therefore do not
+    # attempt to connect to the control socket.
     return c
 
 
@@ -190,7 +187,6 @@ def set_torrc_options_can_fail(controller):
 
 
 def launch_tor(conf):
-    assert isinstance(conf, ConfigParser)
     os.makedirs(conf.getpath('tor', 'datadir'), mode=0o700, exist_ok=True)
     os.makedirs(conf.getpath('tor', 'log'), exist_ok=True)
     os.makedirs(conf.getpath('tor', 'run_dpath'), mode=0o700, exist_ok=True)
@@ -216,6 +212,8 @@ def launch_tor(conf):
     torrc = parse_user_torrc_config(torrc, conf['tor']['extra_lines'])
     # Finally launch Tor
     try:
+        # If there is already a tor process running with the same control
+        # socket, this will exit here.
         stem.process.launch_tor_with_config(
             torrc, init_msg_handler=log.debug, take_ownership=True)
     except Exception as e:
@@ -223,6 +221,18 @@ def launch_tor(conf):
     log.info("Started own tor.")
     # And return a controller to it
     cont = _init_controller_socket(conf.getpath('tor', 'control_socket'))
+    # In the case it was not possible to connect to own tor socket.
+    if not cont:
+        fail_hard('Could not connect to own tor control socket.')
+    return cont
+
+
+def launch_or_connect_to_tor(conf):
+    # If connecting to an existing controller, there is no need to configure
+    # own tor.
+    cont = init_controller(conf)
+    if not cont:
+        cont = launch_tor(conf)
     # Set options that can fail at runtime
     set_torrc_options_can_fail(cont)
     # Set runtime options

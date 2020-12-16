@@ -679,21 +679,8 @@ def run_speedtest(args, conf):
 
     """
     global rd, pool, controller
-    controller = stem_utils.init_controller(conf)
-    if not controller:
-        controller = stem_utils.launch_tor(conf)
-    else:
-        log.warning(
-            'Is sbws already running? '
-            'We found an existing Tor process at %s. We are not going to '
-            'launch Tor, nor are we going to try to configure it to behave '
-            'like we expect. This might work okay, but it also might not. '
-            'If you experience problems, you should try letting sbws launch '
-            'Tor for itself. The ability to use an already running Tor only '
-            'exists for sbws developers. It is expected to be broken and may '
-            'even lead to messed up results.',
-            conf.getpath('tor', 'control_socket'))
-        time.sleep(15)
+
+    controller = stem_utils.launch_or_connect_to_tor(conf)
 
     # When there will be a refactor where conf is global, this can be removed
     # from here.

@@ -80,13 +80,6 @@ def init_controller(port=None, path=None, set_custom_stream_settings=True):
         if not c:
             return None, 'Unable to reach tor on control socket'
     assert c is not None
-    if set_custom_stream_settings:
-        # These options are also set in launch_tor.
-        # In a future refactor they could be set in the case they are not
-        # already in the running instance. This way the controller_port
-        # could also be used.
-        set_torrc_options_can_fail(c)
-        set_torrc_runtime_options(c)
     return c, ''
 
 

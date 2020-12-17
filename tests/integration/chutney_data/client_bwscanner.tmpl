@@ -1,0 +1,23 @@
+${include:common.i}
+SocksPort $socksport
+
+#NOTE: Setting TestingClientConsensusDownloadSchedule doesn't
+#      help -- dl_stats.schedule is not DL_SCHED_CONSENSUS
+#      at boostrap time.
+# Try to download after:
+# the minimum initial consensus time to start with,
+# a few eager fetches,
+# then half the minimum testing consensus interval
+#TestingClientDownloadSchedule 0, 5
+#TestingClientConsensusDownloadSchedule 0, 5
+#ControlPort 8015
+UseEntryGuards 0
+UseMicroDescriptors 0
+FetchDirInfoEarly 1
+FetchDirInfoExtraEarly 1
+FetchUselessDescriptors 1
+LearnCircuitBuildTimeout 0
+CircuitBuildTimeout 60
+ConnectionPadding 0
+__DisablePredictedCircuits 1
+__LeaveStreamsUnattached 1

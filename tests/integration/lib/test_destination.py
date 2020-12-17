@@ -24,7 +24,7 @@ def test_connect_to_destination_over_circuit_success(persistent_launch_tor,
     session = requests_utils.make_session(persistent_launch_tor, 10)
     # Choose a relay that is not an exit
     relay = [r for r in rl.relays
-             if r.nickname == 'relay1mbyteMAB'][0]
+             if r.nickname == 'test005m'][0]
     # Choose an exit, for this test it does not matter the bandwidth
     helper = rl.exits_not_bad_allowing_port(destination.port)[0]
     circuit_path = [relay.fingerprint, helper.fingerprint]
@@ -44,7 +44,7 @@ def test_connect_to_destination_over_circuit_fail(persistent_launch_tor,
     session = requests_utils.make_session(persistent_launch_tor, 10)
     # Choose a relay that is not an exit
     relay = [r for r in rl.relays
-             if r.nickname == 'relay1mbyteMAB'][0]
+             if r.nickname == 'test005m'][0]
     # Choose an exit, for this test it does not matter the bandwidth
     helper = rl.exits_not_bad_allowing_port(bad_destination.port)[0]
     circuit_path = [relay.fingerprint, helper.fingerprint]
@@ -73,7 +73,7 @@ def test_functional_destinations(conf, cb, rl, persistent_launch_tor):
     session = requests_utils.make_session(persistent_launch_tor, 10)
     # Choose a relay that is not an exit
     relay = [r for r in rl.relays
-             if r.nickname == 'relay1mbyteMAB'][0]
+             if r.nickname == 'test005m'][0]
     # Choose an exit, for this test it does not matter the bandwidth
     helper = rl.exits_not_bad_allowing_port(bad_destination.port)[0]
     circuit_path = [relay.fingerprint, helper.fingerprint]

@@ -45,25 +45,27 @@ def test_relayprioritizer_general(time_mock, sbwshome_empty, args,
     rd = ResultDump(args, conf)
     try:
         rp = RelayPrioritizer(args, conf, rl, rd)
-        results = []
         results = [
             _build_result_for_relay(conf, rl, ResultSuccess,
-                                    'relay{}'.format(i), now - (i * 100))
-            for i in range(1, 6)
+                                    'test{:03d}m'.format(i), now - (i * 100))
+            # In chutney the relays are from 003 to 011
+            for i in range(3, 12)
         ]
         for result in results:
             rd.store_result(result)
-        best_list = [_ for _ in rp.best_priority()]
-        # Of the relays for which we have added results to the ResultDump,
-        # relay1 has the lowest priority (it has the most recent result) and
-        # relay5 has the highest prioirty. The relays that we didn't add
-        # results for will have the highest priority, but don't test the order
-        # of them. Skip to the end of the list and check those guys since they
-        # should have a defined order.
-        for i in range(1, 5+1):
-            nick = 'relay{}'.format(i)
-            pos = i * -1
-            relay = best_list[pos]
+        best_list = list(rp.best_priority())
+        # With chutney, the relays not measured, with higher priority, will be
+        # the 3 exits and authorities.
+        # So take the list from the first measured relay, ie. from the 6th
+        # position.
+        # The measured relays will be in inverse order to their name.
+        best_list_measured = best_list[6:]
+        for i in range(3, 12):
+            nick = 'test{:03d}m'.format(i)
+            # -1 To start by the back, - 2 because their names start by 3,
+            # not 1
+            pos = (i - 2) * -1
+            relay = best_list_measured[pos]
             assert relay.nickname == nick
             assert relay.relay_recent_priority_list_count == 1
     finally:

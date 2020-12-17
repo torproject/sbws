@@ -493,7 +493,10 @@ class RelayList:
         pos = int(len(exit_candidates)/4)
         self._exit_min_bw = exit_candidates[pos].consensus_bandwidth
         pos = int(len(non_exit_candidates)/4)
-        self._non_exit_min_bw = non_exit_candidates[pos].consensus_bandwidth
+        # when there are not non-exits in a test network
+        if pos:
+            self._non_exit_min_bw = \
+                non_exit_candidates[pos].consensus_bandwidth
 
     def exit_min_bw(self):
         return self._exit_min_bw

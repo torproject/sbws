@@ -206,10 +206,6 @@ def launch_tor(conf):
             'NOTICE file {}'.format(os.path.join(conf.getpath('tor', 'log'),
                                                  'notice.log')),
         ],
-        # Things needed to make circuits fail a little faster. We get the
-        # circuit_timeout as a string instead of an int on purpose: stem only
-        # accepts strings.
-        'LearnCircuitBuildTimeout': '0',
         'CircuitBuildTimeout': conf['general']['circuit_timeout'],
     })
 

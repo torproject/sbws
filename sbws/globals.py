@@ -40,7 +40,11 @@ TORRC_STARTING_POINT = {
     'FetchDirInfoEarly': '1',
     'FetchDirInfoExtraEarly': '1',
     # To make Tor keep fetching descriptors, even when idle.
-    'FetchUselessDescriptors': '1'
+    'FetchUselessDescriptors': '1',
+    # Things needed to make circuits fail a little faster. We get the
+    # circuit_timeout as a string instead of an int on purpose: stem only
+    # accepts strings.
+    'LearnCircuitBuildTimeout': '0',
 }
 # Options that need to be set at runtime.
 TORRC_RUNTIME_OPTIONS = {

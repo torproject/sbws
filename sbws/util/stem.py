@@ -161,6 +161,16 @@ def parse_user_torrc_config(torrc, torrc_text):
     return torrc_dict
 
 
+def set_torrc_starting_point(controller):
+    """Set the torrc starting point options."""
+    for k, v in TORRC_STARTING_POINT.items():
+        try:
+            controller.set_conf(k, v)
+        except (ControllerError, InvalidRequest, InvalidArguments) as e:
+            log.exception("Error setting option %s, %s: %s", k, v, e)
+            exit(1)
+
+
 def set_torrc_runtime_options(controller):
     """Set torrc options at runtime."""
     try:
@@ -228,16 +238,16 @@ def launch_tor(conf):
 
 
 def launch_or_connect_to_tor(conf):
-    # If connecting to an existing controller, there is no need to configure
-    # own tor.
     cont = init_controller(conf)
     if not cont:
         cont = launch_tor(conf)
+    else:
+        if not is_torrc_starting_point_set(cont):
+            set_torrc_starting_point(cont)
     # Set options that can fail at runtime
     set_torrc_options_can_fail(cont)
     # Set runtime options
     set_torrc_runtime_options(cont)
-
     log.info('Started or connected to Tor %s.', cont.get_version())
     return cont
 
@@ -293,3 +303,25 @@ def circuit_str(controller, circ_id):
     return '[' +\
         ' -> '.join(['{} ({})'.format(n, fp[0:8]) for fp, n in circ.path]) +\
         ']'
+
+
+def is_torrc_starting_point_set(tor_controller):
+    """Verify that the tor controller has the correct configuration.
+
+    When connecting to a tor controller that has not been launched by sbws,
+    it should have been configured to work with sbws.
+
+    """
+    bad_options = False
+    torrc = TORRC_STARTING_POINT
+    for k, v in torrc.items():
+        value_set = tor_controller.get_conf(k)
+        if v != value_set:
+            log.exception(
+                "Uncorrectly configured %s, should be %s, is %s",
+                k, v, value_set
+            )
+            bad_options = True
+    if not bad_options:
+        log.info("Tor is correctly configured to work with sbws.")
+    return bad_options

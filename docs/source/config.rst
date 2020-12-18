@@ -2,7 +2,7 @@
 
 Internal code configuration files
 ==================================
-Sbws has two default config files it reads: on general, and one specific to
+Sbws has two default config files it reads: one general, and one specific to
 logging.
 They all get combined internally to the same ``conf`` structure.
 
@@ -44,7 +44,7 @@ Default Configuration
 
 If you know how to use
 `Python's logging configuration file format`_,
-then you can override or add to what is listed here by editing your config.ini.
+then you can override or add to what is listed here by editing your config file.
 
 .. literalinclude:: config.log.default.ini
     :caption: config.log.default.ini

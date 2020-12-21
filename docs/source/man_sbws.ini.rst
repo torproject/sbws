@@ -22,12 +22,12 @@ general
   http_timeout = INT
     Timeout in seconds to give to the python Requests library. (Default: 10)
   circuit_timeout = INT
-    Timeout in seconds to create circuits. (Default: 10)
+    Timeout in seconds to create circuits. (Default: 60)
   reset_bw_ipv4_changes = {on, off}
     Whether or not to reset the bandwidth measurements when the relay's IP
     address changes. If it changes, we only consider results for the relay that
     we obtained while the relay was located at its most recent IP address.
-    (Default: on)
+    (Default: off)
   reset_bw_ipv6_changes = off
     NOT implemented for IPv6.
 
@@ -47,13 +47,13 @@ paths
     (Default: ~/.sbws/v3bw)
   v3bw_fname = STR
     File names of the bandwidth list files.
-    The latest bandwidth file is symlinked by ``latests.v3bw``
-  started_filepath = STR
+    The latest bandwidth file is symlinked by ``latest.v3bw``
+  state_fname = STR
     File path to store the timestamp when the scanner was last started.
-    (Default: ~/.sbws/started_at)
+    (Default: ~/.sbws/state.dat)
   log_dname = STR
     Directory where to store log files when logging to files is enabled.
-    (Default ~/.sbws/log)
+    (Default: ~/.sbws/log)
 
 destinations
 
@@ -66,7 +66,7 @@ destinations
     download files in order to measure bandwidths.
 
   usability_test_interval = INT
-    How often to check if a destination is usable
+    How often to check if a destination is usable (Default: 300)
 
 destinations.STR
   url = STR
@@ -112,7 +112,7 @@ scanner
   download_max = INT
     Limits on what download times are too fast/slow/etc. (Default: 10)
   num_rtts = INT
-    How many RTT measurements to make. (Default: 10)
+    How many RTT measurements to make. (Default: 0)
   num_downloads = INT
     Number of downloads with acceptable times we must have for a relay before
     moving on. (Default: 5)
@@ -138,15 +138,19 @@ relayprioritizer
     (Default: 50)
 
 cleanup
-  stale_days = INT
+  data_files_compress_after_days = INT
     After this many days, compress data files. (Default: 10)
-  rotten_days = INT
+  data_files_delete_after_days = INT
     After this many days, delete data files. (Default: 90)
+  v3bw_files_compress_after_days = INT
+    After this many days, compress v3bw files. (Default: 1)
+  v3bw_files_delete_after_days = INT
+    After this many days, delete v3bw files. (Default: 7)
 
 logging
   to_file = {yes, no}
     Whether or not to log to a rotating file the directory paths.log_dname.
-    (Default: no)
+    (Default: yes)
   to_stdout = {yes, no}
     Whether or not to log to stdout. (Default: yes)
   to_syslog = {yes, no}
@@ -161,23 +165,24 @@ logging
     If logging to file, how many backups to keep. If zero or max bytes is zero,
     never rotate the log file. (Default: 50)
   level = {debug, info, warning, error, critical}
-    Level to log at. (Default: info)
+    Level to log at. (Default: debug)
   to_file_level = {debug, info, warning, error, critical}
-    Level to log at when using files. (Default: info)
+    Level to log at when using files. (Default: debug)
   to_stdout_level = {debug, info, warning, error, critical}
     Level to log at when using stdout. (Default: info)
   to_syslog_level = {debug, info, warning, error, critical}
     Level to log at when using syslog. (Default: info)
   format = STR
     Format string to use when logging.
-    (Default: [%(asctime)s] [%(name)s] [%(levelname)s] %(message)s)
-  to_file_format = STR
-    Format string to use when logging to files. (Default: $format)
+    (Default: %(asctime)s %(module)s[%(process)s]: <%(levelname)s> %(message)s)
   to_stdout_format = STR
-    Format string to use when logging to stdout. (Default: $format)
+    Format string to use when logging to stdout. (Default: ${format})
   to_syslog_format = STR
     Format string to use when logging to syslog.
     (Default: %(module)s[%(process)s]: <%(levelname)s> %(message)s)
+  to_file_format = STR
+    Format string to use when logging to files.
+    (Default: %(asctime)s %(levelname)s %(threadName)s %(filename)s:%(lineno)s - %(funcName)s - %(message)s)
 
 EXAMPLES
 --------

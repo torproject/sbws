@@ -118,7 +118,8 @@ def parse_user_torrc_config(torrc, torrc_text):
     """Parse the user configuration torrc text call `extra_lines`
     to a dictionary suitable to use with stem and return a new torrc
     dictionary that merges that dictionary with the existing torrc.
-    Example:
+    Example::
+
         [tor]
         extra_lines =
             Log debug file /tmp/tor-debug.log

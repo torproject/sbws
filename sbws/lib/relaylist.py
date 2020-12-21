@@ -14,7 +14,7 @@ from ..globals import (
     MAX_RECENT_PRIORITY_LIST_COUNT,
     MEASUREMENTS_PERIOD
 )
-from ..util import timestamp, timestamps
+from ..util import timestamps
 
 log = logging.getLogger(__name__)
 
@@ -250,12 +250,6 @@ class Relay:
     def relay_recent_priority_list_count(self):
         return len(self.relay_recent_priority_list)
 
-    def is_old(self):
-        """Whether the last consensus seen for this relay is older than the
-        measurement period.
-        """
-        return timestamp.is_old(self.last_consensus_timestamp)
-
     # XXX: tech-debt: replace `_desc` attr by a a `dequee` of the last
     # descriptors seen for this relay and the timestamp.
     def update_server_descriptor(self, server_descriptor):
@@ -417,11 +411,10 @@ class RelayList:
                 # already added to the new list.
                 new_relays_dict.pop(fp)
 
-            # If the relay is not in the current consensus but is not "old"
-            # yet, add it to the new list of relays too, though its timestamp,
-            # router status and descriptor can't be updated.
-            elif not r.is_old():
-                new_relays.append(r)
+            # In #30727, the relay that is not in the current conensus but is
+            # not "old", was added to the new list of relays too.
+            # In #40037 we think it should not be measured, as it might cause
+            # many circuit errors. It's already added to the generator.
             # Otherwise, don't add it to the new list of relays.
             # For debugging, count the old relays that will be discarded.
             else:

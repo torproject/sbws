@@ -7,7 +7,7 @@ from sbws.lib.circuitbuilder import GapsCircuitBuilder as CB
 from sbws.lib.destination import DestinationList
 from sbws.lib.relaylist import RelayList
 from sbws.util.config import _get_default_config
-from sbws.util.stem import launch_tor
+from sbws.util.stem import launch_or_connect_to_tor
 
 
 class _PseudoArguments(argparse.Namespace):
@@ -91,7 +91,7 @@ SafeLogging 0
 
 @pytest.fixture(scope='session')
 def persistent_launch_tor(conf):
-    cont = launch_tor(conf)
+    cont = launch_or_connect_to_tor(conf)
     return cont
 
 

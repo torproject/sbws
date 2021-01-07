@@ -323,7 +323,9 @@ def _validate_tor(conf):
     sec = 'tor'
     err_tmpl = Template('$sec/$key ($val): $e')
     unvalidated_keys = [
-        'datadir', 'run_dpath', 'control_socket', 'pid', 'log', 'extra_lines']
+        'datadir', 'run_dpath', 'control_socket', 'pid', 'log',
+        'external_control_port', 'extra_lines',
+    ]
     all_valid_keys = unvalidated_keys
     errors.extend(_validate_section_keys(conf, sec, all_valid_keys, err_tmpl))
     return errors

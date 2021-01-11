@@ -15,7 +15,7 @@ Bwauths number of measured relays
 
 It should be approximately equal for all bwauths.
 
-.. image:: images/20200927_consensushealth_bwauths.png
+.. image:: images/20210111_consensushealth_bwauths.png
    :alt: bwauths measured relays
 
 https://consensus-health.torproject.org/graphs.html#votedaboutgraphs

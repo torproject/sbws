@@ -625,7 +625,7 @@ class V3BWLine(object):
     :param dict kwargs: extra headers.
 
     .. note:: tech-debt: move node_id and bw to kwargs and just ensure that
-       the required values are in **kwargs
+       the required values are in ``**kwargs``
     """
     def __init__(self, node_id, bw, **kwargs):
         assert isinstance(node_id, str)

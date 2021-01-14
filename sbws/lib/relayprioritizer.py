@@ -97,6 +97,7 @@ class RelayPrioritizer:
             measurements that did not succed.
         :param bool return_fraction: whether to return only a fraction of the
             relays seen in the network or return all.
+
         return: a generator of the new ordered list of relays to measure next.
 
         """

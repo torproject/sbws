@@ -426,4 +426,4 @@ oldest measurements are 5 days old::
 .. _SQLSupport.py: https://gitweb.torproject.org/pytorctl.git/tree/SQLSupport.py#n493
 .. _bandwidth file spec: https://gitweb.torproject.org/torspec.git/tree/bandwidth-file-spec.txt
 .. _aggregate.py: https://gitweb.torproject.org/torflow.git/tree/NetworkScanners/BwAuthority/aggregate.py
-.. _TorCtly.py: https://gitweb.torproject.org/pytorctl.git/tree/TorCtl.py
+.. _TorCtl.py: https://gitweb.torproject.org/pytorctl.git/tree/TorCtl.py

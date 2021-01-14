@@ -558,7 +558,7 @@ class ResultErrorSecondRelay(ResultError):
 
     A second suitable relay is a relay that:
     - Has at least equal bandwidth as the relay to measure.
-    - If the relay to measure is not an exit,
+    - If the relay to measure is not an exit, \
       the second relay is an exit without `bad` flag and can exit to port 443.
     - If the relay to measure is an exit, the second relay is not an exit.
 

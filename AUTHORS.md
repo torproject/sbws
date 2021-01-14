@@ -1,4 +1,5 @@
-# Authors
+Authors
+=======
 
 The following people have contributed to Simple Bandwidth Scanner.
 Thank you for helping make Tor better.

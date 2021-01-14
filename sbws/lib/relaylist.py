@@ -24,6 +24,7 @@ def valid_after_from_network_statuses(network_statuses):
     attribute of a ``stem.descriptor.RouterStatusEntryV3``.
 
     :param list network_statuses:
+
     returns datetime:
     """
     for ns in network_statuses:
@@ -228,7 +229,7 @@ class Relay:
         Increment The number of times that a relay has been queued
         to be measured.
 
-        It is call from :funf:`~sbws.core.scaner.main_loop`.
+        It is call from :func:`~sbws.core.scaner.main_loop`.
         """
         self.relay_recent_measurement_attempt.update()
 
@@ -468,7 +469,7 @@ class RelayList:
         Increment the number of times that any relay has been queued to be
         measured.
 
-        It is call from :funf:`~sbws.core.scaner.main_loop`.
+        It is call from :func:`~sbws.core.scaner.main_loop`.
 
         It is read and stored in a ``state`` file.
         """

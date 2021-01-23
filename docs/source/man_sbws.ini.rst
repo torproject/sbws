@@ -143,9 +143,9 @@ relayprioritizer
 
 cleanup
   data_files_compress_after_days = INT
-    After this many days, compress data files. (Default: 10)
+    After this many days, compress data files. (Default: 29)
   data_files_delete_after_days = INT
-    After this many days, delete data files. (Default: 90)
+    After this many days, delete data files. (Default: 57)
   v3bw_files_compress_after_days = INT
     After this many days, compress v3bw files. (Default: 1)
   v3bw_files_delete_after_days = INT

@@ -51,7 +51,7 @@ def test_init_relays(
     assert 6505 == 6433 + len(added_fps)
     # The calculated min bw for the second hop
     assert 2120000 == relay_list._exit_min_bw
-    assert 200000 == relay_list._non_exit_min_bw
+    assert 210000 == relay_list._non_exit_min_bw
 
     # Five days later plus 1 second.
     # The first consensus timestamp will get removed.
@@ -69,10 +69,10 @@ def test_init_relays(
     removed_fps = fps.difference(fps_5days_later)
     # The number of relays will be the number of relays in the cosensus plus
     # the added ones minus the removed ones.
-    assert 6925 == 6505 + len(added_fps) - len(removed_fps)
+    assert 6596 == 6505 + len(added_fps) - len(removed_fps)
     # The calculated min bw for the second hop
-    assert 2790000 == relay_list._exit_min_bw
-    assert 110000 == relay_list._non_exit_min_bw
+    assert 2800000 == relay_list._exit_min_bw
+    assert 150000 == relay_list._non_exit_min_bw
 
 
 def test_increment_recent_measurement_attempt(args, conf, controller):

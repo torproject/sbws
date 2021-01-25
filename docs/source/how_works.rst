@@ -137,7 +137,8 @@ Each relay bandwidth measurements are selected in the following way:
    If they are not, the relay MUST NOT be included in the Bandwith File.
 #. The measurements than are are older than an arbitrary number of senconds
    in the past MUST be discarded.
-   Currently this number is the same as ``data_period`` (5 days).
+   Currently this number is the same as ``data_period`` (5 days) when not
+   scaling as Torflow and 28 days when scaling as Torflow.
 
 If the number of relays to include in the Bandwidth File are less than
 a percententage (currently 60%) than the number of relays in the consensus,

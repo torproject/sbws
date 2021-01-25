@@ -2,7 +2,7 @@ from math import ceil
 
 from sbws.globals import (fail_hard, SBWS_SCALE_CONSTANT, TORFLOW_SCALING,
                           SBWS_SCALING, TORFLOW_BW_MARGIN, PROP276_ROUND_DIG,
-                          DAY_SECS, NUM_MIN_RESULTS)
+                          DAY_SECS, NUM_MIN_RESULTS, GENERATE_PERIOD)
 from sbws.lib.v3bwfile import V3BWFile
 from sbws.lib.resultdump import load_recent_results_in_datadir
 from argparse import ArgumentDefaultsHelpFormatter
@@ -60,8 +60,9 @@ def gen_parser(sub):
                    help="Number of most significant digits to round bw.")
     p.add_argument('-p', '--secs-recent', default=None, type=int,
                    help="How many secs in the past are results being "
-                        "still considered. Note this value will supersede "
-                        "data_period in the configuration.")
+                        "still considered. Default is {} secs. If not scaling "
+                        "as Torflow the default is data_period in the "
+                        "configuration.".format(GENERATE_PERIOD))
     p.add_argument('-a', '--secs-away', default=DAY_SECS, type=int,
                    help="How many secs results have to be away from each "
                         "other.")
@@ -90,6 +91,8 @@ def main(args, conf):
         scaling_method = TORFLOW_SCALING
     if args.secs_recent:
         fresh_days = ceil(args.secs_recent / 24 / 60 / 60)
+    elif scaling_method == TORFLOW_SCALING:
+        fresh_days = ceil(GENERATE_PERIOD / 24 / 60 / 60)
     else:
         fresh_days = conf.getint('general', 'data_period')
     reset_bw_ipv4_changes = conf.getboolean('general', 'reset_bw_ipv4_changes')

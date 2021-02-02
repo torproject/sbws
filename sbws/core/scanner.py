@@ -244,6 +244,27 @@ def _pick_ideal_second_hop(relay, dest, rl, cont, is_exit):
     return chosen
 
 
+def create_path_relay_as_entry(relay, dest, rl, cb):
+    circ_fps = nicknames = []
+    helper = _pick_ideal_second_hop(
+        relay, dest, rl, cb.controller, is_exit=True)
+    if helper:
+        circ_fps = [relay.fingerprint, helper.fingerprint]
+        nicknames = [relay.nickname, helper.nickname]
+    return helper, circ_fps, nicknames
+
+
+def create_path_relay_as_exit(relay, dest, rl, cb):
+    circ_fps = nicknames = []
+    helper = _pick_ideal_second_hop(
+        relay, dest, rl, cb.controller, is_exit=False)
+    if helper:
+        circ_fps = [helper.fingerprint, relay.fingerprint]
+        # stored for debugging
+        nicknames = [helper.nickname, relay.nickname]
+    return helper, circ_fps, nicknames
+
+
 def measure_relay(args, conf, destinations, cb, rl, relay):
     """
     Select a Web server, a relay to build the circuit,
@@ -295,18 +316,11 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     helper = None
     circ_fps = None
     if relay.is_exit_not_bad_allowing_port_all_ips(dest.port):
-        helper = _pick_ideal_second_hop(
-            relay, dest, rl, cb.controller, is_exit=False)
-        if helper:
-            circ_fps = [helper.fingerprint, relay.fingerprint]
-            # stored for debugging
-            nicknames = [helper.nickname, relay.nickname]
+        helper, circ_fps, nicknames = create_path_relay_as_exit(
+            relay, dest, rl, cb)
     else:
-        helper = _pick_ideal_second_hop(
-            relay, dest, rl, cb.controller, is_exit=True)
-        if helper:
-            circ_fps = [relay.fingerprint, helper.fingerprint]
-            nicknames = [relay.nickname, helper.nickname]
+        helper, circ_fps, nicknames = create_path_relay_as_entry(
+            relay, dest, rl, cb)
     if not helper:
         reason = 'Unable to select a second relay'
         log.debug(reason + ' to help measure %s (%s)',
@@ -323,11 +337,7 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         # If that's the case, try again using them as 2nd hop.
         # We could reuse the helper, but it does not need to be an exit now,
         # so choose other again.
-        helper = _pick_ideal_second_hop(
-            relay, dest, rl, cb.controller, is_exit=False)
-        if helper:
-            circ_fps = [helper.fingerprint, relay.fingerprint]
-            nicknames = [helper.nickname, relay.nickname]
+        create_path_relay_as_exit(relay, dest, rl, cb)
         circ_id, reason = cb.build_circuit(circ_fps)
     if not circ_id:
         log.debug('Could not build circuit with path %s (%s): %s ',

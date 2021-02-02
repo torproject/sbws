@@ -219,10 +219,33 @@ class Relay:
             return False
         return False
 
+    def can_exit_to_port_some_ips(self, port):
+        """
+        Returns True if the relay has an exit policy and the policy accepts
+        exiting to the given port and some public IPs or False otherwise.
+        """
+        assert isinstance(port, int)
+        try:
+            if self.exit_policy:
+                # Not using argument `strict`, to know whether it can exit
+                # some public IPs, though not all.
+                return (
+                    self.exit_policy.strip_private()
+                    .can_exit_to(port=port)
+                )
+        except TypeError:
+            return False
+        return False
+
     def is_exit_not_bad_allowing_port_all_ips(self, port):
         return (Flag.BADEXIT not in self.flags and
                 Flag.EXIT in self.flags and
                 self.can_exit_to_port_all_ips(port))
+
+    def is_exit_not_bad_allowing_port_some_ips(self, port):
+        return (Flag.BADEXIT not in self.flags and
+                Flag.EXIT in self.flags and
+                self.can_exit_to_port_some_ips(port))
 
     def increment_relay_recent_measurement_attempt(self):
         """
@@ -456,6 +479,10 @@ class RelayList:
     def exits_not_bad_allowing_port_all_ips(self, port):
         return [r for r in self.exits
                 if r.is_exit_not_bad_allowing_port_all_ips(port)]
+
+    def exits_not_bad_allowing_port_some_ips(self, port):
+        return [r for r in self.exits
+                if r.is_exit_not_bad_allowing_port_some_ips(port)]
 
     def increment_recent_measurement_attempt(self):
         """

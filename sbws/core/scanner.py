@@ -244,7 +244,7 @@ def _pick_ideal_second_hop(relay, dest, rl, cont, is_exit):
     return chosen
 
 
-def error_no_helper(relay, dest, our_nick):
+def error_no_helper(relay, dest, our_nick=""):
     reason = 'Unable to select a second relay'
     log.debug(reason + ' to help measure %s (%s)',
               relay.fingerprint, relay.nickname)
@@ -255,25 +255,24 @@ def error_no_helper(relay, dest, our_nick):
 
 
 def create_path_relay_as_entry(relay, dest, rl, cb):
-    circ_fps = nicknames = []
     helper = _pick_ideal_second_hop(
         relay, dest, rl, cb.controller, is_exit=True)
     if not helper:
-        return error_no_helper(relay, dest, our_nick)
+        return error_no_helper(relay, dest)
     circ_fps = [relay.fingerprint, helper.fingerprint]
     nicknames = [relay.nickname, helper.nickname]
     return helper, circ_fps, nicknames
 
 
 def create_path_relay_as_exit(relay, dest, rl, cb):
-    circ_fps = nicknames = []
     helper = _pick_ideal_second_hop(
         relay, dest, rl, cb.controller, is_exit=False)
-    if helper:
-        circ_fps = [helper.fingerprint, relay.fingerprint]
-        # stored for debugging
-        nicknames = [helper.nickname, relay.nickname]
-    return helper, circ_fps, nicknames
+    if not helper:
+        return error_no_helper(relay, dest)
+    circ_fps = [helper.fingerprint, relay.fingerprint]
+    # stored for debugging
+    nicknames = [helper.nickname, relay.nickname]
+    return circ_fps, nicknames
 
 
 def measure_relay(args, conf, destinations, cb, rl, relay):
@@ -324,16 +323,10 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
 
     # Pick a relay to help us measure the given relay. If the given relay is an
     # exit, then pick a non-exit. Otherwise pick an exit.
-    helper = None
-    circ_fps = None
     if relay.is_exit_not_bad_allowing_port_all_ips(dest.port):
-        helper, circ_fps, nicknames = create_path_relay_as_exit(
-            relay, dest, rl, cb)
+        circ_fps, nicknames = create_path_relay_as_exit(relay, dest, rl, cb)
     else:
-        helper, circ_fps, nicknames = create_path_relay_as_entry(
-            relay, dest, rl, cb)
-    if not helper:
-        return error_no_helper(relay, dest, our_nick)
+        circ_fps, nicknames = create_path_relay_as_entry(relay, dest, rl, cb)
 
     # Build the circuit
     circ_id, reason = cb.build_circuit(circ_fps)

@@ -275,6 +275,15 @@ def create_path_relay_as_exit(relay, dest, rl, cb):
     return circ_fps, nicknames
 
 
+def error_no_circuit(circ_fps, nicknames, reason, relay, dest, our_nick):
+    log.debug('Could not build circuit with path %s (%s): %s ',
+              circ_fps, nicknames, reason)
+    return [
+        ResultErrorCircuit(relay, circ_fps, dest.url, our_nick,
+                           msg=reason),
+    ]
+
+
 def measure_relay(args, conf, destinations, cb, rl, relay):
     """
     Select a Web server, a relay to build the circuit,
@@ -338,12 +347,8 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         create_path_relay_as_exit(relay, dest, rl, cb)
         circ_id, reason = cb.build_circuit(circ_fps)
     if not circ_id:
-        log.debug('Could not build circuit with path %s (%s): %s ',
-                  circ_fps, nicknames, reason)
-        return [
-            ResultErrorCircuit(relay, circ_fps, dest.url, our_nick,
-                               msg=reason),
-        ]
+        return error_no_circuit(circ_fps, nicknames, reason, relay, dest,
+                                our_nick)
     log.debug('Built circuit with path %s (%s) to measure %s (%s)',
               circ_fps, nicknames, relay.fingerprint, relay.nickname)
     # Make a connection to the destination

@@ -209,7 +209,7 @@ def _pick_ideal_second_hop(relay, dest, rl, cont, is_exit):
     destination **dest**, pick a second relay that is or is not an exit
     according to **is_exit**.
     '''
-    candidates = rl.exits_not_bad_allowing_port(dest.port) if is_exit \
+    candidates = rl.exits_not_bad_allowing_port_all_ips(dest.port) if is_exit \
         else rl.non_exits
     if not len(candidates):
         return None

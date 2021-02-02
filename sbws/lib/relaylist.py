@@ -453,7 +453,7 @@ class RelayList:
         """Number of times a new consensus was obtained."""
         return len(self._recent_consensus)
 
-    def exits_not_bad_allowing_port(self, port):
+    def exits_not_bad_allowing_port_all_ips(self, port):
         return [r for r in self.exits
                 if r.is_exit_not_bad_allowing_port_all_ips(port)]
 

@@ -209,8 +209,14 @@ def _pick_ideal_second_hop(relay, dest, rl, cont, is_exit):
     destination **dest**, pick a second relay that is or is not an exit
     according to **is_exit**.
     '''
-    candidates = rl.exits_not_bad_allowing_port_all_ips(dest.port) if is_exit \
-        else rl.non_exits
+    # 40041: Instead of using exits that can exit to all IPs, to ensure that
+    # they can make requests to the Web servers, try with the exits that
+    # allow some IPs, since there're more.
+    # In the case that a concrete exit can't exit to the Web server, it is not
+    # a problem since the relay will be measured in the next loop with other
+    # random exit.
+    candidates = rl.exits_not_bad_allowing_port_some_ips(dest.port) \
+        if is_exit else rl.non_exits
     if not len(candidates):
         return None
     min_relay_bw = rl.exit_min_bw() if is_exit else rl.non_exit_min_bw()
@@ -332,20 +338,20 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
 
     # Pick a relay to help us measure the given relay. If the given relay is an
     # exit, then pick a non-exit. Otherwise pick an exit.
-    if relay.is_exit_not_bad_allowing_port_all_ips(dest.port):
+    # Instead of ensuring that the relay can exit to all IPs, try first with
+    # the relay as an exit, if it can exit to some IPs.
+    if relay.is_exit_not_bad_allowing_port_some_ips(dest.port):
         circ_fps, nicknames = create_path_relay_as_exit(relay, dest, rl, cb)
     else:
         circ_fps, nicknames = create_path_relay_as_entry(relay, dest, rl, cb)
 
     # Build the circuit
     circ_id, reason = cb.build_circuit(circ_fps)
-    if not circ_id and relay.fingerprint == circ_fps[0]:
-        # We detected that some exits fail to build circuits as 1st hop.
-        # If that's the case, try again using them as 2nd hop.
-        # We could reuse the helper, but it does not need to be an exit now,
-        # so choose other again.
-        create_path_relay_as_exit(relay, dest, rl, cb)
-        circ_id, reason = cb.build_circuit(circ_fps)
+
+    # If the circuit failed to get created, bad luck, it will be created again
+    # with other helper.
+    # Here we won't have the case that an exit tried to build the circuit as
+    # entry and failed (#40029), cause not checking that it can exit all IPs.
     if not circ_id:
         return error_no_circuit(circ_fps, nicknames, reason, relay, dest,
                                 our_nick)
@@ -354,6 +360,30 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     # Make a connection to the destination
     is_usable, usable_data = connect_to_destination_over_circuit(
         dest, circ_id, s, cb.controller, dest._max_dl)
+
+    # In the case that the relay was used as an exit, but could not exit
+    # to the Web server, try again using it as entry, to avoid that it would
+    # always fail when there's only one Web server.
+    if not is_usable and \
+            relay.is_exit_not_bad_allowing_port_all_ips(dest.port):
+        log.info(
+            "Exit %s (%s) that can't exit all ips failed to connect to "
+            " %s via circuit %s (%s). Trying again with it as entry.",
+            relay.fingerprint, relay.nickname, dest, circ_fps, nicknames)
+        circ_fps, nicknames = create_path_relay_as_entry(relay, dest, rl, cb)
+        circ_id, reason = cb.build_circuit(circ_fps)
+        if not circ_id:
+            log.warning(
+                "Exit %s (%s) that can't exit all ips, failed to create "
+                " circuit as entry: %s (%s).", relay.fingerprint,
+                relay.nickname, circ_fps, nicknames)
+            return error_no_circuit(relay, circ_fps, nicknames, reason, dest,
+                                    our_nick)
+
+        log.debug('Built circuit with path %s (%s) to measure %s (%s)',
+                  circ_fps, nicknames, relay.fingerprint, relay.nickname)
+        is_usable, usable_data = connect_to_destination_over_circuit(
+            dest, circ_id, s, cb.controller, dest._max_dl)
     if not is_usable:
         log.debug('Destination %s unusable via circuit %s (%s), %s',
                   dest.url, circ_fps, nicknames, usable_data)

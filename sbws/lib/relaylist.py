@@ -178,7 +178,7 @@ class Relay:
         """Number of times the relay was in a conensus."""
         return len(self.relay_in_recent_consensus)
 
-    def can_exit_to_port(self, port):
+    def can_exit_to_port_all_ips(self, port):
         """
         Returns True if the relay has an exit policy and the policy accepts
         exiting to the given portself or False otherwise.
@@ -192,7 +192,7 @@ class Relay:
         # When the attribute is gotten in getattr(self._desc, "exit_policy"),
         # is possible that stem's _input_rules is None and raises an exception
         # (#29899):
-        #   File "/usr/lib/python3/dist-packages/sbws/lib/relaylist.py", line 117, in can_exit_to_port  # noqa
+        #   File "/usr/lib/python3/dist-packages/sbws/lib/relaylist.py", line 117, in can_exit_to_port_all_ips  # noqa
         #     if not self.exit_policy:
         #   File "/usr/lib/python3/dist-packages/stem/exit_policy.py", line 512, in __len__  # noqa
         #     return len(self._get_rules())
@@ -222,7 +222,7 @@ class Relay:
     def is_exit_not_bad_allowing_port(self, port):
         return (Flag.BADEXIT not in self.flags and
                 Flag.EXIT in self.flags and
-                self.can_exit_to_port(port))
+                self.can_exit_to_port_all_ips(port))
 
     def increment_relay_recent_measurement_attempt(self):
         """

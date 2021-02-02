@@ -244,13 +244,24 @@ def _pick_ideal_second_hop(relay, dest, rl, cont, is_exit):
     return chosen
 
 
+def error_no_helper(relay, dest, our_nick):
+    reason = 'Unable to select a second relay'
+    log.debug(reason + ' to help measure %s (%s)',
+              relay.fingerprint, relay.nickname)
+    return [
+        ResultErrorSecondRelay(relay, [], dest.url, our_nick,
+                               msg=reason),
+        ]
+
+
 def create_path_relay_as_entry(relay, dest, rl, cb):
     circ_fps = nicknames = []
     helper = _pick_ideal_second_hop(
         relay, dest, rl, cb.controller, is_exit=True)
-    if helper:
-        circ_fps = [relay.fingerprint, helper.fingerprint]
-        nicknames = [relay.nickname, helper.nickname]
+    if not helper:
+        return error_no_helper(relay, dest, our_nick)
+    circ_fps = [relay.fingerprint, helper.fingerprint]
+    nicknames = [relay.nickname, helper.nickname]
     return helper, circ_fps, nicknames
 
 
@@ -322,13 +333,7 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         helper, circ_fps, nicknames = create_path_relay_as_entry(
             relay, dest, rl, cb)
     if not helper:
-        reason = 'Unable to select a second relay'
-        log.debug(reason + ' to help measure %s (%s)',
-                  relay.fingerprint, relay.nickname)
-        return [
-            ResultErrorSecondRelay(relay, [], dest.url, our_nick,
-                                   msg=reason),
-            ]
+        return error_no_helper(relay, dest, our_nick)
 
     # Build the circuit
     circ_id, reason = cb.build_circuit(circ_fps)

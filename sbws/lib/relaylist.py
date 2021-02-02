@@ -219,7 +219,7 @@ class Relay:
             return False
         return False
 
-    def is_exit_not_bad_allowing_port(self, port):
+    def is_exit_not_bad_allowing_port_all_ips(self, port):
         return (Flag.BADEXIT not in self.flags and
                 Flag.EXIT in self.flags and
                 self.can_exit_to_port_all_ips(port))
@@ -455,7 +455,7 @@ class RelayList:
 
     def exits_not_bad_allowing_port(self, port):
         return [r for r in self.exits
-                if r.is_exit_not_bad_allowing_port(port)]
+                if r.is_exit_not_bad_allowing_port_all_ips(port)]
 
     def increment_recent_measurement_attempt(self):
         """

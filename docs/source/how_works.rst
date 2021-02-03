@@ -73,6 +73,16 @@ Measuring relays
 
 Source code: :func:`sbws.core.scanner.measure_relay`
 
+Measuring a relay
+~~~~~~~~~~~~~~~~~
+
+.. image:: ./images/activity_measure.svg
+   :alt: activity measuring a relay
+   :height: 300px
+   :align: center
+
+Source code: :func:`sbws.core.scanner.measure_relay`
+
 Selecting a second relay
 ~~~~~~~~~~~~~~~~~~~~~~~~
 

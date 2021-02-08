@@ -267,7 +267,7 @@ def create_path_relay_as_entry(relay, dest, rl, cb):
         return error_no_helper(relay, dest)
     circ_fps = [relay.fingerprint, helper.fingerprint]
     nicknames = [relay.nickname, helper.nickname]
-    return helper, circ_fps, nicknames
+    return circ_fps, nicknames, helper.exit_policy
 
 
 def create_path_relay_as_exit(relay, dest, rl, cb):
@@ -278,7 +278,7 @@ def create_path_relay_as_exit(relay, dest, rl, cb):
     circ_fps = [helper.fingerprint, relay.fingerprint]
     # stored for debugging
     nicknames = [helper.nickname, relay.nickname]
-    return circ_fps, nicknames
+    return circ_fps, nicknames, relay.exit_policy
 
 
 def error_no_circuit(circ_fps, nicknames, reason, relay, dest, our_nick):
@@ -341,9 +341,11 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     # Instead of ensuring that the relay can exit to all IPs, try first with
     # the relay as an exit, if it can exit to some IPs.
     if relay.is_exit_not_bad_allowing_port(dest.port):
-        circ_fps, nicknames = create_path_relay_as_exit(relay, dest, rl, cb)
+        circ_fps, nicknames, exit_policy = \
+            create_path_relay_as_exit(relay, dest, rl, cb)
     else:
-        circ_fps, nicknames = create_path_relay_as_entry(relay, dest, rl, cb)
+        circ_fps, nicknames, exit_policy = \
+            create_path_relay_as_entry(relay, dest, rl, cb)
 
     # Build the circuit
     circ_id, reason = cb.build_circuit(circ_fps)
@@ -367,10 +369,12 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     if not is_usable and \
             relay.is_exit_not_bad_allowing_port(dest.port):
         log.info(
-            "Exit %s (%s) that can't exit all ips failed to connect to "
-            " %s via circuit %s (%s). Trying again with it as entry.",
-            relay.fingerprint, relay.nickname, dest, circ_fps, nicknames)
-        circ_fps, nicknames = create_path_relay_as_entry(relay, dest, rl, cb)
+            "Exit %s (%s) that can't exit all ips, with exit policy %s, failed"
+            " to connect to %s via circuit %s (%s). Reason: %s. Trying again "
+            "with it as entry.", relay.fingerprint, relay.nickname,
+            exit_policy, dest.url, circ_fps, nicknames, usable_data)
+        circ_fps, nicknames, exit_policy = \
+            create_path_relay_as_entry(relay, dest, rl, cb)
         circ_id, reason = cb.build_circuit(circ_fps)
         if not circ_id:
             log.warning(
@@ -385,8 +389,10 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         is_usable, usable_data = connect_to_destination_over_circuit(
             dest, circ_id, s, cb.controller, dest._max_dl)
     if not is_usable:
-        log.debug('Destination %s unusable via circuit %s (%s), %s',
-                  dest.url, circ_fps, nicknames, usable_data)
+        log.debug('Failed to connect to %s to measure %s (%s) via circuit '
+                  '%s (%s). Exit policy: %s. Reason: %s.', dest.url,
+                  relay.fingerprint, relay.nickname, circ_fps, nicknames,
+                  exit_policy, usable_data)
         cb.close_circuit(circ_id)
         return [
             ResultErrorStream(relay, circ_fps, dest.url, our_nick,
@@ -410,9 +416,10 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     bw_results, reason = measure_bandwidth_to_server(
         s, conf, dest, usable_data['content_length'])
     if bw_results is None:
-        log.debug('Unable to measure bandwidth for %s (%s) to %s via circuit '
-                  '%s (%s): %s', relay.fingerprint, relay.nickname,
-                  dest.url, circ_fps, nicknames, reason)
+        log.debug('Failed to measure %s (%s) via circuit %s (%s) to %s. Exit'
+                  ' policy: %s. Reason: %s.', relay.fingerprint,
+                  relay.nickname, circ_fps, nicknames, dest.url, exit_policy,
+                  reason)
         cb.close_circuit(circ_id)
         return [
             ResultErrorStream(relay, circ_fps, dest.url, our_nick,

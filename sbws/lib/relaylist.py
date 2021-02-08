@@ -178,21 +178,32 @@ class Relay:
         """Number of times the relay was in a conensus."""
         return len(self.relay_in_recent_consensus)
 
-    def can_exit_to_port_all_ips(self, port):
+    def can_exit_to_port(self, port, strict=False):
         """
         Returns True if the relay has an exit policy and the policy accepts
-        exiting to the given portself or False otherwise.
+        exiting to the given port or False otherwise.
+
+        If ``strict`` is true, it only returns the exits that can exit to all
+        IPs and that port.
 
         The exits that are IPv6 only or IPv4 but rejecting some public networks
         will return false.
         On July 2020, there were 67 out of 1095 exits like this.
+
+        If ``strict`` is false, it returns any exit that can exit to some
+        public IPs and that port.
+
+        Note that the EXIT flag exists when the relay can exit to 443 **and**
+        80. Currently all Web servers are using 443, so it would not be needed
+        to check the EXIT flag too, using this function.
+
         """
         assert isinstance(port, int)
         # if dind't get the descriptor, there isn't exit policy
         # When the attribute is gotten in getattr(self._desc, "exit_policy"),
         # is possible that stem's _input_rules is None and raises an exception
         # (#29899):
-        #   File "/usr/lib/python3/dist-packages/sbws/lib/relaylist.py", line 117, in can_exit_to_port_all_ips  # noqa
+        #   File "/usr/lib/python3/dist-packages/sbws/lib/relaylist.py", line 117, in can_exit_to_port  # noqa
         #     if not self.exit_policy:
         #   File "/usr/lib/python3/dist-packages/stem/exit_policy.py", line 512, in __len__  # noqa
         #     return len(self._get_rules())
@@ -202,50 +213,23 @@ class Relay:
         # Therefore, catch the exception here.
         try:
             if self.exit_policy:
-                # Using `strict` to ensure it can exit to ALL domains
-                # and ips and that port. See #40006.
                 # Using `strip_private` to ignore reject rules to private
                 # networks.
-                # We could increase the chances that the exit can exit
-                # checking IPv6 with:
-                # ``or self.exit_policy_v6.can_exit_to(port=443, strict=True)``
-                # But if it can still not exit to our Web server, then we
-                # should retry to measure it as entry.
+                # When ``strict`` is true, We could increase the chances that
+                # the exit can exit via IPv6 too (``exit_policy_v6``). However,
+                # in theory that is only known using microdescriptors.
                 return (
                     self.exit_policy.strip_private()
-                    .can_exit_to(port=port, strict=True)
+                    .can_exit_to(port=port, strict=strict)
                 )
         except TypeError:
             return False
         return False
 
-    def can_exit_to_port_some_ips(self, port):
-        """
-        Returns True if the relay has an exit policy and the policy accepts
-        exiting to the given port and some public IPs or False otherwise.
-        """
-        assert isinstance(port, int)
-        try:
-            if self.exit_policy:
-                # Not using argument `strict`, to know whether it can exit
-                # some public IPs, though not all.
-                return (
-                    self.exit_policy.strip_private()
-                    .can_exit_to(port=port)
-                )
-        except TypeError:
-            return False
-        return False
-
-    def is_exit_not_bad_allowing_port_all_ips(self, port):
+    def is_exit_not_bad_allowing_port(self, port, strict=False):
         return (Flag.BADEXIT not in self.flags and
                 Flag.EXIT in self.flags and
-                self.can_exit_to_port_all_ips(port))
-
-    def is_exit_not_bad_allowing_port_some_ips(self, port):
-        return (Flag.BADEXIT not in self.flags and
-                Flag.EXIT in self.flags and
-                self.can_exit_to_port_some_ips(port))
+                self.can_exit_to_port(port, strict))
 
     def increment_relay_recent_measurement_attempt(self):
         """
@@ -476,13 +460,9 @@ class RelayList:
         """Number of times a new consensus was obtained."""
         return len(self._recent_consensus)
 
-    def exits_not_bad_allowing_port_all_ips(self, port):
+    def exits_not_bad_allowing_port(self, port, strict=False):
         return [r for r in self.exits
-                if r.is_exit_not_bad_allowing_port_all_ips(port)]
-
-    def exits_not_bad_allowing_port_some_ips(self, port):
-        return [r for r in self.exits
-                if r.is_exit_not_bad_allowing_port_some_ips(port)]
+                if r.is_exit_not_bad_allowing_port(port, strict)]
 
     def increment_recent_measurement_attempt(self):
         """

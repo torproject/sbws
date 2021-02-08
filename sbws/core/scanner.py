@@ -215,7 +215,7 @@ def _pick_ideal_second_hop(relay, dest, rl, cont, is_exit):
     # In the case that a concrete exit can't exit to the Web server, it is not
     # a problem since the relay will be measured in the next loop with other
     # random exit.
-    candidates = rl.exits_not_bad_allowing_port_some_ips(dest.port) \
+    candidates = rl.exits_not_bad_allowing_port(dest.port) \
         if is_exit else rl.non_exits
     if not len(candidates):
         return None
@@ -340,7 +340,7 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     # exit, then pick a non-exit. Otherwise pick an exit.
     # Instead of ensuring that the relay can exit to all IPs, try first with
     # the relay as an exit, if it can exit to some IPs.
-    if relay.is_exit_not_bad_allowing_port_some_ips(dest.port):
+    if relay.is_exit_not_bad_allowing_port(dest.port):
         circ_fps, nicknames = create_path_relay_as_exit(relay, dest, rl, cb)
     else:
         circ_fps, nicknames = create_path_relay_as_entry(relay, dest, rl, cb)
@@ -365,7 +365,7 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     # to the Web server, try again using it as entry, to avoid that it would
     # always fail when there's only one Web server.
     if not is_usable and \
-            relay.is_exit_not_bad_allowing_port_all_ips(dest.port):
+            relay.is_exit_not_bad_allowing_port(dest.port):
         log.info(
             "Exit %s (%s) that can't exit all ips failed to connect to "
             " %s via circuit %s (%s). Trying again with it as entry.",
@@ -377,7 +377,7 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
                 "Exit %s (%s) that can't exit all ips, failed to create "
                 " circuit as entry: %s (%s).", relay.fingerprint,
                 relay.nickname, circ_fps, nicknames)
-            return error_no_circuit(relay, circ_fps, nicknames, reason, dest,
+            return error_no_circuit(circ_fps, nicknames, reason, relay, dest,
                                     our_nick)
 
         log.debug('Built circuit with path %s (%s) to measure %s (%s)',

@@ -219,6 +219,12 @@ def _pick_ideal_second_hop(relay, dest, rl, cont, is_exit):
         if is_exit else rl.non_exits
     if not len(candidates):
         return None
+    # In the case the helper is an exit, the entry could be an exit too
+    # (#40041), so ensure the helper is not the same as the entry, likely to
+    # happen in a test network.
+    if is_exit:
+        candidates = [c for c in candidates
+                      if c.fingerprint != relay.fingerprint]
     min_relay_bw = rl.exit_min_bw() if is_exit else rl.non_exit_min_bw()
     log.debug('Picking a 2nd hop to measure %s from %d choices. is_exit=%s',
               relay.nickname, len(candidates), is_exit)

@@ -266,25 +266,24 @@ def error_no_helper(relay, dest, our_nick=""):
         ]
 
 
-def create_path_relay_as_entry(relay, dest, rl, cb):
-    helper = _pick_ideal_second_hop(
-        relay, dest, rl, cb.controller, is_exit=True)
+def create_path_relay(relay, dest, rl, cb, relay_as_entry=True):
+    if relay_as_entry:
+        helper = _pick_ideal_second_hop(
+            relay, dest, rl, cb.controller, is_exit=True)
+    else:
+        helper = _pick_ideal_second_hop(
+            relay, dest, rl, cb.controller, is_exit=False)
     if not helper:
         return error_no_helper(relay, dest)
-    circ_fps = [relay.fingerprint, helper.fingerprint]
-    nicknames = [relay.nickname, helper.nickname]
-    return circ_fps, nicknames, helper.exit_policy
-
-
-def create_path_relay_as_exit(relay, dest, rl, cb):
-    helper = _pick_ideal_second_hop(
-        relay, dest, rl, cb.controller, is_exit=False)
-    if not helper:
-        return error_no_helper(relay, dest)
-    circ_fps = [helper.fingerprint, relay.fingerprint]
-    # stored for debugging
-    nicknames = [helper.nickname, relay.nickname]
-    return circ_fps, nicknames, relay.exit_policy
+    if relay_as_entry:
+        circ_fps = [relay.fingerprint, helper.fingerprint]
+        nicknames = [relay.nickname, helper.nickname]
+        exit_policy = helper.exit_policy
+    else:
+        circ_fps = [helper.fingerprint, relay.fingerprint]
+        nicknames = [helper.nickname, relay.nickname]
+        exit_policy = relay.exit_policy
+    return circ_fps, nicknames, exit_policy
 
 
 def error_no_circuit(circ_fps, nicknames, reason, relay, dest, our_nick):
@@ -348,10 +347,10 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     # the relay as an exit, if it can exit to some IPs.
     if relay.is_exit_not_bad_allowing_port(dest.port):
         circ_fps, nicknames, exit_policy = \
-            create_path_relay_as_exit(relay, dest, rl, cb)
+            create_path_relay(relay, dest, rl, cb, relay_as_entry=False)
     else:
         circ_fps, nicknames, exit_policy = \
-            create_path_relay_as_entry(relay, dest, rl, cb)
+            create_path_relay(relay, dest, rl, cb)
 
     # Build the circuit
     circ_id, reason = cb.build_circuit(circ_fps)
@@ -380,7 +379,7 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
             "with it as entry.", relay.fingerprint, relay.nickname,
             exit_policy, dest.url, circ_fps, nicknames, usable_data)
         circ_fps, nicknames, exit_policy = \
-            create_path_relay_as_entry(relay, dest, rl, cb)
+            create_path_relay(relay, dest, rl, cb)
         circ_id, reason = cb.build_circuit(circ_fps)
         if not circ_id:
             log.warning(

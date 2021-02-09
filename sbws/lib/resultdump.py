@@ -794,8 +794,9 @@ class ResultDump:
                     result.dest_url, result.msg)
         # The result doesn't store the exit policies, so it can't be logged
         # whether it was an exit.
-        as_exit = result.circ[1] == result.fingerprint
-        msg += ". As exit." if as_exit else ". As entry."
+        if result.circ:
+            as_exit = result.circ[1] == result.fingerprint
+            msg += ". As exit." if as_exit else ". As entry."
         # When the error is that there are not more functional destinations.
         if result.type == "error-destination":
             log.info("Shutting down because there are not functional "

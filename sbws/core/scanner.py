@@ -267,12 +267,12 @@ def error_no_helper(relay, dest, our_nick=""):
 
 
 def create_path_relay(relay, dest, rl, cb, relay_as_entry=True):
-    if relay_as_entry:
-        helper = _pick_ideal_second_hop(
-            relay, dest, rl, cb.controller, is_exit=True)
-    else:
-        helper = _pick_ideal_second_hop(
-            relay, dest, rl, cb.controller, is_exit=False)
+    # the helper `is_exit` arg (should be better called `helper_as_exit`),
+    # is True when the relay is the entry (helper has to be exit)
+    # and False when the relay is not the entry, ie. is the exit (helper does
+    # not have to be an exit)
+    helper = _pick_ideal_second_hop(
+            relay, dest, rl, cb.controller, is_exit=relay_as_entry)
     if not helper:
         return error_no_helper(relay, dest)
     if relay_as_entry:

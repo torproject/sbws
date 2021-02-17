@@ -130,6 +130,7 @@ Running the generator
 -----------------------
 
 Every hour, the generator:
+
 #. Aggregate all the measurements (not older than 6 six days) for every relay.
 #. Filter the measurements
 #. Scale the measurements

@@ -40,6 +40,7 @@ Included in the
    testing
    documenting
    how_works
+   generator
    code_design
    state
    config

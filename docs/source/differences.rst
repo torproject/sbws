@@ -1,36 +1,51 @@
 .. _differences:
 
-Differences between Torflow aggregation and sbws scaling (May 2020)
--------------------------------------------------------------------
+Differences between Torflow and sbws
+====================================
+
+(Last updated 2020-02-18)
+
+Aggregating measurements and scaling
+------------------------------------
+
+Filtering
+~~~~~~~~~
 
 Torflow does not exclude relays because of having "few" measurements or "close"
-to each other for that relay.
+to each other for that relay, like sbws does :ref:`filtering-measurements`.
 
-If there are not new measurements for a relay, Torflow uses the previous
-calculated bandwidth, instead of the new value::
+However this is currently disabled in sbws.
 
-      # If there is a new sample, let's use it for all but guards
-      if n.measured_at > prev_votes.vote_map[n.idhex].measured_at:
+Network stream and filtered bandwidth
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-      [snip]
+Torflow calculates the network stream and filtered averages by type of relay
+:ref:`stream-and-filtered-bandwidth-for-all-relays`, while sbws is not taking
+into account the type of relay :ref:`scaling-the-bandwidth-measurements`.
 
-      else:
-          # Reset values. Don't vote/sample this measurement round.
-          n.revert_to_vote(prev_votes.vote_map[n.idhex])
+Values from the previous Bandwidth File
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The oldest measurements Toflow seems to take are from 4 weeks ago, while sbws
-oldest measurements are 5 days old::
+sbws is not reading the previous Bandwidth File, but scaling all the values
+with the raw measurements.
 
-    GUARD_SAMPLE_RATE = 2*7*24*60*60 # 2wks
+Instead, Torflow uses the previous Bandwidth File values in some cases:
 
-    [snip]
+- When a relay measurement is older than the one in the previous
+  Bandwidth File, it uses all the values from the previous Bandwidth File.
+  (how is possible that the Bandwidth File would have a newer measurements?)::
 
-    MAX_AGE = 2*GUARD_SAMPLE_RATE
+    self.new_bw = prev_vote.bw * 1000
 
-    [snip]
+Bandwidth File KeyValues
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-                # old measurements are probably
-                # better than no measurements. We may not
-                # measure hibernating routers for days.
-                # This filter is just to remove REALLY old files
-                if time.time() - timestamp > MAX_AGE:
+sbws does not calculate nor write to the Bandwidth file the ``pid`` variables
+and KeyValues that are used in Torflow. Example of Torflow KeyValues not in sbws::
+
+  measured_at=1613547098 updated_at=1613547098 pid_error=11.275680184 pid_error_sum=11.275680184 pid_bw=23255048 pid_delta=11.0140582849 circ_fail=0.0
+
+sbws does not have ``measured_at`` and ``updated_at`` either.
+
+Currently the scaled bandwidth in Torflow does not depend on those extra values
+and they seem to be just informative.

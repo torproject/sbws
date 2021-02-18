@@ -1,0 +1,35 @@
+@startuml
+
+title Activity diagram sbws bw_torflow_scale
+
+start
+'bw_lines: the relays' raw measurements
+:mu = mean([l.bw_mean for l in bw_lines]);
+:muf = mean([l.bw_filt for l in bw_lines]);
+:sum_bw = 0;
+while (for l in bw_lines?)
+    :bw_obs;
+    :desc_bw = min(desc_bw_obs, l.desc_bw_bur, l.desc_bw_avg);
+    :min_bandwidth = min(desc_bw, l.consensus_bandwidth);
+    :ratio_stream = l.bw_mean / mu;
+    :ratio_stream_filtered = l.bw_filt / muf;
+    :ratio = max(ratio_stream, ratio_stream_filtered);
+    :l.bw = ratio * min_bandwidth;
+    if (router_statuses_d?) then (yes)
+        if (l.node_id in router_statuses_d?) then (yes)
+            :sum_bw += l.bw;
+        endif
+    else (no)
+        :sum_bw += l.bw;
+    endif
+endwhile
+:hlimit = sum_bw * cap;
+while (for l in bw_lines?)
+    :bw_scaled = min(hlimit, l.bw);
+    :l.bw = kb_round_x_sig_dig(bw_scaled, digits=num_round_dig);
+endwhile
+:return sorted(bw_lines_tf, key=lambda x: x.bw, reverse=reverse);
+stop
+
+footer last updated 2021-01-08
+@enduml

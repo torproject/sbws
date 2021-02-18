@@ -1,9 +1,9 @@
 .. _generator:
 
-How the Bandwidth File is generated
-===================================
+How aggregation and scaling works
+=================================
 
-.. seealso:: :ref:`scanner`.
+.. seealso:: :ref:`scanner` (scanner part).
 
 Every hour, the generator:
 
@@ -13,6 +13,8 @@ Every hour, the generator:
 #. Write the bandwidth file
 
 Source code: :func:`sbws.lib.v3bwfile.V3BWFile.from_results`
+
+.. _filtering-measurements:
 
 Filtering the bandwidth measurements
 -------------------------------------
@@ -32,13 +34,25 @@ a percententage (currently 60%) than the number of relays in the consensus,
 additional Header Lines MUST be added (see XXX) to the Bandwith File and the
 relays SHOULD NOT be included.
 
+.. image:: ./images/activity_aggr_file.svg
+
+.. image:: ./images/activity_aggr_lines.svg
+
+.. _scaling-the-bandwidth-measurements:
+
 Scaling the bandwidth measurements
 ------------------------------------
 
 Consensus bandwidth obtained by new implementations MUST be comparable to the
 consensus bandwidth, therefore they MUST implement torflow_scaling_.
+
 The bandwidth_file_spec_ appendix B describes torflow scaling and a linear
 scaling method.
+
+.. image:: ./images/activity_scaling_as_torflow.svg
+
+.. seealso:: :ref:`torflow_aggr` and :ref:`differences`.
+
 
 Writing the bandwidth file
 ---------------------------

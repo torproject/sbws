@@ -1,7 +1,9 @@
 .. _torflow_aggr:
 
-Torflow measurements aggregation
-==================================
+Torflow aggregation and scaling
+===============================
+
+.. seealso:: :ref:`generator` and :ref:`differences`.
 
 Torflow aggregation or scaling goal is:
 
@@ -11,11 +13,180 @@ From Torflow's `README.spec.txt`_ (section 2.2)::
     are effectively re-weighted proportional to how much faster the node
     was as compared to the rest of the network.
 
-With and without PID control
+Initialization
+--------------
+
+Constants in consensus that Torflow uses and don't change::
+
+  bandwidth-weights Wbd=0 Wbe=0 [] Wbm=10000 Wdb=10000 Web=10000 Wed=10000 Wee=10000 Weg=10000 Wem=10000 Wgb=10000 Wgd=0 Wgg=5852 [] Wmb=10000 Wmd=0 Wme=0 [] Wmm=10000
+
+  params [] bwauthpid=1
+
+Constants in the code::
+
+  IGNORE_GUARD = 0
+  GUARD_SAMPLE_RATE = 2*7*24*60*60 # 2wks
+  MAX_AGE = 2*GUARD_SAMPLE_RATE;  # 4 weeks
+
+  K_p = 1.0
+  T_i = 0
+  T_i_decay = 0
+  T_d = 0
+
+Initialization ``ConsensusJunk``::
+
+  self.bwauth_pid_control = True
+  self.group_by_class = False
+  self.use_pid_tgt = False
+  self.use_circ_fails = False
+  self.use_best_ratio = True
+  self.use_desc_bw = True
+  self.use_mercy = False
+  self.guard_sample_rate = GUARD_SAMPLE_RATE
+  self.pid_max = 500.0
+  self.K_p = K_p = 1.0
+  self.T_i = T_i = 0
+  self.T_d = T_d = 0
+  self.T_i_decay = T_i_decay = 0
+
+  self.K_i = 0
+  self.K_d = self.K_p*self.T_d = 0
+
+Initialization ``Node``::
+
+    self.sbw_ratio = None
+    self.fbw_ratio = None
+    self.pid_bw = 0
+    self.pid_error = 0
+    self.prev_error = 0
+    self.pid_error_sum = 0
+    self.pid_delta = 0
+    self.ratio = None
+    self.new_bw = None
+    self.use_bw = -1
+    self.flags = ""
+
+    # measurement vars from bwauth lines
+    self.measured_at = 0
+    self.strm_bw = 0
+    self.filt_bw = 0
+    self.ns_bw = 0
+    self.desc_bw = 0
+    self.circ_fail_rate = 0
+    self.strm_fail_rate = 0
+    self.updated_at = 0
+
+.. image:: ./images/activity_torflow_aggr.svg
+
+
+.. _relay-descriptors-bandwidth:
+
+Descriptor values for each relay
+--------------------------------
+
+From `TorCtl.py`_ code, it is the minimum of all the descriptor bandwidth
+values::
+
+    bws = map(int, g)
+    bw_observed = min(bws)
+
+    [snip]
+
+    return Router(ns.idhex, ns.nickname, bw_observed, dead, exitpolicy,
+    ns.flags, ip, version, os, uptime, published, contact, rate_limited,
+    ns.orhash, ns.bandwidth, extra_info_digest, ns.unmeasured)
+
+``ns.bandwidth`` is the consensus bandwidth, already multiplied by 1000::
+
+  yield NetworkStatus(*(m.groups()+(flags,)+(int(w.group(1))*1000,))+(unmeasured,))
+
+Because of the matched regular expression, ``bws`` is **not** all the descriptor
+bandwidth values, but the average bandwidth and the observed bandwidth, ie., it
+does not take the average burst, what seems to be a bug in Torflow.
+
+Eg. ``bandwidth`` line in a descriptor::
+
+  bandwidth 1536000 4096000 1728471
+
+Only takes the first and last values, so::
+
+  bw_observed = min(bandwidth-avg, bandwidth-observed)
+
+This is passed to ``Router``, in which the descriptors bandwidth is assigned to
+the consensus bandwidth when there is no consensus bandwidth::
+
+    (idhex, name, bw, down, exitpolicy, flags, ip, version, os, uptime,
+       published, contact, rate_limited, orhash,
+       ns_bandwidth,extra_info_digest,unmeasured) = args
+
+    [snip]
+
+    if ns_bandwidth != None:
+      self.bw = max(ns_bandwidth,1) # Avoid div by 0
+    else:
+      self.bw = max(bw,1) # Avoid div by 0
+
+    [snip]
+
+    self.desc_bw = max(bw,1) # Avoid div by 0
+
+So::
+
+  self.bw = ns_bwandwidth or min(bandwidth-avg, bandwidth-observed) or 1
+  desc_bw = min(bandwidth-avg, bandwidth-observed) or 1
+
+And written by `SQLSupport.py`_ as descriptor and conensus bandwidth::
+
+      f.write(" desc_bw="+str(int(cvt(s.avg_desc_bw,0))))
+      f.write(" ns_bw="+str(int(cvt(s.avg_bw,0)))+"\n")
+
+.. _relay-descriptor-bandwidth-pid:
+
+Descriptor bandwidth with PID control
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Even though `README.spec.txt`_ talks about the consensus bandwidth, in
+`aggregate.py`_ code, the consensus bandwidth is never used, since
+``use_desc_bw`` is initialized to True and never changed::
+
+    if cs_junk.bwauth_pid_control:
+      if cs_junk.use_desc_bw:
+        n.use_bw = n.desc_bw
+      else:
+        n.use_bw = n.ns_bw
+
+So::
+
+  n.use_bw = n.desc_bw = min(bandwidth-avg, bandwidth-observed) or 1
+
+
+Scaling the raw measurements
 ----------------------------
 
-Per relay measurements' bandwidth
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. _overview:
+
+Overview
+~~~~~~~~
+
+This diagram also includes
+:ref:`relay-descriptor-bandwidth-pid`,
+:ref:`relay-bandwidth-ratio` and :ref:`relay-scaled-bandwidth-pid`.
+
+.. image:: ./images/activity_torflow_scaling_simplified1.svg
+
+Simplified image from:
+
+.. image:: ./images/activity_torflow_scaling_simplified.svg
+
+`<./_images/activity_torflow_scaling_simplified.svg>`_
+
+.. image:: ./images/activity_torflow_scaling.svg
+
+`<./_images/activity_torflow_scaling.svg>`_
+
+
+Stream and filtered bandwidth for each relay
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 They are calculated in the same way whether or not `PID controller`_ feedback
 is used.
@@ -56,21 +227,16 @@ In the code, `SQLSupport.py`_, ``strm_bw`` is ``sbw`` and
 This is also expressed in pseudocode in the `bandwidth file spec`_, section B.4
 step 1.
 
-Calling ``bw_i`` to ``strm_bw`` and ``bwfilt_i`` to ``filt_bw``,
-if ``bw_j`` is a measurement for a relay ``i`` and ``m`` is the number of
-measurements for that relay, then:
+Calling ``bwstrm_i`` to ``strm_bw`` and ``bwfilt_i`` to ``filt_bw``,
+if ``bw_j`` is a measurement for a relay ``i``, then:::
 
-.. math::
+  bwstrm_i = mean(bw_j)  # for a relay, the average of all its measurements
+  bwfilt_i = mean(max(bwstrm_i, bw_j))
 
-    bw_i = \mu(bw_j) = \frac{\sum_{j=1}^{m}bw_j}{m}
+.. _stream-and-filtered-bandwidth-for-all-relays:
 
-.. math::
-
-    bwfilt_i &= \mu(max(\mu(bw_j), bw_j))
-              = \frac{\sum_{j=1}^{m} max\left(\frac{\sum_{j=1}^{m}bw_j}{m}, bw_j\right)}{m}
-
-Network measurements' bandwidth average
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Stream and filtered bandwidth for all relays
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 From `README.spec.txt`_ (section 2.1)::
 
@@ -79,34 +245,35 @@ From `README.spec.txt`_ (section 2.1)::
 
 In Torflow's `aggregate.py`_ code::
 
+  for cl in ["Guard+Exit", "Guard", "Exit", "Middle"]:
+    c_nodes = filter(lambda n: n.node_class() == cl, nodes.itervalues())
+    if len(c_nodes) > 0:
+      true_filt_avg[cl] = sum(map(lambda n: n.filt_bw, c_nodes))/float(len(c_nodes))
+      true_strm_avg[cl] = sum(map(lambda n: n.strm_bw, c_nodes))/float(len(c_nodes))
+      true_circ_avg[cl] = sum(map(lambda n: (1.0-n.circ_fail_rate),
+                            c_nodes))/float(len(c_nodes))
+
+The following code seems to be used only to log::
+
     filt_avg = sum(map(lambda n: n.filt_bw, nodes.itervalues()))/float(len(nodes))
     strm_avg = sum(map(lambda n: n.strm_bw, nodes.itervalues()))/float(len(nodes))
 
-Both in the code with PID and without, all types of nodes get the same
-average.
+So it seems the ``filt_avg`` and ``strm_avg`` are calculated by class in both
+the cases with PID control and without PID control.
+
+Calling ``bwstrm`` to ``strm_avg`` and ``bwfilt`` to ``fitl_avg``, without
+taking into account the different types of nodes::
+
+  bwstrm = mean(bwstrm_i)
+  bwfilt = mean(bwfilt_i)
 
 This is also expressed in pseudocode in the `bandwidth file spec`_, section B.4
 step 2.
 
-Calling ``bwstrm`` to ``strm_avg`` and ``bwfilt`` to ``fitl_avg``, if ``n`` is
-the number of relays in the network, then:
+.. _relay-bandwidth-ratio:
 
-.. math::
-
-   bwstrm &= \mu(bw_i)
-           = \frac{\sum_{i=1}^{n}bw_i}{n}
-           = \frac{\sum_{i=1}^{n} \frac{\sum_{j=1}^{m}bw_j}{m} }{n}
-
-.. math::
-
-   bwfilt &= \mu(bwfilt_i)
-           = \frac{\sum_{i=1}^{n}bwfilt_i}{n}
-           = \frac{\sum_{i=1}^{n}\frac{\sum_{j=1}^{m}max(\mu(bw_j), bw_j)}{m}}{n}
-           = \frac{\sum_{i=1}^{n}\frac{\sum_{j=1}^{m}max\left(\frac{\sum_{j=1}^{m}bw_j}{m}, bw_j\right)}{m}}{n}
-
-
-Per relay bandwidth ratio
-~~~~~~~~~~~~~~~~~~~~~~~~~
+Ratio for each relay
+~~~~~~~~~~~~~~~~~~~~
 
 From `README.spec.txt`_ (section 2.2)::
 
@@ -127,72 +294,17 @@ In Torflow's `aggregate.py`_ code::
       else:
         n.ratio = n.fbw_ratio
 
+So::
+
+  n.ratio = max(sbw_ratio, n.fbw_ratio)
+
 This is also expressed in pseudocode in the `bandwidth file spec`_, section B.4
 step 2 and 3.
 
-Calling ``rf_i`` to ``fbw_ratio`` and ``rs_i`` to ``sbw_ration`` and ``r_i``
-to ``ratio``:
+.. relay-scaled-no-pid:
 
-.. math::
-
-    rf_i = \frac{bwfilt_i}{bwfilt}
-
-    rs_i = \frac{bw_i}{bwstrm}
-
-
-.. math::
-
-    r_i = max(rf_i, rs_i)
-        = max\left(\frac{bwfilt_i}{bwfilt}, \frac{bw_i}{bwstrm}\right)
-        = max\left(\frac{bwfilt_i}{\mu(bwfilt_i)}, \frac{bw_i}{\mu(bwfilt_i)}\right)
-
-Per relay descriptors bandwidth
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-From `TorCtl.py`_ code, it is the minimum of all the descriptor bandwidth
-values::
-
-    bws = map(int, g)
-    bw_observed = min(bws)
-
-    [snip]
-
-    return Router(ns.idhex, ns.nickname, bw_observed, dead, exitpolicy,
-    ns.flags, ip, version, os, uptime, published, contact, rate_limited,
-    ns.orhash, ns.bandwidth, extra_info_digest, ns.unmeasured)
-
-Because of the matched regular expression, ``bws`` is **not** all the descriptor
-bandwidth values, but the observed bandwidth and the burst bandwidth, ie., it
-does not take the average bandwidth, what seems to be a bug in Torflow.
-
-This is passed to ``Router``, in which the consensus bandwidth is assigned to the
-descriptor bandwidth when there is no consensus bandwidth::
-
-    (idhex, name, bw, down, exitpolicy, flags, ip, version, os, uptime,
-       published, contact, rate_limited, orhash,
-       ns_bandwidth,extra_info_digest,unmeasured) = args
-
-    [snip]
-
-    if ns_bandwidth != None:
-      self.bw = max(ns_bandwidth,1) # Avoid div by 0
-    else:
-      self.bw = max(bw,1) # Avoid div by 0
-
-    [snip]
-
-    self.desc_bw = max(bw,1) # Avoid div by 0
-
-And written by `SQLSupport.py`_ as descriptor and conensus bandwidth::
-
-      f.write(" desc_bw="+str(int(cvt(s.avg_desc_bw,0))))
-      f.write(" ns_bw="+str(int(cvt(s.avg_bw,0)))+"\n")
-
-Without PID control
--------------------
-
-Per relay scaled bandwidth
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Scaled bandwidth for each relay without PID control
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 From `README.spec.txt`_ (section 2.2)::
 
@@ -204,46 +316,20 @@ In `aggregate.py`_ code::
 
     n.new_bw = n.desc_bw*n.ratio
 
+So::
+
+    n.new_bw = (
+        min(bandwidth-avg, bandwidth-observed) or 1 \
+        * max(bwstrm_i / bwstrm, bwfilt_i / bwfilt_i)
+    )
+
 This is also expressed in pseudocode in the `bandwidth file spec`_, section B.4
 step 5.
 
-Calling ``bwnew_i`` to ``new_bw`` and ``descbw_i`` to ``use_bw``:
+.. _relay-scaled-bandwidth-pid:
 
-.. math::
-
-    descbw_i = min\left(bwobs_i, bwavg_i, bwburst_i, measuredconsensusbw_i \right)
-
-    bwnew_i =& descbw_i \times r_i \
-
-            &= min\left(bwobs_i, bwavg_i, bwburst_i, measuredconsensusbw_i \right) \times max(rf_i, rs_i) \
-
-            &= min\left(bwobs_i, bwavg_i, bwburst_i, measuredconsensusbw_i \right) \times max\left(\frac{bwfilt_i}{bwfilt}, \frac{bw_i}{bwstrm}\right) \
-
-            &= min\left(bwobs_i, bwavg_i, bwburst_i, measuredconsensusbw_i \right) \times max\left(\frac{bwfilt_i}{\mu(bwfilt_i)}, \frac{bw_i}{\mu(bw_i)}\right)
-
-
-With PID control
-----------------
-
-Per relay descriptors bandwidth
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Even though `README.spec.txt`_ talks about the consensus bandwidth, in
-`aggregate.py`_ code, the consensus bandwidth is never used, since
-``use_desc_bw`` is initialized to True and never changed::
-
-    self.use_desc_bw = True
-
-    [snip]
-
-    if cs_junk.bwauth_pid_control:
-      if cs_junk.use_desc_bw:
-        n.use_bw = n.desc_bw
-      else:
-        n.use_bw = n.ns_bw
-
-Per relay scaled bandwidth
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Scaled bandwidth for each relay with PID control
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 From `README.spec.txt`_ section 3.1::
 
@@ -292,38 +378,58 @@ greater::
 
     n.new_bw = n.use_bw + cs_junk.K_p*n.use_bw*n.pid_error
 
-Calling ``e_i`` to ``pid_error``, in the case that ``rs_i`` > ``rf_i``:
+So::
 
-.. math::
+  if (bwstrm_i / bwstrm) > (bwfilt_i / bwfilt):
+      pid_error = (bwstrm_i - bwstrm) / bwstrm = (bwstrm_i / bwstrm) - 1
+  else:
+      pid_error = (bwfilt_i - bwfilt_i) / bwfilt = (bwfilt_i / bwfilt) - 1
 
-    e_i = \frac{bw_i - bwstrm}{bwstrm} = \frac{bw_i}{bwstrm} - 1
+  new_bw = use_bw + use_bw * pid_error
 
-    bwn_i = descbw_i + descbw_i \times e_i = descbw_i \times (1 + e_i)
-          = descbw_i \times (1 + \frac{bw_i}{bwstrm} - 1)
-          = descbw_i \times \frac{bw_i}{bwstrm} = descbw_i \times rs_i
+Or::
 
-And in the case that ``rs_i`` < ``rf_i``:
+  if (bwstrm_i / bwstrm) > (bwfilt_i / bwfilt):
+      new_bw = use_bw + use_bw * ((bwstrm_i / bwstrm) - 1)
+      new_bw = use_bw + use_bw * (bwstrm_i / bwstrm) - use_bw
+      new_bw = use_bw * (bwstrm_i / bwstrm)
+  else:
+      new_bw = use_bw + use_bw * ((bwfilt_i / bwfilt) - 1)
+      new_bw = use_bw + use_bw * (bwfilt_i / bwfilt) - use_bw
+      new_bw = use_bw * (bwfilt_i / bwfilt)
 
-.. math::
+Or::
 
-    e_i = \frac{bwfilt_i - bwfilt}{bwfilt} = \frac{bwfilt_i}{bwfilt} - 1
+  new_bw = use_bw * max(bwstrm_i / bwstrm, bwfilt_i / bwfilt)
+  new_bw = (
+      min(bandwidth-avg, bandwidth-observed) or 1
+      * max(bwstrm_i / bwstrm, bwfilt_i / bwfilt)
+  )
 
-    bwn_i = descbw_i + descbw_i \times e_i = descbw_i \times (1 + e_i)
-          = descbw_i \times (1 + \frac{bwfilt_i}{bwfilt} - 1)
-          = descbw_i \times \frac{bwfilt_i}{bwfilt} = descbw_i \times rf_i
+.. note::
+    So, the new scaled bandwidth is the same for both cases with and without
+    PID controller!
 
-So, it is the same as the scaled bandwidth in the case without PID controller,
-ie.:
+Other pid KeyValues in the Bandwidth File
+-----------------------------------------
 
-.. math::
+.. note::
 
-    bwn_i = descbw_i \times max(rf_i, rs_i)
+  From the :ref:`overview` it seems that the only variable needed to
+  calculate the new scaled bandwidth is the ``pid_error``, and from
+  :ref:`relay-descriptor-bandwidth-pid`, it can be substituted
+  by the stream and filtered bandwidths.
 
-With and without PID control
-----------------------------
+This are the variables that can then be ignored::
 
-Per relay scaled bandwidth limit
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  pid_error_sum
+  pid_delta
+  prev_error
+
+Limit scaled bandwidth for each relay
+-------------------------------------
+
+It's calculated the same with and without PID control
 
 Once each relay bandwidth is scaled, it is limited to a maximum, that is
 calculated as the sum of all the relays in the current consensus scaled
@@ -347,40 +453,8 @@ From `aggregate.py`_ code::
       n.new_bw = int(tot_net_bw*NODE_CAP)
 
 
-.. math::
-
-   bwn_i =& min\left(bwnew_i,
-              \sum_{i=1}^{n}bwnew_i \times 0.05\right) \
-
-         &= min\left(
-              \left(min\left(bwobs_i, bwavg_i, bwburst_i, measuredconsensusbw_i \right) \times r_i\right),
-                \sum_{i=1}^{n}\left(min\left(bwobs_i, bwavg_i, bwburst_i, measuredconsensusbw_i \right) \times r_i\right)
-                \times 0.05\right)\
-
-         &= min\left(
-              \left(min\left(bwobs_i, bwavg_i, bwburst_i, measuredconsensusbw_i \right) \times max\left(rf_i, rs_i\right)\right),
-                \sum_{i=1}^{n}\left(min\left(bwobs_i, bwavg_i, bwburst_i, measuredconsensusbw_i \right) \times
-                  max\left(rf_i, rs_i\right)\right) \times 0.05\right)\
-
-         &= min\left(
-              \left(min\left(bwobs_i, bwavg_i, bwburst_i, measuredconsensusbw_i \right) \times max\left(\frac{bwfilt_i}{bwfilt},
-                  \frac{bw_i}{bwstrm}\right)\right),
-                \sum_{i=1}^{n}\left(min\left(bwobs_i, bwavg_i, bwburst_i, measuredconsensusbw_i \right) \times
-                  max\left(\frac{bwfilt_i}{bwfilt},
-                    \frac{bw_i}{bwstrm}\right)\right) \times 0.05\right)
-
-.. math::
-
-      bwn_i = min\left(
-              \left(min\left(bwobs_i, bwavg_i, bwburst_i, measuredconsensusbw_i \right) \times max\left(\frac{bwfilt_i}{bwfilt},
-                  \frac{bw_i}{bwstrm}\right)\right),
-                \sum_{i=1}^{n}\left(min\left(bwobs_i, bwavg_i, bwburst_i, measuredconsensusbw_i \right) \times
-                  max\left(\frac{bwfilt_i}{bwfilt},
-                    \frac{bw_i}{bwstrm}\right)\right) \times 0.05\right)
-
-
-Per relay scaled bandwidth rounding
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Round the scaled bandwidth for each relay
+-----------------------------------------
 
 Finally, the new scaled bandwidth is expressed in kilobytes and rounded a number
 of digits.

@@ -1,0 +1,168 @@
+@startuml
+title "Torflow measurements scaling."
+
+' Own previous bwfile
+:prev_votes = VoteSet();
+note right
+initialize measurements from previous Bandwidth File
+end note
+' while (for n in nodes.itervalues()?)
+'     if (n.idhex in prev_votes.vote_map and n.idhex in prev_consensus) then (yes)
+'     endif
+' endwhile
+:tot_net_bw = 0;
+:;
+note right
+    for every measurement
+end note
+while (for n in nodes.itervalues()?)
+    ' Anything not set is initialized to 0 or None
+    :n.fbw_ratio = n.filt_bw/true_filt_avg[n.node_class()];
+    :n.sbw_ratio = n.strm_bw/true_strm_avg[n.node_class()];
+    :n.use_bw = n.desc_bw;
+    :n.pid_error = ...;
+    note right
+        if n.sbw_ratio > n.fbw_ratio:
+        #assert cs_junk.use_best_ratio == True
+        n.pid_error = (n.strm_bw - true_strm_avg[n.node_class()])
+                            / true_strm_avg[n.node_class()]
+        else:
+        n.pid_error = (n.filt_bw - true_filt_avg[n.node_class()])
+                            / true_filt_avg[n.node_class()]
+        0 <= n.pid_error <= 500.0
+    end note
+    if (n.idhex in prev_votes.vote_map?) then (yes)
+        :;
+        note right
+        if n.measured_at >
+        prev_votes.vote_map[n.idhex].measured_at;
+        end note
+        if (measurement newer?) then (yes)
+            :;
+            note right
+            if n.idhex in prev_consensus
+                and ("Guard" in prev_consensus[n.idhex].flags
+                and "Exit" not in prev_consensus[n.idhex].flags)
+            end note
+            if (in prev_consensus, \nis guard \nbut not exit?) then (yes)
+                :;
+                note right
+                if n.idhex not in prev_votes.vote_map
+                    or n.measured_at - prev_votes.vote_map[n.idhex].measured_at
+                        > cs_junk.guard_sample_rate:
+                        # cs_jung.guard_sample_rate = 2*7*24*60*60 # 2wks
+                end note
+                if (diff bigger than 2 weeks) then (yes)
+                    :;
+                    note right
+                    # full feedback
+                    n.new_bw = n.get_pid_bw(prev_votes.vote_map[n.idhex],
+                                    cs_junk.K_p,
+                                    cs_junk.K_i,
+                                    cs_junk.K_d,
+                                    cs_junk.K_i_decay)
+                        = n.get_pid_bw(prev_votes.vote_map[n.idhex],
+                                       1.0, 0, 0, 0)
+                    end note
+                    :self.prev_error = prev_vote.pid_error
+                    self.pid_bw = self.use_bw
+                        + self.use_bw * self.pid_error
+                        # + self.desc_bw * self.pid_error
+                    self.pid_error_sum = 0 + self.pid_error
+                    n.new_bw = self.pid_bw;
+                else (no)
+                    :;
+                    note right
+                    \# Use new measurement but not feedback
+                    n.copy_vote(prev_vote.vote_map[n.idhex]));
+                    n.new_bw = n.get_pid_bw(prev_votes.vote_map[n.idhex],
+                                cs_junk.K_p,
+                                cs_junk.K_i,
+                                cs_junk.K_d,
+                                0.0, False)
+                    end note
+                    :\# self.new_bw = vote.bw * 1000
+                    self.pid_bw = vote.pid_bw
+                    self.pid_error_sum = vote.pid_error_sum
+                    self.pid_delta = vote.pid_delta
+
+                    n.new_bw = self.use_bw + self.use_bw * self_pid_error
+
+                    n.measured_at = prev_vote.measured_at
+                    n.pid_error = prev_vote.pid_error;
+                endif
+            ' No (G and noE)
+            else (no)
+                if (in prev_consensus, \nis guard and exit) then (yes)
+                    :;
+                    note right
+                    n.new_bw = n.get_pid_bw(prev_votes.vote_map[n.idhex],
+                            cs_junk.K_p*weight,
+                            cs_junk.K_i*weight,
+                            cs_junk.K_d*weight,
+                            cs_junk.K_i_decay)
+                    n.new_bw = n.get_pid_bw(prev_votes.vote_map[n.idhex],
+                                1.0*1.0, 0, 0, 0)
+                    \# so, same code as for when diff is bigger than 2 weeks
+                    end note
+                    :self.prev_error = prev_vote.pid_error
+                    self.pid_bw = self.use_bw
+                        + self.use_bw * self.pid_error
+                        # + self.desc_bw * self.pid_error
+                    self.pid_error_sum = 0 + self.pid_error
+                    n.new_bw = self.pid_bw;
+                else (no)
+                    :;
+                    note right
+                    \#again, same code
+                    end note
+                    :self.prev_error = prev_vote.pid_error
+                    self.pid_bw = self.use_bw
+                        + self.use_bw * self.pid_error
+                        # + self.desc_bw * self.pid_error
+                    self.pid_error_sum = 0 + self.pid_error
+                    n.new_bw = self.pid_bw;
+                endif
+            endif
+        ' No new measurement (in prev bwfile, but havent check consensus), do not vote this round
+        else (no)
+            :;
+            note right
+            \# Reset values. Don't vote/sample this measurement round.
+            \# is in the previous bwfile, but haven't check the consensus
+            n.revert_to_vote(prev_votes.vote_map[n.idhex])
+            \# which calls again self.copy_vote(vote)
+            end note
+            :self.new_bw = prev_vote.bw*1000
+            self.pid_bw = prev_vote.pid_bw
+            self.pid_error_sum = prev_vote.pid_error_sum
+            self.pid_delta = prev_vote.pid_delta
+
+            self.pid_error = vote.pid_error
+            self.measured_at = vote.measured_at;
+
+        endif
+    ' Not in previous bwfile, usually only with authoritites, possibly not in conensus?
+    else (no)
+        ' :n.new_bw = n.use_bw + cs_junk.K_p*n.use_bw*n.pid_error = \n
+        :n.new_bw = n.use_bw + n.use_bw * n.pid_error
+        n.pid_error_sum = n.pid_error
+        n.pid_bw = n.new_bw;
+    endif
+    ' :n.change = n.new_bw - n.desc_bw;
+
+    ' For capping later
+    if (n.idhex in prev_consensus) then (yes)
+        if (prev_consensus[n.idhex].bandwidth != None) then (yes)
+            :prev_consensus[n.idhex].measured = True;
+            :tot_net_bw += n.new_bw;
+        endif
+    endif
+endwhile
+while (for n in nodes.itervalues()?)
+    :cap...;
+endwhile
+stop
+
+footer last updated 2021-01-08
+@enduml

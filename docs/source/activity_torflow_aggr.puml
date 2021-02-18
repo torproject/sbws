@@ -1,0 +1,64 @@
+@startuml
+title "Activity diagram Torflow measurements aggregation."
+
+' Constants in consensus
+' :Wbd=0 Wbe=0 Wbg=4148 Wbm=10000 Wdb=10000 Web=10000 Wed=10000 Wee=10000 Weg=10000 Wem=10000 Wgb=10000 Wgd=0 Wgg=5852 Wgm=5852 Wmb=10000 Wmd=0 Wme=0 Wmg=4148 Wmm=10000;
+' Constants in code
+' ;IGNORE_GUARD = 0 GUARD_SAMPLE_RATE = 2*7*24*60*60 # 2wks MAX_AGE = 2*GUARD_SAMPLE_RATE;
+' ;K_p = 1.0 T_i =0 T_i_decay = 0 T_d = 0;
+' Initialization ConsensusJunk
+' :self.bwauth_pid_control = True
+' self.group_by_class = False
+' self.use_pid_tgt = False
+' self.use_circ_fails = False
+' self.use_best_ratio = True
+' self.use_desc_bw = True
+' self.use_mercy = False
+' self.guard_sample_rate = GUARD_SAMPLE_RATE
+' self.pid_max = 500.0
+' self.K_p = K_p = 1.0
+' self.T_i = T_i = 0
+' self.T_d = T_d = 0
+' self.T_i_decay = T_i_decay = 0
+' self.K_i = 0 = self.K_i_decay = Kd;
+
+partition "Initialize relays from consensus (prev_consensus)" {
+    :ns_list = c.get_network_status();
+    'some ordering i don't understand yet
+    :ns_list.sort(lambda x, y: int(y.bandwidth/10000.0 - x.bandwidth/10000.0));
+
+    :prev_consensus = {};
+    while (for i in range(0, len(ns_list))?)
+        :n = ns_list[i];
+        :n.list_rank = i;
+        :n.measured = False;
+        :prev_consensus["$"+n.idhex] = n;
+    endwhile
+    ' If any relay doesn't have bandwidth, exit
+}
+
+partition "Aggregate raw measurements (nodes)"
+    ' Read measurements
+    :nodes = {};
+    while (for line in bw_file?)
+        if (line.idhex not in nodes?) then (yes)
+            :n = Node();
+            :nodes[line.idhex] = n;
+            :n.add_line(line);
+        endif
+    endwhile
+    ' If not measurements, exit
+}
+
+partition "Assign consensus flags"
+    ' Assign flags (G, M, E) from consensus to measurements
+    while (for idhex in nodes.iterkeys()?)
+        if (idhex in prev_consensus?) then (yes)
+            :nodes[idhex].flags = prev_consensus[idhex].flags;
+        endif
+    endwhile
+}
+
+:scaling;
+
+@enduml

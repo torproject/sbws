@@ -1,10 +1,12 @@
 """Unit tests for heartbeat"""
 import logging
+import pytest
 
 from sbws.lib import heartbeat
 from sbws.util.state import State
 
 
+@pytest.mark.skip(reason="increment_recent_measurement_attempt() disabled")
 def test_total_measured_percent(conf, caplog):
     state = State(conf["paths"]["state_fname"])
     state["recent_priority_list"] = [1, 2, 3]

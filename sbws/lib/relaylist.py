@@ -14,7 +14,7 @@ from ..globals import (
     MAX_RECENT_PRIORITY_LIST_COUNT,
     MEASUREMENTS_PERIOD
 )
-from ..util import timestamp, timestamps
+from ..util import timestamps
 
 log = logging.getLogger(__name__)
 
@@ -24,6 +24,7 @@ def valid_after_from_network_statuses(network_statuses):
     attribute of a ``stem.descriptor.RouterStatusEntryV3``.
 
     :param list network_statuses:
+
     returns datetime:
     """
     for ns in network_statuses:
@@ -205,6 +206,11 @@ class Relay:
                 # and ips and that port. See #40006.
                 # Using `strip_private` to ignore reject rules to private
                 # networks.
+                # We could increase the chances that the exit can exit
+                # checking IPv6 with:
+                # ``or self.exit_policy_v6.can_exit_to(port=443, strict=True)``
+                # But if it can still not exit to our Web server, then we
+                # should retry to measure it as entry.
                 return (
                     self.exit_policy.strip_private()
                     .can_exit_to(port=port, strict=True)
@@ -223,7 +229,7 @@ class Relay:
         Increment The number of times that a relay has been queued
         to be measured.
 
-        It is call from :funf:`~sbws.core.scaner.main_loop`.
+        It is call from :func:`~sbws.core.scaner.main_loop`.
         """
         self.relay_recent_measurement_attempt.update()
 
@@ -244,12 +250,6 @@ class Relay:
     @property
     def relay_recent_priority_list_count(self):
         return len(self.relay_recent_priority_list)
-
-    def is_old(self):
-        """Whether the last consensus seen for this relay is older than the
-        measurement period.
-        """
-        return timestamp.is_old(self.last_consensus_timestamp)
 
     # XXX: tech-debt: replace `_desc` attr by a a `dequee` of the last
     # descriptors seen for this relay and the timestamp.
@@ -412,11 +412,10 @@ class RelayList:
                 # already added to the new list.
                 new_relays_dict.pop(fp)
 
-            # If the relay is not in the current consensus but is not "old"
-            # yet, add it to the new list of relays too, though its timestamp,
-            # router status and descriptor can't be updated.
-            elif not r.is_old():
-                new_relays.append(r)
+            # In #30727, the relay that is not in the current conensus but is
+            # not "old", was added to the new list of relays too.
+            # In #40037 we think it should not be measured, as it might cause
+            # many circuit errors. It's already added to the generator.
             # Otherwise, don't add it to the new list of relays.
             # For debugging, count the old relays that will be discarded.
             else:
@@ -463,7 +462,7 @@ class RelayList:
         Increment the number of times that any relay has been queued to be
         measured.
 
-        It is call from :funf:`~sbws.core.scaner.main_loop`.
+        It is call from :func:`~sbws.core.scaner.main_loop`.
 
         It is read and stored in a ``state`` file.
         """
@@ -494,7 +493,10 @@ class RelayList:
         pos = int(len(exit_candidates)/4)
         self._exit_min_bw = exit_candidates[pos].consensus_bandwidth
         pos = int(len(non_exit_candidates)/4)
-        self._non_exit_min_bw = non_exit_candidates[pos].consensus_bandwidth
+        # when there are not non-exits in a test network
+        if pos:
+            self._non_exit_min_bw = \
+                non_exit_candidates[pos].consensus_bandwidth
 
     def exit_min_bw(self):
         return self._exit_min_bw

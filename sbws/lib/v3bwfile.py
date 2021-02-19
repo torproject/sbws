@@ -125,13 +125,9 @@ HEADER_KEYS_V1_4 = [
     'time_to_report_half_network',
 ] + HEADER_RECENT_MEASUREMENTS_EXCLUDED_KEYS
 
-# KeyValues added in the Bandwidth File v1.5.0
-# XXX: Change SPEC_VERSION when all the v1.5.0 keys are added, before a new
-# sbws release.
 # Tor version will be obtained from the state file, so it won't be pass as an
 # argument, but will be self-initialized.
-HEADER_KEYS_V1_5_TO_INIT = ['tor_version']
-HEADER_KEYS_V1_5 = HEADER_KEYS_V1_5_TO_INIT
+HEADER_KEYS_V1_4_TO_INIT = ['tor_version']
 
 # KeyValues that are initialized from arguments, not self-initialized.
 HEADER_INIT_KEYS = (
@@ -139,7 +135,7 @@ HEADER_INIT_KEYS = (
     + HEADER_KEYS_V1_3
     + HEADER_KEYS_V1_2
     + HEADER_KEYS_V1_4
-    + HEADER_KEYS_V1_5_TO_INIT
+    + HEADER_KEYS_V1_4_TO_INIT
 )
 
 HEADER_INT_KEYS = HEADER_KEYS_V1_2 + HEADER_KEYS_V1_4
@@ -150,7 +146,7 @@ HEADER_UNORDERED_KEYS = (
     + HEADER_KEYS_V1_3
     + HEADER_KEYS_V1_2
     + HEADER_KEYS_V1_4
-    + HEADER_KEYS_V1_5
+    + HEADER_KEYS_V1_4_TO_INIT
 )
 # List of all the KeyValues currently being used to generate the file
 HEADER_ALL_KEYS = HEADER_KEYS_V1_1_ORDERED + HEADER_UNORDERED_KEYS
@@ -629,7 +625,7 @@ class V3BWLine(object):
     :param dict kwargs: extra headers.
 
     .. note:: tech-debt: move node_id and bw to kwargs and just ensure that
-       the required values are in **kwargs
+       the required values are in ``**kwargs``
     """
     def __init__(self, node_id, bw, **kwargs):
         assert isinstance(node_id, str)

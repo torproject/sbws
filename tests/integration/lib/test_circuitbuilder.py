@@ -1,19 +1,23 @@
 """Integration tests for circutibuilder.py"""
+import random
 
 
-def test_build_circuit(cb):
+def test_build_circuit(cb, rl):
     # Path is empty
     path = []
     circuit_id, _ = cb.build_circuit(path)
     assert not circuit_id
     # Valid path, not valid exit
-    path = ['117A456C911114076BEB4E757AC48B16CC0CCC5F',
-            '270A861ABED22EC2B625198BCCD7B2B9DBFFC93A']
-    circuit_id, _ = cb.build_circuit(path)
-    assert not circuit_id
+    exits = rl.exits_not_bad_allowing_port(port=443)
+    # See https://gitlab.torproject.org/tpo/core/chutney/-/issues/40013:
+    # Work around to get supposed non-exits because chutney is putting Exit
+    # flag to all relays
+    non_exits = list(set(rl.exits).difference(set(exits)))
+    entry = random.choice(non_exits)
+    # Because in chutney all relays are exits, we can't test using a non-exit
+    # as 2nd hop.
     # Valid path and relays
-    # path with relay1mbyteMAB and exit1
-    path = ['117A456C911114076BEB4E757AC48B16CC0CCC5F',
-            '270A861ABED22EC2B625198BCCD7B2B9DBFFC93C']
+    exit_relay = random.choice(exits)
+    path = [entry.fingerprint, exit_relay.fingerprint]
     circuit_id, _ = cb.build_circuit(path)
     assert circuit_id

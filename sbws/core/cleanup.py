@@ -99,28 +99,6 @@ def _check_validity_periods_v3bw(compress_after_days, delete_after_days):
               "after a bigger number of days.")
 
 
-def _check_validity_periods_results(
-        data_period, compress_after_days, delete_after_days):
-    if compress_after_days - 2 < data_period:
-        fail_hard(
-            'For safetly, cleanup/data_files_compress_after_days (%d) must be '
-            'at least 2 days larger than general/data_period (%d)',
-            compress_after_days, data_period)
-    if delete_after_days < compress_after_days:
-        fail_hard(
-            'cleanup/data_files_delete_after_days (%d) must be the same or '
-            'larger than cleanup/data_files_compress_after_days (%d)',
-            delete_after_days, compress_after_days)
-    if compress_after_days / 2 < data_period:
-        log.warning(
-            'cleanup/data_files_compress_after_days (%d) is less than twice '
-            'general/data_period (%d). For ease of parsing older results '
-            'if necessary, it is recommended to make '
-            'data_files_compress_after_days at least twice the data_period.',
-            compress_after_days, data_period)
-    return True
-
-
 def _clean_v3bw_files(args, conf):
     v3bw_dname = conf.getpath('paths', 'v3bw_dname')
     if not os.path.isdir(v3bw_dname):
@@ -147,13 +125,10 @@ def _clean_result_files(args, conf):
     datadir = conf.getpath('paths', 'datadir')
     if not os.path.isdir(datadir):
         fail_hard('%s does not exist', datadir)
-    data_period = conf.getint('general', 'data_period')
     compress_after_days = conf.getint(
         'cleanup', 'data_files_compress_after_days')
     delete_after_days = conf.getint(
         'cleanup', 'data_files_delete_after_days')
-    _check_validity_periods_results(
-        data_period, compress_after_days, delete_after_days)
 
     # first delete so that the files to be deleted are not compressed first
     files_to_delete = _get_files_mtime_older_than(

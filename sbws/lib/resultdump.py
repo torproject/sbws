@@ -558,7 +558,7 @@ class ResultErrorSecondRelay(ResultError):
 
     A second suitable relay is a relay that:
     - Has at least equal bandwidth as the relay to measure.
-    - If the relay to measure is not an exit,
+    - If the relay to measure is not an exit, \
       the second relay is an exit without `bad` flag and can exit to port 443.
     - If the relay to measure is an exit, the second relay is not an exit.
 
@@ -792,6 +792,11 @@ class ResultDump:
                   "destination {}: {}".format(
                     result.fingerprint, result.nickname, result.circ,
                     result.dest_url, result.msg)
+        # The result doesn't store the exit policies, so it can't be logged
+        # whether it was an exit.
+        if result.circ:
+            as_exit = result.circ[1] == result.fingerprint
+            msg += ". As exit." if as_exit else ". As entry."
         # When the error is that there are not more functional destinations.
         if result.type == "error-destination":
             log.info("Shutting down because there are not functional "

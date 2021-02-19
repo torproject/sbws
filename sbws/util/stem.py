@@ -6,7 +6,6 @@ from stem import (SocketError, InvalidRequest, UnsatisfiableRequest,
                   ProtocolError, SocketClosed)
 from stem.connection import IncorrectSocketType
 import stem.process
-from configparser import ConfigParser
 from threading import RLock
 import copy
 import logging
@@ -60,34 +59,17 @@ def remove_event_listener(controller, func):
         log.exception("Exception trying to remove event %s", e)
 
 
-def init_controller(port=None, path=None, set_custom_stream_settings=True):
-    # NOTE: we do not currently support a control port even though the rest of
-    # this function will pretend like port could be set.
-    assert port is None
-    # make sure only one is set
-    assert port is not None or path is not None
-    assert not (port is not None and path is not None)
-    # and for the one that is set, make sure it is likely valid
-    assert port is None or isinstance(port, int)
-    assert path is None or isinstance(path, str)
+def init_controller(conf):
     c = None
-    if port:
-        c = _init_controller_port(port)
-        if not c:
-            return None, 'Unable to reach tor on control port'
-    else:
-        c = _init_controller_socket(path)
-        if not c:
-            return None, 'Unable to reach tor on control socket'
-    assert c is not None
-    if set_custom_stream_settings:
-        # These options are also set in launch_tor.
-        # In a future refactor they could be set in the case they are not
-        # already in the running instance. This way the controller_port
-        # could also be used.
-        set_torrc_options_can_fail(c)
-        set_torrc_runtime_options(c)
-    return c, ''
+    # If the external control port is set, use it to initialize the controller.
+    control_port = conf['tor']['external_control_port']
+    if control_port:
+        control_port = int(control_port)
+        # If it can not connect, the program will exit here
+        c = _init_controller_port(control_port)
+    # There is no configuration for external control socket, therefore do not
+    # attempt to connect to the control socket.
+    return c
 
 
 def is_bootstrapped(c):
@@ -110,8 +92,9 @@ def _init_controller_port(port):
         c = Controller.from_port(port=port)
         c.authenticate()
     except (IncorrectSocketType, SocketError):
-        return None
+        fail_hard("Unable to connect to control port %s.", port)
     # TODO: Allow for auth via more than just CookieAuthentication
+    log.info("Connected to tor via port %s", port)
     return c
 
 
@@ -127,6 +110,7 @@ def _init_controller_socket(socket):
         log.exception("Error initting controller socket: %s", e)
         return None
     # TODO: Allow for auth via more than just CookieAuthentication
+    log.info("Connected to tor via socket %s", socket)
     return c
 
 
@@ -134,7 +118,8 @@ def parse_user_torrc_config(torrc, torrc_text):
     """Parse the user configuration torrc text call `extra_lines`
     to a dictionary suitable to use with stem and return a new torrc
     dictionary that merges that dictionary with the existing torrc.
-    Example:
+    Example::
+
         [tor]
         extra_lines =
             Log debug file /tmp/tor-debug.log
@@ -176,6 +161,16 @@ def parse_user_torrc_config(torrc, torrc_text):
     return torrc_dict
 
 
+def set_torrc_starting_point(controller):
+    """Set the torrc starting point options."""
+    for k, v in TORRC_STARTING_POINT.items():
+        try:
+            controller.set_conf(k, v)
+        except (ControllerError, InvalidRequest, InvalidArguments) as e:
+            log.exception("Error setting option %s, %s: %s", k, v, e)
+            exit(1)
+
+
 def set_torrc_runtime_options(controller):
     """Set torrc options at runtime."""
     try:
@@ -197,13 +192,15 @@ def set_torrc_options_can_fail(controller):
     for k, v in TORRC_OPTIONS_CAN_FAIL.items():
         try:
             controller.set_conf(k, v)
-        except InvalidArguments as error:
+        except (InvalidArguments, InvalidRequest) as error:
             log.debug('Ignoring option not supported by this Tor version. %s',
                       error)
+        except ControllerError as e:
+            log.exception(e)
+            exit(1)
 
 
 def launch_tor(conf):
-    assert isinstance(conf, ConfigParser)
     os.makedirs(conf.getpath('tor', 'datadir'), mode=0o700, exist_ok=True)
     os.makedirs(conf.getpath('tor', 'log'), exist_ok=True)
     os.makedirs(conf.getpath('tor', 'run_dpath'), mode=0o700, exist_ok=True)
@@ -219,29 +216,39 @@ def launch_tor(conf):
             'NOTICE file {}'.format(os.path.join(conf.getpath('tor', 'log'),
                                                  'notice.log')),
         ],
-        # Things needed to make circuits fail a little faster. We get the
-        # circuit_timeout as a string instead of an int on purpose: stem only
-        # accepts strings.
-        'LearnCircuitBuildTimeout': '0',
         'CircuitBuildTimeout': conf['general']['circuit_timeout'],
     })
 
     torrc = parse_user_torrc_config(torrc, conf['tor']['extra_lines'])
     # Finally launch Tor
     try:
+        # If there is already a tor process running with the same control
+        # socket, this will exit here.
         stem.process.launch_tor_with_config(
             torrc, init_msg_handler=log.debug, take_ownership=True)
     except Exception as e:
         fail_hard('Error trying to launch tor: %s', e)
+    log.info("Started own tor.")
     # And return a controller to it
     cont = _init_controller_socket(conf.getpath('tor', 'control_socket'))
+    # In the case it was not possible to connect to own tor socket.
+    if not cont:
+        fail_hard('Could not connect to own tor control socket.')
+    return cont
+
+
+def launch_or_connect_to_tor(conf):
+    cont = init_controller(conf)
+    if not cont:
+        cont = launch_tor(conf)
+    else:
+        if not is_torrc_starting_point_set(cont):
+            set_torrc_starting_point(cont)
     # Set options that can fail at runtime
     set_torrc_options_can_fail(cont)
     # Set runtime options
     set_torrc_runtime_options(cont)
-
-    log.info('Started and connected to Tor %s via %s', cont.get_version(),
-             conf.getpath('tor', 'control_socket'))
+    log.info('Started or connected to Tor %s.', cont.get_version())
     return cont
 
 
@@ -296,3 +303,25 @@ def circuit_str(controller, circ_id):
     return '[' +\
         ' -> '.join(['{} ({})'.format(n, fp[0:8]) for fp, n in circ.path]) +\
         ']'
+
+
+def is_torrc_starting_point_set(tor_controller):
+    """Verify that the tor controller has the correct configuration.
+
+    When connecting to a tor controller that has not been launched by sbws,
+    it should have been configured to work with sbws.
+
+    """
+    bad_options = False
+    torrc = TORRC_STARTING_POINT
+    for k, v in torrc.items():
+        value_set = tor_controller.get_conf(k)
+        if v != value_set:
+            log.exception(
+                "Uncorrectly configured %s, should be %s, is %s",
+                k, v, value_set
+            )
+            bad_options = True
+    if not bad_options:
+        log.info("Tor is correctly configured to work with sbws.")
+    return bad_options

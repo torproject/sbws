@@ -15,16 +15,13 @@ log = logging.getLogger(__name__)
 
 RESULT_VERSION = 4
 WIRE_VERSION = 1
-SPEC_VERSION = '1.4.0'
+SPEC_VERSION = '1.5.0'
 
 # This is a dictionary of torrc options we always want to set when launching
 # Tor and that do not depend on any runtime configuration
 # Options that are known at runtime (from configuration file) are added
 # in utils/stem.py launch_tor
 TORRC_STARTING_POINT = {
-    # We will find out via the ControlPort and not setting something static
-    # means a lower chance of conflict
-    'SocksPort': 'auto',
     # Easier than password authentication
     'CookieAuthentication': '1',
     # To avoid path bias warnings
@@ -43,7 +40,11 @@ TORRC_STARTING_POINT = {
     'FetchDirInfoEarly': '1',
     'FetchDirInfoExtraEarly': '1',
     # To make Tor keep fetching descriptors, even when idle.
-    'FetchUselessDescriptors': '1'
+    'FetchUselessDescriptors': '1',
+    # Things needed to make circuits fail a little faster. We get the
+    # circuit_timeout as a string instead of an int on purpose: stem only
+    # accepts strings.
+    'LearnCircuitBuildTimeout': '0',
 }
 # Options that need to be set at runtime.
 TORRC_RUNTIME_OPTIONS = {
@@ -101,15 +102,21 @@ MAX_BW_DIFF_PERC = 50
 # Tor already accept lines of any size, but leaving the limit anyway.
 BW_LINE_SIZE = 1022
 
-# RelayList, ResultDump, v3bwfile
+# RelayList, ResultDump
 # For how many seconds in the past the relays and measurements data is keep/
 # considered valid.
-# This is currently set by default in config.default.ini as ``date_period``,
-# and used in ResultDump and v3bwfile.
+# This is currently set by default in config.default.ini as ``data_period``,
+# and used in ResultDump.
 # In a future refactor, constants in config.default.ini should be moved here,
 # or calculated in settings, so that there's no need to pass the configuration
 # to all the functions.
 MEASUREMENTS_PERIOD = 5 * 24 * 60 * 60
+
+# #40017: To make sbws behave similar to Torflow, the number of raw past
+# measurements used when generating the Bandwidth File has to be 28, not 5.
+# Note that this is different from the number of raw past measurements used
+# when measuring, which are used for the monitoring values and storing json.
+GENERATE_PERIOD = 28 * 24 * 60 * 60
 
 # Metadata to send in every requests, so that data servers can know which
 # scanners are using them.

@@ -18,6 +18,8 @@ def assert_within(value, target, radius):
         '{} of {}'.format(value, radius, target)
 
 
+@pytest.mark.skip(reason=("Disabled because chutney is not creating a network"
+                          "with relay1mbyteMAB."))
 def test_measure_relay_with_maxadvertisedbandwidth(
         persistent_launch_tor, sbwshome_dir, args, conf,
         dests, cb, rl, caplog):

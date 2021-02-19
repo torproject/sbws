@@ -318,6 +318,17 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
 
     # Build the circuit
     circ_id, reason = cb.build_circuit(circ_fps)
+    if not circ_id and relay.fingerprint == circ_fps[0]:
+        # We detected that some exits fail to build circuits as 1st hop.
+        # If that's the case, try again using them as 2nd hop.
+        # We could reuse the helper, but it does not need to be an exit now,
+        # so choose other again.
+        helper = _pick_ideal_second_hop(
+            relay, dest, rl, cb.controller, is_exit=False)
+        if helper:
+            circ_fps = [helper.fingerprint, relay.fingerprint]
+            nicknames = [helper.nickname, relay.nickname]
+        circ_id, reason = cb.build_circuit(circ_fps)
     if not circ_id:
         log.debug('Could not build circuit with path %s (%s): %s ',
                   circ_fps, nicknames, reason)
@@ -523,7 +534,8 @@ def main_loop(args, conf, controller, relay_list, circuit_builder, result_dump,
             # Don't start measuring a relay if sbws is stopping.
             if settings.end_event.is_set():
                 break
-            relay_list.increment_recent_measurement_attempt()
+            # 40023, disable to decrease state.dat json lines
+            # relay_list.increment_recent_measurement_attempt()
             target.increment_relay_recent_measurement_attempt()
             num_relays += 1
             # callback and callback_err must be non-blocking
@@ -667,22 +679,8 @@ def run_speedtest(args, conf):
 
     """
     global rd, pool, controller
-    controller, _ = stem_utils.init_controller(
-        path=conf.getpath('tor', 'control_socket'))
-    if not controller:
-        controller = stem_utils.launch_tor(conf)
-    else:
-        log.warning(
-            'Is sbws already running? '
-            'We found an existing Tor process at %s. We are not going to '
-            'launch Tor, nor are we going to try to configure it to behave '
-            'like we expect. This might work okay, but it also might not. '
-            'If you experience problems, you should try letting sbws launch '
-            'Tor for itself. The ability to use an already running Tor only '
-            'exists for sbws developers. It is expected to be broken and may '
-            'even lead to messed up results.',
-            conf.getpath('tor', 'control_socket'))
-        time.sleep(15)
+
+    controller = stem_utils.launch_or_connect_to_tor(conf)
 
     # When there will be a refactor where conf is global, this can be removed
     # from here.

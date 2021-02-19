@@ -7,7 +7,7 @@ from sbws.lib.circuitbuilder import GapsCircuitBuilder as CB
 from sbws.lib.destination import DestinationList
 from sbws.lib.relaylist import RelayList
 from sbws.util.config import _get_default_config
-from sbws.util.stem import launch_tor
+from sbws.util.stem import launch_or_connect_to_tor
 
 
 class _PseudoArguments(argparse.Namespace):
@@ -77,21 +77,13 @@ def conf(sbwshome_dir):
     # If the url would start with https but the request is not using TLS,
     # the request would hang.
     conf['destinations.foo']['url'] = 'http://127.0.0.1:28888/sbws.bin'
-    conf['tor']['extra_lines'] = """  # noqa: E501
-DirAuthority auth1 orport=2002 no-v2 v3ident=3668D8876241ADD04B53CAB08E7442BDE6EC9A06 127.10.0.1:2003 AA45C13025C037F056E734169891878ED0880231
-DirAuthority auth2 orport=2002 no-v2 v3ident=100036EB705CDCFB1746B450C23B861F554A3630 127.10.0.2:2003 E7B3C9A0040D628DAC88B0251AE6334D28E8F531
-DirAuthority auth3 orport=2002 no-v2 v3ident=4EC8AA0B0F120205EEE32C9918F1D99214ADF518 127.10.0.3:2003 35E3B8BB71C81355649AEC5862ECB7ED7EFDBC5C
-TestingTorNetwork 1
-NumCPUs 1
-LogTimeGranularity 1
-SafeLogging 0
-"""
+    conf['tor']['external_control_port'] = '8015'
     return conf
 
 
 @pytest.fixture(scope='session')
 def persistent_launch_tor(conf):
-    cont = launch_tor(conf)
+    cont = launch_or_connect_to_tor(conf)
     return cont
 
 

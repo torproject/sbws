@@ -209,10 +209,22 @@ def _pick_ideal_second_hop(relay, dest, rl, cont, is_exit):
     destination **dest**, pick a second relay that is or is not an exit
     according to **is_exit**.
     '''
-    candidates = rl.exits_not_bad_allowing_port(dest.port) if is_exit \
-        else rl.non_exits
+    # 40041: Instead of using exits that can exit to all IPs, to ensure that
+    # they can make requests to the Web servers, try with the exits that
+    # allow some IPs, since there're more.
+    # In the case that a concrete exit can't exit to the Web server, it is not
+    # a problem since the relay will be measured in the next loop with other
+    # random exit.
+    candidates = rl.exits_not_bad_allowing_port(dest.port) \
+        if is_exit else rl.non_exits
     if not len(candidates):
         return None
+    # In the case the helper is an exit, the entry could be an exit too
+    # (#40041), so ensure the helper is not the same as the entry, likely to
+    # happen in a test network.
+    if is_exit:
+        candidates = [c for c in candidates
+                      if c.fingerprint != relay.fingerprint]
     min_relay_bw = rl.exit_min_bw() if is_exit else rl.non_exit_min_bw()
     log.debug('Picking a 2nd hop to measure %s from %d choices. is_exit=%s',
               relay.nickname, len(candidates), is_exit)
@@ -242,6 +254,45 @@ def _pick_ideal_second_hop(relay, dest, rl, cont, is_exit):
         'candidate we have.', relay.nickname, relay.consensus_bandwidth,
         chosen.nickname, chosen.consensus_bandwidth)
     return chosen
+
+
+def error_no_helper(relay, dest, our_nick=""):
+    reason = 'Unable to select a second relay'
+    log.debug(reason + ' to help measure %s (%s)',
+              relay.fingerprint, relay.nickname)
+    return [
+        ResultErrorSecondRelay(relay, [], dest.url, our_nick,
+                               msg=reason),
+        ]
+
+
+def create_path_relay(relay, dest, rl, cb, relay_as_entry=True):
+    # the helper `is_exit` arg (should be better called `helper_as_exit`),
+    # is True when the relay is the entry (helper has to be exit)
+    # and False when the relay is not the entry, ie. is the exit (helper does
+    # not have to be an exit)
+    helper = _pick_ideal_second_hop(
+            relay, dest, rl, cb.controller, is_exit=relay_as_entry)
+    if not helper:
+        return error_no_helper(relay, dest)
+    if relay_as_entry:
+        circ_fps = [relay.fingerprint, helper.fingerprint]
+        nicknames = [relay.nickname, helper.nickname]
+        exit_policy = helper.exit_policy
+    else:
+        circ_fps = [helper.fingerprint, relay.fingerprint]
+        nicknames = [helper.nickname, relay.nickname]
+        exit_policy = relay.exit_policy
+    return circ_fps, nicknames, exit_policy
+
+
+def error_no_circuit(circ_fps, nicknames, reason, relay, dest, our_nick):
+    log.debug('Could not build circuit with path %s (%s): %s ',
+              circ_fps, nicknames, reason)
+    return [
+        ResultErrorCircuit(relay, circ_fps, dest.url, our_nick,
+                           msg=reason),
+    ]
 
 
 def measure_relay(args, conf, destinations, cb, rl, relay):
@@ -292,58 +343,61 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
 
     # Pick a relay to help us measure the given relay. If the given relay is an
     # exit, then pick a non-exit. Otherwise pick an exit.
-    helper = None
-    circ_fps = None
+    # Instead of ensuring that the relay can exit to all IPs, try first with
+    # the relay as an exit, if it can exit to some IPs.
     if relay.is_exit_not_bad_allowing_port(dest.port):
-        helper = _pick_ideal_second_hop(
-            relay, dest, rl, cb.controller, is_exit=False)
-        if helper:
-            circ_fps = [helper.fingerprint, relay.fingerprint]
-            # stored for debugging
-            nicknames = [helper.nickname, relay.nickname]
+        circ_fps, nicknames, exit_policy = \
+            create_path_relay(relay, dest, rl, cb, relay_as_entry=False)
     else:
-        helper = _pick_ideal_second_hop(
-            relay, dest, rl, cb.controller, is_exit=True)
-        if helper:
-            circ_fps = [relay.fingerprint, helper.fingerprint]
-            nicknames = [relay.nickname, helper.nickname]
-    if not helper:
-        reason = 'Unable to select a second relay'
-        log.debug(reason + ' to help measure %s (%s)',
-                  relay.fingerprint, relay.nickname)
-        return [
-            ResultErrorSecondRelay(relay, [], dest.url, our_nick,
-                                   msg=reason),
-            ]
+        circ_fps, nicknames, exit_policy = \
+            create_path_relay(relay, dest, rl, cb)
 
     # Build the circuit
     circ_id, reason = cb.build_circuit(circ_fps)
-    if not circ_id and relay.fingerprint == circ_fps[0]:
-        # We detected that some exits fail to build circuits as 1st hop.
-        # If that's the case, try again using them as 2nd hop.
-        # We could reuse the helper, but it does not need to be an exit now,
-        # so choose other again.
-        helper = _pick_ideal_second_hop(
-            relay, dest, rl, cb.controller, is_exit=False)
-        if helper:
-            circ_fps = [helper.fingerprint, relay.fingerprint]
-            nicknames = [helper.nickname, relay.nickname]
-        circ_id, reason = cb.build_circuit(circ_fps)
+
+    # If the circuit failed to get created, bad luck, it will be created again
+    # with other helper.
+    # Here we won't have the case that an exit tried to build the circuit as
+    # entry and failed (#40029), cause not checking that it can exit all IPs.
     if not circ_id:
-        log.debug('Could not build circuit with path %s (%s): %s ',
-                  circ_fps, nicknames, reason)
-        return [
-            ResultErrorCircuit(relay, circ_fps, dest.url, our_nick,
-                               msg=reason),
-        ]
+        return error_no_circuit(circ_fps, nicknames, reason, relay, dest,
+                                our_nick)
     log.debug('Built circuit with path %s (%s) to measure %s (%s)',
               circ_fps, nicknames, relay.fingerprint, relay.nickname)
     # Make a connection to the destination
     is_usable, usable_data = connect_to_destination_over_circuit(
         dest, circ_id, s, cb.controller, dest._max_dl)
+
+    # In the case that the relay was used as an exit, but could not exit
+    # to the Web server, try again using it as entry, to avoid that it would
+    # always fail when there's only one Web server.
+    if not is_usable and \
+            relay.is_exit_not_bad_allowing_port(dest.port):
+        log.info(
+            "Exit %s (%s) that can't exit all ips, with exit policy %s, failed"
+            " to connect to %s via circuit %s (%s). Reason: %s. Trying again "
+            "with it as entry.", relay.fingerprint, relay.nickname,
+            exit_policy, dest.url, circ_fps, nicknames, usable_data)
+        circ_fps, nicknames, exit_policy = \
+            create_path_relay(relay, dest, rl, cb)
+        circ_id, reason = cb.build_circuit(circ_fps)
+        if not circ_id:
+            log.warning(
+                "Exit %s (%s) that can't exit all ips, failed to create "
+                " circuit as entry: %s (%s).", relay.fingerprint,
+                relay.nickname, circ_fps, nicknames)
+            return error_no_circuit(circ_fps, nicknames, reason, relay, dest,
+                                    our_nick)
+
+        log.debug('Built circuit with path %s (%s) to measure %s (%s)',
+                  circ_fps, nicknames, relay.fingerprint, relay.nickname)
+        is_usable, usable_data = connect_to_destination_over_circuit(
+            dest, circ_id, s, cb.controller, dest._max_dl)
     if not is_usable:
-        log.debug('Destination %s unusable via circuit %s (%s), %s',
-                  dest.url, circ_fps, nicknames, usable_data)
+        log.debug('Failed to connect to %s to measure %s (%s) via circuit '
+                  '%s (%s). Exit policy: %s. Reason: %s.', dest.url,
+                  relay.fingerprint, relay.nickname, circ_fps, nicknames,
+                  exit_policy, usable_data)
         cb.close_circuit(circ_id)
         return [
             ResultErrorStream(relay, circ_fps, dest.url, our_nick,
@@ -367,9 +421,10 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     bw_results, reason = measure_bandwidth_to_server(
         s, conf, dest, usable_data['content_length'])
     if bw_results is None:
-        log.debug('Unable to measure bandwidth for %s (%s) to %s via circuit '
-                  '%s (%s): %s', relay.fingerprint, relay.nickname,
-                  dest.url, circ_fps, nicknames, reason)
+        log.debug('Failed to measure %s (%s) via circuit %s (%s) to %s. Exit'
+                  ' policy: %s. Reason: %s.', relay.fingerprint,
+                  relay.nickname, circ_fps, nicknames, dest.url, exit_policy,
+                  reason)
         cb.close_circuit(circ_id)
         return [
             ResultErrorStream(relay, circ_fps, dest.url, our_nick,

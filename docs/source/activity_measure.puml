@@ -1,0 +1,30 @@
+@startuml
+
+start
+
+if (exit?) then (yes)
+  :[h, r];
+else (no)
+  :[r, h];
+endif
+if (circuit?) then (yes)
+    :stream;
+    if (no stream and [h, r]) then (yes)
+        :[r, h] (r is exit);
+        if (circuit?) then (yes)
+            :stream;
+        else (no)
+            :WARN;
+            :ErrorCircuit;
+        endif
+    endif
+    if (no stream) then (yes)
+        :ErrorStream;
+    endif
+else (no)
+    :ErrorCircuit;
+endif
+
+stop
+
+@enduml

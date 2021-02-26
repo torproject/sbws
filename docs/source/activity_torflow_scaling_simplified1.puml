@@ -1,0 +1,38 @@
+@startuml
+title "Torflow measurements scaling with PID control (Per relay scaled bandwidth)."
+
+' Own previous bwfile
+:prev_votes = VoteSet();
+:tot_net_bw = 0;
+:;
+note right
+    for every measurement
+end note
+while (for n in nodes.itervalues()?)
+    partition "Intialize ratios and pid_error" {
+        ' Anything not set is initialized to 0 or None
+        :n.fbw_ratio = n.filt_bw/true_filt_avg[n.node_class()];
+        :n.sbw_ratio = n.strm_bw/true_strm_avg[n.node_class()];
+        :n.use_bw = n.desc_bw;
+        :n.pid_error = max(n.fbw_ratio, n.sbw_ratio) - 1;
+    }
+    if (n.idhex in prev_votes.vote_map \nand not newer measurement?) then (yes)
+        :self.new_bw = prev_vote.bw*1000
+        self.measured_at = vote.measured_at;
+    ' Not in previous bwfile, usually only with authoritites, possibly not in conensus?
+    else (no)
+        :n.new_bw = n.use_bw + n.use_bw * n.pid_error;
+    endif
+
+    ' For capping later
+    if (n.idhex in prev_consensus \nand prev_consensus[n.idhex].bandwidth != None) then (yes)
+        :prev_consensus[n.idhex].measured = True
+        tot_net_bw += n.new_bw;
+    endif
+endwhile
+while (for n in nodes.itervalues()?)
+    :cap...;
+endwhile
+stop
+
+@enduml

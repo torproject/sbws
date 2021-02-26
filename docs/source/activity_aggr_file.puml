@@ -1,0 +1,27 @@
+@startuml
+
+title Activity diagram sbws relays exclusion (V3BWFile.from_results)
+
+start
+:router_statuses_d;
+while (results.items()?)
+    :line, reason = V3BWLine.from_results();
+    if (not reason?) then (yes)
+        :bwlines_raw.append(line);
+    else (no)
+        :bw_lines_excluded.append(line);
+        :exclusion_dict[reason] = exclusion_dict.get(reason, 0) + 1;
+    endif
+endwhile
+:header.add_relays_excluded_counters(exclusion_dict);
+if (not bw_lines_raw?) then (yes)
+    :return (header, bw_lines_excluded);
+    stop
+endif
+if (scaling_method == TORFLOW?) then (yes)
+    :bw_lines = cls.bw_torflow_scale();
+endif
+:return (header, bw_lines + bw_lines_excluded);
+stop
+
+@enduml

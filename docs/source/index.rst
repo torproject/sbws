@@ -40,12 +40,14 @@ Included in the
    testing
    documenting
    how_works
+   generator
+   torflow_aggr
+   differences
    code_design
    state
    config
    config_tor
    sbws
-   torflow_aggr
    implementation
    bandwidth_distribution
    tor_bandwidth_files

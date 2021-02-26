@@ -1,11 +1,10 @@
-What the scanner and the generator do
-======================================
+.. _scanner:
 
-Running the scanner
------------------------
+How sbws works
+==============
 
 Overview
-~~~~~~~~~
+---------
 
 .. The following text is part of the introduction in the README, but rst
    formatted.
@@ -28,7 +27,7 @@ by a :term:`directory authority` to report relays’ bandwidth in its vote.
 .. image:: ./images/dirauths_bwauths.png
 
 Intialization
-~~~~~~~~~~~~~~
+--------------
 
 .. At some point it should be able to get environment variables
 
@@ -58,7 +57,7 @@ Classes used in the initialization:
 Source code: :func:`sbws.core.scanner.run_speedtest`
 
 Measuring relays
-~~~~~~~~~~~~~~~~~
+-----------------
 
 #. For every relay:
 #. Select a second relay to build a Tor circuit.
@@ -84,7 +83,7 @@ Measuring a relay
 Source code: :func:`sbws.core.scanner.measure_relay`
 
 Selecting a second relay
-~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------
 
 #. If the relay to measure is an exit, use it as an exit and obtain the
    non-exits.
@@ -102,7 +101,7 @@ Selecting a second relay
 Source code: :func:`sbws.core.scanner.measure_relay`
 
 Selecting the data to download
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------
 
 #. While the downloaded data is smaller than 1GB or the number of download
    is minor than 5:
@@ -116,7 +115,7 @@ Selecting the data to download
 Source code: :func:`sbws.core.scanner._should_keep_result`
 
 Writing the measurements to the filesystem
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------------------
 
 For every measured relay, the measurement result is put in a queue.
 There's an independent thread getting measurements from the queue every second.
@@ -126,53 +125,10 @@ The file is named with the current date. Every day a new file is created.
 
 Source code: :func:`sbws.lib.resultdump.ResultDump.enter`
 
-Running the generator
------------------------
-
-Every hour, the generator:
-#. Aggregate all the measurements (not older than 6 six days) for every relay.
-#. Filter the measurements
-#. Scale the measurements
-#. Write the bandwidth file
-
-Source code: :func:`sbws.lib.v3bwfile.V3BWFile.from_results`
-
-Filtering the bandwidth measurements
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Each relay bandwidth measurements are selected in the following way:
-
-#. At least two bandwidth measurements (``Result`` s) MUST have been obtained
-   within an arbitrary number of seconds (currently one day).
-   If they are not, the relay MUST NOT be included in the Bandwith File.
-#. The measurements than are are older than an arbitrary number of senconds
-   in the past MUST be discarded.
-   Currently this number is the same as ``data_period`` (5 days) when not
-   scaling as Torflow and 28 days when scaling as Torflow.
-
-If the number of relays to include in the Bandwidth File are less than
-a percententage (currently 60%) than the number of relays in the consensus,
-additional Header Lines MUST be added (see XXX) to the Bandwith File and the
-relays SHOULD NOT be included.
-
-Scaling the bandwidth measurements
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Consensus bandwidth obtained by new implementations MUST be comparable to the
-consensus bandwidth, therefore they MUST implement torflow_scaling_.
-The bandwidth_file_spec_ appendix B describes torflow scaling and a linear
-scaling method.
-
-Writing the bandwidth file
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The bandwidth file format is defined in the bandwidth_file_spec_.
-
+.. seealso:: :ref:`generator`.
 
 .. _torflow: https://gitweb.torproject.org/torflow.git
 .. _stem: https://stem.torproject.org
 .. https://github.com/requests/requests/issues/4885
 .. _requests: http://docs.python-requests.org/
 .. _peerflow: https://www.nrl.navy.mil/itd/chacs/sites/www.nrl.navy.mil.itd.chacs/files/pdfs/16-1231-4353.pdf
-.. _torflow_scaling: https://gitweb.torproject.org/torflow.git/tree/NetworkScanners/BwAuthority/README.spec.txt#n298
-.. _bandwidth_file_spec: https://gitweb.torproject.org/torspec.git/tree/bandwidth-file-spec.txt

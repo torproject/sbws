@@ -1,5 +1,8 @@
 from statistics import mean
 
+from sbws.globals import RELAY_TYPES
+from sbws.util.stem import rs_relay_type
+
 
 def bw_measurements_from_results(results):
     return [

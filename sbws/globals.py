@@ -22,6 +22,9 @@ SPEC_VERSION = '1.5.0'
 # Options that are known at runtime (from configuration file) are added
 # in utils/stem.py launch_tor
 TORRC_STARTING_POINT = {
+    # We will find out via the ControlPort and not setting something static
+    # means a lower chance of conflict
+    'SocksPort': 'auto',
     # Easier than password authentication
     'CookieAuthentication': '1',
     # To avoid path bias warnings

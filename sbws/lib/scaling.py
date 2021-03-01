@@ -16,8 +16,10 @@ def bw_filt(bw_measurements):
     """
     mu = 1
     if bw_measurements:
-        mu = mean(bw_measurements)
+        # Torflow is rounding to an integer, so is `bw_mean_from_results` in
+        # `v3bwfile.py`
+        mu = round(mean(bw_measurements))
     bws_gte_mean = list(filter(lambda bw: bw >= mu, bw_measurements))
     if bws_gte_mean:
-        return mean(bws_gte_mean)
+        return round(mean(bws_gte_mean))
     return 1

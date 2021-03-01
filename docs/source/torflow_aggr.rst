@@ -203,6 +203,18 @@ From Torflow's `README.spec.txt`_ (section 1.6)::
 In the code, `SQLSupport.py`_, ``strm_bw`` is ``sbw`` and
 ``filt_bw`` is ``filt_sbws``::
 
+      for s in rs.router.streams:
+        if isinstance(s, ClosedStream):
+          tot_bytes += s.tot_bytes()
+          tot_duration += s.end_time - s.start_time
+          tot_bw += s.bandwidth()
+          s_cnt += 1
+      # FIXME: Hrmm.. do we want to do weighted avg or pure avg here?
+      # If files are all the same size, it shouldn't matter..
+      if s_cnt > 0:
+        rs.sbw = tot_bw/s_cnt
+      else: rs.sbw = None
+
     for rs in RouterStats.query.filter(stats_clause).\
           options(eagerload_all('router.streams.circuit.routers')).all():
       tot_sbw = 0
@@ -223,6 +235,19 @@ In the code, `SQLSupport.py`_, ``strm_bw`` is ``sbw`` and
 
     if sbw_cnt: rs.filt_sbw = tot_sbw/sbw_cnt
     else: rs.filt_sbw = None
+
+When it is written to the file, it seem to write "None" string when
+``filt_sbw`` or ``strm_bw`` are None. That would give an exception when
+calculating the network average. So it never happen?::
+
+    def cvt(a,b,c=1):
+      if type(a) == float: return int(round(a/c,b))
+      elif type(a) == int: return a
+      elif type(a) == type(None): return "None"
+      else: return type(a)
+
+    f.write(" strm_bw="+str(cvt(s.sbw,0)))
+    f.write(" filt_bw="+str(cvt(s.filt_sbw,0)))
 
 This is also expressed in pseudocode in the `bandwidth file spec`_, section B.4
 step 1.

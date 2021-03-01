@@ -14,11 +14,13 @@ def bw_filt(bw_measurements):
     It is the equivalent to Torflow's ``filt_sbw``.
     ``mu`` in this function is the equivalent to Torflow's ``sbw``.
     """
-    mu = 1
-    if bw_measurements:
-        # Torflow is rounding to an integer, so is `bw_mean_from_results` in
-        # `v3bwfile.py`
-        mu = round(mean(bw_measurements))
+    # This should never be the case, as the measurements come from successful
+    # results.
+    if not bw_measurements:
+        return 1
+    # Torflow is rounding to an integer, so is `bw_mean_from_results` in
+    # `v3bwfile.py`
+    mu = round(mean(bw_measurements))
     bws_gte_mean = list(filter(lambda bw: bw >= mu, bw_measurements))
     if bws_gte_mean:
         return round(mean(bws_gte_mean))

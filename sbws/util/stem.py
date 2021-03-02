@@ -29,12 +29,12 @@ def attach_stream_to_circuit_listener(controller, circ_id):
                       circuit_str(controller, circ_id))
             try:
                 controller.attach_stream(st.id, circ_id)
-            except (UnsatisfiableRequest, InvalidRequest) as e:
-                log.warning('Couldn\'t attach stream to circ %s: %s',
-                            circ_id, e)
-            except OperationFailed as e:
-                log.exception("Error attaching stream %s to circ %s: %s",
-                              st.id, circ_id, e)
+            # So far we never saw this error.
+            except (
+                UnsatisfiableRequest, InvalidRequest, OperationFailed
+            ) as e:
+                log.debug('Error attaching stream %s to circ %s: %s',
+                          st.id, circ_id, e)
         else:
             pass
     return closure_stream_event_listener

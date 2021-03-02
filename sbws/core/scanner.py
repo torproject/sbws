@@ -388,7 +388,7 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         circ_fps, nicknames, exit_policy = r
         circ_id, reason = cb.build_circuit(circ_fps)
         if not circ_id:
-            log.warning(
+            log.info(
                 "Exit %s (%s) that can't exit all ips, failed to create "
                 " circuit as entry: %s (%s).", relay.fingerprint,
                 relay.nickname, circ_fps, nicknames)

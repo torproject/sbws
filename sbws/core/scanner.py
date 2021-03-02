@@ -346,11 +346,15 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     # Instead of ensuring that the relay can exit to all IPs, try first with
     # the relay as an exit, if it can exit to some IPs.
     if relay.is_exit_not_bad_allowing_port(dest.port):
-        circ_fps, nicknames, exit_policy = \
-            create_path_relay(relay, dest, rl, cb, relay_as_entry=False)
+        r = create_path_relay(relay, dest, rl, cb, relay_as_entry=False)
     else:
-        circ_fps, nicknames, exit_policy = \
-            create_path_relay(relay, dest, rl, cb)
+        r = create_path_relay(relay, dest, rl, cb)
+    # When `error_no_helper` is triggered because a helper is not found, what
+    # can happen in test networks with very few relays, it returns a list with
+    # the error.
+    if len(r) == 1:
+        return r
+    circ_fps, nicknames, exit_policy = r
 
     # Build the circuit
     circ_id, reason = cb.build_circuit(circ_fps)
@@ -378,8 +382,10 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
             " to connect to %s via circuit %s (%s). Reason: %s. Trying again "
             "with it as entry.", relay.fingerprint, relay.nickname,
             exit_policy, dest.url, circ_fps, nicknames, usable_data)
-        circ_fps, nicknames, exit_policy = \
-            create_path_relay(relay, dest, rl, cb)
+        r = create_path_relay(relay, dest, rl, cb)
+        if len(r) == 1:
+            return r
+        circ_fps, nicknames, exit_policy = r
         circ_id, reason = cb.build_circuit(circ_fps)
         if not circ_id:
             log.warning(

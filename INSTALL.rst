@@ -88,7 +88,7 @@ System physical requirements
 - Free disk: at least 3GB
 
 ``sbws`` and its dependencies need around 20MB of disk space.
-After 90 days ``sbws`` data files use around 3GB.
+After 57 days ``sbws`` data files use a maximum of 3GB.
 If ``sbws`` is configured to log to files (by default will log to the
 system log), it will need a maximum of 500MB.
 
@@ -98,9 +98,10 @@ and log partitions.
 Details about ``sbws`` data:
 
 ``sbws`` produces around 100MB of data a day.
-By default raw results' files are compressed after 10 days and deleted after 90.
+By default raw results' files are compressed after 29 days and deleted after
+57.
 The bandwidth files are compressed after 7 days and deleted after 1.
-After 90 days, the disk space used by the data will be aproximately 3GB.
+After 57 days, the disk space used by the data will be up to 3GB.
 It will not increase further.
 If ``sbws`` is configured to log to files, logs will be rotated after they
 are 10MB and it will keep 50 rotated log files.

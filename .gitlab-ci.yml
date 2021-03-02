@@ -1,3 +1,11 @@
+# core/tor releases:
+# https://gitlab.torproject.org/tpo/core/team/-/wikis/NetworkTeam/CoreTorReleases
+# As of 2021.03.02 all dirauths are running with version greater or equal to
+# 0.4.5.
+# 0.4.6 stable by Jun 15, 2021
+# 0.4.5 (LTS) EOL Feb 15, 2023
+# 0.3.5 (LTS) EOL Feb 1, 2022
+
 variables:
     BASE_IMAGE: python:3.7
     RELEASE: tor-nightly-master-buster
@@ -40,21 +48,21 @@ python36tor035:
     - tox -e py36
     - tox -e integration
 
-python36tor041:
+python36tor045:
   variables:
     BASE_IMAGE: python:3.6
-    RELEASE: tor-nightly-0.4.1.x-buster
-    TOR: tor=0.4.1*
+    RELEASE: tor-nightly-0.4.5.x-buster
+    TOR: tor=0.4.5*
   image: $BASE_IMAGE
   script:
   - tox -e py36
   - tox -e integration
 
-python36tor042:
+python36tormaster:
   variables:
     BASE_IMAGE: python:3.6
-    RELEASE: tor-nightly-0.4.2.x-buster
-    TOR: tor=0.4.2*
+    RELEASE: tor-nightly-master-buster
+    TOR: tor=0.4.6*
   image: $BASE_IMAGE
   script:
   - tox -e py36

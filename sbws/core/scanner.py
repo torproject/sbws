@@ -377,7 +377,7 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     # always fail when there's only one Web server.
     if not is_usable and \
             relay.is_exit_not_bad_allowing_port(dest.port):
-        log.info(
+        log.debug(
             "Exit %s (%s) that can't exit all ips, with exit policy %s, failed"
             " to connect to %s via circuit %s (%s). Reason: %s. Trying again "
             "with it as entry.", relay.fingerprint, relay.nickname,
@@ -575,6 +575,7 @@ def main_loop(args, conf, controller, relay_list, circuit_builder, result_dump,
     measured.
 
     """
+    log.info("Started the main loop to measure the relays.")
     hbeat = Heartbeat(conf.getpath('paths', 'state_fname'))
 
     # Set the time to wait for a thread to finish as the half of an HTTP

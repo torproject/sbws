@@ -466,14 +466,17 @@ def _should_keep_result(did_request_maximum, result_time, download_times):
     # In the normal case, we didn't ask for the maximum allowed amount. So we
     # should only allow ourselves to keep results that are between the min and
     # max allowed time
+    msg = "Keeping measurement time {:.2f}".format(result_time)
     if not did_request_maximum and \
             result_time >= download_times['min'] and \
             result_time < download_times['max']:
+        log.debug(msg)
         return True
     # If we did request the maximum amount, we should keep the result as long
     # as it took less than the maximum amount of time
     if did_request_maximum and \
             result_time < download_times['max']:
+        log.debug(msg)
         return True
     # In all other cases, return false
     log.debug('Not keeping result time %f.%s', result_time,

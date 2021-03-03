@@ -1,5 +1,8 @@
 #!/bin/bash
-set -x
+# Instead of exiting inmmediately when any of this commands fail,
+# the scanner, generate and coverage lines could continue and store there was
+# an error on that command. It's just simpler with `-e`.
+set -ex
 
 tests/integration/start_chutney.sh
 python3 scripts/tools/sbws-http-server.py --port 28888 &>/dev/null &

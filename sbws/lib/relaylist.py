@@ -71,7 +71,11 @@ class Relay:
         self.relay_in_recent_consensus = timestamps.DateTimeSeq(
             [], MAX_RECENT_CONSENSUS_COUNT
         )
-        self.update_relay_in_recent_consensus()
+        # Use the same timestamp as the consensus, so that it can be tested
+        # that the relay was in a consensus using this timestamp.
+        # Note that this doesn't change the number of consensus the relay was
+        # in.
+        self.update_relay_in_recent_consensus(timestamp)
         # The number of times that a relay is "prioritized" to be measured.
         # It is incremented in ``RelayPrioritizer.best_priority``
         self.relay_recent_priority_list = timestamps.DateTimeSeq(

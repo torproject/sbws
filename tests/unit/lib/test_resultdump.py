@@ -2,6 +2,7 @@
 """Unit tests for resultdump."""
 
 import datetime
+import logging
 
 from sbws.lib.relaylist import Relay
 from sbws.lib.resultdump import (
@@ -37,10 +38,10 @@ def test_trim_results_ip_changed_on_changed_ipv6(caplog,
     results_dict = trim_results_ip_changed(resultdict_ip_not_changed,
                                            on_changed_ipv6=True)
     assert resultdict_ip_not_changed == results_dict
-    for record in caplog.records:
-        assert record.levelname == 'WARNING'
-    assert 'Reseting bandwidth results when IPv6 changes, ' \
-           'is not yet implemented.\n' in caplog.text
+    # There might be other logs from other threads.
+    with caplog.at_level(logging.WARNING):
+        assert 'Reseting bandwidth results when IPv6 changes, ' \
+            'is not yet implemented.\n' in caplog.text
 
 
 def test_resultdump(

@@ -208,8 +208,8 @@ class Destination:
         if self._delta_seconds_retry > self._max_seconds_between_retries:
             self._delta_seconds_retry = self._max_seconds_between_retries
             log.debug("Incremented the time to try destination %s past the "
-                     "limit, capping it at %s hours.",
-                     self.url, self._delta_seconds_retry / 60 / 60)
+                      "limit, capping it at %s hours.",
+                      self.url, self._delta_seconds_retry / 60 / 60)
         else:
             log.debug("Incremented the time to try destination %s to %s "
                       "hours.", self.url, self._delta_seconds_retry / 60 / 60)

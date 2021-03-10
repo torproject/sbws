@@ -875,9 +875,12 @@ class V3BWLine(object):
     def bw_mean_from_results(results):
         bws = [dl['amount'] / dl['duration']
                for r in results for dl in r.downloads]
+        # It's safe to return 0 here, because:
+        # 1. this value will be the numerator when calculating the ratio.
+        # 2. `kb_round_x_sig_dig` returns a minimum of 1.
         if bws:
-            return max(round(mean(bws)), 1)
-        return 1
+            return round(mean(bws))
+        return 0
 
     @staticmethod
     def last_time_from_results(results):

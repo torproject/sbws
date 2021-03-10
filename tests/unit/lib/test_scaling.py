@@ -18,7 +18,7 @@ def test_bw_filt():
     # When there are no measurements what can not be the case for successful
     # results.
     bw_measurements = []
-    assert 1 == scaling.bw_filt(bw_measurements)
+    assert 0 == scaling.bw_filt(bw_measurements)
 
     bw_measurements = [1, 0]
     # Because rounded to int

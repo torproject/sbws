@@ -27,7 +27,7 @@ def bw_filt(bw_measurements):
     bws_gte_mean = list(filter(lambda bw: bw >= mu, bw_measurements))
     if bws_gte_mean:
         return round(mean(bws_gte_mean))
-    return 1
+    return mu
 
 
 def network_means_by_relay_type(bw_lines, router_statuses_d):

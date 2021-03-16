@@ -187,6 +187,14 @@ MAX_RECENT_PRIORITY_RELAY_COUNT = (
     MAX_RECENT_PRIORITY_LIST_COUNT * MAX_RELAYS_PER_PRIORITY_LIST
 )
 
+# Used by util/stem.py
+G = 0
+M = 1
+E = 2
+GE = 3
+# Used by lib/scaling.py to calculate network means by relay type
+RELAY_TYPES = [G, M, E, GE]
+
 
 def fail_hard(*a, **kw):
     ''' Log something ... and then exit as fast as possible '''

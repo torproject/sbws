@@ -1,5 +1,20 @@
+# core/tor releases:
+# https://gitlab.torproject.org/tpo/core/team/-/wikis/NetworkTeam/CoreTorReleases
+# As of 2021.03.02 all dirauths are running with version greater or equal to
+# 0.4.5.
+# 0.4.6 stable by Jun 15, 2021
+# 0.4.5 (LTS) EOL Feb 15, 2023
+# 0.3.5 (LTS) EOL Feb 1, 2022
+# Python releases:
+# 3.10 stable by 2021-10-04: https://www.python.org/dev/peps/pep-0619/
+# Python stable releases: https://www.python.org/downloads/
+# 3.9 EOL 2025-10 PEP 596
+# 3.8 EOL 2024-10 PEP 569, newest major release
+# 3.7 EOL 2023-06-27 PEP 537, included in Debian buster
+# 3.6 EOL 2021-12-23 PEP 494
+
 variables:
-    BASE_IMAGE: python:3.7
+    BASE_IMAGE: python:3.8
     RELEASE: tor-nightly-master-buster
     # Without version, the default available in the Debian repository will be
     # installed.
@@ -30,47 +45,55 @@ before_script:
 after_script:
   - tox -e stats
 
-python36tor035:
+python36:
   variables:
     BASE_IMAGE: python:3.6
+  image: $BASE_IMAGE
+  script:
+  - tox -e py36
+  - tox -e integration
+
+python37tor035:
+  variables:
+    BASE_IMAGE: python:3.7
     RELEASE: tor-nightly-0.3.5.x-buster
     TOR: tor=0.3.5*
   image: $BASE_IMAGE
   script:
-    - tox -e py36
+    - tox -e py37
     - tox -e integration
 
-python36tor041:
+python37tor045:
   variables:
-    BASE_IMAGE: python:3.6
-    RELEASE: tor-nightly-0.4.1.x-buster
-    TOR: tor=0.4.1*
+    BASE_IMAGE: python:3.7
+    RELEASE: tor-nightly-0.4.5.x-buster
+    TOR: tor=0.4.5*
   image: $BASE_IMAGE
   script:
-  - tox -e py36
+  - tox -e py37
   - tox -e integration
 
-python36tor042:
+python37tormaster:
   variables:
-    BASE_IMAGE: python:3.6
-    RELEASE: tor-nightly-0.4.2.x-buster
-    TOR: tor=0.4.2*
+    BASE_IMAGE: python:3.7
+    RELEASE: tor-nightly-master-buster
+    TOR: tor=0.4.6*
   image: $BASE_IMAGE
   script:
-  - tox -e py36
+  - tox -e py37
   - tox -e integration
 
-python36torstable:
+python37torstable:
   variables:
-    BASE_IMAGE: python:3.6
+    BASE_IMAGE: python:3.7
     RELEASE: buster
     TOR: tor
   image: $BASE_IMAGE
   script:
-  - tox -e py36
+  - tox -e py37
   - tox -e integration
 
-python37:
+python38:
   # This will overwrite the default before_script, so need to repeat the
   # commands
   before_script:
@@ -92,24 +115,24 @@ python37:
   script:
   - tox -e inst
   - tox -e setup
-  - tox -e py37
+  - tox -e py38
   - tox -e integration
   - tox -e lint
   - tox -e doc
 
-python38:
-  variables:
-    BASE_IMAGE: python:3.8
-  image: $BASE_IMAGE
-  script:
-  - tox -e py38
-  - tox -e integration
-
 python39:
   variables:
-    BASE_IMAGE: python:3.9-rc-buster
+    BASE_IMAGE: python:3.9
   image: $BASE_IMAGE
   script:
   - tox -e py39
+  - tox -e integration
+
+python310:
+  variables:
+    BASE_IMAGE: python:3.10-rc-buster
+  image: $BASE_IMAGE
+  script:
+  - tox -e py310
   - tox -e integration
   allow_failure: true

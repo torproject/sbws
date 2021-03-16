@@ -12,8 +12,10 @@ import logging
 import os
 from sbws.globals import fail_hard
 from sbws.globals import (TORRC_STARTING_POINT, TORRC_RUNTIME_OPTIONS,
-                          TORRC_OPTIONS_CAN_FAIL)
+                          TORRC_OPTIONS_CAN_FAIL, G, M, E, GE)
 from sbws import settings
+
+from stem import Flag
 
 log = logging.getLogger(__name__)
 stream_building_lock = RLock()
@@ -29,12 +31,12 @@ def attach_stream_to_circuit_listener(controller, circ_id):
                       circuit_str(controller, circ_id))
             try:
                 controller.attach_stream(st.id, circ_id)
-            except (UnsatisfiableRequest, InvalidRequest) as e:
-                log.warning('Couldn\'t attach stream to circ %s: %s',
-                            circ_id, e)
-            except OperationFailed as e:
-                log.exception("Error attaching stream %s to circ %s: %s",
-                              st.id, circ_id, e)
+            # So far we never saw this error.
+            except (
+                UnsatisfiableRequest, InvalidRequest, OperationFailed
+            ) as e:
+                log.debug('Error attaching stream %s to circ %s: %s',
+                          st.id, circ_id, e)
         else:
             pass
     return closure_stream_event_listener
@@ -325,3 +327,21 @@ def is_torrc_starting_point_set(tor_controller):
     if not bad_options:
         log.info("Tor is correctly configured to work with sbws.")
     return bad_options
+
+
+def rs_relay_type(rs):
+    # In torflow, the equivalent to the bw_lines is initialized to "", so when
+    # the relay is not in the previous consensus and it is not known which
+    # flags it has, it would return "Medium", as it's the fail case in
+    # Node.node_class().
+    # It is not known if it is a bug, or a desired side effect that they relays
+    # not in the consensus will end up in the Middle class
+    if not rs:
+        return M
+    if Flag.EXIT in rs.flags and Flag.GUARD in rs.flags:
+        return GE
+    if Flag.GUARD in rs.flags:
+        return G
+    if Flag.EXIT in rs.flags:
+        return E
+    return M

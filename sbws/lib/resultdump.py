@@ -799,14 +799,17 @@ class ResultDump:
             msg += ". As exit." if as_exit else ". As entry."
         # When the error is that there are not more functional destinations.
         if result.type == "error-destination":
-            log.info("Shutting down because there are not functional "
-                     "destinations.")
+            log.warning("Shutting down because there are not functional "
+                        "destinations.")
             # NOTE: Because this is executed in a thread, stop_threads can not
             # be call from here, it has to be call from the main thread.
             # Instead set the singleton end event, that will call stop_threads
             # from the main process.
             settings.end_event.set()
-        log.info(msg)
+        # log every success/error measurement at debug level, to don't log the
+        # the Web server at info level and because there's already a
+        # heartbeat msg to indicate progress.
+        log.debug(msg)
 
     def enter(self):
         """Main loop for the ResultDump thread.

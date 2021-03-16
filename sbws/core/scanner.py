@@ -377,7 +377,7 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
     # always fail when there's only one Web server.
     if not is_usable and \
             relay.is_exit_not_bad_allowing_port(dest.port):
-        log.info(
+        log.debug(
             "Exit %s (%s) that can't exit all ips, with exit policy %s, failed"
             " to connect to %s via circuit %s (%s). Reason: %s. Trying again "
             "with it as entry.", relay.fingerprint, relay.nickname,
@@ -388,7 +388,7 @@ def measure_relay(args, conf, destinations, cb, rl, relay):
         circ_fps, nicknames, exit_policy = r
         circ_id, reason = cb.build_circuit(circ_fps)
         if not circ_id:
-            log.warning(
+            log.info(
                 "Exit %s (%s) that can't exit all ips, failed to create "
                 " circuit as entry: %s (%s).", relay.fingerprint,
                 relay.nickname, circ_fps, nicknames)
@@ -466,14 +466,17 @@ def _should_keep_result(did_request_maximum, result_time, download_times):
     # In the normal case, we didn't ask for the maximum allowed amount. So we
     # should only allow ourselves to keep results that are between the min and
     # max allowed time
+    msg = "Keeping measurement time {:.2f}".format(result_time)
     if not did_request_maximum and \
             result_time >= download_times['min'] and \
             result_time < download_times['max']:
+        log.debug(msg)
         return True
     # If we did request the maximum amount, we should keep the result as long
     # as it took less than the maximum amount of time
     if did_request_maximum and \
             result_time < download_times['max']:
+        log.debug(msg)
         return True
     # In all other cases, return false
     log.debug('Not keeping result time %f.%s', result_time,
@@ -575,6 +578,7 @@ def main_loop(args, conf, controller, relay_list, circuit_builder, result_dump,
     measured.
 
     """
+    log.info("Started the main loop to measure the relays.")
     hbeat = Heartbeat(conf.getpath('paths', 'state_fname'))
 
     # Set the time to wait for a thread to finish as the half of an HTTP

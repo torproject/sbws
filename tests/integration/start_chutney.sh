@@ -23,4 +23,6 @@ git pull
 ./chutney status networks/bwscanner
 ./chutney wait_for_bootstrap networks/bwscanner
 
+# temporal workaround for https://gitlab.torproject.org/tpo/core/chutney/-/issues/40016
+sleep 60
 cd $CURRENT_DIR

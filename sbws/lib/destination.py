@@ -207,12 +207,12 @@ class Destination:
         self._delta_seconds_retry *= factor or self._factor
         if self._delta_seconds_retry > self._max_seconds_between_retries:
             self._delta_seconds_retry = self._max_seconds_between_retries
-            log.info("Incremented the time to try destination %s past the "
-                     "limit, capping it at %s hours.",
-                     self.url, self._delta_seconds_retry / 60 / 60)
+            log.debug("Incremented the time to try destination %s past the "
+                      "limit, capping it at %s hours.",
+                      self.url, self._delta_seconds_retry / 60 / 60)
         else:
-            log.info("Incremented the time to try destination %s to %s hours.",
-                     self.url, self._delta_seconds_retry / 60 / 60)
+            log.debug("Incremented the time to try destination %s to %s "
+                      "hours.", self.url, self._delta_seconds_retry / 60 / 60)
 
     def _get_last_try_in_seconds_ago(self):
         """
@@ -250,23 +250,29 @@ class Destination:
 
         # Failed the last X consecutive times
         if self._are_last_attempts_failures():
-            # The log here will appear in all the the queued
-            #  relays and threads.
-            log.warning("The last %s times the destination %s failed. "
+            # The log here will appear in all the the queued relays and
+            # threads.
+            log.debug("The last %s times the destination %s failed. "
+                      "It last ran %s seconds ago. "
+                      "Disabled for %s seconds.",
+                      self._max_num_failures, self.url,
+                      self._get_last_try_in_seconds_ago(),
+                      self._delta_seconds_retry)
+            log.warning("The last %s times a destination failed. "
                         "It last ran %s seconds ago. "
-                        "Disabled for %s seconds.",
-                        self._max_num_failures, self.url,
+                        "Disabled for %s seconds."
+                        "Please, add more destinations or increment the "
+                        "number of maximum number of consecutive failures "
+                        "in the configuration.",
+                        self._max_num_failures,
                         self._get_last_try_in_seconds_ago(),
                         self._delta_seconds_retry)
-            log.warning("Please, add more destinations or increment the "
-                        "number of maximum number of consecutive failures "
-                        "in the configuration.")
             # It was not used for a while and the last time it was used
             # was long ago, then try again
             if self._is_last_try_old_enough():
-                log.info("The destination %s was not tried for %s seconds, "
-                         "it is going to by tried again.", self.url,
-                         self._get_last_try_in_seconds_ago())
+                log.debug("The destination %s was not tried for %s seconds, "
+                          "it is going to by tried again.", self.url,
+                          self._get_last_try_in_seconds_ago())
                 # Set the next time to retry higher, in case this attempt fails
                 self._increment_time_to_retry()
                 return True

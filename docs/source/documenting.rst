@@ -25,7 +25,11 @@ To build the manual (``man``) pages::
 
 The generated man pages will be in ``docs/man/``.
 
-To build the documentation diagrams::
+To build the documentation diagrams, extra system dependencies are needed::
+
+    apt-get install graphviz
+
+You can then build the diagrams with::
 
     cd docs/ && make umlsvg
 
